@@ -384,6 +384,7 @@
     <button id="btn-menu-tasbih" class="btn btn-primary">🔢 Countdown Tasbih</button>
     <button id="btn-menu-doa"    class="btn">🤲 Doa</button>
     <button id="btn-menu-hadis"  class="btn">📚 Hadis</button>
+    <button id="btn-menu-solat"  class="btn">🕌 Kesalahan & Khusyuk Solat</button>
     <button id="btn-go-reminder-list" class="btn">[ REMINDER ]</button>
 
     <div style="margin-top:10px;">
@@ -648,13 +649,13 @@
     var ADMIN_EMAIL = 'adha86614@gmail.com';
 
     /* Nilai default target harian (sama dengan app pertama) */
-    var MODE_DAILY_DEFAULTS = { tasbih: 10000, doa: 1000, hadis: 10 };
+    var MODE_DAILY_DEFAULTS = { tasbih: 10000, doa: 1000, hadis: 10, solat: 33 };
 
     /* ══════════════════════════════════════════
        STATE
     ══════════════════════════════════════════ */
     var currentUser  = null;
-    var currentMode  = 'tasbih'; // 'tasbih' | 'doa' | 'hadis'
+    var currentMode  = 'tasbih'; // 'tasbih' | 'doa' | 'hadis' | 'solat'
     var currentPin   = '';
 
     /* Tasbih */
@@ -671,7 +672,10 @@
     var allDoaDrawers  = [];
     var allHadisTimes  = [];
     var allHadisDrawers = [];
-    var activeTimeId   = null; // id untuk doa_times / hadis_times yang dipilih
+    var allSolatTimes   = [];
+    var allSolatDrawers = [];
+    var _solatDrawerCache = null;
+    var activeTimeId   = null; // id untuk doa_times / hadis_times / solat_times
     var activeLacis    = [];   // laci yang sedang aktif (filtered by timeId)
     var laciIndex      = 0;    // index dalam activeLacis
     var modeUnsub      = null; // onSnapshot untuk doa_tasbih / hadis_tasbih
@@ -956,14 +960,18 @@
       currentMode = 'hadis';
       openKatScreen('hadis');
     });
+    document.getElementById('btn-menu-solat').addEventListener('click', function() {
+      currentMode = 'solat';
+      openKatScreen('solat');
+    });
 
     /* ══════════════════════════════════════════
        PILIH KATEGORI (DOA / HADIS)
     ══════════════════════════════════════════ */
     function openKatScreen(mode) {
-      setText('kat-title', mode === 'doa' ? 'Pilih Kategori Doa' : 'Pilih Kitab/Bab Hadis');
-      var times  = mode === 'doa' ? allDoaTimes : allHadisTimes;
-      var drawers = mode === 'doa' ? allDoaDrawers : allHadisDrawers;
+      setText('kat-title', mode === 'doa' ? 'Pilih Kategori Doa' : mode === 'solat' ? 'Pilih Kategori Solat' : 'Pilih Kitab/Bab Hadis');
+      var times  = mode === 'doa' ? allDoaTimes : mode === 'solat' ? allSolatTimes : allHadisTimes;
+      var drawers = mode === 'doa' ? allDoaDrawers : mode === 'solat' ? allSolatDrawers : allHadisDrawers;
 
       if (!times.length && !drawers.length) {
         // Belum load — load dulu
@@ -1173,13 +1181,17 @@
       // Hanya load times (metadata kecil) — drawers load on-demand bila user pilih kategori
       Promise.all([
         db.collection('users').doc(uid).collection('doa_times').get(),
-        db.collection('users').doc(uid).collection('hadis_times').get()
+        db.collection('users').doc(uid).collection('hadis_times').get(),
+        db.collection('users').doc(uid).collection('solat_times').get()
       ]).then(function(res) {
         allDoaTimes = [];
         res[0].forEach(function(d) { var x = d.data(); x.id = d.id; allDoaTimes.push(x); });
 
         allHadisTimes = [];
         res[1].forEach(function(d) { var x = d.data(); x.id = d.id; allHadisTimes.push(x); });
+
+        allSolatTimes = [];
+        res[2].forEach(function(d) { var x = d.data(); x.id = d.id; allSolatTimes.push(x); });
 
         collectionsLoaded = true;
         console.log('📥 doa_times (' + allDoaTimes.length + ') & hadis_times (' + allHadisTimes.length + ') diload. Drawers akan load on-demand.');
