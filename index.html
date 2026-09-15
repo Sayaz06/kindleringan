@@ -385,6 +385,7 @@
     <button id="btn-menu-doa"    class="btn">🤲 Doa</button>
     <button id="btn-menu-hadis"  class="btn">📚 Hadis</button>
     <button id="btn-menu-solat"  class="btn">🕌 Kesalahan & Khusyuk Solat</button>
+    <button id="btn-menu-wirid"  class="btn">📿 Wirid</button>
     <button id="btn-go-reminder-list" class="btn">[ REMINDER ]</button>
 
     <div style="margin-top:10px;">
@@ -649,13 +650,13 @@
     var ADMIN_EMAIL = 'adha86614@gmail.com';
 
     /* Nilai default target harian (sama dengan app pertama) */
-    var MODE_DAILY_DEFAULTS = { tasbih: 10000, doa: 1000, hadis: 10, solat: 33 };
+    var MODE_DAILY_DEFAULTS = { tasbih: 10000, doa: 1000, hadis: 10, solat: 33, wirid: 100 };
 
     /* ══════════════════════════════════════════
        STATE
     ══════════════════════════════════════════ */
     var currentUser  = null;
-    var currentMode  = 'tasbih'; // 'tasbih' | 'doa' | 'hadis' | 'solat'
+    var currentMode  = 'tasbih'; // 'tasbih' | 'doa' | 'hadis' | 'solat' | 'wirid'
     var currentPin   = '';
 
     /* Tasbih */
@@ -674,7 +675,10 @@
     var allHadisDrawers = [];
     var allSolatTimes   = [];
     var allSolatDrawers = [];
+    var allWiridTimes   = [];
+    var allWiridDrawers = [];
     var _solatDrawerCache = null;
+    var _wiridDrawerCache = null;
     var activeTimeId   = null; // id untuk doa_times / hadis_times / solat_times
     var activeLacis    = [];   // laci yang sedang aktif (filtered by timeId)
     var laciIndex      = 0;    // index dalam activeLacis
@@ -964,42 +968,66 @@
       currentMode = 'solat';
       openKatScreen('solat');
     });
+    document.getElementById('btn-menu-wirid').addEventListener('click', function() {
+      currentMode = 'wirid';
+      openKatScreen('wirid');
+    });
 
     /* ══════════════════════════════════════════
        PILIH KATEGORI (DOA / HADIS)
     ══════════════════════════════════════════ */
+    function modeTimes(mode) {
+      if (mode === 'doa') return allDoaTimes;
+      if (mode === 'hadis') return allHadisTimes;
+      if (mode === 'solat') return allSolatTimes;
+      if (mode === 'wirid') return allWiridTimes;
+      return [];
+    }
+    function modeDrawers(mode) {
+      if (mode === 'doa') return allDoaDrawers;
+      if (mode === 'hadis') return allHadisDrawers;
+      if (mode === 'solat') return allSolatDrawers;
+      if (mode === 'wirid') return allWiridDrawers;
+      return [];
+    }
+    function modeKatTitle(mode) {
+      if (mode === 'doa') return 'Pilih Kategori Doa';
+      if (mode === 'solat') return 'Pilih Kategori Solat';
+      if (mode === 'wirid') return 'Pilih Kategori Wirid';
+      return 'Pilih Kitab/Bab Hadis';
+    }
+    function modeTapLabel(mode) {
+      if (mode === 'doa') return 'TAP — BACA DOA';
+      if (mode === 'solat') return 'TAP — BACA SOLAT';
+      if (mode === 'wirid') return 'TAP — BACA WIRID';
+      return 'TAP — BACA HADIS';
+    }
+    function modeTagLabel(mode) {
+      if (mode === 'doa') return '🤲 DOA';
+      if (mode === 'solat') return '🕌 SOLAT';
+      if (mode === 'wirid') return '📿 WIRID';
+      return '📚 HADIS';
+    }
+
     function openKatScreen(mode) {
-      setText('kat-title', mode === 'doa' ? 'Pilih Kategori Doa' : mode === 'solat' ? 'Pilih Kategori Solat' : 'Pilih Kitab/Bab Hadis');
-      var times  = mode === 'doa' ? allDoaTimes : mode === 'solat' ? allSolatTimes : allHadisTimes;
-      var drawers = mode === 'doa' ? allDoaDrawers : mode === 'solat' ? allSolatDrawers : allHadisDrawers;
-
-      if (!times.length && !drawers.length) {
-        // Belum load — load dulu
-        loadDoaHadisCollections(function() {
-          openKatScreen(mode);
-        });
-        return;
-      }
-
-      // Load drawers on-demand sebelum render senarai kategori
-      if (mode === 'doa') {
-        loadDoaDrawersOnDemand(function() {
+      setText('kat-title', modeKatTitle(mode));
+      loadDoaHadisCollections(function() {
+        var loader = mode === 'doa' ? loadDoaDrawersOnDemand
+                   : mode === 'solat' ? loadSolatDrawersOnDemand
+                   : mode === 'wirid' ? loadWiridDrawersOnDemand
+                   : loadHadisDrawersOnDemand;
+        loader(function() {
           renderKatList(mode);
           showScreen('screen-kat');
         });
-      } else {
-        loadHadisDrawersOnDemand(function() {
-          renderKatList(mode);
-          showScreen('screen-kat');
-        });
-      }
+      });
     }
 
     var bacaSemua = false; // flag: sedang dalam mod Baca Semua Doa
 
     function renderKatList(mode) {
-      var times   = mode === 'doa' ? allDoaTimes   : allHadisTimes;
-      var drawers = mode === 'doa' ? allDoaDrawers  : allHadisDrawers;
+      var times   = modeTimes(mode);
+      var drawers = modeDrawers(mode);
       var list    = document.getElementById('kat-list');
       list.innerHTML = '';
 
@@ -1109,7 +1137,7 @@
     var tasbihBackTarget = 'screen-menu'; // 'screen-menu' atau 'screen-kat'
 
     function buildActiveLacis(mode) {
-      var drawers = mode === 'doa' ? allDoaDrawers : allHadisDrawers;
+      var drawers = modeDrawers(mode);
       activeLacis = drawers
         .filter(function(d) {
           return d.timeId === activeTimeId && (d.zikir || d.maksud || d.title);
@@ -1155,21 +1183,46 @@
     function loadHadisDrawersOnDemand(cb) {
       if (!currentUser) { cb && cb(); return; }
       if (_hadisDrawerCache) {
-        console.log('✅ Cache hit — hadis_drawers dari memori, tiada query Firestore');
         allHadisDrawers = _hadisDrawerCache;
         cb && cb();
         return;
       }
-      console.log('📥 Cache miss — hadis_drawers diload dari Firestore');
       db.collection('users').doc(currentUser.uid).collection('hadis_drawers').get()
         .then(function(snap) {
           allHadisDrawers = [];
           snap.forEach(function(d) { var x = d.data(); x.id = d.id; allHadisDrawers.push(x); });
           _hadisDrawerCache = allHadisDrawers;
-          console.log('📥 Cache miss — hadis_drawers disimpan dalam cache (' + allHadisDrawers.length + ' laci)');
           cb && cb();
         }).catch(function(e) {
           console.error('❌ Gagal load hadis_drawers:', e.message);
+          cb && cb();
+        });
+    }
+
+    function loadSolatDrawersOnDemand(cb) {
+      if (!currentUser) { cb && cb(); return; }
+      db.collection('users').doc(currentUser.uid).collection('solat_drawers').get()
+        .then(function(snap) {
+          allSolatDrawers = [];
+          snap.forEach(function(d) { var x = d.data(); x.id = d.id; allSolatDrawers.push(x); });
+          _solatDrawerCache = allSolatDrawers;
+          cb && cb();
+        }).catch(function(e) {
+          console.error('❌ Gagal load solat_drawers:', e.message);
+          cb && cb();
+        });
+    }
+
+    function loadWiridDrawersOnDemand(cb) {
+      if (!currentUser) { cb && cb(); return; }
+      db.collection('users').doc(currentUser.uid).collection('routine_drawers').get()
+        .then(function(snap) {
+          allWiridDrawers = [];
+          snap.forEach(function(d) { var x = d.data(); x.id = d.id; allWiridDrawers.push(x); });
+          _wiridDrawerCache = allWiridDrawers;
+          cb && cb();
+        }).catch(function(e) {
+          console.error('❌ Gagal load routine_drawers:', e.message);
           cb && cb();
         });
     }
@@ -1182,7 +1235,8 @@
       Promise.all([
         db.collection('users').doc(uid).collection('doa_times').get(),
         db.collection('users').doc(uid).collection('hadis_times').get(),
-        db.collection('users').doc(uid).collection('solat_times').get()
+        db.collection('users').doc(uid).collection('solat_times').get(),
+        db.collection('users').doc(uid).collection('routine_times').get()
       ]).then(function(res) {
         allDoaTimes = [];
         res[0].forEach(function(d) { var x = d.data(); x.id = d.id; allDoaTimes.push(x); });
@@ -1192,6 +1246,9 @@
 
         allSolatTimes = [];
         res[2].forEach(function(d) { var x = d.data(); x.id = d.id; allSolatTimes.push(x); });
+
+        allWiridTimes = [];
+        res[3].forEach(function(d) { var x = d.data(); x.id = d.id; allWiridTimes.push(x); });
 
         collectionsLoaded = true;
         console.log('📥 doa_times (' + allDoaTimes.length + ') & hadis_times (' + allHadisTimes.length + ') diload. Drawers akan load on-demand.');
@@ -1229,13 +1286,13 @@
       stopAllListeners();
       tasbihBackTarget = 'screen-kat';
       setText('btn-back-tasbih', '← Balik');
-      var tag = mode === 'doa' ? '🤲 DOA' : '📚 HADIS';
+      var tag = modeTagLabel(mode);
       updateModeTag(tag);
 
       document.getElementById('laci-box').style.display = 'block';
       document.getElementById('laci-nav').style.display = 'flex';
       document.getElementById('btn-tap').className = 'mode-lain';
-      document.getElementById('btn-tap').textContent = 'TAP — ' + (mode === 'doa' ? 'BACA DOA' : 'BACA HADIS');
+      document.getElementById('btn-tap').textContent = modeTapLabel(mode);
       clearMsg('tasbih-err');
       clearMsg('tasbih-ok');
       showScreen('screen-tasbih');
@@ -1269,12 +1326,12 @@
       var laci = activeLacis[laciIndex];
       if (!laci) { laciIndex = 0; laci = activeLacis[0]; }
       // Cari nama kategori berdasarkan timeId laci semasa (berguna untuk Baca Semua)
-      var times = currentMode === 'doa' ? allDoaTimes : allHadisTimes;
+      var times = modeTimes(currentMode);
       var katObj = null;
       for (var i = 0; i < times.length; i++) {
         if (times[i].id === laci.timeId) { katObj = times[i]; break; }
       }
-      var katNama = (katObj && katObj.name) ? katObj.name : (currentMode === 'doa' ? 'Doa' : 'Hadis');
+      var katNama = (katObj && katObj.name) ? katObj.name : modeKatTitle(currentMode);
       // Baris 1: "kategori : [nama kategori]"
       setText('laci-cat', 'kategori : ' + katNama);
       // Baris 2: nama laci sahaja
@@ -1555,6 +1612,8 @@
 
       var coll = currentMode === 'tasbih' ? 'tasbih'
                : currentMode === 'doa'    ? 'doa_tasbih'
+               : currentMode === 'solat'  ? 'solat_tasbih'
+               : currentMode === 'wirid'  ? 'routine_tasbih'
                : 'hadis_tasbih';
       subscribeTasbih(coll, todayKey());
     });
@@ -1566,6 +1625,8 @@
       if (!currentUser) return;
       var coll = currentMode === 'tasbih' ? 'tasbih'
                : currentMode === 'doa'    ? 'doa_tasbih'
+               : currentMode === 'solat'  ? 'solat_tasbih'
+               : currentMode === 'wirid'  ? 'routine_tasbih'
                : 'hadis_tasbih';
       var target = coll === 'tasbih' ? MODE_DAILY_DEFAULTS.tasbih
                  : coll === 'doa_tasbih' ? MODE_DAILY_DEFAULTS.doa
