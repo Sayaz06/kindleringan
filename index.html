@@ -5453,6 +5453,44 @@
       window._loadManualLockState && window._loadManualLockState();
     })();
 
+    // ══════════════════════════════════════════
+    // TARIKH EMAS — tarikh solat taubat disahkan (butang "Done — Solat Taubat" di Laci Perjanjian)
+    // Sumber: users/{uid}/settings/perjanjianCop.doneTs · salinan dalam peranti (papar serta-merta sebelum login)
+    // ══════════════════════════════════════════
+    var TE_BULAN = ['JANUARI', 'FEBRUARI', 'MAC', 'APRIL', 'MEI', 'JUN', 'JULAI', 'OGOS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DISEMBER'];
+    function teTeks(ts) {
+      var d = new Date(ts);
+      return d.getDate() + ' ' + TE_BULAN[d.getMonth()] + ' ' + d.getFullYear();
+    }
+    // Watermark kiri: baris 1 KINDLE RINGAN · baris 2 TARIKH EMAS (berulang ke bawah)
+    function tePapar(ts) {
+      var el = document.getElementById('wm-kiri');
+      if (!el) return;
+      if (!ts) { el.style.backgroundImage = ''; el.style.backgroundSize = ''; el.style.width = ''; return; }
+      var H = 240;
+      var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='30' height='" + H + "'>" +
+        "<line x1='29.5' y1='0' x2='29.5' y2='" + H + "' stroke='#000' stroke-width='1'/>" +
+        "<circle cx='14' cy='6' r='2' fill='#000'/>" +
+        "<text transform='translate(12 " + (H - 8) + ") rotate(-90)' font-family='Georgia,serif' font-size='9' font-weight='bold' letter-spacing='1.6' fill='#000'>KINDLE RINGAN</text>" +
+        "<text transform='translate(25 " + (H - 8) + ") rotate(-90)' font-family='Georgia,serif' font-size='8' letter-spacing='1.2' fill='#000'>TARIKH EMAS · " + teTeks(ts) + "</text>" +
+        "</svg>";
+      el.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+      el.style.backgroundSize = '30px ' + H + 'px';
+      el.style.width = '30px';
+    }
+    function teSet(ts) {
+      try { if (ts) localStorage.setItem('tarikh_emas', String(ts)); else localStorage.removeItem('tarikh_emas'); } catch (e) {}
+      tePapar(ts);
+    }
+    function teMuat() {
+      try { var c = parseInt(localStorage.getItem('tarikh_emas') || '0', 10); if (c) tePapar(c); } catch (e) {}
+      if (!currentUser) return;
+      db.collection('users').doc(currentUser.uid).collection('settings').doc('perjanjianCop').get()
+        .then(function(s) { teSet(s.exists ? (s.data().doneTs || 0) : 0); })
+        .catch(function() {});
+    }
+    teMuat();
+
     auth.onAuthStateChanged(function(user) {
       document.body.classList.remove('auth-checking');
       currentUser = user;
@@ -5460,6 +5498,7 @@
       if (user) {
         setText('menu-user', 'Linked · Login OK');
         loadJQStatus();
+        teMuat();
         subscribeJoggingMotivasi();
 
         window._azanInit(user.uid);
