@@ -6062,9 +6062,10 @@
         S.sr = a; S.srTs = Date.now(); simpanLokal(); cb(true);
       }).catch(function(e) { cb(false, e); });
     }
-    // Bank pasangan — dari game_bank
+    // Bank pasangan — dari game_bank. Cache pendek (2 minit) supaya padanan dari peranti lain (HP ↔ Kindle) cepat sampai.
+    var SEGAR_BANK_MS = 2 * 60 * 1000;
     function muatBank(paksa, cb) {
-      if (!paksa && S.bankTs && Date.now() - S.bankTs < SEGAR_MS) { cb(true); return; }
+      if (!paksa && S.bankTs && Date.now() - S.bankTs < SEGAR_BANK_MS) { cb(true); return; }
       kol('game_bank').get().then(function(snap) {
         var b = {};
         snap.forEach(function(doc) { var d = doc.data(); b[doc.id] = { title: d.title || '', pasangan: d.pasangan || [], dibayar: d.dibayar }; });
@@ -6073,7 +6074,7 @@
     }
     // Senarai kunci yang sudah ada dalam SR game (untuk tahu perkataan mana yang masih BARU)
     function muatGsr(paksa, cb) {
-      if (!paksa && S.gsrTs && Date.now() - S.gsrTs < SEGAR_MS) { cb(true); return; }
+      if (!paksa && S.gsrTs && Date.now() - S.gsrTs < SEGAR_BANK_MS) { cb(true); return; }
       kol('game_sr').get().then(function(snap) {
         var g = {};
         snap.forEach(function(doc) { g[doc.id] = 1; });
@@ -6378,9 +6379,9 @@
       penjaga('gb-watak', 'kapten', 'masuk', 'Memuatkan...', 'gb-cakap');
       muatSR(paksa, function(ok, e) {
         if (!ok) { el('gb-info').textContent = 'Gagal memuat laci SR: ' + ((e && e.message) || ''); return; }
-        muatBank(paksa, function(ok2, e2) {
+        muatBank(true, function(ok2, e2) {
           if (!ok2) { el('gb-info').textContent = 'Gagal memuat bank: ' + ((e2 && e2.message) || ''); return; }
-          muatGsr(false, function() {
+          muatGsr(true, function() {
             // Stok perkataan baru untuk kedai (belum masuk SR Padan)
             var bank = senaraiBank(), baru = 0;
             for (var i = 0; i < bank.length; i++) if (!S.gsr[bank[i].id]) baru++;
@@ -6636,7 +6637,11 @@
       el('gl-pasangan').innerHTML = '';
       el('gl-info').textContent = 'Memuatkan muatan...';
       lukisKapalLaci(false);
-      kol('bahasa_drawers').doc(l.id).get().then(function(s) {
+      // Ambil muatan TERKINI kapal ini dari Firebase dulu (elak tindih padanan yang dibuat di peranti lain)
+      kol('game_bank').doc(l.id).get().then(function(sb) {
+        if (sb.exists) { var d = sb.data(); S.bank[l.id] = { title: d.title || l.title, pasangan: d.pasangan || [], dibayar: d.dibayar }; simpanLokal(); }
+        return kol('bahasa_drawers').doc(l.id).get();
+      }).then(function(s) {
         if (!L || L.id !== l.id) return;
         var notes = s.exists ? String(s.data().notes || '') : '';
         var baris = notes.split('\n');
