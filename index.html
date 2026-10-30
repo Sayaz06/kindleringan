@@ -5971,7 +5971,7 @@
     </div>
     <div class="pj-kotak"><div class="pj-watak" id="gb-watak"></div><div class="pj-cakap" id="gb-cakap"></div></div>
     <button type="button" id="btn-gb-ambil" class="btn btn-primary" style="margin:0 0 8px;display:none;">AMBIL UPAH</button>
-    <button type="button" id="btn-gb-mula" class="btn" style="margin:0 0 10px;">PERGI KE KAPAL KOSONG</button>
+    <button type="button" id="btn-gb-mula" class="btn" style="margin:0 0 10px;">PANGGIL KAPAL KOSONG</button>
     <div class="dp-baki">
       <div>Kapal belayar<b id="gb-laluan">-</b></div>
       <div>Kontena<b id="gb-bungkus">-</b></div>
@@ -6308,7 +6308,7 @@
     }
     function lukisTambat() {
       el('gb-tambat').innerHTML = tambatIdx >= 0 ? htmlKapal(tambatIdx, true) :
-        '<div class="kb kb-sasar"><div class="kb-jeti"><i class="kb-besi"></i></div><div class="kb-kapal"><div class="kb-air">Tempat tambat kosong · tekan PERGI KE KAPAL KOSONG</div></div></div>';
+        '<div class="kb kb-sasar"><div class="kb-jeti"><i class="kb-besi"></i></div><div class="kb-kapal"><div class="kb-air">Tempat tambat kosong · tekan PANGGIL KAPAL KOSONG</div></div></div>';
     }
     // Pelabuhan: ATAS = tempat tambat (kapal kosong / kapal yang belum belayar). BAWAH = kapal yang sudah ada kontena (untuk edit).
     function lukisBank(lompatTerus) {
@@ -6403,7 +6403,7 @@
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gb-id'))) t = t.parentNode;
       if (layar) return;
       if (!t || t === this) {
-        if (this.id === 'gb-tambat') penjaga('gb-watak', 'kapten', 'masuk', 'Tempat tambat kosong. Tekan PERGI KE KAPAL KOSONG dulu.', 'gb-cakap');
+        if (this.id === 'gb-tambat') penjaga('gb-watak', 'kapten', 'masuk', 'Tempat tambat kosong. Tekan PANGGIL KAPAL KOSONG dulu.', 'gb-cakap');
         return;
       }
       var l = S.sr[+t.getAttribute('data-gb-id')], jeti = t.children[0], kapal = t.children[1], xs = [6, 16, 32, 55, 85, 120], i = 0, j = 0;
@@ -6679,7 +6679,7 @@
       simpanBankLaci(p, '', ganti < 0);
     });
     el('gl-dermaga').onclick = belayar;
-    // PERGI KE KAPAL KOSONG → kapal kosong masuk ke tempat tambat (atas) dan diikat. Ketik besi pengikat untuk ke dermaga.
+    // PANGGIL KAPAL KOSONG → kapal kosong masuk ke tempat tambat (atas) dan diikat. Ketik besi pengikat untuk ke dermaga.
     el('btn-gb-mula').onclick = function() {
       if (layar) return;
       if (tambatIdx >= 0) {
@@ -7159,7 +7159,7 @@
           'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik KOTAK pilihan (bawah kapal) untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
           'Kontena kelabu = muatan baru. Ketik BESI BULAT (tali kapal) di jeti (kotak pilihan bawah kapal) → tali dilepas, kelasi naik, kapal keluar ke laut, kembali ke pelabuhan, Kapten kira upah ' + EKO.UPAH_POS + ' coin setiap kontena baru → tekan AMBIL untuk masukkan ke dompet.',
           'Upah sengaja sedikit — ganjaran besar datang daripada menghafal dalam game. Kontena dibuang dari kapal yang sudah belayar → upahnya ditolak semula.',
-          'Pelabuhan: ATAS = TEMPAT TAMBAT. Tekan PERGI KE KAPAL KOSONG → kapal kosong masuk dan diikat pada besi. Ketik besi pengikat → tali dibuka, kelasi lompat naik, kapal ke DERMAGA. Kapal yang ada kontena belum belayar kekal di tempat tambat sampai belayar. BAWAH = KAPAL BERMUATAN (scroll untuk edit, ketik untuk ke dermaga).',
+          'Pelabuhan: ATAS = TEMPAT TAMBAT. Tekan PANGGIL KAPAL KOSONG → kapal kosong masuk dan diikat pada besi. Ketik besi pengikat → tali dibuka, kelasi lompat naik, kapal ke DERMAGA. Kapal yang ada kontena belum belayar kekal di tempat tambat sampai belayar. BAWAH = KAPAL BERMUATAN (scroll untuk edit, ketik untuk ke dermaga).',
           'Perkataan biasa (the, is, a, to...) dikelabukan dan tidak boleh dipilih.',
           'Pasangan yang sama dalam kapal berlainan dikira SATU sahaja dalam game & SR.',
           'Kontena dibuang → dibuang juga dari SR kedai bila tiba gilirannya.'
