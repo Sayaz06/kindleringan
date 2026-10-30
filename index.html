@@ -6170,11 +6170,12 @@
     // Lulus → $1,000,000 masuk tabung (nanti boleh ditukar jadi coin).
     // Pilih soalan: maks 7 SR Jutawan sampai masa + perkataan baru dari Bank; masih tak cukup 15 →
     //   ulang kaji perkataan SR Jutawan yang belum sampai masa (jadual SR tak berubah kecuali dijawab salah).
-    // SR: baru → masuk fasa 1 · SR betul → naik fasa · salah → kembali ke fasa 1.
+    // SR: baru → masuk fasa 1 · SR betul → naik fasa.
+    // SALAH → perkataan itu TIDAK disimpan ke SR (tiada perubahan) & keluar semula sebagai soalan pertama permainan seterusnya.
     var JW_KOL = 'game_sr_jutawan', JW_BIL_SR = 7;
     var JW_HADIAH = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000];
     var JW_BIL = JW_HADIAH.length;
-    var JW = { uid: '', gsr: {}, gsrTs: 0, main: 0, lulus: 0, terbaik: 0, dolar: 0 };
+    var JW = { uid: '', gsr: {}, gsrTs: 0, main: 0, lulus: 0, terbaik: 0, dolar: 0, ulangi: {} };
     var jw = null, jwSedia = false, jwMemilih = false;
 
     function duit(n) {
@@ -6186,15 +6187,15 @@
       if (JW.uid === currentUser.uid) return;
       var d = {};
       try { d = JSON.parse(localStorage.getItem('game_jutawan_v2') || '{}') || {}; } catch (e) { d = {}; }
-      if (d.uid === currentUser.uid) JW = { uid: d.uid, gsr: d.gsr || {}, gsrTs: d.gsrTs || 0, main: d.main || 0, lulus: d.lulus || 0, terbaik: d.terbaik || 0, dolar: d.dolar || 0 };
-      else JW = { uid: currentUser.uid, gsr: {}, gsrTs: 0, main: 0, lulus: 0, terbaik: 0, dolar: 0 };
+      if (d.uid === currentUser.uid) JW = { uid: d.uid, gsr: d.gsr || {}, gsrTs: d.gsrTs || 0, main: d.main || 0, lulus: d.lulus || 0, terbaik: d.terbaik || 0, dolar: d.dolar || 0, ulangi: d.ulangi || {} };
+      else JW = { uid: currentUser.uid, gsr: {}, gsrTs: 0, main: 0, lulus: 0, terbaik: 0, dolar: 0, ulangi: {} };
     }
     function jwSimpan() {
       try { localStorage.setItem('game_jutawan_v2', JSON.stringify(JW)); } catch (e) {}
     }
     function jwSimpanStat() {
       jwSimpan();
-      kol('game_stat').doc('jutawan').set({ main: JW.main, lulus: JW.lulus, terbaik: JW.terbaik, dolar: JW.dolar, updatedAt: Date.now() }, { merge: true }).catch(function() {});
+      kol('game_stat').doc('jutawan').set({ main: JW.main, lulus: JW.lulus, terbaik: JW.terbaik, dolar: JW.dolar, ulangi: Object.keys(JW.ulangi), updatedAt: Date.now() }, { merge: true }).catch(function() {});
     }
     function jwMuat(paksa, cb) {
       if (!paksa && JW.gsrTs && Date.now() - JW.gsrTs < SEGAR_MS) { cb(true); return; }
@@ -6210,6 +6211,8 @@
           JW.lulus = Math.max(JW.lulus, d.lulus || 0);
           JW.terbaik = Math.max(JW.terbaik, d.terbaik || 0);
           JW.dolar = Math.max(JW.dolar, d.dolar || 0);
+          var u = d.ulangi || [];
+          for (var x = 0; x < u.length; x++) JW.ulangi[u[x]] = 1;
         }
         JW.gsrTs = Date.now(); jwSimpan(); cb(true);
       }).catch(function(e) { cb(false, e); });
@@ -6263,12 +6266,23 @@
       jwSedia = true;
     }
     function jwPilih(bank, overdue) {
-      var hasil = [], ada = {}, bilSr = 0, i, ulang = [];
+      var hasil = [], ada = {}, bilSr = 0, i, ulang = [], od = {}, dlmBank = {}, b0;
       function cuba(p) {
         if (hasil.length >= JW_BIL || ada[p.id]) return false;
         ada[p.id] = 1; hasil.push(p);
         return true;
       }
+      // 1) Perkataan yang SALAH dalam permainan lepas → keluar dulu
+      for (i = 0; i < overdue.length; i++) od[overdue[i].id] = overdue[i];
+      for (i = 0; i < bank.length; i++) {
+        b0 = bank[i]; dlmBank[b0.id] = 1;
+        if (!JW.ulangi[b0.id]) continue;
+        if (od[b0.id]) cuba(od[b0.id]);
+        else if (JW.gsr[b0.id]) cuba({ id: b0.id, en: b0.en, bm: b0.bm, ulang: true });
+        else cuba({ id: b0.id, en: b0.en, bm: b0.bm, baru: true });
+      }
+      for (var u in JW.ulangi) if (!dlmBank[u]) delete JW.ulangi[u];
+      // 2) SR Jutawan sampai masa → 3) perkataan baru → 4) baki SR → 5) ulang kaji
       for (i = 0; i < overdue.length && bilSr < JW_BIL_SR; i++) if (cuba(overdue[i])) bilSr++;
       for (i = 0; i < bank.length && hasil.length < JW_BIL; i++) if (!JW.gsr[bank[i].id]) cuba({ id: bank[i].id, en: bank[i].en, bm: bank[i].bm, baru: true });
       for (i = 0; i < overdue.length && hasil.length < JW_BIL; i++) cuba(overdue[i]);
@@ -6350,6 +6364,9 @@
     function jwSr(p, betul) {
       var ref = kol(JW_KOL).doc(p.id), now = Date.now();
       function gagal(e) { el('jws-status').textContent = 'Gagal simpan SR Jutawan: ' + (e.message || e); }
+      // Salah → tak masuk / tak ubah SR; tandakan untuk keluar semula permainan seterusnya
+      if (!betul) { JW.ulangi[p.id] = 1; jwSimpan(); return; }
+      if (JW.ulangi[p.id]) { delete JW.ulangi[p.id]; jwSimpan(); }
       if (p.baru) {
         JW.gsr[p.id] = 1; jwSimpan();
         ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(gagal);
@@ -6381,7 +6398,10 @@
       } else {
         el('jwm-tajuk').textContent = sebab === 'kalah' ? 'SALAH JAWAPAN' : 'KELUAR';
         el('jwm-duit').textContent = '$0';
-        if (sebab === 'kalah') { var s = jw.soalan[jw.i]; sub = 'Jawapan betul: ' + s.p.bm + ' = ' + s.p.en + '\n'; }
+        if (sebab === 'kalah') {
+          var s = jw.soalan[jw.i];
+          sub = 'Jawapan betul: ' + s.p.bm + ' = ' + s.p.en + '\nPerkataan ini akan keluar semula dalam permainan seterusnya.\n';
+        }
         sub += 'Wang ' + duit(jw.menang) + ' hangus. Kena ulang Level ' + lv + '.';
         el('btn-jwm-level').textContent = 'Ulang Level ' + lv;
       }
