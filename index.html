@@ -6202,14 +6202,21 @@
       el('gb-laluan').textContent = siap + '/' + S.sr.length;
       el('gb-bungkus').textContent = jum;
       el('gb-info').textContent = S.sr.length ? '' : 'Tiada laluan lagi (laci Bahasa belum masuk SR).';
-      // Terus ke laci PALING ATAS yang belum dipadankan
+      // Terus ke laluan PALING ATAS yang belum dihantar (ulang sekali lagi selepas skrin siap dilukis)
       for (i = 0; i < bekas.children.length; i++) {
         if (bekas.children[i].className.indexOf('gb-siap-ada') === -1) {
-          var sasaran = bekas.children[i];
-          setTimeout(function() {
+          var sasaran = bekas.children[i], yAkhir = -1;
+          var lompat = function() {
+            if (!sasaran.offsetParent) return;                                   // skrin dah bertukar
+            if (yAkhir !== -1 && Math.abs(window.pageYOffset - yAkhir) > 5) return; // pengguna dah skrol sendiri
             try { sasaran.scrollIntoView(true); } catch (e) {}
             window.scrollBy(0, -70);
-          }, 30);
+            yAkhir = window.pageYOffset;
+          };
+          // Ulang beberapa kali — kalau tinggi skrin berubah selepas dilukis (font / ayat posmen), tetap sampai ke laluan betul
+          setTimeout(lompat, 60);
+          setTimeout(lompat, 400);
+          setTimeout(lompat, 1200);
           break;
         }
       }
@@ -6225,7 +6232,6 @@
         if (!ok) { el('gb-info').textContent = 'Gagal memuat laci SR: ' + ((e && e.message) || ''); return; }
         muatBank(paksa, function(ok2, e2) {
           if (!ok2) { el('gb-info').textContent = 'Gagal memuat bank: ' + ((e2 && e2.message) || ''); return; }
-          lukisBank();
           muatGsr(false, function() {
             // Stok perkataan baru untuk kedai (belum masuk SR Padan)
             var bank = senaraiBank(), baru = 0;
@@ -6233,6 +6239,8 @@
             el('gb-cakap').textContent = baru < BIL ?
               'Tolong! Stok perkataan baru tinggal ' + baru + '. Kedai-kedai mini game hampir tutup! Hantar bungkusan, saya bayar ' + EKO.UPAH_POS + ' coin setiap satu.' :
               'Hai! Terima kasih datang. Setiap bungkusan yang dihantar menghidupkan kedai mini game. Upah ' + EKO.UPAH_POS + ' coin setiap bungkusan.';
+            // Lukis senarai SELEPAS ayat posmen siap (tinggi skrin dah tetap) → terus lompat ke laluan pertama yang belum dihantar
+            lukisBank();
           });
           dpMuat(function(ok3) { el('gb-coin').textContent = ok3 ? DP.coin : '-'; });
         });
