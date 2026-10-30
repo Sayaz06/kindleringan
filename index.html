@@ -5714,6 +5714,7 @@
     /* Jeti = kotak pilihan perkataan. Besi bulat + tali + kelasi berdiri di atasnya */
     .kp-jeti { position: relative; margin-top: 26px; }
     .kp-jeti #gl-pilihan { margin: 0; border-width: 3px; border-radius: 0; }
+    .kp-ketik { display: block; font-size: 0.6rem; margin-top: 2px; letter-spacing: 1px; }
     .kp-tambat { position: absolute; left: 6px; bottom: 100%; width: 80px; height: 52px; cursor: pointer; z-index: 2; }
     .kp-tambat svg { display: block; width: 80px; height: 52px; overflow: visible; }
     .kt-kosong { width: 100%; text-align: center; font-size: 0.8rem; padding: 10px 0; border: 2px dashed #000; }
@@ -6387,16 +6388,29 @@
       var t = e.target;
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gb-id'))) t = t.parentNode;
       if (!t || t === this || layar) return;
-      var l = S.sr[+t.getAttribute('data-gb-id')], kapal = t.children[1], xs = [6, 16, 32, 55, 85, 120], i = 0;
+      var l = S.sr[+t.getAttribute('data-gb-id')], jeti = t.children[0], kapal = t.children[1], xs = [6, 16, 32, 55, 85, 120], i = 0, j = 0;
       if (!l) return;
       layar = true;
-      t.className = 'kb kb-lepas';
-      (function gerak() {
-        var tr = 'translateX(' + xs[i] + '%)';
-        kapal.style.webkitTransform = tr; kapal.style.transform = tr;
-        i++;
-        if (i < xs.length) setTimeout(gerak, 200);
-        else setTimeout(function() { layar = false; bukaLaci(l); }, 200);
+      t.className = 'kb kb-sasar kb-lepas';
+      var orang = t.querySelector('.kb-orang');
+      if (!orang) {
+        orang = document.createElement('i'); orang.className = 'kb-orang';
+        orang.innerHTML = '<svg viewBox="0 0 9 16" xmlns="http://www.w3.org/2000/svg"><circle cx="4.5" cy="2.8" r="2.2" fill="#fff" stroke="#000" stroke-width="1.2"/><path d="M4.5 5 V10.5 M1 7.5 H8 M4.5 10.5 L2 16 M4.5 10.5 L7 16" fill="none" stroke="#000" stroke-width="1.4"/></svg>';
+        jeti.appendChild(orang);
+      }
+      var lompat = [[8, -17], [16, -23], [26, -27], [36, -24]];
+      (function langkah() {
+        if (j < lompat.length) { orang.style.left = lompat[j][0] + 'px'; orang.style.top = lompat[j][1] + 'px'; j++; setTimeout(langkah, 220); return; }
+        // Kelasi mendarat atas dek → kapal bergerak bersama kelasi
+        orang.style.left = '6px'; orang.style.top = 'auto'; orang.style.bottom = '23px';
+        kapal.appendChild(orang);
+        (function gerak() {
+          var tr = 'translateX(' + xs[i] + '%)';
+          kapal.style.webkitTransform = tr; kapal.style.transform = tr;
+          i++;
+          if (i < xs.length) setTimeout(gerak, 200);
+          else setTimeout(function() { layar = false; bukaLaci(l); }, 200);
+        })();
       })();
     });
     // Kapal di skrin muat: kontena bertimbun atas dek + dermaga (tali diikat pada besi bulat)
@@ -6459,7 +6473,6 @@
         if (S.bank[id]) S.bank[id].dibayar = n;
         simpanLokal();
         DP.upahTunggu = (DP.upahTunggu || 0) + upah;
-        try { el('gl-kapal').scrollIntoView(true); window.scrollBy(0, -40); } catch (e) {}
         animDermaga(['lepas', 'jalan', 'lompat', 'naik'], 300, function() {
           el('gl-kelasi').style.display = 'block';
           lukisLaci();
@@ -6524,8 +6537,9 @@
       return w.join(' ');
     }
     function lukisPilihan() {
-      var en = teksPilihan('en'), bm = teksPilihan('bm');
-      el('gl-pilihan').textContent = (en || bm) ? ((en || '…') + '  =  ' + (bm || '…')) + (en && bm ? '  ·  KETIK UNTUK MUAT' : '') : '—';
+      var en = teksPilihan('en'), bm = teksPilihan('bm'), kotak = el('gl-pilihan');
+      kotak.textContent = (en || bm) ? ((en || '…') + '  =  ' + (bm || '…')) : '—';
+      if (en && bm) { var k = document.createElement('span'); k.className = 'kp-ketik'; k.textContent = 'ketik untuk muat'; kotak.appendChild(k); }
     }
     function lukisLaci() {
       var p = pasanganLaci(), adaEn = {}, adaBm = {}, i, j;
