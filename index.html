@@ -480,6 +480,8 @@
     <button id="btn-go-fakta" class="btn">Laci Fakta</button>
     <!-- QURAN — sesi Quran (kemajuan kindle_quran/current), pusing 10 ayat setiap sesi -->
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
+    <!-- GAME PADAN — padankan perkataan SR Bahasa: English ↔ BM -->
+    <button id="btn-go-game" class="btn">[ GAME PADAN ]</button>
     <!-- SOALAN FAKTA: ON → Laci Fakta papar SOALAN sahaja (baris yang ada soalan) · tiada SR -->
     <button id="btn-soalan-fakta" class="btn" style="margin-top:8px;">SOALAN FAKTA: OFF</button>
     <button id="btn-jq" class="btn" style="margin-top:8px;">JQ: OFF</button>
@@ -5527,6 +5529,460 @@
         setText('login-msg', '');
       }
     });
+  </script>
+
+  <!-- ══════════ GAME PADAN + BANK PERKATAAN (perkataan dari laci SR Bahasa) ══════════ -->
+  <style>
+    #gp-papan { display: flex; gap: 8px; margin-top: 6px; }
+    .gp-lajur { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .gp-k {
+      display: block; width: 100%; min-height: 52px; padding: 8px 6px; margin: 0;
+      border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
+      font-family: inherit; font-size: 1rem; font-weight: bold; line-height: 1.2;
+      text-align: center; word-break: break-word; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .gp-lajur.gp-en .gp-k { background: #000; color: #fff; }
+    .gp-k.gp-pilih { outline: 4px solid #000; outline-offset: 2px; text-decoration: underline; }
+    .gp-lajur.gp-en .gp-k.gp-pilih { background: #fff; color: #000; }
+    .gp-k.gp-salah { border-style: dashed; border-width: 3px; }
+    .gp-lajur.gp-en .gp-k.gp-salah { background: #fff; color: #000; }
+    .gp-k.gp-siap { visibility: hidden; }
+    #gp-info, #gb-info, #gl-info { font-size: 0.8rem; text-align: center; margin: 6px 0 2px; min-height: 1.2em; white-space: pre-line; }
+    #gp-tamat { display: none; border: 2px solid #000; border-radius: 8px; padding: 14px 10px; margin-top: 10px; text-align: center; }
+    #gp-tamat .gp-skor { font-size: 2.2rem; font-weight: bold; line-height: 1.1; }
+    .gp-baris { display: flex; gap: 6px; margin-top: 10px; }
+    .gp-baris .btn { margin: 0; }
+    /* BANK — senarai laci SR */
+    .gb-laci { display: block; width: 100%; text-align: left; padding: 8px 10px; margin: 0 0 6px; border: 2px solid #000; border-radius: 6px; background: #fff; color: #000; font-family: inherit; font-size: 0.95rem; font-weight: bold; cursor: pointer; }
+    .gb-laci .gb-sub { display: block; font-size: 0.72rem; font-weight: normal; margin-top: 2px; }
+    .gb-laci.gb-siap-ada { border-style: double; border-width: 4px; }
+    /* BANK — padan perkataan dalam ayat laci */
+    .gl-baris { border: 2px solid #000; border-radius: 8px; padding: 6px 8px; margin: 6px 0; }
+    .gl-en, .gl-bm { line-height: 2.1; font-size: 1rem; }
+    .gl-en { font-weight: bold; }
+    .gl-bm { border-top: 1px dashed #000; margin-top: 4px; padding-top: 4px; }
+    .gl-w { display: inline-block; padding: 0 4px; border: 1px solid transparent; border-radius: 4px; cursor: pointer; }
+    .gl-w.gl-biasa { color: #888; font-weight: normal; cursor: default; }
+    .gl-w.gl-ada { text-decoration: underline; text-decoration-thickness: 2px; }
+    .gl-w.gl-on { background: #000; color: #fff; border-color: #000; }
+    #gl-pilihan { border: 2px solid #000; border-radius: 8px; padding: 8px; margin: 6px 0; font-size: 0.95rem; text-align: center; min-height: 1.3em; }
+    .gl-pas { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #000; padding: 6px 2px; font-size: 0.95rem; }
+    .gl-pas span { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+    .gl-pas button { flex: 0 0 auto; padding: 4px 10px; border: 2px solid #000; border-radius: 5px; background: #fff; font-family: inherit; font-weight: bold; cursor: pointer; }
+  </style>
+  <div id="screen-game" class="screen">
+    <div class="status-bar" id="gp-status">GAME PADAN</div>
+    <div id="gp-info"></div>
+    <div id="gp-papan">
+      <div class="gp-lajur gp-en" id="gp-kiri"></div>
+      <div class="gp-lajur gp-bm" id="gp-kanan"></div>
+    </div>
+    <div id="gp-tamat">
+      <div class="gp-skor" id="gp-skor"></div>
+      <div id="gp-skor-sub" style="font-size:0.85rem;margin-top:4px;white-space:pre-line;"></div>
+    </div>
+    <div class="gp-baris">
+      <button id="btn-gp-menu" class="btn">Menu</button>
+      <button id="btn-gp-baru" class="btn btn-primary">Pusingan Baru</button>
+    </div>
+    <button id="btn-gp-bank" class="btn" style="margin-top:6px;">BANK PERKATAAN (padan sendiri)</button>
+  </div>
+  <div id="screen-gbank" class="screen">
+    <div class="status-bar" id="gb-status">BANK PERKATAAN</div>
+    <div id="gb-info"></div>
+    <div id="gb-senarai"></div>
+    <div class="gp-baris">
+      <button id="btn-gb-game" class="btn">Ke Game</button>
+      <button id="btn-gb-segar" class="btn">Segar senarai laci SR</button>
+    </div>
+  </div>
+  <div id="screen-gbank-laci" class="screen">
+    <div class="status-bar" id="gl-status">LACI</div>
+    <div id="gl-info">Tekan perkataan English, kemudian maksudnya dalam ayat BM (boleh lebih dari satu perkataan).</div>
+    <div id="gl-pilihan">—</div>
+    <div class="gp-baris" style="margin-top:0;">
+      <button id="btn-gl-batal" class="btn">Batal pilih</button>
+      <button id="btn-gl-simpan" class="btn btn-primary">Simpan pasangan</button>
+    </div>
+    <div id="gl-ayat"></div>
+    <div style="font-weight:bold;margin-top:10px;border-bottom:2px solid #000;padding-bottom:2px;">Pasangan dalam laci ini</div>
+    <div id="gl-pasangan"></div>
+    <button id="btn-gl-balik" class="btn" style="margin-top:10px;">Kembali ke Bank</button>
+  </div>
+  <script>
+  // ══ GAME PADAN + BANK PERKATAAN (Kindle Ringan) — ES5 sahaja ══
+  // 1) BANK: senarai laci Bahasa yang pernah masuk SR (users/{uid}/bahasa_sr_queue). Buka satu laci → papar setiap baris
+  //    notes "ayat English = ayat terjemahan" sebagai perkataan boleh ditekan. Pengguna padankan sendiri (EN ↔ BM).
+  //    Perkataan biasa (the, is, a, to...) dikelabukan & tidak boleh dipilih.
+  //    Simpan: users/{uid}/game_bank/{drawerId} { title, pasangan:[{en,bm}], updatedAt }
+  // 2) GAME: guna SEMUA pasangan dalam bank. 6 pasangan setiap pusingan, sistem kotak (dalam peranti):
+  //    0 → bila-bila · 1 → 1 hari · 2 → 3 hari · 3 → 7 hari · 4 (DIKUASAI) → 14 hari
+  //    Betul kali pertama → naik kotak · salah → kotak 0 · maks 3 pasangan baru setiap pusingan.
+  // Senarai laci SR & bank disalin dalam peranti (dibaca semula dari Firebase paling kerap 12 jam sekali).
+  (function() {
+    var KUNCI = 'game_padan_v2', SEGAR_MS = 12 * 60 * 60 * 1000, BIL = 6, MAKS_BARU = 3;
+    var SELANG = [0, 864e5, 3 * 864e5, 7 * 864e5, 14 * 864e5];
+    var BIASA = {};
+    ('a an the is am are was were be been being to of in on at by for with from and or but if so as it its this that ' +
+     'these those i you he she we they me him her us them my your his our their mine yours do does did done have has had ' +
+     'not no yes will would can could shall should may might must there here what which who whom whose when where why how ' +
+     'all any some very too also just than then into onto up down out about over after before because while than each ' +
+     'every both either neither such own same other another more most much many few only again ever still yet oh ok').split(' ')
+      .forEach(function(w) { BIASA[w] = 1; });
+    var S = { uid: '', sr: [], srTs: 0, bank: {}, bankTs: 0, stat: {} };
+    var pus = null, pilihan = null, kunciSalah = false, bilPusingan = 0;
+    var L = null; // laci yang sedang dipadankan
+
+    function el(id) { return document.getElementById(id); }
+    function kol(n) { return db.collection('users').doc(currentUser.uid).collection(n); }
+    function muatLokal() {
+      if (S.uid === currentUser.uid) return;
+      try {
+        var d = JSON.parse(localStorage.getItem(KUNCI) || '{}') || {};
+        if (d.uid === currentUser.uid) { S.sr = d.sr || []; S.srTs = d.srTs || 0; S.bank = d.bank || {}; S.bankTs = d.bankTs || 0; S.stat = d.stat || {}; }
+        else { S.sr = []; S.srTs = 0; S.bank = {}; S.bankTs = 0; S.stat = {}; }
+      } catch (e) { S.sr = []; S.srTs = 0; S.bank = {}; S.bankTs = 0; S.stat = {}; }
+      S.uid = currentUser.uid;
+    }
+    function simpanLokal() {
+      try { localStorage.setItem(KUNCI, JSON.stringify(S)); } catch (e) {}
+    }
+    // Senarai laci SR (ID laci + tajuk) — dari bahasa_sr_queue
+    function muatSR(paksa, cb) {
+      if (!paksa && S.sr.length && Date.now() - S.srTs < SEGAR_MS) { cb(true); return; }
+      kol('bahasa_sr_queue').get().then(function(snap) {
+        var a = [], ada = {};
+        snap.forEach(function(doc) {
+          var d = doc.data(), id = d.drawerId || doc.id;
+          if (ada[id]) return;
+          ada[id] = 1;
+          a.push({ id: id, title: d.drawerTitle || '(Tanpa tajuk)', t: d.createdAt || 0 });
+        });
+        a.sort(function(x, y) { return x.t - y.t; });
+        S.sr = a; S.srTs = Date.now(); simpanLokal(); cb(true);
+      }).catch(function(e) { cb(false, e); });
+    }
+    // Bank pasangan — dari game_bank
+    function muatBank(paksa, cb) {
+      if (!paksa && S.bankTs && Date.now() - S.bankTs < SEGAR_MS) { cb(true); return; }
+      kol('game_bank').get().then(function(snap) {
+        var b = {};
+        snap.forEach(function(doc) { var d = doc.data(); b[doc.id] = { title: d.title || '', pasangan: d.pasangan || [] }; });
+        S.bank = b; S.bankTs = Date.now(); simpanLokal(); cb(true);
+      }).catch(function(e) { cb(false, e); });
+    }
+
+    // ══ GAME ══
+    function senaraiGame() {
+      var a = [], ada = {};
+      for (var id in S.bank) {
+        var p = S.bank[id].pasangan || [];
+        for (var i = 0; i < p.length; i++) {
+          if (!p[i].en || !p[i].bm) continue;
+          var k = (p[i].en + '=' + p[i].bm).toLowerCase();
+          if (ada[k]) continue;
+          ada[k] = 1;
+          a.push({ id: k, en: p[i].en, bm: p[i].bm });
+        }
+      }
+      return a;
+    }
+    function kocok(a) {
+      for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; }
+      return a;
+    }
+    function kemaskiniStatus(senarai) {
+      var n = 0;
+      for (var i = 0; i < senarai.length; i++) { var s = S.stat[senarai[i].id]; if (s && s.k >= 4) n++; }
+      el('gp-status').textContent = 'GAME PADAN · Pusingan ' + bilPusingan + ' · Dikuasai ' + n + '/' + senarai.length;
+    }
+    function pilihPasangan(senarai) {
+      var kini = Date.now(), sampai = [], baru = [], lain = [];
+      for (var i = 0; i < senarai.length; i++) {
+        var p = senarai[i], s = S.stat[p.id];
+        if (!s) baru.push({ p: p, k: -1, t: 0 });
+        else if (kini - s.t >= SELANG[Math.min(s.k, 4)]) sampai.push({ p: p, k: s.k, t: s.t });
+        else lain.push({ p: p, k: s.k, t: s.t });
+      }
+      sampai.sort(function(a, b) { return (a.k - b.k) || (a.t - b.t); });
+      kocok(baru);
+      lain.sort(function(a, b) { return a.t - b.t; });
+      var hasil = [], adaEn = {}, adaBm = {}, bilBaru = 0, k;
+      function cuba(x) {
+        if (hasil.length >= BIL) return;
+        var en = x.p.en.toLowerCase(), bm = x.p.bm.toLowerCase();
+        if (adaEn[en] || adaBm[bm]) return;
+        adaEn[en] = 1; adaBm[bm] = 1; hasil.push(x.p);
+      }
+      for (k = 0; k < sampai.length && hasil.length < BIL - Math.min(MAKS_BARU, baru.length); k++) cuba(sampai[k]);
+      for (k = 0; k < baru.length && bilBaru < MAKS_BARU && hasil.length < BIL; k++) { var n0 = hasil.length; cuba(baru[k]); if (hasil.length > n0) bilBaru++; }
+      for (k = 0; k < sampai.length && hasil.length < BIL; k++) cuba(sampai[k]);
+      for (k = 0; k < baru.length && hasil.length < BIL; k++) cuba(baru[k]);
+      for (k = 0; k < lain.length && hasil.length < BIL; k++) cuba(lain[k]);
+      return hasil;
+    }
+    function lukisPapan() {
+      var kiri = el('gp-kiri'), kanan = el('gp-kanan'), h1 = '', h2 = '', i;
+      var en = kocok(pus.pasangan.slice()), bm = kocok(pus.pasangan.slice());
+      for (i = 0; i < en.length; i++) h1 += '<button type="button" class="gp-k" data-gp-sisi="en" data-gp-i="' + pus.pasangan.indexOf(en[i]) + '"></button>';
+      for (i = 0; i < bm.length; i++) h2 += '<button type="button" class="gp-k" data-gp-sisi="bm" data-gp-i="' + pus.pasangan.indexOf(bm[i]) + '"></button>';
+      kiri.innerHTML = h1; kanan.innerHTML = h2;
+      for (i = 0; i < en.length; i++) kiri.children[i].textContent = en[i].en;
+      for (i = 0; i < bm.length; i++) kanan.children[i].textContent = bm[i].bm;
+    }
+    function mulaPusingan() {
+      pilihan = null; kunciSalah = false;
+      el('gp-tamat').style.display = 'none';
+      var senarai = senaraiGame(), pas = pilihPasangan(senarai);
+      if (pas.length < 2) {
+        pus = null;
+        el('gp-papan').style.display = 'none';
+        el('gp-info').textContent = senarai.length
+          ? 'Pasangan dalam bank tak cukup untuk satu pusingan (perlu sekurang-kurangnya 2).'
+          : 'Bank perkataan masih kosong.\nTekan BANK PERKATAAN untuk padankan perkataan dari laci SR.';
+        kemaskiniStatus(senarai);
+        return;
+      }
+      bilPusingan++;
+      pus = { pasangan: pas, baki: pas.length, salah: {}, cubaanSalah: 0 };
+      el('gp-papan').style.display = 'flex';
+      lukisPapan();
+      el('gp-info').textContent = 'Tekan perkataan English, kemudian maksudnya dalam BM.';
+      kemaskiniStatus(senarai);
+    }
+    function tamatPusingan() {
+      var betul = pus.pasangan.length - Object.keys(pus.salah).length;
+      el('gp-papan').style.display = 'none';
+      el('gp-tamat').style.display = 'block';
+      el('gp-skor').textContent = betul + ' / ' + pus.pasangan.length;
+      el('gp-skor-sub').textContent = 'betul kali pertama' + (pus.cubaanSalah ? ' · ' + pus.cubaanSalah + ' cubaan salah' : '') +
+        '\nPerkataan yang salah akan muncul semula lebih cepat.';
+      el('gp-info').textContent = '';
+      kemaskiniStatus(senaraiGame());
+    }
+    function padan(a, b, p) {
+      var s = S.stat[p.id];
+      if (pus.salah[p.id]) s = { k: 0 };
+      else s = { k: s ? Math.min(4, s.k + 1) : 1 };
+      s.t = Date.now();
+      S.stat[p.id] = s;
+      simpanLokal();
+      a.className = 'gp-k gp-siap'; b.className = 'gp-k gp-siap';
+      pus.baki--;
+      el('gp-info').textContent = p.en + ' = ' + p.bm;
+      if (pus.baki <= 0) setTimeout(tamatPusingan, 700);
+    }
+    el('gp-papan').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gp-i'))) t = t.parentNode;
+      if (!t || t === this || !pus || kunciSalah || t.className.indexOf('gp-siap') !== -1) return;
+      if (!pilihan) { pilihan = t; t.className = 'gp-k gp-pilih'; return; }
+      if (pilihan === t) { t.className = 'gp-k'; pilihan = null; return; }
+      if (pilihan.getAttribute('data-gp-sisi') === t.getAttribute('data-gp-sisi')) {
+        pilihan.className = 'gp-k'; pilihan = t; t.className = 'gp-k gp-pilih'; return;
+      }
+      var a = pilihan, b = t, pa = pus.pasangan[+a.getAttribute('data-gp-i')], pb = pus.pasangan[+b.getAttribute('data-gp-i')];
+      pilihan = null;
+      if (pa === pb) { padan(a, b, pa); return; }
+      pus.salah[pa.id] = 1; pus.salah[pb.id] = 1; pus.cubaanSalah++;
+      a.className = 'gp-k gp-salah'; b.className = 'gp-k gp-salah';
+      el('gp-info').textContent = 'Bukan pasangan. Cuba lagi.';
+      kunciSalah = true;
+      setTimeout(function() {
+        kunciSalah = false;
+        if (a.className.indexOf('gp-siap') === -1) a.className = 'gp-k';
+        if (b.className.indexOf('gp-siap') === -1) b.className = 'gp-k';
+      }, 700);
+    });
+    function bukaGame() {
+      if (!currentUser) return;
+      muatLokal();
+      showScreen('screen-game');
+      bilPusingan = 0;
+      el('gp-papan').style.display = 'none';
+      el('gp-tamat').style.display = 'none';
+      el('gp-info').textContent = 'Memuatkan bank perkataan...';
+      muatBank(false, function(ok, e) {
+        if (!ok) { el('gp-info').textContent = 'Gagal memuat bank: ' + ((e && e.message) || ''); return; }
+        mulaPusingan();
+      });
+    }
+
+    // ══ BANK — senarai laci SR ══
+    function lukisBank() {
+      var h = '', jum = 0, siap = 0;
+      for (var i = 0; i < S.sr.length; i++) {
+        var l = S.sr[i], b = S.bank[l.id], n = b ? (b.pasangan || []).length : 0;
+        jum += n; if (n) siap++;
+        h += '<button type="button" class="gb-laci' + (n ? ' gb-siap-ada' : '') + '" data-gb-id="' + i + '"></button>';
+      }
+      var bekas = el('gb-senarai');
+      bekas.innerHTML = h;
+      for (i = 0; i < S.sr.length; i++) {
+        var b2 = S.bank[S.sr[i].id], n2 = b2 ? (b2.pasangan || []).length : 0, btn = bekas.children[i];
+        btn.textContent = S.sr[i].title;
+        var sub = document.createElement('span');
+        sub.className = 'gb-sub';
+        sub.textContent = n2 ? (n2 + ' pasangan') : 'Belum dipadankan';
+        btn.appendChild(sub);
+      }
+      el('gb-status').textContent = 'BANK · ' + jum + ' pasangan · ' + siap + '/' + S.sr.length + ' laci';
+      el('gb-info').textContent = S.sr.length ? 'Pilih laci untuk padankan perkataan.' : 'Tiada laci Bahasa dalam SR lagi.';
+    }
+    function bukaBank(paksa) {
+      if (!currentUser) return;
+      muatLokal();
+      showScreen('screen-gbank');
+      el('gb-info').textContent = 'Memuatkan laci SR...';
+      muatSR(paksa, function(ok, e) {
+        if (!ok) { el('gb-info').textContent = 'Gagal memuat laci SR: ' + ((e && e.message) || ''); return; }
+        muatBank(paksa, function(ok2, e2) {
+          if (!ok2) { el('gb-info').textContent = 'Gagal memuat bank: ' + ((e2 && e2.message) || ''); return; }
+          lukisBank();
+        });
+      });
+    }
+    el('gb-senarai').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gb-id'))) t = t.parentNode;
+      if (!t || t === this) return;
+      var l = S.sr[+t.getAttribute('data-gb-id')];
+      if (l) bukaLaci(l);
+    });
+
+    // ══ BANK — padan perkataan dalam satu laci ══
+    function token(s) { return String(s || '').match(/[A-Za-z\u00C0-\u024F0-9'\u2019-]+|[^A-Za-z\u00C0-\u024F0-9'\u2019-]+/g) || []; }
+    function adalahKata(t) { return /[A-Za-z\u00C0-\u024F0-9]/.test(t); }
+    function kataBiasa(t) {
+      var w = t.toLowerCase();
+      return !!BIASA[w] || /['\u2019]/.test(w) || /^\d+$/.test(w);
+    }
+    function pasanganLaci() {
+      var b = S.bank[L.id];
+      return b ? (b.pasangan || []) : [];
+    }
+    function teksPilihan(sisi) {
+      if (L.pilih.b < 0) return '';
+      var tok = L.baris[L.pilih.b][sisi], idx = [];
+      for (var k in L.pilih[sisi]) idx.push(+k);
+      idx.sort(function(a, b) { return a - b; });
+      var w = [];
+      for (var i = 0; i < idx.length; i++) w.push(tok[idx[i]]);
+      return w.join(' ');
+    }
+    function lukisPilihan() {
+      var en = teksPilihan('en'), bm = teksPilihan('bm');
+      el('gl-pilihan').textContent = (en || bm) ? ((en || '…') + '  =  ' + (bm || '…')) : '—';
+    }
+    function lukisLaci() {
+      var p = pasanganLaci(), adaEn = {}, adaBm = {}, i, j;
+      for (i = 0; i < p.length; i++) {
+        String(p[i].en).toLowerCase().split(' ').forEach(function(w) { adaEn[w] = 1; });
+        String(p[i].bm).toLowerCase().split(' ').forEach(function(w) { adaBm[w] = 1; });
+      }
+      var bekas = el('gl-ayat');
+      bekas.innerHTML = '';
+      for (i = 0; i < L.baris.length; i++) {
+        var kotak = document.createElement('div'); kotak.className = 'gl-baris';
+        ['en', 'bm'].forEach(function(sisi) {
+          var baris = document.createElement('div'); baris.className = sisi === 'en' ? 'gl-en' : 'gl-bm';
+          var tok = L.baris[i][sisi];
+          for (j = 0; j < tok.length; j++) {
+            if (!adalahKata(tok[j])) { baris.appendChild(document.createTextNode(tok[j])); continue; }
+            var s = document.createElement('span');
+            var biasa = sisi === 'en' && kataBiasa(tok[j]);
+            var on = L.pilih.b === i && L.pilih[sisi][j];
+            var ada = (sisi === 'en' ? adaEn : adaBm)[tok[j].toLowerCase()];
+            s.className = 'gl-w' + (biasa ? ' gl-biasa' : '') + (ada ? ' gl-ada' : '') + (on ? ' gl-on' : '');
+            if (!biasa) { s.setAttribute('data-gl-b', i); s.setAttribute('data-gl-s', sisi); s.setAttribute('data-gl-w', j); }
+            s.textContent = tok[j];
+            baris.appendChild(s);
+          }
+          kotak.appendChild(baris);
+        });
+        bekas.appendChild(kotak);
+      }
+      if (!L.baris.length) bekas.innerHTML = '<div class="msg">Laci ini tiada ayat (notes kosong).</div>';
+      var senarai = el('gl-pasangan');
+      senarai.innerHTML = '';
+      for (i = 0; i < p.length; i++) {
+        var row = document.createElement('div'); row.className = 'gl-pas';
+        var sp = document.createElement('span'); sp.textContent = p[i].en + '  =  ' + p[i].bm;
+        var bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Buang'; bt.setAttribute('data-gl-buang', i);
+        row.appendChild(sp); row.appendChild(bt); senarai.appendChild(row);
+      }
+      if (!p.length) senarai.innerHTML = '<div class="msg">Belum ada pasangan.</div>';
+      el('gl-status').textContent = L.title + ' · ' + p.length + ' pasangan';
+      lukisPilihan();
+    }
+    function resetPilih() { L.pilih = { b: -1, en: {}, bm: {} }; }
+    function simpanBankLaci(pasangan, mesej) {
+      var data = { title: L.title, pasangan: pasangan, updatedAt: Date.now() };
+      el('gl-info').textContent = 'Menyimpan...';
+      var id = L.id;
+      kol('game_bank').doc(id).set(data).then(function() {
+        S.bank[id] = { title: data.title, pasangan: pasangan };
+        simpanLokal();
+        if (L && L.id === id) { el('gl-info').textContent = mesej; lukisLaci(); }
+      }).catch(function(e) { el('gl-info').textContent = 'Gagal simpan: ' + (e.message || e); });
+    }
+    function bukaLaci(l) {
+      L = { id: l.id, title: l.title, baris: [], pilih: null };
+      resetPilih();
+      showScreen('screen-gbank-laci');
+      el('gl-status').textContent = l.title;
+      el('gl-ayat').innerHTML = '';
+      el('gl-pasangan').innerHTML = '';
+      el('gl-info').textContent = 'Memuatkan ayat laci...';
+      kol('bahasa_drawers').doc(l.id).get().then(function(s) {
+        if (!L || L.id !== l.id) return;
+        var notes = s.exists ? String(s.data().notes || '') : '';
+        var baris = notes.split('\n');
+        for (var i = 0; i < baris.length; i++) {
+          var b = baris[i].trim();
+          if (!b) continue;
+          var eq = b.indexOf('=');
+          L.baris.push({ en: token(eq === -1 ? b : b.slice(0, eq).trim()), bm: token(eq === -1 ? '' : b.slice(eq + 1).trim()) });
+        }
+        el('gl-info').textContent = 'Tekan perkataan English, kemudian maksudnya dalam ayat BM (boleh lebih dari satu perkataan).';
+        lukisLaci();
+      }).catch(function(e) { el('gl-info').textContent = 'Gagal memuat laci: ' + (e.message || e); });
+    }
+    el('gl-ayat').addEventListener('click', function(e) {
+      var t = e.target;
+      if (!L || !t || !t.getAttribute || t.getAttribute('data-gl-b') === null) return;
+      var b = +t.getAttribute('data-gl-b'), sisi = t.getAttribute('data-gl-s'), w = +t.getAttribute('data-gl-w');
+      if (L.pilih.b !== b) { resetPilih(); L.pilih.b = b; }
+      if (L.pilih[sisi][w]) delete L.pilih[sisi][w]; else L.pilih[sisi][w] = 1;
+      lukisLaci();
+    });
+    el('gl-pasangan').addEventListener('click', function(e) {
+      var t = e.target;
+      if (!L || !t || !t.getAttribute || t.getAttribute('data-gl-buang') === null) return;
+      var p = pasanganLaci().slice(), i = +t.getAttribute('data-gl-buang'), buang = p[i];
+      p.splice(i, 1);
+      simpanBankLaci(p, 'Dibuang: ' + buang.en + ' = ' + buang.bm);
+    });
+    el('btn-gl-simpan').onclick = function() {
+      if (!L) return;
+      var en = teksPilihan('en'), bm = teksPilihan('bm');
+      if (!en || !bm) { el('gl-info').textContent = 'Pilih sekurang-kurangnya satu perkataan English DAN satu perkataan BM.'; return; }
+      var p = pasanganLaci().slice(), ganti = -1;
+      for (var i = 0; i < p.length; i++) if (String(p[i].en).toLowerCase() === en.toLowerCase()) ganti = i;
+      if (ganti >= 0) p[ganti] = { en: en, bm: bm }; else p.push({ en: en, bm: bm });
+      resetPilih();
+      simpanBankLaci(p, 'Disimpan: ' + en + ' = ' + bm);
+    };
+    el('btn-gl-batal').onclick = function() { if (L) { resetPilih(); lukisLaci(); } };
+    el('btn-gl-balik').onclick = function() { L = null; showScreen('screen-gbank'); lukisBank(); };
+
+    el('btn-go-game').onclick = bukaGame;
+    el('btn-gp-baru').onclick = function() { if (currentUser) mulaPusingan(); };
+    el('btn-gp-menu').onclick = function() { pus = null; showScreen('screen-menu'); };
+    el('btn-gp-bank').onclick = function() { pus = null; bukaBank(false); };
+    el('btn-gb-game').onclick = bukaGame;
+    el('btn-gb-segar').onclick = function() { bukaBank(true); };
+  })();
   </script>
 
   <!-- WATERMARK KINDLE RINGAN (hiasan sahaja — tidak boleh ditekan) -->
