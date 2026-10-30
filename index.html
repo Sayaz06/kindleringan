@@ -5590,6 +5590,13 @@
       <button id="btn-gp-baru" class="btn btn-primary">Pusingan Baru</button>
     </div>
     <button id="btn-gp-bank" class="btn" style="margin-top:6px;">BANK PERKATAAN (padan sendiri)</button>
+    <button id="btn-gp-senarai" class="btn" style="margin-top:6px;">SENARAI SR GAME</button>
+  </div>
+  <div id="screen-gsr" class="screen">
+    <div class="status-bar" id="gs-status">SR GAME</div>
+    <div id="gs-info"></div>
+    <div id="gs-senarai" style="padding-bottom:80px;"></div>
+    <button id="btn-gs-game" class="gb-terapung">Kembali ke Game</button>
   </div>
   <div id="screen-gbank" class="screen">
     <div class="status-bar" id="gb-status">BANK PERKATAAN</div>
@@ -6037,10 +6044,58 @@
     el('btn-gl-batal').onclick = function() { if (L) { resetPilih(); lukisLaci(); } };
     el('btn-gl-balik').onclick = function() { L = null; showScreen('screen-gbank'); lukisBank(); };
 
+    // ══ SENARAI SR GAME — sampai masa (overdue) & belum sampai masa ══
+    function bukaSenaraiGsr() {
+      if (!currentUser) return;
+      muatLokal();
+      pus = null;
+      showScreen('screen-gsr');
+      el('gs-status').textContent = 'SR GAME';
+      el('gs-info').textContent = 'Memuatkan...';
+      el('gs-senarai').innerHTML = '';
+      kol('game_sr').orderBy('nextDueAt', 'asc').get().then(function(snap) {
+        var now = Date.now(), lewat = [], belum = [];
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          (d.nextDueAt <= now ? lewat : belum).push(d);
+        });
+        var bekas = el('gs-senarai');
+        function tajuk(t) {
+          var h = document.createElement('div');
+          h.style.cssText = 'font-weight:bold;margin-top:10px;border-bottom:2px solid #000;padding-bottom:2px;';
+          h.textContent = t;
+          bekas.appendChild(h);
+        }
+        function baris(d, isLewat) {
+          var r = document.createElement('div');
+          r.className = 'gl-pas';
+          r.style.display = 'block';
+          var a = document.createElement('div');
+          a.style.fontWeight = 'bold';
+          a.textContent = d.en + ' = ' + d.bm;
+          var b = document.createElement('div');
+          b.style.fontSize = '0.8rem';
+          b.textContent = 'Fasa ' + ((d.fasaSemasa || 0) + 1) + ' · ' + (isLewat ? 'sampai masa sejak ' : 'muncul ') + masaTeks(d.nextDueAt || 0);
+          r.appendChild(a); r.appendChild(b);
+          bekas.appendChild(r);
+        }
+        var i;
+        tajuk('SAMPAI MASA (' + lewat.length + ')');
+        if (!lewat.length) tajuk('—');
+        for (i = 0; i < lewat.length; i++) baris(lewat[i], true);
+        tajuk('BELUM SAMPAI MASA (' + belum.length + ')');
+        for (i = 0; i < belum.length; i++) baris(belum[i], false);
+        el('gs-status').textContent = 'SR GAME · ' + lewat.length + ' sampai masa · ' + belum.length + ' belum';
+        el('gs-info').textContent = (lewat.length + belum.length) ? '' : 'SR game masih kosong. Main game dulu untuk masukkan perkataan.';
+      }).catch(function(e) { el('gs-info').textContent = 'Gagal memuat SR game: ' + (e.message || e); });
+    }
+
     el('btn-go-game').onclick = bukaGame;
     el('btn-gp-baru').onclick = function() { if (currentUser) mulaPusingan(); };
     el('btn-gp-menu').onclick = function() { pus = null; showScreen('screen-menu'); };
     el('btn-gp-bank').onclick = function() { pus = null; bukaBank(false); };
+    el('btn-gp-senarai').onclick = bukaSenaraiGsr;
+    el('btn-gs-game').onclick = bukaGame;
     el('btn-gb-game').onclick = bukaGame;
     el('btn-gb-segar').onclick = function() { bukaBank(true); };
   })();
