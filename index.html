@@ -5654,12 +5654,18 @@
     #gm-panduan ul { margin: 0 0 6px; padding-left: 20px; }
     #gm-panduan li { font-size: 0.9rem; line-height: 1.45; margin-bottom: 4px; }
     /* Titik pilih Ringgit Biru (kiri) / Merah (kanan) — macam titik skrol tapi melintang */
-    .mx-titik { display: flex; justify-content: center; gap: 36px; margin: 12px 0 4px; }
+    .mx-titik { display: flex; justify-content: center; gap: 14px; margin: 12px 0 4px; }
     .mx-titik button { display: block; background: none; border: 0; padding: 4px 10px; font-family: inherit; font-size: 0.8rem;
       font-weight: bold; color: #999; cursor: pointer; text-align: center; }
     .mx-titik .mx-bulat { display: block; width: 18px; height: 18px; margin: 0 auto 4px; border: 2px solid #999; border-radius: 50%; background: #fff; }
     .mx-titik button.mx-on { color: #000; }
     .mx-titik button.mx-on .mx-bulat { background: #000; border-color: #000; }
+    .mx-arah { display: flex; gap: 6px; margin: 4px 0 8px; }
+    .mx-arah button { flex: 1 1 0; padding: 7px 4px; border: 2px solid #000; border-radius: 6px; background: #fff; color: #000;
+      font-family: inherit; font-weight: bold; font-size: 0.8rem; cursor: pointer; }
+    .mx-arah button.mx-on { background: #000; color: #fff; }
+    .coin-terbang { position: absolute; width: 22px; height: 22px; z-index: 1000; pointer-events: none; }
+    .coin-terbang svg { display: block; width: 22px; height: 22px; }
     /* PEJABAT POS (Bank) + kedai mini game */
     .pos-van { flex: 0 0 130px; width: 130px; height: 76px; }
     .pos-van svg { width: 130px; height: 76px; display: block; }
@@ -5828,6 +5834,7 @@
     <div class="mx-titik">
       <button type="button" data-mx-pilih="biru" class="mx-on"><span class="mx-bulat"></span>BIRU</button>
       <button type="button" data-mx-pilih="merah"><span class="mx-bulat"></span>MERAH</button>
+      <button type="button" data-mx-pilih="silang"><span class="mx-bulat"></span>MERAH ⇄ BIRU</button>
     </div>
     <div class="mx-geser">
     <div data-mx-panel="biru">
@@ -5856,6 +5863,38 @@
     <div class="dp-btn dp-merah">
       <button type="button" data-mx-maks="merah">Maks</button>
       <button type="button" data-mx-tukar="merah" class="dp-utama">TUKAR KE MERAH</button>
+    </div>
+    </div>
+    <div data-mx-panel="silang" style="display:none;">
+    <div class="dp-tajuk">Tukar RINGGIT MERAH ⇄ BIRU</div>
+    <div class="mx-arah">
+      <button type="button" data-mx-arah="merah" class="mx-on">Merah → Biru</button>
+      <button type="button" data-mx-arah="biru">Biru → Merah</button>
+    </div>
+    <div class="dp-kadar" id="mx-kadar-silang"></div>
+    <div data-mx-sub="merah">
+    <div class="dp-tukar">
+      <label>Ringgit Merah<input id="mx-in-dari-merah" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+      <span class="dp-sama">→</span>
+      <label>Ringgit Biru<input id="mx-in-ke-merah" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="mx-nota-silang-merah"></div>
+    <div class="dp-btn">
+      <button type="button" data-mx-maks-silang="merah">Maks</button>
+      <button type="button" data-mx-silang="merah" class="dp-utama">TUKAR KE BIRU</button>
+    </div>
+    </div>
+    <div data-mx-sub="biru" style="display:none;">
+    <div class="dp-tukar">
+      <label>Ringgit Biru<input id="mx-in-dari-biru" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+      <span class="dp-sama">→</span>
+      <label>Ringgit Merah<input id="mx-in-ke-biru" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="mx-nota-silang-biru"></div>
+    <div class="dp-btn">
+      <button type="button" data-mx-maks-silang="biru">Maks</button>
+      <button type="button" data-mx-silang="biru" class="dp-utama">TUKAR KE MERAH</button>
+    </div>
     </div>
     </div>
     </div>
@@ -6382,10 +6421,13 @@
       }, function() {});
       unsubDompet = refDompet().onSnapshot(function(sd) {
         if (!sd || !sd.exists) return;
-        var d = sd.data();
+        var d = sd.data(), adaLama = (DP.upahTunggu || 0) > 0;
         DP.coin = d.coin || 0; DP.biruSen = d.biruSen || 0; DP.merahSen = d.merahSen || 0; DP.upahTunggu = d.upahTunggu || 0;
+        if (coinAnim) return;
         el('gb-coin').textContent = DP.coin;
         tunjukAmbil();
+        // Upah muncul / hilang dari peranti lain → lukis semula Kapten (pegang / tak pegang syiling)
+        if (adaLama !== (DP.upahTunggu > 0) && !layar && el('screen-gbank').className.indexOf('active') !== -1) penjaga('gb-watak', 'kapten', 'diam');
       }, function() {});
     }
     function tunjukAmbil() {
@@ -6540,23 +6582,52 @@
       try { window.scrollTo(0, 0); } catch (e) {}
       penjaga('gb-watak', 'kapten', 'masuk', 'Kapal "' + title + '" dah sampai! ' + baru + ' kontena × ' + EKO.UPAH_POS + ' coin = ' + upah + ' coin. Tekan AMBIL.', 'gb-cakap');
     }
+    // Syiling terbang dari tangan Kapten ke kotak Coin (bingkai pendek, sesuai e-ink)
+    var coinAnim = false;
+    function terbangCoin(dari, ke, siap) {
+      var a = dari.getBoundingClientRect(), b = ke.getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
+      var x0 = a.left + a.width * 0.8 + sx, y0 = a.top + a.height * 0.7 + sy, x1 = b.left + b.width / 2 - 11 + sx, y1 = b.top + b.height / 2 - 11 + sy;
+      var c = document.createElement('div'), lk = [0, 0.15, 0.35, 0.6, 0.85, 1], i = 0;
+      c.className = 'coin-terbang';
+      c.innerHTML = '<svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="9.5" fill="#fff" stroke="#000" stroke-width="2.5"/><circle cx="11" cy="11" r="5" fill="none" stroke="#000" stroke-width="1.5"/></svg>';
+      document.body.appendChild(c);
+      (function main() {
+        var t = lk[i];
+        c.style.left = (x0 + (x1 - x0) * t) + 'px';
+        c.style.top = (y0 + (y1 - y0) * t - Math.sin(t * Math.PI) * 40) + 'px';
+        i++;
+        if (i < lk.length) setTimeout(main, 110);
+        else setTimeout(function() { if (c.parentNode) c.parentNode.removeChild(c); siap(); }, 110);
+      })();
+    }
+    function kiraNaik(e, dari, ke, siap) {
+      var n = 5, i = 1;
+      (function main() {
+        e.textContent = Math.round(dari + (ke - dari) * i / n);
+        i++;
+        if (i <= n) setTimeout(main, 120); else if (siap) siap();
+      })();
+    }
     function ambilUpah() {
-      var t = DP.upahTunggu || 0;
-      if (t <= 0 || dpSibuk) return;
+      var t = DP.upahTunggu || 0, lama = DP.coin;
+      if (t <= 0 || dpSibuk || coinAnim) return;
       var b = db.batch();
-      dpSibuk = true;
+      dpSibuk = true; coinAnim = true;
       b.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(t), upahTunggu: firebase.firestore.FieldValue.increment(-t), updatedAt: Date.now() }, { merge: true });
       dpLog(b, 'upah>pelabuhan', 'Ambil upah pelabuhan +' + t + ' coin');
       b.commit().then(function() {
         dpSibuk = false;
-        DP.coin += t; DP.upahTunggu = 0;
-        el('gb-coin').textContent = DP.coin;
+        DP.coin = lama + t; DP.upahTunggu = 0;
         tunjukAmbil();
         penjaga('gb-watak', 'kapten', 'gembira', 'Terima kasih kerana bekerja keras! +' + t + ' coin masuk dompet.', 'gb-cakap');
+        el('gb-coin').textContent = lama;
+        terbangCoin(el('gb-watak'), el('gb-coin'), function() {
+          kiraNaik(el('gb-coin'), lama, DP.coin, function() { coinAnim = false; el('gb-coin').textContent = DP.coin; });
+        });
         setTimeout(function() {
           if (el('screen-gbank').className.indexOf('active') !== -1) penjaga('gb-watak', 'kapten', 'diam', kaptenAyat, 'gb-cakap');
         }, 3500);
-      }).catch(function(e) { dpSibuk = false; el('gb-cakap').textContent = 'Gagal ambil upah: ' + (e.message || e); });
+      }).catch(function(e) { dpSibuk = false; coinAnim = false; el('gb-cakap').textContent = 'Gagal ambil upah: ' + (e.message || e); });
     }
 
     // ══ BANK — padan perkataan dalam satu laci ══
@@ -7223,6 +7294,7 @@
           'Unit asas ialah PERKATAAN: 1 perkataan = ' + EKO.KATA_COIN + ' coin. Satu level Jutawan ($1,000,000) = ' + EKO.JW_COIN + ' coin. Upah Pelabuhan = ' + EKO.UPAH_POS + ' coin setiap kontena.',
           'Kedai Pak Juta (dalam Jutawan): tukar Dollar → coin.',
           'Magic Exchange: tukar coin → Ringgit Biru (1.00 = ' + biru + ' coin) atau Ringgit Merah (1.00 = ' + merah + ' coin).',
+          'Titik ketiga (MERAH ⇄ BIRU): tukar terus Ringgit Merah ke Biru atau Biru ke Merah. 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah (nilai coin sama, tiada caj).',
           'Ringgit BIRU untuk item godaan (cth Coca-Cola). Ringgit MERAH untuk item yang digalakkan (cth air soya), sebab itu lebih murah.',
           'Taip jumlah di mana-mana kotak, kotak sebelah dikira sendiri. Lebih dari baki → jadi jumlah maksimum. Maks = tukar semua.',
           'Kiraan boleh perpuluhan, tapi tukaran sekurang-kurangnya 1 coin / 0.01 Ringgit. Baki yang tak cukup satu unit kekal.',
@@ -7268,7 +7340,12 @@
     document.addEventListener('touchend', function(e) {
       if (!leret || !e.changedTouches || !e.changedTouches[0]) { leret = null; return; }
       var dx = e.changedTouches[0].clientX - leret.x, dy = e.changedTouches[0].clientY - leret.y;
-      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) pilihPanel(leret.s, dx < 0 ? 'merah' : 'biru');
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && leret.s) {
+        var p = leret.s.querySelectorAll('[data-mx-panel]'), urut = [], kini = 0, k;
+        for (k = 0; k < p.length; k++) { urut.push(p[k].getAttribute('data-mx-panel')); if (p[k].style.display !== 'none') kini = k; }
+        k = kini + (dx < 0 ? 1 : -1);
+        if (k >= 0 && k < urut.length) pilihPanel(leret.s, urut[k]);
+      }
       leret = null;
     }, true);
     el('btn-gs-game').onclick = function() { (gsBalik || bukaGame)(); };
@@ -7336,6 +7413,12 @@
         aksi === 'gembira' || aksi === 'lompat' ? '<path d="M64 48 L74 30" stroke="#000" stroke-width="4" stroke-linecap="round"/><path d="M16 48 L6 30" stroke="#000" stroke-width="4" stroke-linecap="round"/>' :
         '<path d="M64 52 L71 64" stroke="#000" stroke-width="4" stroke-linecap="round"/>';
       var kiri = (aksi === 'gembira' || aksi === 'lompat') ? '' : '<path d="M16 52 L9 64" stroke="#000" stroke-width="4" stroke-linecap="round"/>';
+      // Kapten pegang syiling selagi upah belum diambil (upahTunggu di Firebase)
+      if (topi === 'kapten' && (DP.upahTunggu || 0) > 0) {
+        var hx = aksi === 'lambai1' ? 76 : aksi === 'lambai2' ? 74 : (aksi === 'gembira' || aksi === 'lompat') ? 73 : 71;
+        var hy = aksi === 'lambai1' ? 28 : aksi === 'lambai2' ? 38 : (aksi === 'gembira' || aksi === 'lompat') ? 28 : 67;
+        kiri += '<circle cx="' + hx + '" cy="' + hy + '" r="6" fill="#fff" stroke="#000" stroke-width="2"/><circle cx="' + hx + '" cy="' + hy + '" r="3" fill="none" stroke="#000" stroke-width="1.2"/>';
+      }
       var kepala = topi === 'kapten' ?
         '<path d="M20 22 Q40 2 60 22 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><rect x="18" y="21" width="44" height="6" rx="2" fill="#000"/>' +
         '<circle cx="40" cy="11" r="2.2" fill="none" stroke="#000" stroke-width="1.5"/><path d="M40 13 V20 M35.5 17 Q40 22.5 44.5 17 M37 15.5 H43" fill="none" stroke="#000" stroke-width="1.5"/>' :
@@ -7533,13 +7616,59 @@
       });
     }
     var tkRM = { biru: penukarRinggit('biru'), merah: penukarRinggit('merah') };
+    // ── MERAH ⇄ BIRU: nilai coin sama (1.00 Biru = EKO.MERAH_X Merah), tiada caj ──
+    function nisbahSilang(dari) { return dari === 'merah' ? 1 / EKO.MERAH_X : EKO.MERAH_X; }
+    function penukarSilang(dari) {
+      var x = nisbahSilang(dari), nDari = dari === 'merah' ? 'Merah' : 'Biru', nKe = dari === 'merah' ? 'Biru' : 'Merah';
+      return pautTukar({
+        a: el('mx-in-dari-' + dari), b: el('mx-in-ke-' + dari), nota: el('mx-nota-silang-' + dari),
+        rapiA: rapiSen, bacaA: bacaSen, tulisA: rm,
+        maxA: function() { return dari === 'merah' ? DP.merahSen : DP.biruSen; },
+        keDapat: function(sen) { return Math.floor(sen * x + 1e-9); },
+        tepat: function(sen) { return sen * x; },
+        kos: function(sen) { return Math.ceil(sen / x - 1e-9); },
+        bacaB: bacaSen, rapiB: rapiSen, tulisB: rm,
+        tulisKecil: function(sen) { return fmtKecil(sen / 100); }, fmtTepat: function(sen) { return fmtKecil(sen / 100) + ' ' + nKe; },
+        fmtKos: function(sen) { return rm(sen) + ' ' + nDari; }, fmtDapat: function(sen) { return rm(sen) + ' ' + nKe; }
+      });
+    }
+    var tkSilang = { merah: penukarSilang('merah'), biru: penukarSilang('biru') };
+    function pilihArah(dari) {
+      var s = el('screen-mx'), b = s.querySelectorAll('[data-mx-arah]'), p = s.querySelectorAll('[data-mx-sub]'), i;
+      for (i = 0; i < b.length; i++) b[i].className = b[i].getAttribute('data-mx-arah') === dari ? 'mx-on' : '';
+      for (i = 0; i < p.length; i++) p[i].style.display = p[i].getAttribute('data-mx-sub') === dari ? '' : 'none';
+    }
+    function tukarSilang(dari) {
+      if (dpSibuk) return;
+      var x = nisbahSilang(dari), nDari = dari === 'merah' ? 'Merah' : 'Biru', nKe = dari === 'merah' ? 'Biru' : 'Merah';
+      var dapat = tkSilang[dari].dapat(), kos = Math.ceil(dapat / x - 1e-9), ada = dari === 'merah' ? DP.merahSen : DP.biruSen;
+      if (dapat < 1 || kos > ada) {
+        penjaga('mx-watak', 'magik', 'sedih', dapat >= 1 ? 'Ringgit ' + nDari + ' tak cukup!' :
+          'Sekurang-kurangnya tukar ke 0.01 ' + nKe + ' (= ' + rm(Math.ceil(1 / x - 1e-9)) + ' ' + nDari + ').', 'mx-cakap');
+        return;
+      }
+      var b = db.batch(), ubah = { updatedAt: Date.now() };
+      ubah[dari + 'Sen'] = firebase.firestore.FieldValue.increment(-kos);
+      ubah[(dari === 'merah' ? 'biru' : 'merah') + 'Sen'] = firebase.firestore.FieldValue.increment(dapat);
+      dpSibuk = true;
+      b.set(refDompet(), ubah, { merge: true });
+      dpLog(b, dari + '>' + (dari === 'merah' ? 'biru' : 'merah'), rm(kos) + ' ' + nDari + ' → +' + rm(dapat) + ' ' + nKe);
+      b.commit().then(function() {
+        dpSibuk = false;
+        if (dari === 'merah') { DP.merahSen -= kos; DP.biruSen += dapat; } else { DP.biruSen -= kos; DP.merahSen += dapat; }
+        lukisMx();
+        penjaga('mx-watak', 'magik', 'gembira', 'Abrakadabra! -' + rm(kos) + ' ' + nDari + ' → +' + rm(dapat) + ' ' + nKe, 'mx-cakap');
+        dpSejarah('mx-log');
+      }).catch(function(e) { dpSibuk = false; el('mx-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
+    }
     function lukisMx() {
       el('mx-coin').textContent = DP.coin;
       el('mx-biru').textContent = rm(DP.biruSen);
       el('mx-merah').textContent = rm(DP.merahSen);
       el('mx-kadar-biru').textContent = 'Kadar: 1.00 Biru = ' + EKO.COIN_BIRU.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_BIRU / EKO.KATA_COIN) + ' perkataan)';
       el('mx-kadar-merah').textContent = 'Kadar: 1.00 Merah = ' + EKO.COIN_MERAH.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_MERAH / EKO.KATA_COIN) + ' perkataan)';
-      tkRM.biru.kosong(); tkRM.merah.kosong();
+      el('mx-kadar-silang').textContent = 'Kadar: 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah · 1.00 Merah = ' + (1 / EKO.MERAH_X).toFixed(4) + ' Biru (nilai coin sama, tiada caj)';
+      tkRM.biru.kosong(); tkRM.merah.kosong(); tkSilang.merah.kosong(); tkSilang.biru.kosong();
     }
     function bukaMx() {
       if (!currentUser) return;
@@ -7585,6 +7714,9 @@
       if (!t || !t.getAttribute) return;
       if (t.getAttribute('data-mx-maks')) tkRM[t.getAttribute('data-mx-maks')].maks();
       else if (t.getAttribute('data-mx-tukar')) tukarCoin(t.getAttribute('data-mx-tukar'));
+      else if (t.getAttribute('data-mx-maks-silang')) tkSilang[t.getAttribute('data-mx-maks-silang')].maks();
+      else if (t.getAttribute('data-mx-silang')) tukarSilang(t.getAttribute('data-mx-silang'));
+      else if (t.getAttribute('data-mx-arah')) pilihArah(t.getAttribute('data-mx-arah'));
     });
 
     // ── KAUNTER REFUND (dalam Magic Exchange): Ringgit Biru / Merah → coin, tolak caj 20% ──
