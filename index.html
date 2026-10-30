@@ -5678,6 +5678,26 @@
     /* Kapal besar (skrin muat): kontena perkataan bertimbun atas dek */
     .kp-laut { width: 100%; overflow: hidden; margin: 6px 0 0; padding-top: 30px; }
     #gl-kapal { position: relative; cursor: pointer; }
+    .kp-badan { position: relative; }
+    .kp-nama { position: absolute; left: 12%; right: 12%; top: 11px; color: #fff; font-size: 0.7rem; font-weight: bold; text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* Susunan kapal di pelabuhan: jeti kecil + besi + tali · kontena kecil sebaris · nama laci atas badan hitam */
+    .kp-pelabuhan { padding: 2px 0 6px; }
+    .kb { display: flex; align-items: flex-end; margin: 0 0 12px; padding-bottom: 4px; border-bottom: 2px dashed #000; cursor: pointer; overflow: hidden; }
+    .kb-jeti { position: relative; flex: 0 0 30px; height: 20px; margin-right: 8px; border: 2px solid #000; border-bottom: 0; background: #fff; }
+    .kb-besi { position: absolute; left: 9px; top: -10px; width: 8px; height: 10px; background: #000; }
+    .kb-besi:before { content: ''; position: absolute; left: -3px; top: 0; width: 14px; height: 3px; background: #000; }
+    .kb-tali { position: absolute; left: 14px; top: -7px; width: 30px; height: 2px; background: #000;
+      -webkit-transform: rotate(14deg); transform: rotate(14deg); -webkit-transform-origin: 0 50%; transform-origin: 0 50%; }
+    .kb.kb-lepas .kb-tali { display: none; }
+    .kb-kapal { position: relative; flex: 1 1 auto; min-width: 0; }
+    .kb-muat { display: flex; align-items: flex-end; gap: 2px; padding: 0 12% 0 7%; height: 11px; overflow: hidden; }
+    .kb-k { display: block; flex: 0 0 12px; width: 12px; height: 9px; border: 1.5px solid #000; background: #fff; }
+    .kb-k.kb-b { background: #aaa; }
+    .kb-lebih { font-size: 0.55rem; font-weight: bold; line-height: 9px; }
+    .kb-badan { background: #000; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 4px 18px; border-radius: 0 0 22px 22px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+    .kb.kb-sasar .kb-badan { outline: 3px dashed #000; outline-offset: 2px; }
     .kp-atas { display: flex; align-items: flex-end; min-height: 120px; padding: 0 10% 0 5%; }
     .kp-atas .kt-timbun { flex: 1 1 auto; min-width: 0; }
     .kp-tiang { position: absolute; right: 3%; bottom: 28px; width: 16px; }
@@ -5944,19 +5964,29 @@
     </div>
     <div class="pj-kotak"><div class="pj-watak" id="gb-watak"></div><div class="pj-cakap" id="gb-cakap"></div></div>
     <button type="button" id="btn-gb-ambil" class="btn btn-primary" style="margin:0 0 8px;display:none;">AMBIL UPAH</button>
-    <button type="button" id="btn-gb-mula" class="btn" style="margin:0 0 10px;">OK, KE DERMAGA</button>
+    <button type="button" id="btn-gb-mula" class="btn" style="margin:0 0 10px;">PERGI KE KAPAL KOSONG</button>
     <div class="dp-baki">
       <div>Kapal belayar<b id="gb-laluan">-</b></div>
       <div>Kontena<b id="gb-bungkus">-</b></div>
       <div class="dp-gelap">Coin<b id="gb-coin">-</b></div>
     </div>
     <div id="gb-info"></div>
-    <div id="gb-dermaga-tajuk"></div>
+    <div class="kp-tajuk" id="gb-dermaga-tajuk">SUSUNAN KAPAL · ketik tali kapal untuk bawa ke dermaga</div>
+    <div id="gb-senarai" class="kp-pelabuhan"></div>
+    <div style="height:90px;"></div>
+  </div>
+  <div id="screen-gbank-laci" class="screen">
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="pos" class="gm-aktif">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+    </div>
     <div class="kp-laut">
       <div id="gl-kapal">
         <div class="kp-atas"><div id="gl-pasangan" class="kt-timbun"></div></div>
         <div class="kp-tiang"><svg viewBox="0 0 16 56" xmlns="http://www.w3.org/2000/svg"><path d="M3 0 V56" stroke="#000" stroke-width="2.5"/><path d="M4 2 L15 7 L4 12 Z" fill="#000"/></svg></div>
-        <div class="kp-badan"><svg viewBox="0 0 200 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 H200 L188 28 H10 Z" fill="#000"/><rect x="6" y="8" width="186" height="2" fill="#fff"/></svg></div>
+        <div class="kp-badan"><svg viewBox="0 0 200 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 H200 L188 28 H10 Z" fill="#000"/></svg><div class="kp-nama" id="gl-nama"></div></div>
         <div class="kp-kelasi" id="gl-kelasi"><svg viewBox="0 0 12 18" xmlns="http://www.w3.org/2000/svg"><circle cx="6" cy="3.5" r="3" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M6 7 V13 M1 9 L6 9.5 L11 7 M6 13 L3 18 M6 13 L9 18" fill="none" stroke="#000" stroke-width="1.8"/></svg></div>
       </div>
       <div class="kp-ombak"><svg viewBox="0 0 208 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 7 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#000" stroke-width="2.5"/></svg></div>
@@ -5967,8 +5997,6 @@
     </div>
     <div id="gl-info"></div>
     <div id="gl-ayat"></div>
-    <button type="button" id="btn-gb-semua" class="btn" style="font-size:0.85rem;padding:8px;">Lihat semua kapal</button>
-    <div id="gb-semua" style="display:none;"></div>
     <div style="height:90px;"></div>
   </div>
   <script>
@@ -6255,49 +6283,49 @@
         '<path d="M8 50 H200 L186 78 H24 Z" fill="#000"/>' + lebih + '</g></svg>';
     }
     var kaptenAyat = '';
+    function escKapal(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    // Pelabuhan: SEMUA kapal disusun. Setiap kapal diikat pada besi di jeti. Kontena = kotak kecil sebaris (tiada perkataan).
     function lukisBank(lompatTerus) {
-      var jum = 0, belayar = 0, i, l, b, n, dib, muat = -1, kosong = -1;
+      var jum = 0, belayar = 0, i, k, l, b, n, dib, h = '';
       for (i = 0; i < S.sr.length; i++) {
         l = S.sr[i]; b = S.bank[l.id]; n = b ? (b.pasangan || []).length : 0; dib = dibayarLaci(l.id);
         jum += n;
         if (n && dib >= n) belayar++;
-        if (n > dib && muat < 0) muat = i; else if (!n && kosong < 0) kosong = i;
+        var kk = '';
+        for (k = 0; k < Math.min(n, 18); k++) kk += '<i class="kb-k' + (k >= dib ? ' kb-b' : '') + '"></i>';
+        if (n > 18) kk += '<span class="kb-lebih">+' + (n - 18) + '</span>';
+        h += '<div class="kb" data-gb-id="' + i + '"><div class="kb-jeti"><i class="kb-besi"></i><i class="kb-tali"></i></div>' +
+          '<div class="kb-kapal"><div class="kb-muat">' + kk + '</div><div class="kb-badan">' + escKapal(l.title) + '</div></div></div>';
       }
+      el('gb-senarai').innerHTML = h;
       el('gb-status').textContent = 'PELABUHAN · ' + jum + ' kontena · ' + belayar + '/' + S.sr.length + ' kapal belayar';
       el('gb-laluan').textContent = belayar + '/' + S.sr.length;
       el('gb-bungkus').textContent = jum;
       el('gb-info').textContent = S.sr.length ? '' : 'Tiada kapal lagi (laci Bahasa belum masuk SR).';
-      el('btn-gb-semua').textContent = 'Lihat semua kapal (' + S.sr.length + ')';
-      if (el('gb-semua').style.display !== 'none') lukisSemuaKapal();
-      // Kapal di dermaga: yang sedang dimuat dulu, kemudian kapal kosong seterusnya
-      if (!L && S.sr.length) bukaLaci(S.sr[muat >= 0 ? muat : kosong >= 0 ? kosong : 0]);
       if (lompatTerus) lompatKeLaluan();
     }
-    // Senarai teks semua kapal (dilukis hanya bila diminta — 600+ kapal berat untuk Kindle)
-    function lukisSemuaKapal() {
-      var h = '', i;
-      for (i = 0; i < S.sr.length; i++) h += '<button type="button" class="gb-laci" data-gb-id="' + i + '"></button>';
-      var bekas = el('gb-semua');
-      bekas.innerHTML = h;
+    // Kapal sasaran: yang ada muatan belum belayar dulu, kemudian kapal kosong pertama
+    function kapalKosong() {
+      var i, n, kosong = -1;
       for (i = 0; i < S.sr.length; i++) {
-        var l = S.sr[i], b = S.bank[l.id], n = b ? (b.pasangan || []).length : 0, dib = dibayarLaci(l.id), btn = bekas.children[i];
-        if (n) btn.className = 'gb-laci gb-siap-ada';
-        btn.textContent = (L && L.id === l.id ? '[DI DERMAGA] ' : '') + l.title;
-        var sub = document.createElement('span');
-        sub.className = 'gb-sub';
-        sub.textContent = !n ? 'Belum dimuat' : (n > dib ? 'Sedang dimuat · ' + n + ' kontena' : 'Sudah belayar · ' + n + ' kontena');
-        btn.appendChild(sub);
+        n = S.bank[S.sr[i].id] ? (S.bank[S.sr[i].id].pasangan || []).length : 0;
+        if (n > dibayarLaci(S.sr[i].id)) return i;
+        if (!n && kosong < 0) kosong = i;
       }
+      return kosong;
     }
-    // Lompat ke DERMAGA (kapal yang sedang dimuat) — ulang beberapa kali kalau tinggi skrin berubah selepas dilukis
+    // PERGI KE KAPAL KOSONG — skrol ke kapal itu dan tandakan (ulang beberapa kali kalau tinggi skrin berubah)
     function lompatKeLaluan() {
-      var sasaran = el('gb-dermaga-tajuk'), yAkhir = -1;
-      if (!L) return false;
+      var idx = kapalKosong(), bekas = el('gb-senarai');
+      if (idx < 0 || !bekas.children[idx]) return false;
+      var sasaran = bekas.children[idx], yAkhir = -1, lama = bekas.querySelector('.kb-sasar');
+      if (lama) lama.className = 'kb';
+      sasaran.className = 'kb kb-sasar';
       var lompat = function() {
         if (!sasaran.offsetParent) return;
         if (yAkhir !== -1 && Math.abs(window.pageYOffset - yAkhir) > 5) return;
         try { sasaran.scrollIntoView(true); } catch (e) {}
-        window.scrollBy(0, -10);
+        window.scrollBy(0, -120);
         yAkhir = window.pageYOffset;
       };
       setTimeout(lompat, 60);
@@ -6340,22 +6368,22 @@
         });
       });
     }
-    function bukaKapalDariSenarai(e) {
+    el('gb-senarai').addEventListener('click', function(e) {
       var t = e.target;
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gb-id'))) t = t.parentNode;
       if (!t || t === this || layar) return;
-      var l = S.sr[+t.getAttribute('data-gb-id')];
+      var l = S.sr[+t.getAttribute('data-gb-id')], kapal = t.children[1], xs = [6, 16, 32, 55, 85, 120], i = 0;
       if (!l) return;
-      bukaLaci(l);
-      lukisSemuaKapal();
-      lompatKeLaluan();
-    }
-    el('gb-semua').addEventListener('click', bukaKapalDariSenarai);
-    el('btn-gb-semua').onclick = function() {
-      var s = el('gb-semua');
-      if (s.style.display === 'none') { s.style.display = ''; lukisSemuaKapal(); this.textContent = 'Tutup senarai semua kapal'; }
-      else { s.style.display = 'none'; s.innerHTML = ''; this.textContent = 'Lihat semua kapal (' + S.sr.length + ')'; }
-    };
+      layar = true;
+      t.className = 'kb kb-lepas';
+      (function gerak() {
+        var tr = 'translateX(' + xs[i] + '%)';
+        kapal.style.webkitTransform = tr; kapal.style.transform = tr;
+        i++;
+        if (i < xs.length) setTimeout(gerak, 200);
+        else setTimeout(function() { layar = false; bukaLaci(l); }, 200);
+      })();
+    });
     // Kapal di skrin muat: kontena bertimbun atas dek + dermaga (tali diikat pada besi bulat)
     var layar = false;
     function lukisKapalLaci(angkat) {
@@ -6430,23 +6458,16 @@
         });
       }).catch(function(e) { dpSibuk = false; layar = false; el('gl-info').textContent = 'Gagal belayar: ' + (e.message || e); });
     }
-    // Kapal dah keluar skrin → kembali ke Kapten (atas). Kapal seterusnya masuk ke dermaga dari kiri.
+    // Kapal dah keluar skrin → kembali ke pelabuhan, Kapten kira upah
     function sampaiPelabuhan(title, baru, upah) {
-      L = null;
-      geserKapal(-110);
-      el('gl-dermaga').innerHTML = svgDermaga('naik', false);
+      L = null; layar = false;
+      geserKapal(0);
+      showScreen('screen-gbank');
       lukisBank();
       el('gb-coin').textContent = DP.coin;
       tunjukAmbil();
       try { window.scrollTo(0, 0); } catch (e) {}
       penjaga('gb-watak', 'kapten', 'masuk', 'Kapal "' + title + '" dah sampai! ' + baru + ' kontena × ' + EKO.UPAH_POS + ' coin = ' + upah + ' coin. Tekan AMBIL.', 'gb-cakap');
-      var xs = [-110, -80, -55, -35, -20, -9, -3, 0], i = 0;
-      (function masuk() {
-        geserKapal(xs[i]);
-        i++;
-        if (i < xs.length) setTimeout(masuk, 220);
-        else { layar = false; lukisKapalLaci(false); }
-      })();
     }
     function ambilUpah() {
       var t = DP.upahTunggu || 0;
@@ -6563,6 +6584,9 @@
     function bukaLaci(l) {
       L = { id: l.id, title: l.title, baris: [], pilih: null };
       resetPilih();
+      showScreen('screen-gbank-laci');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('gl-nama').textContent = l.title;
       el('gl-ayat').innerHTML = '';
       el('gl-pasangan').innerHTML = '';
       el('gl-info').textContent = 'Memuatkan muatan...';
@@ -6611,10 +6635,10 @@
       simpanBankLaci(p, '', ganti < 0);
     });
     el('gl-dermaga').onclick = belayar;
-    // Selepas borak dengan Kapten → setuju → turun ke dermaga
+    // PERGI KE KAPAL KOSONG → skrol ke kapal itu. Ketik tali kapal untuk bawa ke dermaga.
     el('btn-gb-mula').onclick = function() {
       var ada = lompatKeLaluan();
-      penjaga('gb-watak', 'kapten', ada ? 'gembira' : 'masuk', ada ? 'Bagus! Kapal-kapal di dermaga sedang menunggu muatan.' : 'Semua kapal dah belayar. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap');
+      penjaga('gb-watak', 'kapten', ada ? 'gembira' : 'masuk', ada ? 'Itu dia kapal kosong! Ketik tali kapal untuk bawa ke dermaga.' : 'Semua kapal dah belayar. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap');
     };
     el('btn-gb-ambil').onclick = ambilUpah;
 
@@ -7076,10 +7100,10 @@
         ]) +
         '<h3 id="pd-bank">PELABUHAN (Bank Perkataan)</h3>' + I([
           'Setiap laci Bahasa yang sudah masuk SR Bahasa ialah sebuah KAPAL KARGO. Laci baru masuk SR → tekan "Segar".',
-          'Buka kapal → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik mana-mana bahagian KAPAL untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
+          'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik mana-mana bahagian KAPAL untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
           'Kontena kelabu = muatan baru. Ketik BESI BULAT (tali kapal) di jeti (kotak pilihan bawah kapal) → tali dilepas, kelasi naik, kapal keluar ke laut, kembali ke pelabuhan, Kapten kira upah ' + EKO.UPAH_POS + ' coin setiap kontena baru → tekan AMBIL untuk masukkan ke dompet.',
           'Upah sengaja sedikit — ganjaran besar datang daripada menghafal dalam game. Kontena dibuang dari kapal yang sudah belayar → upahnya ditolak semula.',
-          'Dermaga tunjuk SATU kapal: yang sedang dimuat dulu, kemudian kapal kosong seterusnya. Selepas belayar, kapal seterusnya masuk sendiri. "Lihat semua kapal" untuk pilih kapal lain.',
+          'Pelabuhan: semua kapal disusun, setiap satu diikat pada besi di jeti. Kontena kecil atas kapal = jumlah muatan (kelabu = belum belayar). PERGI KE KAPAL KOSONG = skrol ke kapal kosong. Ketik tali/kapal → tali dibuka, kapal ke DERMAGA untuk dimuat.',
           'Perkataan biasa (the, is, a, to...) dikelabukan dan tidak boleh dipilih.',
           'Pasangan yang sama dalam kapal berlainan dikira SATU sahaja dalam game & SR.',
           'Kontena dibuang → dibuang juga dari SR kedai bila tiba gilirannya.'
