@@ -5570,12 +5570,12 @@
     .gl-pas span { flex: 1 1 auto; min-width: 0; word-break: break-word; }
     .gl-pas button { flex: 0 0 auto; padding: 4px 10px; border: 2px solid #000; border-radius: 5px; background: #fff; font-family: inherit; font-weight: bold; cursor: pointer; }
     /* Timbunan kontena atas kapal: kontena pertama di bawah, yang baru bertimbun ke atas */
-    .kt-timbun { display: flex; flex-wrap: wrap-reverse; -webkit-flex-wrap: wrap-reverse; align-content: flex-end; gap: 5px; padding: 6px 4px 0; }
-    .kt-kotak { position: relative; flex: 1 1 44%; min-width: 130px; min-height: 66px; box-sizing: border-box; padding: 8px 8px 8px 12px;
-      border: 3px solid #000; border-left-width: 7px; border-right-width: 7px; background: #fff; color: #000; word-break: break-word; }
+    .kt-timbun { display: flex; flex-wrap: wrap-reverse; -webkit-flex-wrap: wrap-reverse; align-content: flex-end; gap: 4px; padding: 6px 4px 0; }
+    .kt-kotak { position: relative; flex: 1 1 40%; min-width: 0; min-height: 58px; box-sizing: border-box; padding: 6px 6px 6px 9px;
+      border: 3px solid #000; border-left-width: 6px; border-right-width: 6px; background: #fff; color: #000; word-break: break-word; }
     .kt-kotak.kt-baru { background: #ccc; }
-    .kt-kotak b { display: block; font-size: 1.15rem; padding-right: 26px; }
-    .kt-kotak .kt-bm { display: block; font-size: 0.95rem; margin-top: 4px; border-top: 1px dashed #000; padding-top: 3px; }
+    .kt-kotak b { display: block; font-size: 1.05rem; padding-right: 26px; }
+    .kt-kotak .kt-bm { display: block; font-size: 0.9rem; margin-top: 3px; border-top: 1px dashed #000; padding-top: 2px; }
     .kt-kotak .kt-tag { display: inline-block; font-size: 0.65rem; font-weight: bold; border: 1px solid #000; padding: 0 4px; margin-top: 4px; background: #fff; }
     .kt-kotak button { position: absolute; top: 3px; right: 3px; width: 26px; height: 26px; padding: 0; border: 2px solid #000; border-radius: 4px;
       background: #fff; color: #000; font-family: inherit; font-weight: bold; font-size: 0.9rem; line-height: 1; cursor: pointer; }
@@ -5676,6 +5676,16 @@
     .kp-besar { width: 100%; margin: 4px 0; overflow: hidden; }
     .kp-besar svg { width: 100%; height: auto; display: block; }
     .kp-muatan { font-size: 0.85rem; font-weight: bold; text-align: center; margin: 2px 0 6px; white-space: pre-line; }
+    /* Kapal besar (skrin muat): kontena perkataan bertimbun atas dek */
+    .kp-laut { width: 100%; overflow: hidden; margin: 6px 0 4px; padding-top: 30px; }
+    .kp-atas { display: flex; align-items: flex-end; min-height: 150px; padding: 0 9% 0 8%; }
+    .kp-atas .kt-timbun { flex: 1 1 auto; min-width: 0; padding: 0 4px 0 0; }
+    .kp-bilik { flex: 0 0 46px; width: 46px; }
+    .kp-bilik svg, .kp-badan svg, .kp-ombak svg { display: block; width: 100%; }
+    .kp-badan svg { height: 46px; }
+    .kp-ombak svg { height: 14px; }
+    .kt-kosong { width: 100%; text-align: center; font-size: 0.8rem; padding: 10px 0; border: 2px dashed #000; }
+    .kt-kotak.kt-angkat { -webkit-transform: translateY(-26px); transform: translateY(-26px); border-style: dashed; }
     .kp-tajuk { font-weight: bold; margin: 12px 0 6px; border-bottom: 2px solid #000; padding-bottom: 2px; }
     .kp-kad { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; margin: 0 0 8px; border: 2px solid #000;
       border-radius: 8px; background: #fff; color: #000; font-family: inherit; cursor: pointer; }
@@ -5945,8 +5955,18 @@
       <span class="gm-alat-tajuk">MUAT KAPAL</span>
       <button type="button" id="btn-gl-balik" class="gm-kecil">Pelabuhan</button>
     </div>
-    <div class="kp-besar" id="gl-kapal"></div>
+    <div class="kp-laut">
+      <div id="gl-kapal">
+        <div class="kp-atas">
+          <div id="gl-pasangan" class="kt-timbun"></div>
+          <div class="kp-bilik"><svg viewBox="0 0 46 74" xmlns="http://www.w3.org/2000/svg"><rect x="18" y="0" width="12" height="16" fill="#000"/><rect x="4" y="16" width="38" height="58" fill="#fff" stroke="#000" stroke-width="3"/><rect x="10" y="24" width="10" height="10" fill="#000"/><rect x="26" y="24" width="10" height="10" fill="#000"/><rect x="10" y="44" width="10" height="10" fill="#000"/><rect x="26" y="44" width="10" height="10" fill="#000"/></svg></div>
+        </div>
+        <div class="kp-badan"><svg viewBox="0 0 200 46" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0 H200 L184 46 H18 Z" fill="#000"/></svg></div>
+      </div>
+      <div class="kp-ombak"><svg viewBox="0 0 208 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 7 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#000" stroke-width="2.5"/></svg></div>
+    </div>
     <div class="kp-muatan" id="gl-muatan"></div>
+    <div style="font-size:0.75rem;text-align:center;margin:-2px 0 6px;">Kelabu = baru (belum belayar) · X = keluarkan kontena</div>
     <button type="button" id="btn-gl-belayar" class="btn btn-primary">BELAYAR</button>
     <div id="gl-info">Tekan perkataan English, kemudian maksudnya dalam ayat BM (boleh lebih dari satu perkataan), dan tekan MUAT. Setiap pasangan = 1 kontena.</div>
     <div id="gl-pilihan">—</div>
@@ -5954,10 +5974,7 @@
       <button id="btn-gl-batal" class="btn">Batal pilih</button>
       <button id="btn-gl-simpan" class="btn btn-primary">MUAT KONTENA</button>
     </div>
-    <div id="gl-ayat"></div>
-    <div style="font-weight:bold;margin-top:10px;border-bottom:2px solid #000;padding-bottom:2px;">Kontena atas kapal ini</div>
-    <div id="gl-pasangan"></div>
-    <div style="font-size:0.75rem;text-align:center;padding-bottom:90px;">Kelabu = baru (belum belayar) · X = keluarkan kontena</div>
+    <div id="gl-ayat" style="padding-bottom:90px;"></div>
   </div>
   <script>
   // ══ GAME PADAN + BANK PERKATAAN (Kindle Ringan) — ES5 sahaja ══
@@ -6363,10 +6380,17 @@
       el('gl-muatan').textContent = 'Muatan: ' + n + ' kontena' + (baru > 0 ? ' · ' + baru + ' baru (kelabu)\nUpah bila belayar: ' + baru + ' × ' + EKO.UPAH_POS + ' = ' + (baru * EKO.UPAH_POS) + ' coin' : ' · tiada muatan baru');
       el('btn-gl-belayar').disabled = baru <= 0;
       el('btn-gl-belayar').textContent = baru > 0 ? 'BELAYAR (' + baru + ' kontena)' : 'BELAYAR (muat kontena dulu)';
-      if (!angkat || !n) { el('gl-kapal').innerHTML = svgKapal(n, dib); return; }
-      // Kontena baru: tergantung di kren → diletak atas kapal
-      el('gl-kapal').innerHTML = svgKapal(n, dib, { angkat: true });
-      setTimeout(function() { if (L) el('gl-kapal').innerHTML = svgKapal(pasanganLaci().length, dibayarLaci(L.id)); }, 450);
+      geserKapal(0);
+      if (!angkat || !n) return;
+      // Kontena baru: tergantung di atas → diletak atas timbunan
+      var kk = el('gl-pasangan').children, akhir = kk[kk.length - 1];
+      if (!akhir) return;
+      akhir.className += ' kt-angkat';
+      setTimeout(function() { akhir.className = akhir.className.replace(' kt-angkat', ''); }, 450);
+    }
+    function geserKapal(peratus) {
+      var g = el('gl-kapal'), t = peratus ? 'translateX(' + peratus + '%)' : '';
+      g.style.webkitTransform = t; g.style.transform = t;
     }
     // BELAYAR: upah masuk "menunggu" (disimpan di Firebase), kapal keluar skrin, kemudian Kapten bayar di pelabuhan
     function belayar() {
@@ -6384,13 +6408,15 @@
         if (S.bank[id]) S.bank[id].dibayar = n;
         simpanLokal();
         DP.upahTunggu = (DP.upahTunggu || 0) + upah;
-        var xs = [0, 12, 28, 50, 78, 112, 150, 195, 240], i = 0;
+        var xs = [0, 5, 12, 22, 35, 50, 68, 88, 110], i = 0;
         el('gl-info').textContent = 'Kapal belayar...';
+        lukisLaci();
+        try { el('gl-kapal').scrollIntoView(true); window.scrollBy(0, -40); } catch (e) {}
         (function main() {
-          el('gl-kapal').innerHTML = svgKapal(n, n, { x: xs[i] || 1 });
+          geserKapal(xs[i]);
           i++;
           if (i < xs.length) setTimeout(main, 250);
-          else setTimeout(function() { sampaiPelabuhan(title, baru, upah); }, 300);
+          else setTimeout(function() { sampaiPelabuhan(title, baru, upah); geserKapal(0); }, 300);
         })();
       }).catch(function(e) { dpSibuk = false; el('btn-gl-belayar').disabled = false; el('gl-info').textContent = 'Gagal belayar: ' + (e.message || e); });
     }
@@ -6477,7 +6503,7 @@
       if (!L.baris.length) bekas.innerHTML = '<div class="msg">Laci ini tiada ayat (notes kosong).</div>';
       var senarai = el('gl-pasangan'), dibK = dibayarLaci(L.id);
       senarai.innerHTML = '';
-      var timbun = document.createElement('div'); timbun.className = 'kt-timbun';
+      var timbun = senarai;
       for (i = 0; i < p.length; i++) {
         var kt = document.createElement('div'); kt.className = 'kt-kotak' + (i >= dibK ? ' kt-baru' : '');
         var ke = document.createElement('b'); ke.textContent = p[i].en;
@@ -6487,9 +6513,7 @@
         if (i >= dibK) { var tg = document.createElement('span'); tg.className = 'kt-tag'; tg.textContent = 'BARU'; kt.appendChild(tg); }
         timbun.appendChild(kt);
       }
-      senarai.appendChild(timbun);
-      var dek = document.createElement('div'); dek.className = 'kt-dek'; senarai.appendChild(dek);
-      if (!p.length) timbun.innerHTML = '<div class="msg">Dek kosong. Muat kontena pertama!</div>';
+      if (!p.length) timbun.innerHTML = '<div class="kt-kosong">Dek kosong. Muat kontena pertama!</div>';
       el('gl-status').textContent = L.title + ' · ' + p.length + ' pasangan';
       lukisPilihan();
     }
