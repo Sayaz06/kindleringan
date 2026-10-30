@@ -5684,12 +5684,17 @@
     /* Susunan kapal di pelabuhan: jeti kecil + besi + tali · kontena kecil sebaris · nama laci atas badan hitam */
     .kp-pelabuhan { padding: 2px 0 6px; }
     .kb { display: flex; align-items: flex-end; margin: 0 0 12px; padding-bottom: 4px; border-bottom: 2px dashed #000; cursor: pointer; overflow: hidden; }
-    .kb-jeti { position: relative; flex: 0 0 30px; height: 20px; margin-right: 8px; border: 2px solid #000; border-bottom: 0; background: #fff; }
-    .kb-besi { position: absolute; left: 9px; top: -10px; width: 8px; height: 10px; background: #000; }
+    .kb-jeti { position: relative; flex: 0 0 34px; height: 20px; margin-right: 8px; border: 2px solid #000; border-bottom: 0; background: #fff; }
+    .kb-besi { position: absolute; left: 14px; top: -10px; width: 8px; height: 10px; background: #000; }
     .kb-besi:before { content: ''; position: absolute; left: -3px; top: 0; width: 14px; height: 3px; background: #000; }
-    .kb-tali { position: absolute; left: 14px; top: -7px; width: 30px; height: 2px; background: #000;
+    .kb-tali { position: absolute; left: 19px; top: -7px; width: 28px; height: 2px; background: #000;
       -webkit-transform: rotate(14deg); transform: rotate(14deg); -webkit-transform-origin: 0 50%; transform-origin: 0 50%; }
     .kb.kb-lepas .kb-tali { display: none; }
+    .kb-orang { position: absolute; left: 1px; top: -17px; width: 9px; height: 16px; }
+    .kb-orang svg { display: block; width: 9px; height: 16px; }
+    .kb-bendera { position: absolute; right: 7%; bottom: 22px; width: 2px; height: 28px; background: #000; }
+    .kb-bendera:after { content: ''; position: absolute; left: 2px; top: 0; width: 0; height: 0;
+      border-left: 12px solid #000; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
     .kb-kapal { position: relative; flex: 1 1 auto; min-width: 0; }
     .kb-muat { display: flex; align-items: flex-end; gap: 2px; padding: 0 12% 0 7%; height: 11px; overflow: hidden; }
     .kb-k { display: block; flex: 0 0 12px; width: 12px; height: 9px; border: 1.5px solid #000; background: #fff; }
@@ -5697,7 +5702,7 @@
     .kb-lebih { font-size: 0.55rem; font-weight: bold; line-height: 9px; }
     .kb-badan { background: #000; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 4px 18px; border-radius: 0 0 22px 22px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
-    .kb.kb-sasar .kb-badan { outline: 3px dashed #000; outline-offset: 2px; }
+    .kb.kb-sasar { padding-top: 20px; }
     .kp-atas { display: flex; align-items: flex-end; min-height: 120px; padding: 0 10% 0 5%; }
     .kp-atas .kt-timbun { flex: 1 1 auto; min-width: 0; }
     .kp-tiang { position: absolute; right: 3%; bottom: 28px; width: 16px; }
@@ -6319,8 +6324,18 @@
       var idx = kapalKosong(), bekas = el('gb-senarai');
       if (idx < 0 || !bekas.children[idx]) return false;
       var sasaran = bekas.children[idx], yAkhir = -1, lama = bekas.querySelector('.kb-sasar');
-      if (lama) lama.className = 'kb';
+      if (lama) {
+        lama.className = 'kb';
+        var b1 = lama.querySelector('.kb-bendera'), o1 = lama.querySelector('.kb-orang');
+        if (b1) b1.parentNode.removeChild(b1);
+        if (o1) o1.parentNode.removeChild(o1);
+      }
       sasaran.className = 'kb kb-sasar';
+      var bendera = document.createElement('i'); bendera.className = 'kb-bendera';
+      sasaran.children[1].appendChild(bendera);
+      var orang = document.createElement('i'); orang.className = 'kb-orang';
+      orang.innerHTML = '<svg viewBox="0 0 9 16" xmlns="http://www.w3.org/2000/svg"><circle cx="4.5" cy="2.8" r="2.2" fill="#fff" stroke="#000" stroke-width="1.2"/><path d="M4.5 5 V10.5 M1 7.5 H8 M4.5 10.5 L2 16 M4.5 10.5 L7 16" fill="none" stroke="#000" stroke-width="1.4"/></svg>';
+      sasaran.children[0].appendChild(orang);
       var lompat = function() {
         if (!sasaran.offsetParent) return;
         if (yAkhir !== -1 && Math.abs(window.pageYOffset - yAkhir) > 5) return;
@@ -6510,7 +6525,7 @@
     }
     function lukisPilihan() {
       var en = teksPilihan('en'), bm = teksPilihan('bm');
-      el('gl-pilihan').textContent = (en || bm) ? ((en || '…') + '  =  ' + (bm || '…')) : '—';
+      el('gl-pilihan').textContent = (en || bm) ? ((en || '…') + '  =  ' + (bm || '…')) + (en && bm ? '  ·  KETIK UNTUK MUAT' : '') : '—';
     }
     function lukisLaci() {
       var p = pasanganLaci(), adaEn = {}, adaBm = {}, i, j;
@@ -6622,12 +6637,11 @@
       simpanBankLaci(p, 'Kontena dikeluarkan: ' + buang.en + ' = ' + buang.bm, false);
     });
     // Ketik mana-mana bahagian kapal → muat kontena (pasangan yang dipilih). Butang X pada kontena = keluarkan.
-    el('gl-kapal').addEventListener('click', function(e) {
-      var t = e.target;
-      while (t && t !== this) { if (t.getAttribute && t.getAttribute('data-gl-buang') !== null) return; t = t.parentNode; }
+    // Ketik KOTAK pilihan (jeti) → muat kontena (pasangan yang dipilih). Butang X pada kontena = keluarkan.
+    el('gl-pilihan').addEventListener('click', function() {
       if (!L || layar) return;
       var en = teksPilihan('en'), bm = teksPilihan('bm');
-      if (!en || !bm) { el('gl-info').textContent = 'Pilih perkataan English dan maksud BM dulu, kemudian ketik kapal.'; return; }
+      if (!en || !bm) { el('gl-info').textContent = 'Pilih perkataan English dan maksud BM dulu, kemudian ketik kotak ini.'; return; }
       var p = pasanganLaci().slice(), ganti = -1;
       for (var i = 0; i < p.length; i++) if (String(p[i].en).toLowerCase() === en.toLowerCase()) ganti = i;
       if (ganti >= 0) p[ganti] = { en: en, bm: bm }; else p.push({ en: en, bm: bm });
@@ -7100,10 +7114,10 @@
         ]) +
         '<h3 id="pd-bank">PELABUHAN (Bank Perkataan)</h3>' + I([
           'Setiap laci Bahasa yang sudah masuk SR Bahasa ialah sebuah KAPAL KARGO. Laci baru masuk SR → tekan "Segar".',
-          'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik mana-mana bahagian KAPAL untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
+          'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik KOTAK pilihan (bawah kapal) untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
           'Kontena kelabu = muatan baru. Ketik BESI BULAT (tali kapal) di jeti (kotak pilihan bawah kapal) → tali dilepas, kelasi naik, kapal keluar ke laut, kembali ke pelabuhan, Kapten kira upah ' + EKO.UPAH_POS + ' coin setiap kontena baru → tekan AMBIL untuk masukkan ke dompet.',
           'Upah sengaja sedikit — ganjaran besar datang daripada menghafal dalam game. Kontena dibuang dari kapal yang sudah belayar → upahnya ditolak semula.',
-          'Pelabuhan: semua kapal disusun, setiap satu diikat pada besi di jeti. Kontena kecil atas kapal = jumlah muatan (kelabu = belum belayar). PERGI KE KAPAL KOSONG = skrol ke kapal kosong. Ketik tali/kapal → tali dibuka, kapal ke DERMAGA untuk dimuat.',
+          'Pelabuhan: semua kapal disusun, setiap satu diikat pada besi di jeti. Kontena kecil atas kapal = jumlah muatan (kelabu = belum belayar). PERGI KE KAPAL KOSONG = skrol ke kapal kosong (ditanda bendera + kelasi di tali). Ketik tali/kapal → tali dibuka, kapal ke DERMAGA untuk dimuat.',
           'Perkataan biasa (the, is, a, to...) dikelabukan dan tidak boleh dipilih.',
           'Pasangan yang sama dalam kapal berlainan dikira SATU sahaja dalam game & SR.',
           'Kontena dibuang → dibuang juga dari SR kedai bila tiba gilirannya.'
