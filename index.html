@@ -5622,9 +5622,31 @@
     .dp-tukar .dp-sama { flex: 0 0 auto; font-weight: bold; font-size: 1.2rem; padding-bottom: 10px; }
     .dp-nota { font-size: 0.78rem; margin: 2px 0 6px; min-height: 1.2em; }
     .dp-btn .dp-utama { background: #000; color: #fff; }
+    /* NAVIGASI GAME: tab tetap di atas (kedudukan sama setiap skrin) + butang kecil untuk benda bukan rutin */
+    .gm-tab { display: flex; border: 2px solid #000; border-radius: 8px; overflow: hidden; margin: 2px 0 8px; }
+    .gm-tab button { flex: 1 1 0; min-width: 0; padding: 10px 2px; border: 0; border-right: 2px solid #000; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.78rem; font-weight: bold; cursor: pointer; }
+    .gm-tab button:last-child { border-right: 0; }
+    .gm-tab button.gm-aktif { background: #000; color: #fff; }
+    .gm-alat { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; }
+    .gm-alat-tajuk { flex: 1 1 auto; min-width: 0; font-weight: bold; font-size: 1.15rem; letter-spacing: 1px; }
+    .gm-kecil { flex: 0 0 auto; padding: 5px 11px; border: 1.5px solid #000; border-radius: 14px; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.78rem; font-weight: bold; cursor: pointer; }
+    .gm-utama { margin-top: 12px; padding: 14px 8px; font-size: 1.1rem; }
   </style>
   <div id="screen-game" class="screen">
     <div class="status-bar" id="gp-status">GAME PADAN</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="padan" class="gm-aktif">PADAN</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">PADAN</span>
+      <button type="button" id="btn-gp-bank" class="gm-kecil">Bank</button>
+      <button type="button" id="btn-gp-senarai" class="gm-kecil">SR</button>
+    </div>
     <div id="gp-info"></div>
     <div id="gp-papan">
       <div class="gp-lajur gp-en" id="gp-kiri"></div>
@@ -5634,13 +5656,7 @@
       <div class="gp-skor" id="gp-skor"></div>
       <div id="gp-skor-sub" style="font-size:0.85rem;margin-top:4px;white-space:pre-line;"></div>
     </div>
-    <div class="gp-baris">
-      <button id="btn-gp-menu" class="btn">Menu</button>
-      <button id="btn-gp-baru" class="btn btn-primary">Pusingan Baru</button>
-    </div>
-    <button id="btn-gp-bank" class="btn" style="margin-top:6px;">BANK PERKATAAN (padan sendiri)</button>
-    <button id="btn-gp-senarai" class="btn" style="margin-top:6px;">SENARAI SR GAME</button>
-    <button id="btn-gp-mini" class="btn btn-primary" style="margin-top:6px;">MINI GAME</button>
+    <button id="btn-gp-baru" class="btn btn-primary gm-utama">PUSINGAN BARU</button>
   </div>
   <div id="screen-gsr" class="screen">
     <div class="status-bar" id="gs-status">SR GAME</div>
@@ -5650,12 +5666,18 @@
   </div>
   <div id="screen-mini" class="screen">
     <div class="status-bar">MINI GAME</div>
-    <div class="jw-tajuk">MINI GAME</div>
-    <div id="mini-dompet" class="jw-info" style="font-weight:bold;"></div>
-    <button id="btn-mini-mx" class="btn btn-primary" style="margin-bottom:8px;">MAGIC EXCHANGE (coin → ringgit)</button>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="padan">PADAN</button>
+      <button type="button" data-gm-tab="mini" class="gm-aktif">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">MINI GAME</span>
+    </div>
+    <div id="mini-dompet" class="jw-info" style="font-weight:bold;text-align:left;"></div>
     <button id="btn-mini-jw" class="gb-laci" style="font-size:1.3rem;padding:14px 12px;">JUTAWAN<span class="gb-sub" id="mini-jw-sub">Memuatkan...</span></button>
     <div class="jw-info">Mini game lain akan ditambah kemudian.</div>
-    <button id="btn-mini-balik" class="gb-terapung">Kembali ke Game</button>
   </div>
   <div id="screen-jw-kedai" class="screen">
     <div class="status-bar" id="jk-status">KEDAI PAK JUTA</div>
@@ -5677,14 +5699,22 @@
   </div>
   <div id="screen-mx" class="screen">
     <div class="status-bar" id="mx-status">MAGIC EXCHANGE</div>
-    <div class="jw-tajuk" style="font-size:1.4rem;">MAGIC EXCHANGE</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="padan">PADAN</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+      <button type="button" data-gm-tab="mx" class="gm-aktif">EXCHANGE</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">MAGIC EXCHANGE</span>
+      <button type="button" id="btn-mx-refund" class="gm-kecil">Refund</button>
+    </div>
     <div class="pj-kotak"><div class="pj-watak" id="mx-watak"></div><div class="pj-cakap" id="mx-cakap"></div></div>
     <div class="dp-baki">
       <div class="dp-gelap">Coin<b id="mx-coin">-</b></div>
       <div>Ringgit Biru<b id="mx-biru">-</b></div>
       <div>Ringgit Merah<b id="mx-merah">-</b></div>
     </div>
-    <button id="btn-mx-refund" class="btn" style="margin:6px 0;border-style:dashed;">KAUNTER REFUND (tersilap tukar? ada caj)</button>
     <div class="dp-tajuk">Beli RINGGIT BIRU (kedai item godaan)</div>
     <div class="dp-kadar" id="mx-kadar-biru"></div>
     <div class="dp-tukar">
@@ -5710,8 +5740,7 @@
       <button type="button" data-mx-tukar="merah" class="dp-utama">TUKAR KE MERAH</button>
     </div>
     <div class="dp-tajuk">Sejarah tukaran</div>
-    <div id="mx-log" style="padding-bottom:80px;"></div>
-    <button id="btn-mx-balik" class="gb-terapung">Kembali ke Mini Game</button>
+    <div id="mx-log" style="padding-bottom:20px;"></div>
   </div>
   <div id="screen-mxr" class="screen">
     <div class="status-bar" id="mxr-status">KAUNTER REFUND</div>
@@ -5751,10 +5780,19 @@
   </div>
   <div id="screen-jw-level" class="screen">
     <div class="status-bar" id="jwl-status">JUTAWAN</div>
-    <div class="jw-tajuk">JUTAWAN</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="padan">PADAN</button>
+      <button type="button" data-gm-tab="mini" class="gm-aktif">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">JUTAWAN</span>
+      <button type="button" id="btn-jwl-kedai" class="gm-kecil">Kedai $</button>
+      <button type="button" id="btn-jwl-sr" class="gm-kecil">SR</button>
+    </div>
     <div class="jw-bar"><div id="jwl-bar-isi"></div></div>
     <div id="jwl-info" class="jw-info"></div>
-    <button id="btn-jwl-kedai" class="btn" style="margin:4px 0 8px;">KEDAI PAK JUTA (tukar $ → coin)</button>
     <div id="jwl-grid" class="jw-grid"></div>
     <div id="jwl-kurang" style="display:none;border:2px dashed #000;border-radius:8px;padding:10px;margin:6px 0;">
       <div id="jwl-kurang-teks" class="jw-info" style="font-weight:bold;"></div>
@@ -5762,9 +5800,7 @@
       <button id="btn-jwl-bank" class="btn btn-primary">Padankan perkataan di BANK</button>
       <button id="btn-jwl-batal" class="btn">Batal</button>
     </div>
-    <button id="btn-jwl-main" class="btn btn-primary">MAIN</button>
-    <button id="btn-jwl-sr" class="btn">SENARAI SR JUTAWAN</button>
-    <button id="btn-jwl-balik" class="btn">Kembali ke Mini Game</button>
+    <button id="btn-jwl-main" class="btn btn-primary gm-utama">MAIN</button>
   </div>
   <div id="screen-jw-tangga" class="screen">
     <div class="status-bar" id="jwt-status">JUTAWAN</div>
@@ -6622,20 +6658,28 @@
 
     el('btn-go-game').onclick = bukaGame;
     el('btn-gp-baru').onclick = function() { if (currentUser) mulaPusingan(); };
-    el('btn-gp-menu').onclick = function() { pus = null; showScreen('screen-menu'); };
     el('btn-gp-bank').onclick = function() { pus = null; bukaBank(false); };
     el('btn-gp-senarai').onclick = function() { bukaSenaraiGsr(); };
+    // Tab navigasi game (MENU | PADAN | MINI GAME | EXCHANGE) — sama di setiap skrin utama game
+    document.addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== document && !(t.getAttribute && t.getAttribute('data-gm-tab'))) t = t.parentNode;
+      if (!t || t === document) return;
+      var k = t.getAttribute('data-gm-tab');
+      pus = null; jw = null;
+      if (k === 'menu') showScreen('screen-menu');
+      else if (k === 'padan') bukaGame();
+      else if (k === 'mini') bukaMini();
+      else if (k === 'mx') bukaMx();
+    });
     el('btn-gs-game').onclick = function() { (gsBalik || bukaGame)(); };
     el('btn-gb-game').onclick = bukaGame;
     el('btn-gb-segar').onclick = function() { bukaBank(true); };
     // Mini game
-    el('btn-gp-mini').onclick = bukaMini;
     el('btn-mini-jw').onclick = bukaJwLevel;
-    el('btn-mini-balik').onclick = bukaGame;
     el('btn-jwl-main').onclick = mulaJw;
     el('jwl-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-jw-main')) mulaJw(); });
     el('btn-jwl-sr').onclick = function() { bukaSenaraiGsr(JW_KOL, 'SR JUTAWAN', bukaJwLevel); };
-    el('btn-jwl-balik').onclick = bukaMini;
     el('btn-jwt-main').onclick = function() { if (jw && !jw.tamat) tunjukSoalan(); };
     el('btn-jwt-keluar').onclick = function() { tamatJw('keluar'); };
     el('btn-jws-keluar').onclick = function() { if (jw && !jw.kunci) tamatJw('keluar'); };
@@ -6923,8 +6967,6 @@
     el('btn-jk-maks').onclick = function() { tkJuta.maks(); };
     el('btn-jk-tukar').onclick = tukarDolar;
     el('btn-jk-balik').onclick = bukaJwLevel;
-    el('btn-mini-mx').onclick = bukaMx;
-    el('btn-mx-balik').onclick = bukaMini;
     el('screen-mx').addEventListener('click', function(e) {
       var t = e.target;
       if (!t || !t.getAttribute) return;
