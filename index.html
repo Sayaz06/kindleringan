@@ -5586,7 +5586,7 @@
     /* MINI GAME — JUTAWAN */
     .jw-tajuk { font-size: 1.8rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 6px 0; }
     .jw-bar { border: 2px solid #000; border-radius: 8px; height: 14px; overflow: hidden; margin: 4px 0; }
-    #jwl-bar-isi { height: 100%; width: 0; background: #000; }
+    #jwl-bar-isi, #gpl-bar-isi { height: 100%; width: 0; background: #000; }
     .jw-info { font-size: 0.85rem; text-align: center; margin: 6px 0; white-space: pre-line; min-height: 1.2em; }
     .jw-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 8px 0; }
     .jw-l { width: 23%; height: 62px; margin: 0 0 8px; padding: 0; border: 2px solid #000; border-radius: 10px; background: #fff; color: #000;
@@ -5771,6 +5771,43 @@
       <div id="gp-skor-sub" style="font-size:0.85rem;margin-top:4px;white-space:pre-line;"></div>
     </div>
     <button id="btn-gp-baru" class="btn btn-primary gm-utama">PUSINGAN BARU</button>
+  </div>
+  <div id="screen-gp-level" class="screen">
+    <div class="status-bar" id="gpl-status">PADAN</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini" class="gm-aktif">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">PADAN</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-padan">Panduan</button>
+      <button type="button" id="btn-gpl-kaunter" class="gm-kecil">Kaunter Tiket</button>
+      <button type="button" id="btn-gpl-sr" class="gm-kecil">SR</button>
+    </div>
+    <div class="jw-bar"><div id="gpl-bar-isi"></div></div>
+    <div id="gpl-info" class="jw-info"></div>
+    <div id="gpl-grid" class="jw-grid"></div>
+    <button id="btn-gpl-main" class="btn btn-primary gm-utama">MAIN</button>
+  </div>
+  <div id="screen-gp-kaunter" class="screen">
+    <div class="status-bar" id="gk-status">KAUNTER TIKET</div>
+    <div class="jw-tajuk" style="font-size:1.4rem;">KAUNTER TIKET ARKED</div>
+    <div class="pj-kotak"><div class="pj-watak" id="gk-watak"></div><div class="pj-cakap" id="gk-cakap"></div></div>
+    <div class="dp-baki"><div>Tiket Arked<b id="gk-tiket">-</b></div><div class="dp-gelap">Coin<b id="gk-coin">-</b></div></div>
+    <div class="dp-kadar" id="gk-kadar"></div>
+    <div class="dp-tukar">
+      <label>Tiket<input id="gk-in-tiket" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+      <span class="dp-sama">=</span>
+      <label>Coin<input id="gk-in-coin" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="gk-nota"></div>
+    <div class="dp-btn">
+      <button type="button" id="btn-gk-maks">Maks</button>
+      <button type="button" id="btn-gk-tukar" class="dp-utama">TUKAR</button>
+    </div>
+    <button id="btn-gk-balik" class="btn" style="margin-top:12px;">Kembali ke Padan</button>
   </div>
   <div id="screen-gsr" class="screen">
     <div class="status-bar" id="gs-status">SR GAME</div>
@@ -6157,7 +6194,7 @@
     function kemaskiniStatus(bank) {
       var dlmSr = 0, baru = 0;
       for (var i = 0; i < bank.length; i++) { if (S.gsr[bank[i].id]) dlmSr++; else baru++; }
-      el('gp-status').textContent = 'GAME · Pusingan ' + bilPusingan + ' · SR game ' + dlmSr + ' · Baru ' + baru;
+      el('gp-status').textContent = 'PADAN · Level ' + (GP.lulus + 1) + ' · SR game ' + dlmSr + ' · Baru ' + baru;
     }
     function masaTeks(ms) {
       var d = new Date(ms), h = d.getHours(), m = ('0' + d.getMinutes()).slice(-2);
@@ -6243,14 +6280,25 @@
         return ref.update({ fasaSemasa: fasaBaru, nextDueAt: now + getSRInterval(fasaBaru), sejarahFasa: sejarah, updatedAt: now });
       }).catch(function(e) { el('gp-info').textContent = 'Gagal kemas kini SR game: ' + (e.message || e); });
     }
+    // Satu pusingan = satu LEVEL (6 pasangan). Lulus = semua dipadankan TANPA salah → dapat Tiket Arked.
     function tamatPusingan() {
+      var lv = GP.lulus + 1, lulus = pus.cubaanSalah <= EKO.GP_SALAH_MAKS, tiket = pus.pasangan.length * EKO.GP_TIKET_KATA;
+      var ubah = { main: firebase.firestore.FieldValue.increment(1), updatedAt: Date.now() };
+      GP.main++;
+      if (lulus) {
+        GP.lulus++; GP.tiket += tiket;
+        ubah.lulus = firebase.firestore.FieldValue.increment(1);
+        ubah.tiket = firebase.firestore.FieldValue.increment(tiket);
+      }
+      kol('game_stat').doc('padan').set(ubah, { merge: true }).catch(function(e) { el('gp-info').textContent = 'Gagal simpan level: ' + (e.message || e); });
       el('gp-papan').style.display = 'none';
       el('gp-tamat').style.display = 'block';
-      el('gp-skor').textContent = 'Selesai';
-      el('gp-skor-sub').textContent = (pus.bilSr ? pus.bilSr + ' SR game naik fasa' : '') +
+      el('gp-skor').textContent = lulus ? 'LULUS LEVEL ' + lv + '!' : 'BELUM LULUS';
+      el('gp-skor-sub').textContent = (lulus ? '+' + tiket + ' Tiket Arked (= ' + Math.floor(tiket / EKO.TIKET_COIN) + ' coin di Kaunter Tiket)' :
+          pus.cubaanSalah + ' cubaan salah. Level ' + lv + ' mesti dipadankan tanpa salah. Cuba lagi!') + '\n' +
+        (pus.bilSr ? pus.bilSr + ' SR game naik fasa' : '') +
         (pus.bilSr && pus.pasangan.length - pus.bilSr ? ' · ' : '') +
-        (pus.pasangan.length - pus.bilSr ? (pus.pasangan.length - pus.bilSr) + ' perkataan baru masuk SR game' : '') +
-        (pus.cubaanSalah ? '\n' + pus.cubaanSalah + ' cubaan salah' : '');
+        (pus.pasangan.length - pus.bilSr ? (pus.pasangan.length - pus.bilSr) + ' perkataan baru masuk SR game' : '');
       el('gp-info').textContent = '';
       kemaskiniStatus(senaraiBank());
     }
@@ -6296,11 +6344,103 @@
           if (!ok) { el('gp-info').textContent = 'Gagal memuat bank: ' + ((e && e.message) || ''); return; }
           muatGsr(false, function(ok2, e2) {
             if (!ok2) { el('gp-info').textContent = 'Gagal memuat SR game: ' + ((e2 && e2.message) || ''); return; }
-            mulaPusingan();
+            gpMuat(function() { mulaPusingan(); });
           });
         });
       });
     }
+    // ══ PADAN: LEVEL (12 satu set) + TIKET ARKED · Firebase: users/{uid}/game_stat/padan { main, lulus, tiket } ══
+    var GP = { main: 0, lulus: 0, tiket: 0 };
+    function gpMuat(cb) {
+      kol('game_stat').doc('padan').get().then(function(s) {
+        var d = (s && s.exists) ? s.data() : {};
+        GP = { main: d.main || 0, lulus: d.lulus || 0, tiket: d.tiket || 0 };
+        cb(true);
+      }).catch(function(e) { cb(false, e); });
+    }
+    function bukaGpLevel() {
+      if (!currentUser) return;
+      pus = null;
+      showScreen('screen-gp-level');
+      el('gpl-info').textContent = 'Memuatkan...';
+      gpMuat(function(ok, e) {
+        if (!ok) { el('gpl-info').textContent = 'Gagal memuat: ' + ((e && e.message) || ''); return; }
+        lukisGpLevel();
+      });
+    }
+    function lukisGpLevel() {
+      var lv = GP.lulus + 1, mula = Math.floor((lv - 1) / 12) * 12, siap = (lv - 1) % 12, h = '', n, i;
+      for (i = 1; i <= 12; i++) {
+        n = mula + i;
+        if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-gp-main="1">' + n + '</button>';
+        else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
+      }
+      el('gpl-grid').innerHTML = h;
+      el('gpl-bar-isi').style.width = Math.round(siap / 12 * 100) + '%';
+      el('gpl-status').textContent = 'PADAN · Level ' + lv + ' · Tiket ' + GP.tiket;
+      el('gpl-info').textContent = 'Set ' + (mula / 12 + 1) + ' · ' + siap + '/12 level lulus · Tiket Arked ' + GP.tiket +
+        '\nSetiap level: padan 6 pasangan tanpa salah → +' + (BIL * EKO.GP_TIKET_KATA) + ' tiket';
+      el('btn-gpl-main').textContent = 'MAIN LEVEL ' + lv;
+    }
+    // ── KAUNTER TIKET: Tiket Arked → coin ──
+    var tkTiket = pautTukar({
+      a: el('gk-in-tiket'), b: el('gk-in-coin'), nota: el('gk-nota'),
+      maxA: function() { return GP.tiket; },
+      keDapat: function(t) { return Math.floor(t / EKO.TIKET_COIN + 1e-9); },
+      tepat: function(t) { return t / EKO.TIKET_COIN; },
+      kos: function(c) { return Math.ceil(c * EKO.TIKET_COIN - 1e-9); },
+      bacaB: bacaNombor, rapiB: rapiNombor, tulisB: function(v) { return String(v); },
+      tulisKecil: fmtKecil, fmtTepat: function(x) { return fmtKecil(x) + ' coin'; },
+      fmtKos: function(v) { return v + ' tiket'; }, fmtDapat: function(v) { return v + ' coin'; }
+    });
+    function lukisGk() {
+      el('gk-tiket').textContent = GP.tiket;
+      el('gk-coin').textContent = DP.coin;
+      el('gk-kadar').textContent = 'Kadar: ' + EKO.TIKET_COIN + ' tiket = 1 coin · 1 level Padan = ' + (BIL * EKO.GP_TIKET_KATA) + ' tiket = ' + (BIL * EKO.GP_TIKET_KATA / EKO.TIKET_COIN) + ' coin';
+      tkTiket.kosong();
+    }
+    function bukaGk() {
+      if (!currentUser) return;
+      showScreen('screen-gp-kaunter');
+      el('gk-tiket').textContent = '-'; el('gk-coin').textContent = '-';
+      penjaga('gk-watak', 'tiket', 'masuk', 'Memuatkan...', 'gk-cakap');
+      gpMuat(function(ok) {
+        if (!ok) { el('gk-cakap').textContent = 'Gagal memuat tiket.'; return; }
+        dpMuat(function(ok2) {
+          if (!ok2) { el('gk-cakap').textContent = 'Gagal memuat dompet.'; return; }
+          lukisGk();
+          el('gk-cakap').textContent = GP.tiket >= EKO.TIKET_COIN ? 'Selamat datang ke kaunter tiket! Banyak tiket awak kumpul. Nak tukar berapa?' :
+            'Selamat datang! Tiket awak belum cukup. Lulus satu level Padan dulu ya.';
+        });
+      });
+    }
+    function tukarTiket() {
+      if (dpSibuk) return;
+      var dapat = tkTiket.dapat(), kos = Math.ceil(dapat * EKO.TIKET_COIN - 1e-9);
+      if (dapat < 1 || kos > GP.tiket) {
+        penjaga('gk-watak', 'tiket', 'sedih', dapat >= 1 ? 'Tiket tak cukup!' : 'Sekurang-kurangnya ' + EKO.TIKET_COIN + ' tiket untuk 1 coin.', 'gk-cakap');
+        return;
+      }
+      var b = db.batch();
+      dpSibuk = true;
+      b.set(kol('game_stat').doc('padan'), { tiket: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() }, { merge: true });
+      b.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(dapat), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'tiket>coin', kos + ' tiket → +' + dapat + ' coin');
+      b.commit().then(function() {
+        dpSibuk = false;
+        GP.tiket -= kos; DP.coin += dapat;
+        lukisGk();
+        penjaga('gk-watak', 'tiket', 'gembira', 'Terima kasih! ' + kos + ' tiket → +' + dapat + ' coin.', 'gk-cakap');
+      }).catch(function(e) { dpSibuk = false; el('gk-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
+    }
+    el('btn-gpl-main').onclick = bukaGame;
+    el('gpl-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-gp-main')) bukaGame(); });
+    el('btn-gpl-sr').onclick = function() { bukaSenaraiGsr(); };
+    el('btn-gpl-kaunter').onclick = bukaGk;
+    el('btn-gk-maks').onclick = function() { tkTiket.maks(); };
+    el('btn-gk-tukar').onclick = tukarTiket;
+    el('btn-gk-balik').onclick = bukaGpLevel;
 
 
     // ══ PELABUHAN (Bank) — setiap laci = sebuah KAPAL KARGO, setiap pasangan = 1 KONTENA ══
@@ -6944,7 +7084,7 @@
       el('mini-notis').style.display = 'none';
       jwSediakan(function(ok, e) {
         if (!ok) { el('mini-jw-sub').textContent = 'Gagal memuat: ' + ((e && e.message) || ''); return; }
-        muatGsr(false, function() { kiraStokMini(); });
+        muatGsr(false, function() { gpMuat(function() { kiraStokMini(); }); });
       });
       dpMuat(function(ok) {
         if (ok) el('mini-dompet').textContent = 'Coin ' + DP.coin + ' · Biru ' + rm(DP.biruSen) + ' · Merah ' + rm(DP.merahSen);
@@ -6978,7 +7118,7 @@
         else el(idKedai).innerHTML = svgKedai(st.buka ? 'buka' : 'tutup');
         lama[k] = st.buka;
       }
-      satu('padan', 'btn-mini-padan', 'mini-padan-sub', 'mini-padan-kedai', 'stok ' + STOK.padan.ada + '/' + STOK.padan.perlu + ' (main game, padan 6 pasangan)');
+      satu('padan', 'btn-mini-padan', 'mini-padan-sub', 'mini-padan-kedai', 'Level ' + (GP.lulus + 1) + ' · stok ' + STOK.padan.ada + '/' + STOK.padan.perlu + ' · Tiket ' + GP.tiket);
       satu('jw', 'btn-mini-jw', 'mini-jw-sub', 'mini-jw-kedai', jwRingkas());
       try { localStorage.setItem('mini_kedai_v1', JSON.stringify(lama)); } catch (e) {}
     }
@@ -7235,7 +7375,7 @@
     };
 
     el('btn-go-game').onclick = bukaMini;
-    el('btn-gp-baru').onclick = function() { if (currentUser) mulaPusingan(); };
+    el('btn-gp-baru').onclick = function() { if (currentUser) bukaGpLevel(); };
     el('btn-gp-senarai').onclick = function() { bukaSenaraiGsr(); };
     // Tab navigasi game (MENU | PADAN | MINI GAME | EXCHANGE) — sama di setiap skrin utama game
     document.addEventListener('click', function(e) {
@@ -7263,13 +7403,16 @@
         ]) +
         '<h3 id="pd-padan">PADAN (mini game)</h3>' + I([
           'Tekan perkataan English (kotak hitam), kemudian maksudnya dalam BM (kotak putih). Pasangan betul akan hilang.',
+          'LEVEL: setiap level = satu pusingan 6 pasangan. 12 level satu set. PUSINGAN BARU → page Level → MAIN LEVEL (atau tekan nombor level).',
+          'Lulus level = keenam-enam pasangan dipadankan TANPA salah → +' + (6 * EKO.GP_TIKET_KATA) + ' Tiket Arked. Ada salah → ulang level yang sama (SR tetap dikemas kini).',
+          'Kaunter Tiket (page Level): tukar Tiket Arked → coin. ' + EKO.TIKET_COIN + ' tiket = 1 coin (1 level = ' + (6 * EKO.GP_TIKET_KATA / EKO.TIKET_COIN) + ' coin).',
           'Setiap pusingan ada 6 pasangan: paling banyak 3 dari SR Padan yang sudah sampai masa, selebihnya perkataan baru (ikut susunan laluan, lama dahulu).',
           'Tiada SR sampai masa → keenam-enam pasangan ialah perkataan baru. Kurang dari 6 → kedai Padan TUTUP.',
           'Selepas dipadankan: perkataan baru masuk SR Padan (fasa 1, muncul semula selepas 20 minit). Perkataan SR naik satu fasa.',
           'Selang SR: 20 minit → 2 jam → 4 jam → 6 jam → 2 hari → 4 hari → 6 hari → 7 hari → 8 hari dan seterusnya.',
-          'Cubaan salah tidak menjejaskan SR, ia cuma dikira.',
+          'Cubaan salah tidak menjejaskan SR, tapi level tak lulus.',
           'Satu pusingan tidak akan ada 2 pasangan dengan maksud BM yang sama (cth perpetuate = terabadi & enshrined = terabadi).',
-          'Bar atas: Pusingan · SR game (jumlah perkataan dalam SR Padan) · Baru (belum masuk SR Padan).',
+          'Bar atas: Level · SR game (jumlah perkataan dalam SR Padan) · Baru (belum masuk SR Padan).',
           'Butang SR: senarai SR Padan (sampai masa & belum sampai masa).'
         ]) +
         '<h3 id="pd-bank">PELABUHAN (Bank Perkataan)</h3>' + I([
@@ -7356,7 +7499,7 @@
     el('btn-gb-segar').onclick = function() { bukaBank(true); };
     // Mini game (kedai) — tutup bila tiada stok
     el('btn-mini-jw').onclick = function() { masukKedai('jw', bukaJwLevel); };
-    el('btn-mini-padan').onclick = function() { masukKedai('padan', bukaGame); };
+    el('btn-mini-padan').onclick = function() { masukKedai('padan', bukaGpLevel); };
     el('btn-jwl-main').onclick = mulaJw;
     el('jwl-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-jw-main')) mulaJw(); });
     el('btn-jwl-sr').onclick = function() { bukaSenaraiGsr(JW_KOL, 'SR JUTAWAN', bukaJwLevel); };
@@ -7381,6 +7524,9 @@
     EKO.COIN_MERAH = EKO.COIN_BIRU / EKO.MERAH_X;                                 // 1 Merah ≈ 342.86 coin
     EKO.CAJ_REFUND = 0.2;                                                         // Kaunter Refund: caj 20%
     EKO.UPAH_POS = 2;                                                             // Pelabuhan: upah 2 coin setiap kontena (pasangan)
+    EKO.GP_TIKET_KATA = 100;                                                      // Padan: 1 perkataan = 100 Tiket Arked (1 level 6 pasangan = 600 tiket)
+    EKO.TIKET_COIN = EKO.GP_TIKET_KATA / EKO.KATA_COIN;                           // Kaunter Tiket: 10 tiket = 1 coin
+    EKO.GP_SALAH_MAKS = 0;                                                        // Padan: lulus level hanya jika salah <= 0 (tiada salah)
     var DP = { coin: 0, biruSen: 0, merahSen: 0 }, dpSibuk = false;
 
     function rm(sen) { return (Math.floor(sen) / 100).toFixed(2); }
@@ -7433,6 +7579,9 @@
         '<circle cx="40" cy="11" r="2.2" fill="none" stroke="#000" stroke-width="1.5"/><path d="M40 13 V20 M35.5 17 Q40 22.5 44.5 17 M37 15.5 H43" fill="none" stroke="#000" stroke-width="1.5"/>' :
         topi === 'juta' ?
         '<rect x="27" y="6" width="26" height="16" fill="#000"/><rect x="20" y="21" width="40" height="4" fill="#000"/><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">$</text>' :
+        topi === 'tiket' ?
+        '<path d="M22 24 Q40 6 58 24 Z" fill="#000"/><rect x="52" y="21" width="16" height="4" rx="2" fill="#000"/>' +
+        '<rect x="29" y="11" width="22" height="9" fill="#fff" stroke="#000" stroke-width="1.2"/><text x="40" y="18" font-size="6" text-anchor="middle" font-weight="bold" fill="#000">TIKET</text>' :
         '<path d="M24 25 L40 0 L56 25 Z" fill="#000"/><text x="40" y="20" font-size="9" text-anchor="middle" fill="#fff">*</text><rect x="20" y="23" width="40" height="4" fill="#000"/>';
       // MARAH: kening tajam, mulut gigi kacip, tangan di pinggang, asap di kepala, badan bergegar
       var marah = aksi.indexOf('marah') === 0, asap = '';
