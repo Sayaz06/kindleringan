@@ -5633,7 +5633,34 @@
     .gm-kecil { flex: 0 0 auto; padding: 5px 11px; border: 1.5px solid #000; border-radius: 14px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.78rem; font-weight: bold; cursor: pointer; }
     .gm-utama { margin-top: 12px; padding: 14px 8px; font-size: 1.1rem; }
+    /* BUKU PANDUAN & PERATURAN (tindih atas skrin semasa — permainan tak hilang) */
+    #gm-panduan { display: none; position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 10000; background: #fff; color: #000;
+      overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 14px 30px; box-sizing: border-box; }
+    #gm-panduan .pd-atas { position: sticky; position: -webkit-sticky; top: 0; background: #fff; display: flex; align-items: center; gap: 8px;
+      padding: 10px 0 8px; border-bottom: 2px solid #000; margin-bottom: 6px; }
+    #gm-panduan .pd-atas b { flex: 1 1 auto; font-size: 1.1rem; letter-spacing: 1px; }
+    #gm-panduan .pd-isi-tab { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    #gm-panduan h3 { font-size: 1.05rem; margin: 16px 0 6px; padding: 4px 8px; background: #000; color: #fff; border-radius: 4px; }
+    #gm-panduan ul { margin: 0 0 6px; padding-left: 20px; }
+    #gm-panduan li { font-size: 0.9rem; line-height: 1.45; margin-bottom: 4px; }
+    /* Titik pilih Ringgit Biru (kiri) / Merah (kanan) — macam titik skrol tapi melintang */
+    .mx-titik { display: flex; justify-content: center; gap: 36px; margin: 12px 0 4px; }
+    .mx-titik button { display: block; background: none; border: 0; padding: 4px 10px; font-family: inherit; font-size: 0.8rem;
+      font-weight: bold; color: #999; cursor: pointer; text-align: center; }
+    .mx-titik .mx-bulat { display: block; width: 18px; height: 18px; margin: 0 auto 4px; border: 2px solid #999; border-radius: 50%; background: #fff; }
+    .mx-titik button.mx-on { color: #000; }
+    .mx-titik button.mx-on .mx-bulat { background: #000; border-color: #000; }
   </style>
+  <div id="gm-panduan" aria-hidden="true">
+    <div class="pd-atas"><b>BUKU PANDUAN</b><button type="button" id="btn-pd-tutup" class="gm-kecil">Tutup</button></div>
+    <div class="pd-isi-tab">
+      <button type="button" class="gm-kecil" data-pd-ke="pd-padan">Padan</button>
+      <button type="button" class="gm-kecil" data-pd-ke="pd-bank">Bank</button>
+      <button type="button" class="gm-kecil" data-pd-ke="pd-jutawan">Jutawan</button>
+      <button type="button" class="gm-kecil" data-pd-ke="pd-duit">Duit &amp; Exchange</button>
+    </div>
+    <div id="gm-panduan-isi"></div>
+  </div>
   <div id="screen-game" class="screen">
     <div class="status-bar" id="gp-status">GAME PADAN</div>
     <div class="gm-tab">
@@ -5644,6 +5671,7 @@
     </div>
     <div class="gm-alat">
       <span class="gm-alat-tajuk">PADAN</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-padan">Panduan</button>
       <button type="button" id="btn-gp-bank" class="gm-kecil">Bank</button>
       <button type="button" id="btn-gp-senarai" class="gm-kecil">SR</button>
     </div>
@@ -5674,6 +5702,7 @@
     </div>
     <div class="gm-alat">
       <span class="gm-alat-tajuk">MINI GAME</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-jutawan">Panduan</button>
     </div>
     <div id="mini-dompet" class="jw-info" style="font-weight:bold;text-align:left;"></div>
     <button id="btn-mini-jw" class="gb-laci" style="font-size:1.3rem;padding:14px 12px;">JUTAWAN<span class="gb-sub" id="mini-jw-sub">Memuatkan...</span></button>
@@ -5707,6 +5736,7 @@
     </div>
     <div class="gm-alat">
       <span class="gm-alat-tajuk">MAGIC EXCHANGE</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-duit">Panduan</button>
       <button type="button" id="btn-mx-refund" class="gm-kecil">Refund</button>
     </div>
     <div class="pj-kotak"><div class="pj-watak" id="mx-watak"></div><div class="pj-cakap" id="mx-cakap"></div></div>
@@ -5715,7 +5745,13 @@
       <div>Ringgit Biru<b id="mx-biru">-</b></div>
       <div>Ringgit Merah<b id="mx-merah">-</b></div>
     </div>
-    <div class="dp-tajuk">Beli RINGGIT BIRU (kedai item godaan)</div>
+    <div class="mx-titik">
+      <button type="button" data-mx-pilih="biru" class="mx-on"><span class="mx-bulat"></span>BIRU</button>
+      <button type="button" data-mx-pilih="merah"><span class="mx-bulat"></span>MERAH</button>
+    </div>
+    <div class="mx-geser">
+    <div data-mx-panel="biru">
+    <div class="dp-tajuk">Beli RINGGIT BIRU (item godaan)</div>
     <div class="dp-kadar" id="mx-kadar-biru"></div>
     <div class="dp-tukar">
       <label>Coin<input id="mx-in-coin-biru" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
@@ -5727,7 +5763,9 @@
       <button type="button" data-mx-maks="biru">Maks</button>
       <button type="button" data-mx-tukar="biru" class="dp-utama">TUKAR KE BIRU</button>
     </div>
-    <div class="dp-tajuk">Beli RINGGIT MERAH (kedai item digalakkan)</div>
+    </div>
+    <div data-mx-panel="merah" style="display:none;">
+    <div class="dp-tajuk">Beli RINGGIT MERAH (item digalakkan)</div>
     <div class="dp-kadar" id="mx-kadar-merah"></div>
     <div class="dp-tukar">
       <label>Coin<input id="mx-in-coin-merah" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
@@ -5738,6 +5776,8 @@
     <div class="dp-btn dp-merah">
       <button type="button" data-mx-maks="merah">Maks</button>
       <button type="button" data-mx-tukar="merah" class="dp-utama">TUKAR KE MERAH</button>
+    </div>
+    </div>
     </div>
     <div class="dp-tajuk">Sejarah tukaran</div>
     <div id="mx-log" style="padding-bottom:20px;"></div>
@@ -5752,6 +5792,12 @@
       <div>Ringgit Merah<b id="mxr-merah">-</b></div>
     </div>
     <div class="dp-kadar" id="mxr-caj" style="font-weight:bold;"></div>
+    <div class="mx-titik">
+      <button type="button" data-mx-pilih="biru" class="mx-on"><span class="mx-bulat"></span>BIRU</button>
+      <button type="button" data-mx-pilih="merah"><span class="mx-bulat"></span>MERAH</button>
+    </div>
+    <div class="mx-geser">
+    <div data-mx-panel="biru">
     <div class="dp-tajuk">Refund RINGGIT BIRU → coin</div>
     <div class="dp-tukar">
       <label>Ringgit Biru<input id="mxr-in-rm-biru" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
@@ -5763,6 +5809,8 @@
       <button type="button" data-mxr-maks="biru">Maks</button>
       <button type="button" data-mxr-refund="biru" class="dp-utama">REFUND BIRU</button>
     </div>
+    </div>
+    <div data-mx-panel="merah" style="display:none;">
     <div class="dp-tajuk">Refund RINGGIT MERAH → coin</div>
     <div class="dp-tukar">
       <label>Ringgit Merah<input id="mxr-in-rm-merah" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
@@ -5773,6 +5821,8 @@
     <div class="dp-btn dp-merah">
       <button type="button" data-mxr-maks="merah">Maks</button>
       <button type="button" data-mxr-refund="merah" class="dp-utama">REFUND MERAH</button>
+    </div>
+    </div>
     </div>
     <div class="dp-tajuk">Sejarah tukaran &amp; refund</div>
     <div id="mxr-log" style="padding-bottom:80px;"></div>
@@ -5788,6 +5838,7 @@
     </div>
     <div class="gm-alat">
       <span class="gm-alat-tajuk">JUTAWAN</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-jutawan">Panduan</button>
       <button type="button" id="btn-jwl-kedai" class="gm-kecil">Kedai $</button>
       <button type="button" id="btn-jwl-sr" class="gm-kecil">SR</button>
     </div>
@@ -6019,7 +6070,7 @@
         pus = { pasangan: pas, baki: pas.length, cubaanSalah: 0, bilSr: bilSr };
         el('gp-papan').style.display = 'flex';
         lukisPapan();
-        el('gp-info').textContent = (bilSr ? bilSr + ' SR game · ' : '') + (pas.length - bilSr) + ' perkataan baru\nTekan perkataan English, kemudian maksudnya dalam BM.';
+        el('gp-info').textContent = ''; // cara main & peraturan → Buku Panduan
         kemaskiniStatus(bank);
       }).catch(function(e) { el('gp-info').textContent = 'Gagal memuat SR game: ' + (e.message || e); });
     }
@@ -6433,8 +6484,7 @@
       el('jwl-grid').innerHTML = h;
       el('jwl-bar-isi').style.width = Math.round(siap / 12 * 100) + '%';
       el('jwl-status').textContent = 'JUTAWAN · Level ' + lv + ' · Tabung ' + duit(JW.dolar);
-      el('jwl-info').textContent = 'Set ' + (mula / 12 + 1) + ' · ' + siap + '/12 level lulus · Tabung ' + duit(JW.dolar) +
-        '\nJawab SEMUA soalan betul untuk lulus. Salah satu → wang hangus, ulang level.';
+      el('jwl-info').textContent = 'Set ' + (mula / 12 + 1) + ' · ' + siap + '/12 level lulus · Tabung ' + duit(JW.dolar);
       el('btn-jwl-main').textContent = 'MAIN LEVEL ' + lv;
       jwSedia = true;
     }
@@ -6672,6 +6722,97 @@
       else if (k === 'mini') bukaMini();
       else if (k === 'mx') bukaMx();
     });
+
+    // ══ BUKU PANDUAN & PERATURAN — semua maklumat cara main dikumpul di sini ══
+    function lukisPanduan() {
+      var I = function(a) { return '<ul><li>' + a.join('</li><li>') + '</li></ul>'; };
+      var biru = EKO.COIN_BIRU.toFixed(2), merah = EKO.COIN_MERAH.toFixed(2), caj = Math.round(EKO.CAJ_REFUND * 100);
+      el('gm-panduan-isi').innerHTML =
+        '<h3 id="pd-padan">PADAN (main game)</h3>' + I([
+          'Tekan perkataan English (kotak hitam), kemudian maksudnya dalam BM (kotak putih). Pasangan betul akan hilang.',
+          'Setiap pusingan ada 6 pasangan: paling banyak 3 dari SR game yang sudah sampai masa, selebihnya perkataan baru dari Bank (ikut susunan laci, laci lama dahulu).',
+          'Tiada SR game sampai masa → keenam-enam pasangan ialah perkataan baru. SR yang belum sampai masa tidak diambil.',
+          'Selepas dipadankan: perkataan baru masuk SR game (fasa 1, muncul semula selepas 20 minit). Perkataan SR naik satu fasa.',
+          'Selang SR: 20 minit → 2 jam → 4 jam → 6 jam → 2 hari → 4 hari → 6 hari → 7 hari → 8 hari dan seterusnya.',
+          'Cubaan salah tidak menjejaskan SR, ia cuma dikira.',
+          'Satu pusingan tidak akan ada 2 pasangan dengan maksud BM yang sama (cth perpetuate = terabadi & enshrined = terabadi).',
+          'Bar atas: Pusingan · SR game (jumlah perkataan dalam SR game) · Baru (belum masuk SR game).',
+          'Tiada perkataan langsung → app beritahu bila SR game seterusnya akan sampai.',
+          'Butang SR: senarai SR game (sampai masa & belum sampai masa).'
+        ]) +
+        '<h3 id="pd-bank">BANK PERKATAAN</h3>' + I([
+          'Bank menyenaraikan laci Bahasa yang sudah masuk SR Bahasa. Laci baru masuk SR → tekan "Segar senarai laci SR".',
+          'Buka laci → tekan perkataan English, kemudian maksudnya dalam ayat BM (boleh lebih dari satu perkataan) → Simpan pasangan.',
+          'Perkataan biasa (the, is, a, to...) dikelabukan dan tidak boleh dipilih.',
+          'Bank terus ke laci paling atas yang belum dipadankan.',
+          'Pasangan yang sama dalam laci berlainan dikira SATU sahaja dalam game & SR.',
+          'Buang pasangan dari Bank → dibuang juga dari SR game bila tiba gilirannya.'
+        ]) +
+        '<h3 id="pd-jutawan">JUTAWAN (mini game)</h3>' + I([
+          'Satu level = ' + EKO.JW_KATA + ' soalan (' + EKO.JW_KATA + ' perkataan), tangga $100 → $1,000,000.',
+          'Soalan ialah perkataan BM, pilih English yang betul (A/B/C/D). 50:50 buang 2 jawapan salah, sekali setiap level.',
+          'Mesti betul SEMUA untuk lulus level. Salah satu atau Keluar → wang hangus ($0) dan ulang level yang sama.',
+          'Lulus → $1,000,000 masuk tabung. Level hanya naik bila lulus.',
+          'Susunan soalan: perkataan yang salah dalam permainan lepas → SR Jutawan sampai masa (maks 7) → perkataan baru dari Bank.',
+          'Tak cukup ' + EKO.JW_KATA + ' perkataan → notis keluar. Boleh main LATIHAN (tiada ganjaran, level tak naik) atau padankan perkataan di Bank dulu.',
+          'Latihan dilengkapkan dengan SR Jutawan yang belum sampai masa, yang paling dekat masa tibanya dahulu (jadual SR tak berubah).',
+          'Jawapan salah → perkataan itu TIDAK masuk / tidak diubah dalam SR, dan keluar semula sebagai soalan pertama permainan seterusnya.',
+          'SR Jutawan berasingan daripada SR game Padan (selang sama).',
+          'Pilihan jawapan salah tidak akan ada perkataan yang maksud BM-nya sama dengan soalan.',
+          '12 level satu set. Butang Kedai $ → tukar dollar jadi coin.'
+        ]) +
+        '<h3 id="pd-duit">DUIT, KEDAI &amp; EXCHANGE</h3>' + I([
+          'Unit asas ialah PERKATAAN: 1 perkataan = ' + EKO.KATA_COIN + ' coin. Satu level Jutawan ($1,000,000) = ' + EKO.JW_COIN + ' coin.',
+          'Kedai Pak Juta (dalam Jutawan): tukar Dollar → coin.',
+          'Magic Exchange: tukar coin → Ringgit Biru (1.00 = ' + biru + ' coin) atau Ringgit Merah (1.00 = ' + merah + ' coin).',
+          'Ringgit BIRU untuk item godaan (cth Coca-Cola). Ringgit MERAH untuk item yang digalakkan (cth air soya), sebab itu lebih murah.',
+          'Taip jumlah di mana-mana kotak, kotak sebelah dikira sendiri. Lebih dari baki → jadi jumlah maksimum. Maks = tukar semua.',
+          'Kiraan boleh perpuluhan, tapi tukaran sekurang-kurangnya 1 coin / 0.01 Ringgit. Baki yang tak cukup satu unit kekal.',
+          'Kaunter Refund (butang Refund): tukar Ringgit balik jadi coin dengan caj ' + caj + '%.',
+          'Semua tukaran & refund direkod dalam Sejarah tukaran.'
+        ]);
+    }
+    function bukaPanduan(ke) {
+      lukisPanduan();
+      var p = el('gm-panduan');
+      p.style.display = 'block'; p.setAttribute('aria-hidden', 'false');
+      var sasar = ke && el(ke);
+      p.scrollTop = sasar ? Math.max(0, sasar.offsetTop - 60) : 0;
+    }
+    function tutupPanduan() { var p = el('gm-panduan'); p.style.display = 'none'; p.setAttribute('aria-hidden', 'true'); }
+    el('btn-pd-tutup').onclick = tutupPanduan;
+    document.addEventListener('click', function(e) {
+      var t = e.target;
+      if (!t || !t.getAttribute) return;
+      if (t.getAttribute('data-panduan')) bukaPanduan(t.getAttribute('data-panduan'));
+      else if (t.getAttribute('data-pd-ke')) { var s = el(t.getAttribute('data-pd-ke')); if (s) el('gm-panduan').scrollTop = Math.max(0, s.offsetTop - 60); }
+    });
+
+    // ══ Titik Biru / Merah: satu panel dipapar pada satu masa. Tekan titik, atau leret kiri/kanan. ══
+    function cariSkrin(e) { while (e && !(e.className && (' ' + e.className + ' ').indexOf(' screen ') !== -1)) e = e.parentNode; return e; }
+    function pilihPanel(skrin, jenis) {
+      if (!skrin) return;
+      var p = skrin.querySelectorAll('[data-mx-panel]'), b = skrin.querySelectorAll('[data-mx-pilih]'), i;
+      for (i = 0; i < p.length; i++) p[i].style.display = p[i].getAttribute('data-mx-panel') === jenis ? '' : 'none';
+      for (i = 0; i < b.length; i++) b[i].className = b[i].getAttribute('data-mx-pilih') === jenis ? 'mx-on' : '';
+    }
+    document.addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== document && !(t.getAttribute && t.getAttribute('data-mx-pilih'))) t = t.parentNode;
+      if (!t || t === document) return;
+      pilihPanel(cariSkrin(t), t.getAttribute('data-mx-pilih'));
+    });
+    var leret = null;
+    document.addEventListener('touchstart', function(e) {
+      var g = e.target; while (g && g !== document && !(g.className && String(g.className).indexOf('mx-geser') !== -1)) g = g.parentNode;
+      leret = (g && g !== document && e.touches && e.touches[0]) ? { x: e.touches[0].clientX, y: e.touches[0].clientY, s: cariSkrin(g) } : null;
+    }, true);
+    document.addEventListener('touchend', function(e) {
+      if (!leret || !e.changedTouches || !e.changedTouches[0]) { leret = null; return; }
+      var dx = e.changedTouches[0].clientX - leret.x, dy = e.changedTouches[0].clientY - leret.y;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) pilihPanel(leret.s, dx < 0 ? 'merah' : 'biru');
+      leret = null;
+    }, true);
     el('btn-gs-game').onclick = function() { (gsBalik || bukaGame)(); };
     el('btn-gb-game').onclick = bukaGame;
     el('btn-gb-segar').onclick = function() { bukaBank(true); };
