@@ -5598,6 +5598,22 @@
     .jw-p.jw-salah { border-style: dashed; border-width: 3px; text-decoration: line-through; }
     .jw-p.jw-buang { visibility: hidden; }
     .jw-duit { font-size: 2.4rem; font-weight: bold; text-align: center; margin: 10px 0; }
+    /* PENJAGA KEDAI + MAGIC EXCHANGE */
+    .pj-kotak { display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; }
+    .pj-watak { flex: 0 0 96px; width: 96px; height: 96px; }
+    .pj-watak svg { width: 96px; height: 96px; display: block; }
+    .pj-cakap { flex: 1 1 auto; position: relative; border: 2px solid #000; border-radius: 12px; padding: 8px 10px; font-size: 0.95rem; font-weight: bold; line-height: 1.3; white-space: pre-line; min-height: 2.6em; }
+    .pj-cakap:before { content: ''; position: absolute; left: -10px; top: 18px; border-width: 8px 10px 8px 0; border-style: solid; border-color: transparent #000 transparent transparent; }
+    .dp-baki { display: flex; gap: 6px; margin: 6px 0; }
+    .dp-baki div { flex: 1 1 0; border: 2px solid #000; border-radius: 8px; padding: 6px 4px; text-align: center; font-size: 0.75rem; }
+    .dp-baki b { display: block; font-size: 1.2rem; margin-top: 2px; }
+    .dp-baki .dp-gelap { background: #000; color: #fff; }
+    .dp-tajuk { font-weight: bold; margin: 12px 0 4px; border-bottom: 2px solid #000; padding-bottom: 2px; }
+    .dp-kadar { font-size: 0.8rem; margin: 2px 0 6px; }
+    .dp-btn { display: flex; flex-wrap: wrap; gap: 6px; }
+    .dp-btn button { flex: 1 1 22%; min-width: 60px; padding: 10px 4px; border: 2px solid #000; border-radius: 6px; background: #fff; color: #000; font-family: inherit; font-size: 0.95rem; font-weight: bold; cursor: pointer; }
+    .dp-btn.dp-merah button { border-style: double; border-width: 4px; }
+    .dp-log { font-size: 0.78rem; border-bottom: 1px solid #000; padding: 4px 2px; }
   </style>
   <div id="screen-game" class="screen">
     <div class="status-bar" id="gp-status">GAME PADAN</div>
@@ -5627,15 +5643,59 @@
   <div id="screen-mini" class="screen">
     <div class="status-bar">MINI GAME</div>
     <div class="jw-tajuk">MINI GAME</div>
+    <div id="mini-dompet" class="jw-info" style="font-weight:bold;"></div>
+    <button id="btn-mini-mx" class="btn btn-primary" style="margin-bottom:8px;">MAGIC EXCHANGE (coin → ringgit)</button>
     <button id="btn-mini-jw" class="gb-laci" style="font-size:1.3rem;padding:14px 12px;">JUTAWAN<span class="gb-sub" id="mini-jw-sub">Memuatkan...</span></button>
     <div class="jw-info">Mini game lain akan ditambah kemudian.</div>
     <button id="btn-mini-balik" class="gb-terapung">Kembali ke Game</button>
+  </div>
+  <div id="screen-jw-kedai" class="screen">
+    <div class="status-bar" id="jk-status">KEDAI PAK JUTA</div>
+    <div class="jw-tajuk" style="font-size:1.4rem;">KEDAI PAK JUTA</div>
+    <div class="pj-kotak"><div class="pj-watak" id="jk-watak"></div><div class="pj-cakap" id="jk-cakap"></div></div>
+    <div class="dp-baki"><div>Tabung Dollar<b id="jk-dolar">-</b></div><div class="dp-gelap">Coin<b id="jk-coin">-</b></div></div>
+    <div class="dp-kadar" id="jk-kadar"></div>
+    <div class="dp-btn">
+      <button type="button" id="btn-jk-satu">Tukar $1,000,000</button>
+      <button type="button" id="btn-jk-semua">Tukar semua</button>
+    </div>
+    <button id="btn-jk-balik" class="btn" style="margin-top:12px;">Kembali ke Jutawan</button>
+  </div>
+  <div id="screen-mx" class="screen">
+    <div class="status-bar" id="mx-status">MAGIC EXCHANGE</div>
+    <div class="jw-tajuk" style="font-size:1.4rem;">MAGIC EXCHANGE</div>
+    <div class="pj-kotak"><div class="pj-watak" id="mx-watak"></div><div class="pj-cakap" id="mx-cakap"></div></div>
+    <div class="dp-baki">
+      <div class="dp-gelap">Coin<b id="mx-coin">-</b></div>
+      <div>Ringgit Biru<b id="mx-biru">-</b></div>
+      <div>Ringgit Merah<b id="mx-merah">-</b></div>
+    </div>
+    <div class="dp-tajuk">Beli RINGGIT BIRU (kedai item godaan)</div>
+    <div class="dp-kadar" id="mx-kadar-biru"></div>
+    <div class="dp-btn" id="mx-btn-biru">
+      <button type="button" data-mx="biru" data-sen="10">0.10</button>
+      <button type="button" data-mx="biru" data-sen="50">0.50</button>
+      <button type="button" data-mx="biru" data-sen="100">1.00</button>
+      <button type="button" data-mx="biru" data-sen="maks">Maks</button>
+    </div>
+    <div class="dp-tajuk">Beli RINGGIT MERAH (kedai item digalakkan)</div>
+    <div class="dp-kadar" id="mx-kadar-merah"></div>
+    <div class="dp-btn dp-merah" id="mx-btn-merah">
+      <button type="button" data-mx="merah" data-sen="10">0.10</button>
+      <button type="button" data-mx="merah" data-sen="50">0.50</button>
+      <button type="button" data-mx="merah" data-sen="100">1.00</button>
+      <button type="button" data-mx="merah" data-sen="maks">Maks</button>
+    </div>
+    <div class="dp-tajuk">Sejarah tukaran</div>
+    <div id="mx-log" style="padding-bottom:80px;"></div>
+    <button id="btn-mx-balik" class="gb-terapung">Kembali ke Mini Game</button>
   </div>
   <div id="screen-jw-level" class="screen">
     <div class="status-bar" id="jwl-status">JUTAWAN</div>
     <div class="jw-tajuk">JUTAWAN</div>
     <div class="jw-bar"><div id="jwl-bar-isi"></div></div>
     <div id="jwl-info" class="jw-info"></div>
+    <button id="btn-jwl-kedai" class="btn" style="margin:4px 0 8px;">KEDAI PAK JUTA (tukar $ → coin)</button>
     <div id="jwl-grid" class="jw-grid"></div>
     <div id="jwl-kurang" style="display:none;border:2px dashed #000;border-radius:8px;padding:10px;margin:6px 0;">
       <div id="jwl-kurang-teks" class="jw-info" style="font-weight:bold;"></div>
@@ -6207,7 +6267,8 @@
     }
     function jwSimpanStat() {
       jwSimpan();
-      kol('game_stat').doc('jutawan').set({ main: JW.main, lulus: JW.lulus, terbaik: JW.terbaik, dolar: JW.dolar, ulangi: Object.keys(JW.ulangi), updatedAt: Date.now() }, { merge: true }).catch(function() {});
+      // dollar TIDAK ditulis di sini (guna increment semasa menang / tukar) supaya tak tertindih antara peranti
+      kol('game_stat').doc('jutawan').set({ main: JW.main, lulus: JW.lulus, terbaik: JW.terbaik, ulangi: Object.keys(JW.ulangi), updatedAt: Date.now() }, { merge: true }).catch(function() {});
     }
     function jwMuat(paksa, cb) {
       if (!paksa && JW.gsrTs && Date.now() - JW.gsrTs < SEGAR_MS) { cb(true); return; }
@@ -6222,7 +6283,7 @@
           JW.main = Math.max(JW.main, d.main || 0);
           JW.lulus = Math.max(JW.lulus, d.lulus || 0);
           JW.terbaik = Math.max(JW.terbaik, d.terbaik || 0);
-          JW.dolar = Math.max(JW.dolar, d.dolar || 0);
+          JW.dolar = d.dolar || 0; // baki dollar ikut Firebase (boleh berkurang bila ditukar jadi coin)
           var u = d.ulangi || [];
           for (var x = 0; x < u.length; x++) JW.ulangi[u[x]] = 1;
         }
@@ -6247,8 +6308,12 @@
       pus = null; jw = null;
       showScreen('screen-mini');
       el('mini-jw-sub').textContent = 'Memuatkan...';
+      el('mini-dompet').textContent = '';
       jwSediakan(function(ok, e) {
         el('mini-jw-sub').textContent = ok ? jwRingkas() : 'Gagal memuat: ' + ((e && e.message) || '');
+      });
+      dpMuat(function(ok) {
+        if (ok) el('mini-dompet').textContent = 'Coin ' + DP.coin + ' · Biru ' + rm(DP.biruSen) + ' · Merah ' + rm(DP.merahSen);
       });
     }
     function bukaJwLevel() {
@@ -6445,7 +6510,10 @@
       }
       JW.main++;
       if (jw.menang > JW.terbaik) JW.terbaik = jw.menang;
-      if (sebab === 'menang') { JW.lulus++; JW.dolar += jw.menang; }
+      if (sebab === 'menang') {
+        JW.lulus++; JW.dolar += jw.menang;
+        kol('game_stat').doc('jutawan').set({ dolar: firebase.firestore.FieldValue.increment(jw.menang) }, { merge: true }).catch(function() {});
+      }
       jwSimpanStat();
       showScreen('screen-jw-tamat');
       if (sebab === 'menang') {
@@ -6521,6 +6589,175 @@
       el('jwl-info').textContent = 'Memilih soalan latihan...';
       f();
     };
+
+    // ══ DOMPET + PENJAGA KEDAI + MAGIC EXCHANGE ══
+    // Unit asas: PERKATAAN. 1 perkataan = 10 coin. Semua kadar di sini (ubah di satu tempat sahaja).
+    // Dompet: users/{uid}/game_stat/dompet { coin, biruSen, merahSen } · sejarah: users/{uid}/dompet_log
+    var EKO = { KATA_COIN: 10, JW_KATA: 15, BIRU_ASAS_KATA: 180, BIRU_ASAS_RM: 3.5, MERAH_X: 1.5 };
+    EKO.JW_COIN = EKO.JW_KATA * EKO.KATA_COIN;                                    // $1,000,000 = 150 coin
+    EKO.COIN_BIRU = EKO.BIRU_ASAS_KATA * EKO.KATA_COIN / EKO.BIRU_ASAS_RM;        // 1 Biru ≈ 514.29 coin
+    EKO.COIN_MERAH = EKO.COIN_BIRU / EKO.MERAH_X;                                 // 1 Merah ≈ 342.86 coin
+    var DP = { coin: 0, biruSen: 0, merahSen: 0 }, dpSibuk = false;
+
+    function rm(sen) { return (Math.floor(sen) / 100).toFixed(2); }
+    function refDompet() { return kol('game_stat').doc('dompet'); }
+    function dpMuat(cb) {
+      refDompet().get().then(function(s) {
+        var d = (s && s.exists) ? s.data() : {};
+        DP = { coin: d.coin || 0, biruSen: d.biruSen || 0, merahSen: d.merahSen || 0 };
+        cb(true);
+      }).catch(function(e) { cb(false, e); });
+    }
+    function dpLog(batch, jenis, ket) {
+      batch.set(kol('dompet_log').doc(), { jenis: jenis, ket: ket, at: Date.now() });
+    }
+    function dpSejarah(bekasId) {
+      var b = el(bekasId);
+      b.textContent = 'Memuatkan...';
+      kol('dompet_log').orderBy('at', 'desc').limit(10).get().then(function(snap) {
+        b.innerHTML = '';
+        snap.forEach(function(doc) {
+          var d = doc.data(), r = document.createElement('div'), t = new Date(d.at || 0);
+          r.className = 'dp-log';
+          r.textContent = t.getDate() + '/' + (t.getMonth() + 1) + ' ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '  ' + (d.ket || '');
+          b.appendChild(r);
+        });
+        if (!b.children.length) b.textContent = 'Belum ada tukaran.';
+      }).catch(function() { b.textContent = 'Gagal memuat sejarah.'; });
+    }
+
+    // Watak penjaga (hitam putih, bergerak sekejap sahaja — sesuai e-ink & jimat bateri)
+    function svgPenjaga(topi, aksi) {
+      var mata = aksi === 'kelip' ? '<path d="M28 44h6M46 44h6" stroke="#000" stroke-width="3"/>' :
+        '<circle cx="31" cy="44" r="3.5"/><circle cx="49" cy="44" r="3.5"/>';
+      var mulut = aksi === 'gembira' || aksi === 'lompat' ? '<path d="M30 53 Q40 66 50 53 Z" fill="#000"/>' :
+        aksi === 'sedih' ? '<path d="M32 59 Q40 52 48 59" fill="none" stroke="#000" stroke-width="3"/>' :
+        '<path d="M32 54 Q40 61 48 54" fill="none" stroke="#000" stroke-width="3"/>';
+      var tangan = aksi === 'lambai1' ? '<path d="M64 50 L76 32" stroke="#000" stroke-width="4" stroke-linecap="round"/><circle cx="77" cy="30" r="4" fill="#fff" stroke="#000" stroke-width="2"/>' :
+        aksi === 'lambai2' ? '<path d="M64 50 L80 40" stroke="#000" stroke-width="4" stroke-linecap="round"/><circle cx="81" cy="39" r="4" fill="#fff" stroke="#000" stroke-width="2"/>' :
+        aksi === 'gembira' || aksi === 'lompat' ? '<path d="M64 48 L74 30" stroke="#000" stroke-width="4" stroke-linecap="round"/><path d="M16 48 L6 30" stroke="#000" stroke-width="4" stroke-linecap="round"/>' :
+        '<path d="M64 52 L71 64" stroke="#000" stroke-width="4" stroke-linecap="round"/>';
+      var kiri = (aksi === 'gembira' || aksi === 'lompat') ? '' : '<path d="M16 52 L9 64" stroke="#000" stroke-width="4" stroke-linecap="round"/>';
+      var kepala = topi === 'juta' ?
+        '<rect x="27" y="6" width="26" height="16" fill="#000"/><rect x="20" y="21" width="40" height="4" fill="#000"/><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">$</text>' :
+        '<path d="M24 25 L40 0 L56 25 Z" fill="#000"/><text x="40" y="20" font-size="9" text-anchor="middle" fill="#fff">*</text><rect x="20" y="23" width="40" height="4" fill="#000"/>';
+      var naik = aksi === 'lompat' ? ' transform="translate(0,-6)"' : '';
+      return '<svg viewBox="0 0 80 82" xmlns="http://www.w3.org/2000/svg"><g' + naik + '>' + kepala +
+        '<ellipse cx="40" cy="50" rx="25" ry="24" fill="#fff" stroke="#000" stroke-width="3"/>' +
+        '<circle cx="24" cy="52" r="3.5" fill="#bbb"/><circle cx="56" cy="52" r="3.5" fill="#bbb"/>' +
+        mata + mulut + tangan + kiri + '<path d="M30 73 L28 80 M50 73 L52 80" stroke="#000" stroke-width="4" stroke-linecap="round"/></g></svg>';
+    }
+    var pjTimer = {};
+    function penjaga(id, topi, jenis, cakap, cakapId) {
+      var urutan = { masuk: ['lambai1', 'lambai2', 'lambai1', 'lambai2', 'kelip', 'diam'],
+        gembira: ['lompat', 'gembira', 'lompat', 'gembira', 'gembira'],
+        sedih: ['sedih', 'diam', 'sedih', 'diam', 'sedih'],
+        diam: ['diam'] }[jenis] || ['diam'], i = 0;
+      if (cakap != null) el(cakapId).textContent = cakap;
+      clearTimeout(pjTimer[id]);
+      (function main() {
+        el(id).innerHTML = svgPenjaga(topi, urutan[i]);
+        i++;
+        if (i < urutan.length) pjTimer[id] = setTimeout(main, 300);
+      })();
+    }
+
+    // ── KEDAI PAK JUTA (dalam Jutawan): Dollar → coin ──
+    function lukisJk() {
+      el('jk-dolar').textContent = duit(JW.dolar);
+      el('jk-coin').textContent = DP.coin;
+      el('jk-kadar').textContent = 'Kadar: $1,000,000 (1 level = ' + EKO.JW_KATA + ' perkataan) = ' + EKO.JW_COIN + ' coin';
+    }
+    function bukaJwKedai() {
+      if (!currentUser) return;
+      showScreen('screen-jw-kedai');
+      el('jk-dolar').textContent = '-'; el('jk-coin').textContent = '-';
+      penjaga('jk-watak', 'juta', 'masuk', 'Memuatkan...', 'jk-cakap');
+      jwSediakan(function(ok) {
+        if (!ok) { el('jk-cakap').textContent = 'Gagal memuat tabung.'; return; }
+        // Baca baki dollar terkini dari Firebase (bukan salinan peranti)
+        kol('game_stat').doc('jutawan').get().then(function(s) {
+          if (s && s.exists) { JW.dolar = s.data().dolar || 0; jwSimpan(); }
+          dpMuat(function(ok2) {
+            if (!ok2) { el('jk-cakap').textContent = 'Gagal memuat dompet.'; return; }
+            lukisJk();
+            el('jk-cakap').textContent = JW.dolar >= 1000000 ? 'Selamat datang! Nak tukar dollar jadi coin?' :
+              'Selamat datang! Tabung awak belum cukup $1,000,000. Lulus satu level dulu ya.';
+          });
+        }).catch(function(e) { el('jk-cakap').textContent = 'Gagal memuat tabung: ' + (e.message || e); });
+      });
+    }
+    function tukarDolar(semua) {
+      if (dpSibuk) return;
+      var juta = Math.floor(JW.dolar / 1000000);
+      if (!semua) juta = Math.min(juta, 1);
+      if (juta < 1) { penjaga('jk-watak', 'juta', 'sedih', 'Tabung tak cukup. Lulus level Jutawan dulu!', 'jk-cakap'); return; }
+      var dapat = juta * EKO.JW_COIN, dolarBaru = JW.dolar - juta * 1000000, coinBaru = DP.coin + dapat, b = db.batch();
+      dpSibuk = true;
+      b.set(kol('game_stat').doc('jutawan'), { dolar: firebase.firestore.FieldValue.increment(-juta * 1000000), updatedAt: Date.now() }, { merge: true });
+      b.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(dapat), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'dolar>coin', duit(juta * 1000000) + ' → +' + dapat + ' coin');
+      b.commit().then(function() {
+        dpSibuk = false;
+        JW.dolar = dolarBaru; jwSimpan(); DP.coin = coinBaru;
+        lukisJk();
+        penjaga('jk-watak', 'juta', 'gembira', 'Terima kasih! +' + dapat + ' coin.', 'jk-cakap');
+      }).catch(function(e) { dpSibuk = false; el('jk-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
+    }
+
+    // ── MAGIC EXCHANGE (dalam Mini Game): coin → Ringgit Biru / Merah ──
+    function lukisMx() {
+      el('mx-coin').textContent = DP.coin;
+      el('mx-biru').textContent = rm(DP.biruSen);
+      el('mx-merah').textContent = rm(DP.merahSen);
+      el('mx-kadar-biru').textContent = 'Kadar: 1.00 Biru = ' + EKO.COIN_BIRU.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_BIRU / EKO.KATA_COIN) + ' perkataan)';
+      el('mx-kadar-merah').textContent = 'Kadar: 1.00 Merah = ' + EKO.COIN_MERAH.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_MERAH / EKO.KATA_COIN) + ' perkataan)';
+    }
+    function bukaMx() {
+      if (!currentUser) return;
+      showScreen('screen-mx');
+      penjaga('mx-watak', 'magik', 'masuk', 'Memuatkan...', 'mx-cakap');
+      dpMuat(function(ok) {
+        if (!ok) { el('mx-cakap').textContent = 'Gagal memuat dompet.'; return; }
+        lukisMx();
+        el('mx-cakap').textContent = 'Selamat datang ke Magic Exchange! Merah untuk item digalakkan, Biru untuk item godaan.';
+        dpSejarah('mx-log');
+      });
+    }
+    function tukarCoin(jenis, senMinta) {
+      if (dpSibuk) return;
+      var kadar = jenis === 'biru' ? EKO.COIN_BIRU : EKO.COIN_MERAH;
+      var sen = senMinta === 'maks' ? Math.floor(DP.coin * 100 / kadar) : +senMinta;
+      var kos = Math.ceil(sen * kadar / 100);
+      if (sen < 1 || kos > DP.coin) {
+        penjaga('mx-watak', 'magik', 'sedih', 'Coin tak cukup. Perlu ' + Math.ceil((sen || 1) * kadar / 100) + ' coin, awak ada ' + DP.coin + '.', 'mx-cakap');
+        return;
+      }
+      var baru = { coin: DP.coin - kos, biruSen: DP.biruSen + (jenis === 'biru' ? sen : 0), merahSen: DP.merahSen + (jenis === 'merah' ? sen : 0) }, b = db.batch();
+      dpSibuk = true;
+      var tambah = { coin: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() };
+      tambah[jenis === 'biru' ? 'biruSen' : 'merahSen'] = firebase.firestore.FieldValue.increment(sen);
+      b.set(refDompet(), tambah, { merge: true });
+      dpLog(b, 'coin>' + jenis, kos + ' coin → +' + rm(sen) + ' ' + (jenis === 'biru' ? 'Biru' : 'Merah'));
+      b.commit().then(function() {
+        dpSibuk = false;
+        DP = baru;
+        lukisMx();
+        penjaga('mx-watak', 'magik', 'gembira', 'Abrakadabra! +' + rm(sen) + ' Ringgit ' + (jenis === 'biru' ? 'Biru' : 'Merah') + ' (-' + kos + ' coin)', 'mx-cakap');
+        dpSejarah('mx-log');
+      }).catch(function(e) { dpSibuk = false; el('mx-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
+    }
+    el('btn-jwl-kedai').onclick = bukaJwKedai;
+    el('btn-jk-satu').onclick = function() { tukarDolar(false); };
+    el('btn-jk-semua').onclick = function() { tukarDolar(true); };
+    el('btn-jk-balik').onclick = bukaJwLevel;
+    el('btn-mini-mx').onclick = bukaMx;
+    el('btn-mx-balik').onclick = bukaMini;
+    el('screen-mx').addEventListener('click', function(e) {
+      var t = e.target;
+      if (!t || !t.getAttribute || !t.getAttribute('data-mx')) return;
+      tukarCoin(t.getAttribute('data-mx'), t.getAttribute('data-sen'));
+    });
     el('btn-jwl-bank').onclick = function() { jwTunda = null; bukaBank(false); };
     el('btn-jwl-batal').onclick = function() { jwTunda = null; el('jwl-kurang').style.display = 'none'; lukisJwLevel(); };
   })();
