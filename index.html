@@ -5569,6 +5569,17 @@
     .gl-pas { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #000; padding: 6px 2px; font-size: 0.95rem; }
     .gl-pas span { flex: 1 1 auto; min-width: 0; word-break: break-word; }
     .gl-pas button { flex: 0 0 auto; padding: 4px 10px; border: 2px solid #000; border-radius: 5px; background: #fff; font-family: inherit; font-weight: bold; cursor: pointer; }
+    /* Timbunan kontena atas kapal: kontena pertama di bawah, yang baru bertimbun ke atas */
+    .kt-timbun { display: flex; flex-wrap: wrap-reverse; -webkit-flex-wrap: wrap-reverse; align-content: flex-end; gap: 5px; padding: 6px 4px 0; }
+    .kt-kotak { position: relative; flex: 1 1 44%; min-width: 130px; min-height: 66px; box-sizing: border-box; padding: 8px 8px 8px 12px;
+      border: 3px solid #000; border-left-width: 7px; border-right-width: 7px; background: #fff; color: #000; word-break: break-word; }
+    .kt-kotak.kt-baru { background: #ccc; }
+    .kt-kotak b { display: block; font-size: 1.15rem; padding-right: 26px; }
+    .kt-kotak .kt-bm { display: block; font-size: 0.95rem; margin-top: 4px; border-top: 1px dashed #000; padding-top: 3px; }
+    .kt-kotak .kt-tag { display: inline-block; font-size: 0.65rem; font-weight: bold; border: 1px solid #000; padding: 0 4px; margin-top: 4px; background: #fff; }
+    .kt-kotak button { position: absolute; top: 3px; right: 3px; width: 26px; height: 26px; padding: 0; border: 2px solid #000; border-radius: 4px;
+      background: #fff; color: #000; font-family: inherit; font-weight: bold; font-size: 0.9rem; line-height: 1; cursor: pointer; }
+    .kt-dek { height: 16px; margin: 0 0 4px; background: #000; border-radius: 0 0 40px 40px; }
     /* Butang terapung di bawah (Ke Game / Kembali ke Bank) — tak perlu skrol ke bawah */
     .gb-terapung { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); -webkit-transform: translateX(-50%); z-index: 999;
       width: 80%; max-width: 300px; padding: 12px; border: 2px solid #000; border-radius: 6px; background: #fff; color: #000;
@@ -5945,7 +5956,8 @@
     </div>
     <div id="gl-ayat"></div>
     <div style="font-weight:bold;margin-top:10px;border-bottom:2px solid #000;padding-bottom:2px;">Kontena atas kapal ini</div>
-    <div id="gl-pasangan" style="padding-bottom:20px;"></div>
+    <div id="gl-pasangan"></div>
+    <div style="font-size:0.75rem;text-align:center;padding-bottom:90px;">Kelabu = baru (belum belayar) · X = keluarkan kontena</div>
   </div>
   <script>
   // ══ GAME PADAN + BANK PERKATAAN (Kindle Ringan) — ES5 sahaja ══
@@ -6463,15 +6475,21 @@
         bekas.appendChild(kotak);
       }
       if (!L.baris.length) bekas.innerHTML = '<div class="msg">Laci ini tiada ayat (notes kosong).</div>';
-      var senarai = el('gl-pasangan');
+      var senarai = el('gl-pasangan'), dibK = dibayarLaci(L.id);
       senarai.innerHTML = '';
+      var timbun = document.createElement('div'); timbun.className = 'kt-timbun';
       for (i = 0; i < p.length; i++) {
-        var row = document.createElement('div'); row.className = 'gl-pas';
-        var sp = document.createElement('span'); sp.textContent = p[i].en + '  =  ' + p[i].bm;
-        var bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Buang'; bt.setAttribute('data-gl-buang', i);
-        row.appendChild(sp); row.appendChild(bt); senarai.appendChild(row);
+        var kt = document.createElement('div'); kt.className = 'kt-kotak' + (i >= dibK ? ' kt-baru' : '');
+        var ke = document.createElement('b'); ke.textContent = p[i].en;
+        var kb = document.createElement('span'); kb.className = 'kt-bm'; kb.textContent = p[i].bm;
+        var bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'X'; bt.setAttribute('data-gl-buang', i);
+        kt.appendChild(bt); kt.appendChild(ke); kt.appendChild(kb);
+        if (i >= dibK) { var tg = document.createElement('span'); tg.className = 'kt-tag'; tg.textContent = 'BARU'; kt.appendChild(tg); }
+        timbun.appendChild(kt);
       }
-      if (!p.length) senarai.innerHTML = '<div class="msg">Belum ada pasangan.</div>';
+      senarai.appendChild(timbun);
+      var dek = document.createElement('div'); dek.className = 'kt-dek'; senarai.appendChild(dek);
+      if (!p.length) timbun.innerHTML = '<div class="msg">Dek kosong. Muat kontena pertama!</div>';
       el('gl-status').textContent = L.title + ' · ' + p.length + ' pasangan';
       lukisPilihan();
     }
