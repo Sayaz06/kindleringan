@@ -6363,6 +6363,31 @@
         else setTimeout(function() { baris.className = 'kb kb-sasar'; if (orang) orang.style.display = ''; layar = false; }, 250);
       })();
     }
+    // ══ MASA NYATA: dengar perubahan game_bank & dompet dari Firebase (HP ↔ Kindle terus sama) ══
+    var dengarUid = '', unsubBank = null, unsubDompet = null;
+    function dengarPelabuhan() {
+      if (!currentUser || dengarUid === currentUser.uid) return;
+      if (unsubBank) unsubBank();
+      if (unsubDompet) unsubDompet();
+      dengarUid = currentUser.uid;
+      unsubBank = kol('game_bank').onSnapshot(function(snap) {
+        if (!snap || !snap.forEach) return;
+        var b = {};
+        snap.forEach(function(doc) { var d = doc.data(); b[doc.id] = { title: d.title || '', pasangan: d.pasangan || [], dibayar: d.dibayar }; });
+        S.bank = b; S.bankTs = Date.now(); simpanLokal();
+        if (layar) return;
+        var aktif = (document.querySelector('.screen.active') || {}).id;
+        if (aktif === 'screen-gbank' && S.sr.length) lukisBank();
+        else if (aktif === 'screen-gbank-laci' && L && L.baris.length) { lukisLaci(); lukisKapalLaci(false); }
+      }, function() {});
+      unsubDompet = refDompet().onSnapshot(function(sd) {
+        if (!sd || !sd.exists) return;
+        var d = sd.data();
+        DP.coin = d.coin || 0; DP.biruSen = d.biruSen || 0; DP.merahSen = d.merahSen || 0; DP.upahTunggu = d.upahTunggu || 0;
+        el('gb-coin').textContent = DP.coin;
+        tunjukAmbil();
+      }, function() {});
+    }
     function tunjukAmbil() {
       var t = DP.upahTunggu || 0, b = el('btn-gb-ambil');
       b.style.display = t > 0 ? '' : 'none';
@@ -6370,6 +6395,7 @@
     }
     function bukaBank(paksa) {
       if (!currentUser) return;
+      dengarPelabuhan();
       muatLokal();
       pus = null; jw = null; if (!layar) L = null;
       showScreen('screen-gbank');
@@ -6603,13 +6629,21 @@
       lukisPilihan();
     }
     function resetPilih() { L.pilih = { b: -1, en: {}, bm: {} }; }
-    // Simpan muatan kapal. Upah dibayar bila BELAYAR. Kontena dibuang dari kapal yang SUDAH belayar → upahnya ditolak semula.
-    function simpanBankLaci(pasangan, mesej, muat) {
-      var id = L.id, dibLama = dibayarLaci(id), dib = Math.min(dibLama, pasangan.length), tolak = (dibLama - dib) * EKO.UPAH_POS;
-      var data = { title: L.title, pasangan: pasangan, dibayar: dib, updatedAt: Date.now() };
+    // Simpan muatan kapal guna TRANSAKSI: baca muatan terkini di Firebase → ubah → tulis. Padanan dari peranti lain tak tertindih.
+    // Upah dibayar bila BELAYAR. Kontena dibuang dari kapal yang SUDAH belayar → upahnya ditolak semula.
+    function simpanBankLaci(ubah, muat) {
+      var id = L.id, title = L.title, rujuk = kol('game_bank').doc(id), hasil = null;
       el('gl-info').textContent = 'Menyimpan...';
-      kol('game_bank').doc(id).set(data).then(function() {
-        S.bank[id] = { title: data.title, pasangan: pasangan, dibayar: dib };
+      db.runTransaction(function(tx) {
+        return tx.get(rujuk).then(function(sd) {
+          var d = sd.exists ? sd.data() : {}, lama = d.pasangan || [], dibLama = d.dibayar == null ? lama.length : d.dibayar;
+          var baru = ubah(lama.slice()), dib = Math.min(dibLama, baru.length);
+          hasil = { pasangan: baru, dibayar: dib, tolak: (dibLama - dib) * EKO.UPAH_POS };
+          tx.set(rujuk, { title: title, pasangan: baru, dibayar: dib, updatedAt: Date.now() });
+        });
+      }).then(function() {
+        var tolak = hasil.tolak;
+        S.bank[id] = { title: title, pasangan: hasil.pasangan, dibayar: hasil.dibayar };
         simpanLokal();
         if (tolak) {
           tolak = Math.min(tolak, DP.coin);
@@ -6666,22 +6700,28 @@
     });
     el('gl-pasangan').addEventListener('click', function(e) {
       var t = e.target;
-      if (!L || !t || !t.getAttribute || t.getAttribute('data-gl-buang') === null) return;
-      var p = pasanganLaci().slice(), i = +t.getAttribute('data-gl-buang'), buang = p[i];
-      p.splice(i, 1);
-      simpanBankLaci(p, 'Kontena dikeluarkan: ' + buang.en + ' = ' + buang.bm, false);
+      if (!L || layar || !t || !t.getAttribute || t.getAttribute('data-gl-buang') === null) return;
+      var buang = pasanganLaci()[+t.getAttribute('data-gl-buang')];
+      if (!buang) return;
+      simpanBankLaci(function(p) {
+        for (var k = 0; k < p.length; k++) if (p[k].en === buang.en && p[k].bm === buang.bm) { p.splice(k, 1); break; }
+        return p;
+      }, false);
     });
-    // Ketik mana-mana bahagian kapal → muat kontena (pasangan yang dipilih). Butang X pada kontena = keluarkan.
     // Ketik KOTAK pilihan (jeti) → muat kontena (pasangan yang dipilih). Butang X pada kontena = keluarkan.
     el('gl-pilihan').addEventListener('click', function() {
       if (!L || layar) return;
       var en = teksPilihan('en'), bm = teksPilihan('bm');
       if (!en || !bm) { el('gl-info').textContent = 'Pilih perkataan English dan maksud BM dulu, kemudian ketik kotak ini.'; return; }
-      var p = pasanganLaci().slice(), ganti = -1;
-      for (var i = 0; i < p.length; i++) if (String(p[i].en).toLowerCase() === en.toLowerCase()) ganti = i;
-      if (ganti >= 0) p[ganti] = { en: en, bm: bm }; else p.push({ en: en, bm: bm });
+      var ada = false, sekarang = pasanganLaci();
+      for (var i = 0; i < sekarang.length; i++) if (String(sekarang[i].en).toLowerCase() === en.toLowerCase()) ada = true;
       resetPilih();
-      simpanBankLaci(p, '', ganti < 0);
+      simpanBankLaci(function(p) {
+        var ganti = -1;
+        for (var k = 0; k < p.length; k++) if (String(p[k].en).toLowerCase() === en.toLowerCase()) ganti = k;
+        if (ganti >= 0) p[ganti] = { en: en, bm: bm }; else p.push({ en: en, bm: bm });
+        return p;
+      }, !ada);
     });
     el('gl-dermaga').onclick = belayar;
     // PANGGIL KAPAL KOSONG → kapal kosong masuk ke tempat tambat (atas) dan diikat. Ketik besi pengikat untuk ke dermaga.
