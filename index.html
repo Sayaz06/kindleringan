@@ -5599,6 +5599,8 @@
     .jw-anak.jw-lepas { text-decoration: line-through; color: #888; border-color: #888; }
     .jw-anak.jw-tiada { border-style: dashed; color: #bbb; border-color: #bbb; }
     .jw-anak.jw-kini { background: #000; color: #fff; font-size: 1.25rem; }
+    .jw-anak.jw-kosong { visibility: hidden; }
+    #jwt-tangga .jw-kini { cursor: pointer; }
     .jw-hadiah { text-align: center; font-weight: bold; font-size: 1.2rem; border: 2px solid #000; border-radius: 16px; margin: 6px 20%; padding: 4px; }
     .jw-soalan { font-size: 2.2rem; font-weight: bold; text-align: center; margin: 14px 0; word-break: break-word; line-height: 1.15; }
     .jw-p { display: block; width: 100%; text-align: left; padding: 12px 16px; margin: 0 0 8px; border: 2px solid #000; border-radius: 24px;
@@ -7117,11 +7119,13 @@
     }
     var jwTunda = null; // fungsi untuk teruskan sebagai latihan (bila perkataan tak cukup)
     // Tangga: $1,000,000 sentiasa di atas, di bawahnya anak tangga semasa + 10 seterusnya (semakin naik)
+    // Anak tangga yang dah lepas diganti ruang kosong → butang MAIN & Keluar kekal di tempat yang sama (paling bawah)
     function tunjukTangga() {
       showScreen('screen-jw-tangga');
-      var n = jw.soalan.length, h = '<div class="jw-anak jw-juta' + (jw.i === n - 1 ? ' jw-kini' : '') + '">' + duit(JW_HADIAH[JW_BIL - 1]) + '</div>', i;
+      var n = jw.soalan.length, h = '<div class="jw-anak jw-juta' + (jw.i === n - 1 ? ' jw-kini' : '') + '">' + duit(JW_HADIAH[JW_BIL - 1]) + '</div>', i, bil = 0;
       var hujung = Math.min(n - 2, jw.i + 10);
-      for (i = hujung; i >= jw.i; i--) h += '<div class="jw-anak' + (i === jw.i ? ' jw-kini' : '') + '">' + duit(hadiahJw(i)) + '</div>';
+      for (i = hujung; i >= jw.i; i--) { h += '<div class="jw-anak' + (i === jw.i ? ' jw-kini' : '') + '">' + duit(hadiahJw(i)) + '</div>'; bil++; }
+      for (i = bil; i < Math.min(11, n - 1); i++) h += '<div class="jw-anak jw-kosong' + (i === 0 ? ' jw-kini' : '') + '">-</div>';
       el('jwt-tangga').innerHTML = h;
       el('jwt-status').textContent = 'JUTAWAN · ' + (jw.latihan ? 'LATIHAN (tiada ganjaran)' : 'Level ' + (JW.lulus + 1)) +
         ' · Soalan ' + (jw.i + 1) + '/' + n + ' · Wang ' + duit(jw.menang);
@@ -7357,6 +7361,11 @@
     el('jwl-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-jw-main')) mulaJw(); });
     el('btn-jwl-sr').onclick = function() { bukaSenaraiGsr(JW_KOL, 'SR JUTAWAN', bukaJwLevel); };
     el('btn-jwt-main').onclick = function() { if (jw && !jw.tamat) tunjukSoalan(); };
+    // Tekan anak tangga semasa (cth $100) pun boleh terus main
+    el('jwt-tangga').addEventListener('click', function(e) {
+      var t = e.target;
+      if (t && t.className && String(t.className).indexOf('jw-kini') !== -1 && jw && !jw.tamat) tunjukSoalan();
+    });
     el('btn-jwt-keluar').onclick = function() { tamatJw('keluar'); };
     el('btn-jws-keluar').onclick = function() { if (jw && !jw.kunci) tamatJw('keluar'); };
     el('btn-jwm-level').onclick = bukaJwLevel;
