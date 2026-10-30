@@ -5903,6 +5903,7 @@
       <button type="button" id="btn-gb-segar" class="gm-kecil">Segar laluan</button>
     </div>
     <div class="pj-kotak"><div class="pj-watak" id="gb-watak"></div><div class="pj-cakap" id="gb-cakap"></div></div>
+    <button type="button" id="btn-gb-mula" class="btn btn-primary" style="margin:0 0 10px;">OK, MULA HANTAR</button>
     <div class="dp-baki">
       <div>Laluan dihantar<b id="gb-laluan">-</b></div>
       <div>Bungkusan<b id="gb-bungkus">-</b></div>
@@ -6181,7 +6182,8 @@
 
 
     // ══ BANK — senarai laci SR ══
-    function lukisBank() {
+    // lompatTerus: true = terus ke laluan belum dihantar (bila kembali dari laluan). Masuk Pejabat Pos → borak dengan posmen dulu.
+    function lukisBank(lompatTerus) {
       var h = '', jum = 0, siap = 0;
       for (var i = 0; i < S.sr.length; i++) {
         var l = S.sr[i], b = S.bank[l.id], n = b ? (b.pasangan || []).length : 0;
@@ -6202,7 +6204,11 @@
       el('gb-laluan').textContent = siap + '/' + S.sr.length;
       el('gb-bungkus').textContent = jum;
       el('gb-info').textContent = S.sr.length ? '' : 'Tiada laluan lagi (laci Bahasa belum masuk SR).';
-      // Terus ke laluan PALING ATAS yang belum dihantar (ulang sekali lagi selepas skrin siap dilukis)
+      if (lompatTerus) lompatKeLaluan();
+    }
+    // Lompat ke laluan PALING ATAS yang belum dihantar (ulang beberapa kali kalau tinggi skrin berubah selepas dilukis)
+    function lompatKeLaluan() {
+      var bekas = el('gb-senarai'), i;
       for (i = 0; i < bekas.children.length; i++) {
         if (bekas.children[i].className.indexOf('gb-siap-ada') === -1) {
           var sasaran = bekas.children[i], yAkhir = -1;
@@ -6213,19 +6219,20 @@
             window.scrollBy(0, -70);
             yAkhir = window.pageYOffset;
           };
-          // Ulang beberapa kali — kalau tinggi skrin berubah selepas dilukis (font / ayat posmen), tetap sampai ke laluan betul
           setTimeout(lompat, 60);
           setTimeout(lompat, 400);
           setTimeout(lompat, 1200);
-          break;
+          return true;
         }
       }
+      return false;
     }
     function bukaBank(paksa) {
       if (!currentUser) return;
       muatLokal();
       pus = null; jw = null;
       showScreen('screen-gbank');
+      try { window.scrollTo(0, 0); } catch (e) {}
       el('gb-info').textContent = 'Memuatkan laluan...';
       penjaga('gb-watak', 'pos', 'masuk', 'Memuatkan...', 'gb-cakap');
       muatSR(paksa, function(ok, e) {
@@ -6393,7 +6400,12 @@
       simpanBankLaci(p, 'Dihantar: ' + en + ' = ' + bm, ganti >= 0 ? 0 : EKO.UPAH_POS);
     };
     el('btn-gl-batal').onclick = function() { if (L) { resetPilih(); lukisLaci(); } };
-    el('btn-gl-balik').onclick = function() { L = null; showScreen('screen-gbank'); lukisBank(); };
+    el('btn-gl-balik').onclick = function() { L = null; showScreen('screen-gbank'); lukisBank(true); };
+    // Selepas borak dengan posmen → setuju → terus ke laluan yang belum dihantar
+    el('btn-gb-mula').onclick = function() {
+      var ada = lompatKeLaluan();
+      penjaga('gb-watak', 'pos', ada ? 'gembira' : 'masuk', ada ? 'Bagus! Jom, laluan seterusnya di bawah ni.' : 'Semua laluan dah dihantar. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap');
+    };
 
     // ══ SENARAI SR GAME — sampai masa (overdue) & belum sampai masa ══
     // Boleh guna untuk SR main game (game_sr) atau SR mini game (cth game_sr_jutawan)
