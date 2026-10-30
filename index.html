@@ -6684,7 +6684,6 @@
       if (layar) return;
       if (tambatIdx >= 0) {
         var n = bilKontena(tambatIdx);
-        lompatKeLaluan();
         penjaga('gb-watak', 'kapten', 'masuk', n ? 'Kapal ini ada kontena yang belum belayar. Ketik besi pengikat, muat lagi atau belayarkan dulu.' : 'Kapal kosong dah diikat. Ketik besi pengikat untuk bawa ke dermaga.', 'gb-cakap');
         return;
       }
@@ -6692,7 +6691,6 @@
       if (idx < 0) { penjaga('gb-watak', 'kapten', 'masuk', 'Semua kapal dah ada muatan. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap'); return; }
       tambatIdx = idx;
       lukisTambat();
-      lompatKeLaluan();
       kapalMasuk();
       penjaga('gb-watak', 'kapten', 'gembira', 'Kapal kosong dah sampai dan diikat! Ketik besi pengikat untuk bawa ke dermaga.', 'gb-cakap');
     };
