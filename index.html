@@ -6454,8 +6454,8 @@
             var bank = senaraiBank(), baru = 0;
             for (var i = 0; i < bank.length; i++) if (!S.gsr[bank[i].id]) baru++;
             kaptenAyat = baru < BIL ?
-              'Kapten di sini! Stok kedai tinggal ' + baru + ' perkataan, kedai-kedai mini game hampir tutup! Muat kontena ke kapal dan belayarkan — upah ' + EKO.UPAH_POS + ' coin setiap kontena.' :
-              'Selamat datang ke pelabuhan! Muat kontena (pasangan perkataan) ke kapal, kemudian belayarkan. Upah ' + EKO.UPAH_POS + ' coin setiap kontena.';
+              'Selamat datang ke pelabuhan! Awak mesti datang dari arked mini game yang tutup sebab kehabisan stok, kan? Stok tinggal ' + baru + ' perkataan je. Tolong saya hantar stok baharu ke sana. Upah ' + EKO.UPAH_POS + ' coin setiap kontena!' :
+              'Ahoy, pekerja pelabuhan! Arked mini game masih meriah hari ni, tapi stok cepat habis kalau ramai main. Jom kita hantar lebih banyak kontena. Upah ' + EKO.UPAH_POS + ' coin setiap kontena!';
             dpMuat(function(ok3) {
               el('gb-coin').textContent = ok3 ? DP.coin : '-';
               el('gb-cakap').textContent = (DP.upahTunggu || 0) > 0 ? 'Ada upah ' + DP.upahTunggu + ' coin menunggu awak! Tekan AMBIL.' : kaptenAyat;
