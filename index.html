@@ -5637,6 +5637,12 @@
     <div class="jw-bar"><div id="jwl-bar-isi"></div></div>
     <div id="jwl-info" class="jw-info"></div>
     <div id="jwl-grid" class="jw-grid"></div>
+    <div id="jwl-kurang" style="display:none;border:2px dashed #000;border-radius:8px;padding:10px;margin:6px 0;">
+      <div id="jwl-kurang-teks" class="jw-info" style="font-weight:bold;"></div>
+      <button id="btn-jwl-teruskan" class="btn">Teruskan (latihan, tiada ganjaran)</button>
+      <button id="btn-jwl-bank" class="btn btn-primary">Padankan perkataan di BANK</button>
+      <button id="btn-jwl-batal" class="btn">Batal</button>
+    </div>
     <button id="btn-jwl-main" class="btn btn-primary">MAIN</button>
     <button id="btn-jwl-sr" class="btn">SENARAI SR JUTAWAN</button>
     <button id="btn-jwl-balik" class="btn">Kembali ke Mini Game</button>
@@ -6247,8 +6253,9 @@
     }
     function bukaJwLevel() {
       if (!currentUser) return;
-      jw = null; jwSedia = false;
+      jw = null; jwSedia = false; jwTunda = null;
       showScreen('screen-jw-level');
+      el('jwl-kurang').style.display = 'none';
       el('jwl-info').textContent = 'Memuatkan...';
       jwSediakan(function(ok, e) {
         if (!ok) { el('jwl-info').textContent = 'Gagal memuat: ' + ((e && e.message) || ''); return; }
@@ -6335,16 +6342,29 @@
           overdue.push({ id: doc.id, en: d.en, bm: d.bm });
         });
         var pas = jwPilih(bank, overdue);
-        function mulakan() {
+        function mulakan(latihan) {
           if (!pas.length) { el('jwl-info').textContent = 'Tiada perkataan untuk dimainkan buat masa ini.'; return; }
           var soalan = [];
           for (var j = 0; j < pas.length; j++) soalan.push(buatSoalan(pas[j], bank));
-          jw = { soalan: soalan, i: 0, menang: 0, guna5050: false, kunci: false, tamat: false };
+          jw = { soalan: soalan, i: 0, menang: 0, guna5050: false, kunci: false, tamat: false, latihan: !!latihan };
           tunjukTangga();
         }
-        if (pas.length >= JW_BIL) { mulakan(); return; }
-        // Tak cukup (tiada SR sampai masa / tiada perkataan baru) → ambil SR Jutawan yang BELUM sampai masa,
-        // yang paling dekat masa tibanya dahulu. Jawab betul → jadual SR tak berubah.
+        if (pas.length >= JW_BIL) { mulakan(false); return; }
+        // Tak cukup 15 perkataan (SR sampai masa + perkataan baru) → tanya pengguna dulu
+        var bSr = 0, bBaru = 0;
+        for (var c = 0; c < pas.length; c++) { if (pas[c].baru) bBaru++; else if (!pas[c].ulang) bSr++; }
+        el('jwl-kurang-teks').textContent = 'Perkataan tak cukup untuk ganjaran.\n' +
+          'SR sampai masa: ' + bSr + ' · Perkataan baru: ' + bBaru + (pas.length - bSr - bBaru ? ' · Ulang: ' + (pas.length - bSr - bBaru) : '') +
+          ' · Jumlah: ' + pas.length + '/' + JW_BIL +
+          '\nPerlu ' + JW_BIL + ' perkataan untuk sampai $1,000,000.' +
+          '\n\nTeruskan sebagai LATIHAN (tiada ganjaran, level tak naik), atau padankan perkataan baru di Bank dulu.';
+        el('jwl-kurang').style.display = 'block';
+        el('jwl-info').textContent = '';
+        jwTunda = function() { tambahDekat(); };
+        return;
+        // Latihan: lengkapkan dengan SR Jutawan yang BELUM sampai masa, yang paling dekat masa tibanya dahulu.
+        // Jawab betul → jadual SR tak berubah.
+        function tambahDekat() {
         jwMemilih = true;
         kol(JW_KOL).where('nextDueAt', '>', Date.now()).orderBy('nextDueAt', 'asc').limit(JW_BIL * 2).get().then(function(s3) {
           jwMemilih = false;
@@ -6356,10 +6376,12 @@
             ada[doc.id] = 1;
             pas.push({ id: doc.id, en: d.en, bm: d.bm, ulang: true });
           });
-          mulakan();
-        }).catch(function() { jwMemilih = false; mulakan(); });
+          mulakan(true);
+        }).catch(function() { jwMemilih = false; mulakan(true); });
+        }
       }).catch(function(e) { jwMemilih = false; el('jwl-info').textContent = 'Gagal memuat SR Jutawan: ' + (e.message || e); });
     }
+    var jwTunda = null; // fungsi untuk teruskan sebagai latihan (bila perkataan tak cukup)
     // Tangga: $1,000,000 sentiasa di atas, di bawahnya anak tangga semasa + 10 seterusnya (semakin naik)
     function tunjukTangga() {
       showScreen('screen-jw-tangga');
@@ -6367,7 +6389,8 @@
       var hujung = Math.min(n - 2, jw.i + 10);
       for (i = hujung; i >= jw.i; i--) h += '<div class="jw-anak' + (i === jw.i ? ' jw-kini' : '') + '">' + duit(hadiahJw(i)) + '</div>';
       el('jwt-tangga').innerHTML = h;
-      el('jwt-status').textContent = 'JUTAWAN · Level ' + (JW.lulus + 1) + ' · Soalan ' + (jw.i + 1) + '/' + n + ' · Wang ' + duit(jw.menang);
+      el('jwt-status').textContent = 'JUTAWAN · ' + (jw.latihan ? 'LATIHAN (tiada ganjaran)' : 'Level ' + (JW.lulus + 1)) +
+        ' · Soalan ' + (jw.i + 1) + '/' + n + ' · Wang ' + duit(jw.menang);
     }
     function tunjukSoalan() {
       var s = jw.soalan[jw.i], h = '', i, b;
@@ -6408,6 +6431,18 @@
       jw.tamat = true;
       var lv = JW.lulus + 1, dijawab = jw.i + (sebab === 'kalah' ? 1 : 0), sub = '';
       if (sebab === 'keluar' && !dijawab) { bukaJwLevel(); return; }
+      if (jw.latihan) {
+        // Latihan: tiada ganjaran, level tak naik (perkataan salah tetap diulang permainan seterusnya)
+        jwSimpanStat();
+        showScreen('screen-jw-tamat');
+        el('jwm-tajuk').textContent = sebab === 'menang' ? 'LATIHAN SELESAI' : sebab === 'kalah' ? 'SALAH JAWAPAN' : 'KELUAR';
+        el('jwm-duit').textContent = '$0';
+        sub = '';
+        if (sebab === 'kalah') { var s0 = jw.soalan[jw.i]; sub = 'Jawapan betul: ' + s0.p.bm + ' = ' + s0.p.en + '\nPerkataan ini akan keluar semula dalam permainan seterusnya.\n'; }
+        el('jwm-sub').textContent = sub + 'Latihan, tiada ganjaran. Padankan lebih banyak perkataan di Bank untuk main Level ' + lv + ' sebenar.';
+        el('btn-jwm-level').textContent = 'Ke Level ' + lv;
+        return;
+      }
       JW.main++;
       if (jw.menang > JW.terbaik) JW.terbaik = jw.menang;
       if (sebab === 'menang') { JW.lulus++; JW.dolar += jw.menang; }
@@ -6479,6 +6514,15 @@
     el('btn-jws-keluar').onclick = function() { if (jw && !jw.kunci) tamatJw('keluar'); };
     el('btn-jwm-level').onclick = bukaJwLevel;
     el('btn-jwm-mini').onclick = bukaMini;
+    el('btn-jwl-teruskan').onclick = function() {
+      if (!jwTunda) return;
+      var f = jwTunda; jwTunda = null;
+      el('jwl-kurang').style.display = 'none';
+      el('jwl-info').textContent = 'Memilih soalan latihan...';
+      f();
+    };
+    el('btn-jwl-bank').onclick = function() { jwTunda = null; bukaBank(false); };
+    el('btn-jwl-batal').onclick = function() { jwTunda = null; el('jwl-kurang').style.display = 'none'; lukisJwLevel(); };
   })();
   </script>
 
