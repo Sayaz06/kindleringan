@@ -6699,34 +6699,55 @@
       if (i !== -1) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, '').slice(0, 2);
       return t.replace(/^0+(?=\d)/, '');
     }
+    // Nombor perpuluhan kecil untuk paparan (cth 0.00015) — buang sifar di hujung
+    function fmtKecil(x) {
+      var t = (+x || 0).toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+      return t === '0' && x > 0 ? '0.000001' : t;
+    }
     function pautTukar(o) {
-      var st = { dapat: 0 };
+      var st = { dapat: 0, tepat: 0 };
       function kemas() {
-        o.nota.textContent = st.dapat ? 'Ditolak: ' + o.fmtKos(o.kos(st.dapat)) + '  →  Dapat: ' + o.fmtDapat(st.dapat) :
-          'Taip jumlah di mana-mana kotak. Lebih dari baki → jadi jumlah maksimum.';
+        if (st.dapat) {
+          o.nota.textContent = 'Ditolak: ' + o.fmtKos(o.kos(st.dapat)) + '  →  Dapat: ' + o.fmtDapat(st.dapat) +
+            (st.tepat > st.dapat + 1e-9 ? '\n(Kiraan tepat ' + o.fmtTepat(st.tepat) + '. Hanya jumlah penuh ditukar, baki kekal.)' : '');
+        } else if (st.tepat > 0) {
+          o.nota.textContent = '= ' + o.fmtTepat(st.tepat) + '. Sekurang-kurangnya ' + o.fmtDapat(1) + ' (= ' + o.fmtKos(o.kos(1)) + ') untuk tukar.';
+        } else {
+          o.nota.textContent = 'Taip jumlah di mana-mana kotak. Lebih dari baki → jadi jumlah maksimum.';
+        }
       }
+      // Kotak yang sedang tunjuk perpuluhan kecil → kosongkan bila disentuh supaya mudah taip semula
+      function kosongTepat(e) { if (e.getAttribute('data-tepat')) { e.value = ''; e.removeAttribute('data-tepat'); } }
+      o.b.addEventListener('focus', function() { kosongTepat(o.b); });
+      o.b.addEventListener('click', function() { kosongTepat(o.b); });
       o.a.addEventListener('input', function() {
         var r = rapiNombor(o.a.value), v = bacaNombor(r), m = o.maxA();
         if (v > m) { v = m; r = v ? String(v) : ''; }
         if (r !== o.a.value) o.a.value = r;
         st.dapat = o.keDapat(v);
-        o.b.value = st.dapat ? o.tulisB(st.dapat) : '';
+        st.tepat = o.tepat(v);
+        if (st.dapat) { o.b.value = o.tulisB(st.dapat); o.b.removeAttribute('data-tepat'); }
+        else if (st.tepat > 0) { o.b.value = o.tulisKecil(st.tepat); o.b.setAttribute('data-tepat', '1'); }
+        else { o.b.value = ''; o.b.removeAttribute('data-tepat'); }
         kemas();
       });
       o.b.addEventListener('input', function() {
         var r = o.rapiB(o.b.value), v = o.bacaB(r), m = o.keDapat(o.maxA());
+        o.b.removeAttribute('data-tepat');
         if (v > m) { v = m; r = v ? o.tulisB(v) : ''; }
         if (r !== o.b.value) o.b.value = r;
-        st.dapat = v;
+        st.dapat = v; st.tepat = v;
         o.a.value = v ? String(o.kos(v)) : '';
         kemas();
       });
       return {
         dapat: function() { return st.dapat; },
-        kosong: function() { st.dapat = 0; o.a.value = ''; o.b.value = ''; kemas(); },
+        tepat: function() { return st.tepat; },
+        kosong: function() { st.dapat = 0; st.tepat = 0; o.a.value = ''; o.b.value = ''; o.b.removeAttribute('data-tepat'); kemas(); },
         maks: function() {
           var m = o.keDapat(o.maxA());
-          st.dapat = m; o.b.value = m ? o.tulisB(m) : ''; o.a.value = m ? String(o.kos(m)) : '';
+          st.dapat = m; st.tepat = m; o.b.value = m ? o.tulisB(m) : ''; o.a.value = m ? String(o.kos(m)) : '';
+          o.b.removeAttribute('data-tepat');
           kemas();
         }
       };
@@ -6737,8 +6758,10 @@
       a: el('jk-in-dolar'), b: el('jk-in-coin'), nota: el('jk-nota'),
       maxA: function() { return JW.dolar; },
       keDapat: function(dolar) { return Math.floor(dolar * EKO.JW_COIN / 1000000 + 1e-9); },
+      tepat: function(dolar) { return dolar * EKO.JW_COIN / 1000000; },
       kos: function(coin) { return Math.ceil(coin * 1000000 / EKO.JW_COIN - 1e-9); },
       bacaB: bacaNombor, rapiB: rapiNombor, tulisB: function(v) { return String(v); },
+      tulisKecil: fmtKecil, fmtTepat: function(x) { return fmtKecil(x) + ' coin'; },
       fmtKos: duit, fmtDapat: function(v) { return v + ' coin'; }
     });
     function lukisJk() {
@@ -6769,7 +6792,11 @@
     function tukarDolar() {
       if (dpSibuk) return;
       var dapat = tkJuta.dapat(), kos = Math.ceil(dapat * 1000000 / EKO.JW_COIN - 1e-9);
-      if (dapat < 1 || kos > JW.dolar) { penjaga('jk-watak', 'juta', 'sedih', dapat < 1 ? 'Taip jumlah dulu (sekurang-kurangnya 1 coin).' : 'Tabung tak cukup!', 'jk-cakap'); return; }
+      if (dapat < 1 || kos > JW.dolar) {
+        penjaga('jk-watak', 'juta', 'sedih', dapat >= 1 ? 'Tabung tak cukup!' :
+          (tkJuta.tepat() > 0 ? 'Itu baru ' + fmtKecil(tkJuta.tepat()) + ' coin. ' : '') + 'Sekurang-kurangnya tukar ke 1 coin (= ' + duit(Math.ceil(1000000 / EKO.JW_COIN - 1e-9)) + ').', 'jk-cakap');
+        return;
+      }
       var b = db.batch();
       dpSibuk = true;
       b.set(kol('game_stat').doc('jutawan'), { dolar: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() }, { merge: true });
@@ -6790,8 +6817,10 @@
         a: el('mx-in-coin-' + jenis), b: el('mx-in-rm-' + jenis), nota: el('mx-nota-' + jenis),
         maxA: function() { return DP.coin; },
         keDapat: function(coin) { return Math.floor(coin * 100 / kadar + 1e-9); },
+        tepat: function(coin) { return coin * 100 / kadar; },
         kos: function(sen) { return Math.ceil(sen * kadar / 100 - 1e-9); },
         bacaB: bacaSen, rapiB: rapiSen, tulisB: rm,
+        tulisKecil: function(sen) { return fmtKecil(sen / 100); }, fmtTepat: function(sen) { return fmtKecil(sen / 100) + ' ' + nama; },
         fmtKos: function(v) { return v + ' coin'; }, fmtDapat: function(v) { return rm(v) + ' ' + nama; }
       });
     }
@@ -6820,7 +6849,9 @@
       var kadar = jenis === 'biru' ? EKO.COIN_BIRU : EKO.COIN_MERAH, nama = jenis === 'biru' ? 'Biru' : 'Merah';
       var sen = tkRM[jenis].dapat(), kos = Math.ceil(sen * kadar / 100 - 1e-9);
       if (sen < 1 || kos > DP.coin) {
-        penjaga('mx-watak', 'magik', 'sedih', sen < 1 ? 'Taip jumlah dulu. Paling sedikit 0.01 ' + nama + ' = ' + Math.ceil(kadar / 100 - 1e-9) + ' coin.' : 'Coin tak cukup!', 'mx-cakap');
+        penjaga('mx-watak', 'magik', 'sedih', sen >= 1 ? 'Coin tak cukup!' :
+          (tkRM[jenis].tepat() > 0 ? 'Itu baru ' + fmtKecil(tkRM[jenis].tepat() / 100) + ' ' + nama + '. ' : '') +
+          'Sekurang-kurangnya tukar ke 0.01 ' + nama + ' (= ' + Math.ceil(kadar / 100 - 1e-9) + ' coin).', 'mx-cakap');
         return;
       }
       var b = db.batch(), tambah = { coin: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() };
