@@ -5573,6 +5573,31 @@
     .gb-terapung { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); -webkit-transform: translateX(-50%); z-index: 999;
       width: 80%; max-width: 300px; padding: 12px; border: 2px solid #000; border-radius: 6px; background: #fff; color: #000;
       font-family: inherit; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    /* MINI GAME — JUTAWAN */
+    .jw-tajuk { font-size: 1.8rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 6px 0; }
+    .jw-bar { border: 2px solid #000; border-radius: 8px; height: 14px; overflow: hidden; margin: 4px 0; }
+    #jwl-bar-isi { height: 100%; width: 0; background: #000; }
+    .jw-info { font-size: 0.85rem; text-align: center; margin: 6px 0; white-space: pre-line; min-height: 1.2em; }
+    .jw-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 8px 0; }
+    .jw-l { width: 23%; height: 62px; margin: 0 0 8px; padding: 0; border: 2px solid #000; border-radius: 10px; background: #fff; color: #000;
+      font-family: inherit; font-size: 1.4rem; font-weight: bold; line-height: 1.1; cursor: pointer; }
+    .jw-l.jw-siap { background: #000; color: #fff; font-size: 0.8rem; }
+    .jw-l.jw-kini { border-width: 4px; font-size: 1.9rem; }
+    .jw-l.jw-kunci { border-style: dashed; color: #888; font-size: 0.75rem; cursor: default; }
+    .jw-anak { border: 2px solid #000; border-radius: 16px; text-align: center; font-weight: bold; padding: 4px; margin: 4px 12%; font-size: 1rem; }
+    .jw-anak.jw-juta { margin: 4px 0; font-size: 1.3rem; border-width: 3px; }
+    .jw-anak.jw-lepas { text-decoration: line-through; color: #888; border-color: #888; }
+    .jw-anak.jw-tiada { border-style: dashed; color: #bbb; border-color: #bbb; }
+    .jw-anak.jw-kini { background: #000; color: #fff; font-size: 1.25rem; }
+    .jw-hadiah { text-align: center; font-weight: bold; font-size: 1.2rem; border: 2px solid #000; border-radius: 16px; margin: 6px 20%; padding: 4px; }
+    .jw-soalan { font-size: 2.2rem; font-weight: bold; text-align: center; margin: 14px 0; word-break: break-word; line-height: 1.15; }
+    .jw-p { display: block; width: 100%; text-align: left; padding: 12px 16px; margin: 0 0 8px; border: 2px solid #000; border-radius: 24px;
+      background: #fff; color: #000; font-family: inherit; font-size: 1.15rem; font-weight: bold; cursor: pointer; word-break: break-word; }
+    .jw-p b { margin-right: 8px; }
+    .jw-p.jw-betul { background: #000; color: #fff; }
+    .jw-p.jw-salah { border-style: dashed; border-width: 3px; text-decoration: line-through; }
+    .jw-p.jw-buang { visibility: hidden; }
+    .jw-duit { font-size: 2.4rem; font-weight: bold; text-align: center; margin: 10px 0; }
   </style>
   <div id="screen-game" class="screen">
     <div class="status-bar" id="gp-status">GAME PADAN</div>
@@ -5591,12 +5616,54 @@
     </div>
     <button id="btn-gp-bank" class="btn" style="margin-top:6px;">BANK PERKATAAN (padan sendiri)</button>
     <button id="btn-gp-senarai" class="btn" style="margin-top:6px;">SENARAI SR GAME</button>
+    <button id="btn-gp-mini" class="btn btn-primary" style="margin-top:6px;">MINI GAME</button>
   </div>
   <div id="screen-gsr" class="screen">
     <div class="status-bar" id="gs-status">SR GAME</div>
     <div id="gs-info"></div>
     <div id="gs-senarai" style="padding-bottom:80px;"></div>
     <button id="btn-gs-game" class="gb-terapung">Kembali ke Game</button>
+  </div>
+  <div id="screen-mini" class="screen">
+    <div class="status-bar">MINI GAME</div>
+    <div class="jw-tajuk">MINI GAME</div>
+    <button id="btn-mini-jw" class="gb-laci" style="font-size:1.3rem;padding:14px 12px;">JUTAWAN<span class="gb-sub" id="mini-jw-sub">Memuatkan...</span></button>
+    <div class="jw-info">Mini game lain akan ditambah kemudian.</div>
+    <button id="btn-mini-balik" class="gb-terapung">Kembali ke Game</button>
+  </div>
+  <div id="screen-jw-level" class="screen">
+    <div class="status-bar" id="jwl-status">JUTAWAN</div>
+    <div class="jw-tajuk">JUTAWAN</div>
+    <div class="jw-bar"><div id="jwl-bar-isi"></div></div>
+    <div id="jwl-info" class="jw-info"></div>
+    <div id="jwl-grid" class="jw-grid"></div>
+    <button id="btn-jwl-main" class="btn btn-primary">MAIN</button>
+    <button id="btn-jwl-sr" class="btn">SENARAI SR JUTAWAN</button>
+    <button id="btn-jwl-balik" class="btn">Kembali ke Mini Game</button>
+  </div>
+  <div id="screen-jw-tangga" class="screen">
+    <div class="status-bar" id="jwt-status">JUTAWAN</div>
+    <div id="jwt-tangga"></div>
+    <button id="btn-jwt-main" class="btn btn-primary" style="margin-top:8px;">MAIN</button>
+    <button id="btn-jwt-keluar" class="btn">Keluar (simpan wang)</button>
+  </div>
+  <div id="screen-jw-soalan" class="screen">
+    <div class="status-bar" id="jws-status">JUTAWAN</div>
+    <div id="jws-hadiah" class="jw-hadiah"></div>
+    <div id="jws-soalan" class="jw-soalan"></div>
+    <div id="jws-pilihan"></div>
+    <div class="gp-baris">
+      <button id="btn-jws-5050" class="btn">50:50</button>
+      <button id="btn-jws-keluar" class="btn">Keluar</button>
+    </div>
+  </div>
+  <div id="screen-jw-tamat" class="screen">
+    <div class="status-bar">JUTAWAN</div>
+    <div id="jwm-tajuk" class="jw-tajuk"></div>
+    <div id="jwm-duit" class="jw-duit"></div>
+    <div id="jwm-sub" class="jw-info"></div>
+    <button id="btn-jwm-level" class="btn btn-primary">Ke Level Seterusnya</button>
+    <button id="btn-jwm-mini" class="btn">Mini Game</button>
   </div>
   <div id="screen-gbank" class="screen">
     <div class="status-bar" id="gb-status">BANK PERKATAAN</div>
@@ -6045,15 +6112,21 @@
     el('btn-gl-balik').onclick = function() { L = null; showScreen('screen-gbank'); lukisBank(); };
 
     // ══ SENARAI SR GAME — sampai masa (overdue) & belum sampai masa ══
-    function bukaSenaraiGsr() {
+    // Boleh guna untuk SR main game (game_sr) atau SR mini game (cth game_sr_jutawan)
+    var gsBalik = null;
+    function bukaSenaraiGsr(namaKol, tajukSr, balik) {
       if (!currentUser) return;
+      if (typeof namaKol !== 'string') namaKol = 'game_sr';
+      tajukSr = tajukSr || 'SR GAME';
+      gsBalik = balik || bukaGame;
+      el('btn-gs-game').textContent = balik ? 'Kembali' : 'Kembali ke Game';
       muatLokal();
       pus = null;
       showScreen('screen-gsr');
-      el('gs-status').textContent = 'SR GAME';
+      el('gs-status').textContent = tajukSr;
       el('gs-info').textContent = 'Memuatkan...';
       el('gs-senarai').innerHTML = '';
-      kol('game_sr').orderBy('nextDueAt', 'asc').get().then(function(snap) {
+      kol(namaKol).orderBy('nextDueAt', 'asc').get().then(function(snap) {
         var now = Date.now(), lewat = [], belum = [];
         snap.forEach(function(doc) {
           var d = doc.data();
@@ -6085,19 +6158,272 @@
         for (i = 0; i < lewat.length; i++) baris(lewat[i], true);
         tajuk('BELUM SAMPAI MASA (' + belum.length + ')');
         for (i = 0; i < belum.length; i++) baris(belum[i], false);
-        el('gs-status').textContent = 'SR GAME · ' + lewat.length + ' sampai masa · ' + belum.length + ' belum';
-        el('gs-info').textContent = (lewat.length + belum.length) ? '' : 'SR game masih kosong. Main game dulu untuk masukkan perkataan.';
-      }).catch(function(e) { el('gs-info').textContent = 'Gagal memuat SR game: ' + (e.message || e); });
+        el('gs-status').textContent = tajukSr + ' · ' + lewat.length + ' sampai masa · ' + belum.length + ' belum';
+        el('gs-info').textContent = (lewat.length + belum.length) ? '' : 'SR masih kosong. Main game dulu untuk masukkan perkataan.';
+      }).catch(function(e) { el('gs-info').textContent = 'Gagal memuat SR: ' + (e.message || e); });
     }
+
+    // ══ MINI GAME: JUTAWAN ══
+    // SR sendiri: users/{uid}/game_sr_jutawan (selang sama macam SR asal) · statistik: users/{uid}/game_stat/jutawan
+    // Satu permainan = 12 soalan: maks 6 SR Jutawan sampai masa + perkataan baru dari Bank (tiada SR sampai masa → semua baru).
+    // Soalan = perkataan BM, pilih English (A-D). Betul → naik tangga wang. Salah → permainan tamat.
+    // SR: perkataan baru → masuk fasa 1 · SR betul → naik fasa · SR salah → kembali ke fasa 1.
+    // Level = bilangan permainan yang dimainkan (12 level satu set).
+    var JW_KOL = 'game_sr_jutawan', JW_BIL = 12, JW_BIL_SR = 6;
+    var JW_HADIAH = [100, 200, 300, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 1000000];
+    var JW = { uid: '', gsr: {}, gsrTs: 0, main: 0, terbaik: 0 };
+    var jw = null, jwSedia = false, jwMemilih = false;
+
+    function duit(n) {
+      var s = String(n), r = '';
+      while (s.length > 3) { r = ',' + s.slice(-3) + r; s = s.slice(0, -3); }
+      return '$' + s + r;
+    }
+    function jwLokal() {
+      if (JW.uid === currentUser.uid) return;
+      var d = {};
+      try { d = JSON.parse(localStorage.getItem('game_jutawan_v1') || '{}') || {}; } catch (e) { d = {}; }
+      if (d.uid === currentUser.uid) JW = { uid: d.uid, gsr: d.gsr || {}, gsrTs: d.gsrTs || 0, main: d.main || 0, terbaik: d.terbaik || 0 };
+      else JW = { uid: currentUser.uid, gsr: {}, gsrTs: 0, main: 0, terbaik: 0 };
+    }
+    function jwSimpan() {
+      try { localStorage.setItem('game_jutawan_v1', JSON.stringify(JW)); } catch (e) {}
+    }
+    function jwMuat(paksa, cb) {
+      if (!paksa && JW.gsrTs && Date.now() - JW.gsrTs < SEGAR_MS) { cb(true); return; }
+      kol(JW_KOL).get().then(function(snap) {
+        var g = {};
+        snap.forEach(function(doc) { g[doc.id] = 1; });
+        JW.gsr = g;
+        return kol('game_stat').doc('jutawan').get();
+      }).then(function(s) {
+        if (s && s.exists) {
+          var d = s.data();
+          JW.main = Math.max(JW.main, d.main || 0);
+          JW.terbaik = Math.max(JW.terbaik, d.terbaik || 0);
+        }
+        JW.gsrTs = Date.now(); jwSimpan(); cb(true);
+      }).catch(function(e) { cb(false, e); });
+    }
+    function jwSediakan(cb) {
+      muatLokal(); jwLokal();
+      muatSR(false, function() {
+        muatBank(false, function(ok, e) {
+          if (!ok) { cb(false, e); return; }
+          jwMuat(false, cb);
+        });
+      });
+    }
+    function jwRingkas() {
+      var lv = JW.main + 1;
+      return 'Level ' + lv + ' · ' + ((lv - 1) % 12) + '/12 · Terbaik ' + duit(JW.terbaik);
+    }
+    function bukaMini() {
+      if (!currentUser) return;
+      pus = null; jw = null;
+      showScreen('screen-mini');
+      el('mini-jw-sub').textContent = 'Memuatkan...';
+      jwSediakan(function(ok, e) {
+        el('mini-jw-sub').textContent = ok ? jwRingkas() : 'Gagal memuat: ' + ((e && e.message) || '');
+      });
+    }
+    function bukaJwLevel() {
+      if (!currentUser) return;
+      jw = null; jwSedia = false;
+      showScreen('screen-jw-level');
+      el('jwl-info').textContent = 'Memuatkan...';
+      jwSediakan(function(ok, e) {
+        if (!ok) { el('jwl-info').textContent = 'Gagal memuat: ' + ((e && e.message) || ''); return; }
+        lukisJwLevel();
+      });
+    }
+    function lukisJwLevel() {
+      var lv = JW.main + 1, mula = Math.floor((lv - 1) / 12) * 12, siap = (lv - 1) % 12, h = '', n, i;
+      for (i = 1; i <= 12; i++) {
+        n = mula + i;
+        if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>SIAP</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-jw-main="1">' + n + '</button>';
+        else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
+      }
+      el('jwl-grid').innerHTML = h;
+      el('jwl-bar-isi').style.width = Math.round(siap / 12 * 100) + '%';
+      el('jwl-status').textContent = 'JUTAWAN · Level ' + lv + ' · Terbaik ' + duit(JW.terbaik);
+      el('jwl-info').textContent = 'Set ' + (mula / 12 + 1) + ' · ' + siap + '/12 level siap\nSetiap permainan yang dimainkan = 1 level.';
+      el('btn-jwl-main').textContent = 'MAIN LEVEL ' + lv;
+      jwSedia = true;
+    }
+    function jwPilih(bank, overdue) {
+      var hasil = [], ada = {}, bilSr = 0, i;
+      function cuba(p) {
+        if (hasil.length >= JW_BIL || ada[p.id]) return false;
+        ada[p.id] = 1; hasil.push(p);
+        return true;
+      }
+      for (i = 0; i < overdue.length && bilSr < JW_BIL_SR; i++) if (cuba(overdue[i])) bilSr++;
+      for (i = 0; i < bank.length && hasil.length < JW_BIL; i++) if (!JW.gsr[bank[i].id]) cuba({ id: bank[i].id, en: bank[i].en, bm: bank[i].bm, baru: true });
+      for (i = 0; i < overdue.length && hasil.length < JW_BIL; i++) cuba(overdue[i]);
+      return hasil;
+    }
+    // 3 jawapan salah = perkataan English lain dari Bank (bukan yang maksudnya sama dengan soalan)
+    function buatSoalan(p, bank) {
+      var salah = [], ada = {}, tolak = {}, enBetul = p.en.toLowerCase(), bmS = p.bm.toLowerCase(), i, k;
+      for (i = 0; i < bank.length; i++) if (bank[i].bm.toLowerCase() === bmS) tolak[bank[i].en.toLowerCase()] = 1;
+      for (i = 0; i < bank.length; i++) {
+        k = bank[i].en.toLowerCase();
+        if (k === enBetul || tolak[k] || ada[k]) continue;
+        ada[k] = 1; salah.push(bank[i].en);
+      }
+      kocok(salah);
+      var pilihan = kocok(salah.slice(0, 3).concat([p.en]));
+      return { p: p, pilihan: pilihan, betul: pilihan.indexOf(p.en) };
+    }
+    function mulaJw() {
+      if (!currentUser || !jwSedia || jwMemilih) return;
+      var bank = senaraiBank(), dalamBank = {}, enUnik = {}, bilEn = 0, i, k;
+      for (i = 0; i < bank.length; i++) {
+        dalamBank[bank[i].id] = 1;
+        k = bank[i].en.toLowerCase();
+        if (!enUnik[k]) { enUnik[k] = 1; bilEn++; }
+      }
+      if (bilEn < 4) { el('jwl-info').textContent = 'Perlu sekurang-kurangnya 4 perkataan English berbeza dalam Bank untuk main Jutawan.'; return; }
+      jwMemilih = true;
+      el('jwl-info').textContent = 'Memilih soalan...';
+      kol(JW_KOL).where('nextDueAt', '<=', Date.now()).orderBy('nextDueAt', 'asc').limit(JW_BIL).get().then(function(snap) {
+        jwMemilih = false;
+        var overdue = [];
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          // Pasangan yang sudah dibuang dari bank → buang juga dari SR Jutawan
+          if (!dalamBank[doc.id]) { doc.ref.delete().catch(function() {}); delete JW.gsr[doc.id]; return; }
+          overdue.push({ id: doc.id, en: d.en, bm: d.bm });
+        });
+        var pas = jwPilih(bank, overdue);
+        if (!pas.length) {
+          kol(JW_KOL).orderBy('nextDueAt', 'asc').limit(1).get().then(function(s2) {
+            var t = 0; s2.forEach(function(d) { t = d.data().nextDueAt || 0; });
+            el('jwl-info').textContent = 'Tiada perkataan baru dan tiada SR Jutawan yang sampai masa.' +
+              (t ? '\nSR Jutawan seterusnya: ' + masaTeks(t) : '') + '\nTambah pasangan baru di BANK PERKATAAN.';
+          }).catch(function() { el('jwl-info').textContent = 'Tiada perkataan untuk dimainkan buat masa ini.'; });
+          return;
+        }
+        var soalan = [];
+        for (var j = 0; j < pas.length; j++) soalan.push(buatSoalan(pas[j], bank));
+        jw = { soalan: soalan, i: 0, menang: 0, guna5050: false, kunci: false, tamat: false };
+        tunjukTangga();
+      }).catch(function(e) { jwMemilih = false; el('jwl-info').textContent = 'Gagal memuat SR Jutawan: ' + (e.message || e); });
+    }
+    function tunjukTangga() {
+      showScreen('screen-jw-tangga');
+      var h = '', i, n = JW_HADIAH.length;
+      for (i = n - 1; i >= 0; i--) {
+        var c = 'jw-anak' + (i === n - 1 ? ' jw-juta' : '');
+        if (i < jw.i) c += ' jw-lepas';
+        else if (i === jw.i) c += ' jw-kini';
+        else if (i >= jw.soalan.length) c += ' jw-tiada';
+        h += '<div class="' + c + '">' + duit(JW_HADIAH[i]) + '</div>';
+      }
+      el('jwt-tangga').innerHTML = h;
+      el('jwt-status').textContent = 'JUTAWAN · Level ' + (JW.main + 1) + ' · Soalan ' + (jw.i + 1) + '/' + jw.soalan.length + ' · Wang ' + duit(jw.menang);
+      el('btn-jwt-keluar').style.display = jw.i ? '' : 'none';
+    }
+    function tunjukSoalan() {
+      var s = jw.soalan[jw.i], h = '', i, b;
+      showScreen('screen-jw-soalan');
+      jw.kunci = false;
+      el('jws-hadiah').textContent = duit(JW_HADIAH[jw.i]);
+      el('jws-soalan').textContent = s.p.bm;
+      for (i = 0; i < s.pilihan.length; i++) h += '<button type="button" class="jw-p" data-jw-i="' + i + '"><b>' + 'ABCD'.charAt(i) + ':</b><span></span></button>';
+      el('jws-pilihan').innerHTML = h;
+      b = el('jws-pilihan').children;
+      for (i = 0; i < b.length; i++) b[i].getElementsByTagName('span')[0].textContent = s.pilihan[i];
+      el('btn-jws-5050').disabled = jw.guna5050 || s.pilihan.length < 4;
+      el('jws-status').textContent = 'JUTAWAN · Soalan ' + (jw.i + 1) + '/' + jw.soalan.length + (s.p.baru ? ' · perkataan baru' : ' · SR');
+    }
+    // Simpan ke SR Jutawan
+    function jwSr(p, betul) {
+      var ref = kol(JW_KOL).doc(p.id), now = Date.now();
+      function gagal(e) { el('jws-status').textContent = 'Gagal simpan SR Jutawan: ' + (e.message || e); }
+      if (p.baru) {
+        JW.gsr[p.id] = 1; jwSimpan();
+        ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(gagal);
+        return;
+      }
+      ref.get().then(function(snap) {
+        if (!snap.exists) return;
+        var d = snap.data(), f = d.fasaSemasa || 0, fasaBaru = betul ? f + 1 : 0, sejarah = (d.sejarahFasa || []).slice();
+        sejarah.push({ fasa: f, selesaiAt: now, labelFasa: getLabelFasaSR(f), betul: betul });
+        return ref.update({ fasaSemasa: fasaBaru, nextDueAt: now + getSRInterval(fasaBaru), sejarahFasa: sejarah, updatedAt: now });
+      }).catch(gagal);
+    }
+    function tamatJw(sebab) {
+      if (!jw || jw.tamat) return;
+      jw.tamat = true;
+      var dijawab = jw.i + (sebab === 'kalah' ? 1 : 0), sub = '';
+      if (dijawab > 0) {
+        JW.main++;
+        if (jw.menang > JW.terbaik) JW.terbaik = jw.menang;
+        jwSimpan();
+        kol('game_stat').doc('jutawan').set({ main: JW.main, terbaik: JW.terbaik, updatedAt: Date.now() }, { merge: true }).catch(function() {});
+      }
+      showScreen('screen-jw-tamat');
+      el('jwm-tajuk').textContent = sebab === 'menang' ? (jw.soalan.length === JW_HADIAH.length ? 'JUTAWAN!' : 'SOALAN HABIS') :
+        sebab === 'kalah' ? 'SALAH JAWAPAN' : 'KELUAR';
+      el('jwm-duit').textContent = duit(jw.menang);
+      if (sebab === 'kalah') { var s = jw.soalan[jw.i]; sub = 'Jawapan betul: ' + s.p.bm + ' = ' + s.p.en + '\n'; }
+      if (sebab === 'menang' && jw.soalan.length < JW_HADIAH.length) sub += 'Tiada lagi perkataan untuk Jutawan buat masa ini.\n';
+      sub += dijawab > 0 ? 'Level ' + JW.main + ' selesai.' : 'Tiada soalan dijawab, level tidak dikira.';
+      el('jwm-sub').textContent = sub;
+      el('btn-jwm-level').textContent = 'Ke Level ' + (JW.main + 1);
+    }
+    el('jws-pilihan').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-jw-i'))) t = t.parentNode;
+      if (!t || t === this || !jw || jw.kunci || jw.tamat || t.className.indexOf('jw-buang') !== -1) return;
+      jw.kunci = true;
+      var s = jw.soalan[jw.i], pilih = +t.getAttribute('data-jw-i'), butang = this.children;
+      if (pilih === s.betul) {
+        t.className = 'jw-p jw-betul';
+        jw.menang = JW_HADIAH[jw.i];
+        jwSr(s.p, true);
+        jw.i++;
+        setTimeout(function() { if (jw.i >= jw.soalan.length) tamatJw('menang'); else tunjukTangga(); }, 900);
+      } else {
+        t.className = 'jw-p jw-salah';
+        butang[s.betul].className = 'jw-p jw-betul';
+        jwSr(s.p, false);
+        setTimeout(function() { tamatJw('kalah'); }, 1800);
+      }
+    });
+    el('btn-jws-5050').onclick = function() {
+      if (!jw || jw.guna5050 || jw.kunci) return;
+      var s = jw.soalan[jw.i], b = el('jws-pilihan').children, salah = [], i;
+      for (i = 0; i < b.length; i++) if (i !== s.betul) salah.push(i);
+      kocok(salah);
+      for (i = 0; i < 2 && i < salah.length; i++) b[salah[i]].className = 'jw-p jw-buang';
+      jw.guna5050 = true; this.disabled = true;
+    };
 
     el('btn-go-game').onclick = bukaGame;
     el('btn-gp-baru').onclick = function() { if (currentUser) mulaPusingan(); };
     el('btn-gp-menu').onclick = function() { pus = null; showScreen('screen-menu'); };
     el('btn-gp-bank').onclick = function() { pus = null; bukaBank(false); };
-    el('btn-gp-senarai').onclick = bukaSenaraiGsr;
-    el('btn-gs-game').onclick = bukaGame;
+    el('btn-gp-senarai').onclick = function() { bukaSenaraiGsr(); };
+    el('btn-gs-game').onclick = function() { (gsBalik || bukaGame)(); };
     el('btn-gb-game').onclick = bukaGame;
     el('btn-gb-segar').onclick = function() { bukaBank(true); };
+    // Mini game
+    el('btn-gp-mini').onclick = bukaMini;
+    el('btn-mini-jw').onclick = bukaJwLevel;
+    el('btn-mini-balik').onclick = bukaGame;
+    el('btn-jwl-main').onclick = mulaJw;
+    el('jwl-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-jw-main')) mulaJw(); });
+    el('btn-jwl-sr').onclick = function() { bukaSenaraiGsr(JW_KOL, 'SR JUTAWAN', bukaJwLevel); };
+    el('btn-jwl-balik').onclick = bukaMini;
+    el('btn-jwt-main').onclick = function() { if (jw && !jw.tamat) tunjukSoalan(); };
+    el('btn-jwt-keluar').onclick = function() { tamatJw('keluar'); };
+    el('btn-jws-keluar').onclick = function() { if (jw && !jw.kunci) tamatJw('keluar'); };
+    el('btn-jwm-level').onclick = bukaJwLevel;
+    el('btn-jwm-mini').onclick = bukaMini;
   })();
   </script>
 
