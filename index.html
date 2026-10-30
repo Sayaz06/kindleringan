@@ -6272,7 +6272,7 @@
       jwSedia = true;
     }
     function jwPilih(bank, overdue) {
-      var hasil = [], ada = {}, bilSr = 0, i, ulang = [], od = {}, dlmBank = {}, b0;
+      var hasil = [], ada = {}, bilSr = 0, i, od = {}, dlmBank = {}, b0;
       function cuba(p) {
         if (hasil.length >= JW_BIL || ada[p.id]) return false;
         ada[p.id] = 1; hasil.push(p);
@@ -6288,14 +6288,11 @@
         else cuba({ id: b0.id, en: b0.en, bm: b0.bm, baru: true });
       }
       for (var u in JW.ulangi) if (!dlmBank[u]) delete JW.ulangi[u];
-      // 2) SR Jutawan sampai masa → 3) perkataan baru → 4) baki SR → 5) ulang kaji
+      // 2) SR Jutawan sampai masa → 3) perkataan baru → 4) baki SR sampai masa
+      // (masih tak cukup → mulaJw ambil SR yang BELUM sampai masa, paling dekat masa tibanya dahulu)
       for (i = 0; i < overdue.length && bilSr < JW_BIL_SR; i++) if (cuba(overdue[i])) bilSr++;
       for (i = 0; i < bank.length && hasil.length < JW_BIL; i++) if (!JW.gsr[bank[i].id]) cuba({ id: bank[i].id, en: bank[i].en, bm: bank[i].bm, baru: true });
       for (i = 0; i < overdue.length && hasil.length < JW_BIL; i++) cuba(overdue[i]);
-      // Masih tak cukup → ulang kaji perkataan SR Jutawan yang belum sampai masa (rawak)
-      for (i = 0; i < bank.length; i++) if (JW.gsr[bank[i].id] && !ada[bank[i].id]) ulang.push({ id: bank[i].id, en: bank[i].en, bm: bank[i].bm, ulang: true });
-      kocok(ulang);
-      for (i = 0; i < ulang.length && hasil.length < JW_BIL; i++) cuba(ulang[i]);
       return hasil;
     }
     // Hadiah soalan ke-i: soalan terakhir sentiasa $1,000,000
@@ -6338,11 +6335,29 @@
           overdue.push({ id: doc.id, en: d.en, bm: d.bm });
         });
         var pas = jwPilih(bank, overdue);
-        if (!pas.length) { el('jwl-info').textContent = 'Tiada perkataan untuk dimainkan buat masa ini.'; return; }
-        var soalan = [];
-        for (var j = 0; j < pas.length; j++) soalan.push(buatSoalan(pas[j], bank));
-        jw = { soalan: soalan, i: 0, menang: 0, guna5050: false, kunci: false, tamat: false };
-        tunjukTangga();
+        function mulakan() {
+          if (!pas.length) { el('jwl-info').textContent = 'Tiada perkataan untuk dimainkan buat masa ini.'; return; }
+          var soalan = [];
+          for (var j = 0; j < pas.length; j++) soalan.push(buatSoalan(pas[j], bank));
+          jw = { soalan: soalan, i: 0, menang: 0, guna5050: false, kunci: false, tamat: false };
+          tunjukTangga();
+        }
+        if (pas.length >= JW_BIL) { mulakan(); return; }
+        // Tak cukup (tiada SR sampai masa / tiada perkataan baru) → ambil SR Jutawan yang BELUM sampai masa,
+        // yang paling dekat masa tibanya dahulu. Jawab betul → jadual SR tak berubah.
+        jwMemilih = true;
+        kol(JW_KOL).where('nextDueAt', '>', Date.now()).orderBy('nextDueAt', 'asc').limit(JW_BIL * 2).get().then(function(s3) {
+          jwMemilih = false;
+          var ada = {};
+          for (var a = 0; a < pas.length; a++) ada[pas[a].id] = 1;
+          s3.forEach(function(doc) {
+            if (pas.length >= JW_BIL || ada[doc.id] || !dalamBank[doc.id]) return;
+            var d = doc.data();
+            ada[doc.id] = 1;
+            pas.push({ id: doc.id, en: d.en, bm: d.bm, ulang: true });
+          });
+          mulakan();
+        }).catch(function() { jwMemilih = false; mulakan(); });
       }).catch(function(e) { jwMemilih = false; el('jwl-info').textContent = 'Gagal memuat SR Jutawan: ' + (e.message || e); });
     }
     // Tangga: $1,000,000 sentiasa di atas, di bawahnya anak tangga semasa + 10 seterusnya (semakin naik)
