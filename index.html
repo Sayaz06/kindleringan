@@ -5763,6 +5763,11 @@
       // ID dokumen Firestore tidak boleh ada "/" → encodeURIComponent
       return encodeURIComponent((String(en) + '=' + String(bm)).toLowerCase());
     }
+    // Bentuk seragam untuk banding maksud: huruf kecil, buang tanda baca & ruang berlebihan
+    // (cth "Terabadi", "terabadi " dan "terabadi." dikira SAMA)
+    function samaKata(s) {
+      return String(s || '').toLowerCase().replace(/[.,;:!?"'’()\[\]]/g, '').replace(/\s+/g, ' ').trim();
+    }
     // Semua pasangan bank ikut susunan laci SR (laci lama dahulu), kemudian susunan pasangan dalam laci
     function senaraiBank() {
       var a = [], ada = {}, urutan = [], i, j, id;
@@ -5799,7 +5804,8 @@
       var hasil = [], adaEn = {}, adaBm = {}, i;
       function cuba(p) {
         if (hasil.length >= BIL) return false;
-        var en = p.en.toLowerCase(), bm = p.bm.toLowerCase();
+        // Satu pusingan tak boleh ada 2 pasangan dengan BM sama (cth perpetuate = terabadi & enshrined = terabadi)
+        var en = samaKata(p.en), bm = samaKata(p.bm);
         if (adaEn[en] || adaBm[bm]) return false;
         adaEn[en] = 1; adaBm[bm] = 1; hasil.push(p);
         return true;
@@ -6298,10 +6304,12 @@
     }
     // 3 jawapan salah = perkataan English lain dari Bank (bukan yang maksudnya sama dengan soalan)
     function buatSoalan(p, bank) {
-      var salah = [], ada = {}, tolak = {}, enBetul = p.en.toLowerCase(), bmS = p.bm.toLowerCase(), i, k;
-      for (i = 0; i < bank.length; i++) if (bank[i].bm.toLowerCase() === bmS) tolak[bank[i].en.toLowerCase()] = 1;
+      var salah = [], ada = {}, tolak = {}, enBetul = samaKata(p.en), bmS = samaKata(p.bm), i, k;
+      // Mana-mana English yang maksud BM-nya sama dengan soalan TIDAK boleh jadi pilihan (cth soalan "terabadi":
+      // perpetuate betul → enshrined tak dimasukkan sebagai pilihan salah)
+      for (i = 0; i < bank.length; i++) if (samaKata(bank[i].bm) === bmS) tolak[samaKata(bank[i].en)] = 1;
       for (i = 0; i < bank.length; i++) {
-        k = bank[i].en.toLowerCase();
+        k = samaKata(bank[i].en);
         if (k === enBetul || tolak[k] || ada[k]) continue;
         ada[k] = 1; salah.push(bank[i].en);
       }
