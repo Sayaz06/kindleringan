@@ -5614,6 +5614,14 @@
     .dp-btn button { flex: 1 1 22%; min-width: 60px; padding: 10px 4px; border: 2px solid #000; border-radius: 6px; background: #fff; color: #000; font-family: inherit; font-size: 0.95rem; font-weight: bold; cursor: pointer; }
     .dp-btn.dp-merah button { border-style: double; border-width: 4px; }
     .dp-log { font-size: 0.78rem; border-bottom: 1px solid #000; padding: 4px 2px; }
+    /* Penukar dua hala (taip jumlah sendiri) */
+    .dp-tukar { display: flex; align-items: flex-end; gap: 6px; margin: 4px 0; }
+    .dp-tukar label { flex: 1 1 0; min-width: 0; font-size: 0.75rem; font-weight: bold; }
+    .dp-tukar input { display: block; width: 100%; box-sizing: border-box; margin-top: 2px; padding: 10px 6px; border: 2px solid #000; border-radius: 6px;
+      font-family: inherit; font-size: 1.15rem; font-weight: bold; text-align: right; background: #fff; color: #000; }
+    .dp-tukar .dp-sama { flex: 0 0 auto; font-weight: bold; font-size: 1.2rem; padding-bottom: 10px; }
+    .dp-nota { font-size: 0.78rem; margin: 2px 0 6px; min-height: 1.2em; }
+    .dp-btn .dp-utama { background: #000; color: #fff; }
   </style>
   <div id="screen-game" class="screen">
     <div class="status-bar" id="gp-status">GAME PADAN</div>
@@ -5655,9 +5663,15 @@
     <div class="pj-kotak"><div class="pj-watak" id="jk-watak"></div><div class="pj-cakap" id="jk-cakap"></div></div>
     <div class="dp-baki"><div>Tabung Dollar<b id="jk-dolar">-</b></div><div class="dp-gelap">Coin<b id="jk-coin">-</b></div></div>
     <div class="dp-kadar" id="jk-kadar"></div>
+    <div class="dp-tukar">
+      <label>Dollar ($)<input id="jk-in-dolar" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+      <span class="dp-sama">=</span>
+      <label>Coin<input id="jk-in-coin" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="jk-nota"></div>
     <div class="dp-btn">
-      <button type="button" id="btn-jk-satu">Tukar $1,000,000</button>
-      <button type="button" id="btn-jk-semua">Tukar semua</button>
+      <button type="button" id="btn-jk-maks">Maks</button>
+      <button type="button" id="btn-jk-tukar" class="dp-utama">TUKAR</button>
     </div>
     <button id="btn-jk-balik" class="btn" style="margin-top:12px;">Kembali ke Jutawan</button>
   </div>
@@ -5672,19 +5686,27 @@
     </div>
     <div class="dp-tajuk">Beli RINGGIT BIRU (kedai item godaan)</div>
     <div class="dp-kadar" id="mx-kadar-biru"></div>
-    <div class="dp-btn" id="mx-btn-biru">
-      <button type="button" data-mx="biru" data-sen="10">0.10</button>
-      <button type="button" data-mx="biru" data-sen="50">0.50</button>
-      <button type="button" data-mx="biru" data-sen="100">1.00</button>
-      <button type="button" data-mx="biru" data-sen="maks">Maks</button>
+    <div class="dp-tukar">
+      <label>Coin<input id="mx-in-coin-biru" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+      <span class="dp-sama">=</span>
+      <label>Ringgit Biru<input id="mx-in-rm-biru" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="mx-nota-biru"></div>
+    <div class="dp-btn">
+      <button type="button" data-mx-maks="biru">Maks</button>
+      <button type="button" data-mx-tukar="biru" class="dp-utama">TUKAR KE BIRU</button>
     </div>
     <div class="dp-tajuk">Beli RINGGIT MERAH (kedai item digalakkan)</div>
     <div class="dp-kadar" id="mx-kadar-merah"></div>
-    <div class="dp-btn dp-merah" id="mx-btn-merah">
-      <button type="button" data-mx="merah" data-sen="10">0.10</button>
-      <button type="button" data-mx="merah" data-sen="50">0.50</button>
-      <button type="button" data-mx="merah" data-sen="100">1.00</button>
-      <button type="button" data-mx="merah" data-sen="maks">Maks</button>
+    <div class="dp-tukar">
+      <label>Coin<input id="mx-in-coin-merah" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+      <span class="dp-sama">=</span>
+      <label>Ringgit Merah<input id="mx-in-rm-merah" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="mx-nota-merah"></div>
+    <div class="dp-btn dp-merah">
+      <button type="button" data-mx-maks="merah">Maks</button>
+      <button type="button" data-mx-tukar="merah" class="dp-utama">TUKAR KE MERAH</button>
     </div>
     <div class="dp-tajuk">Sejarah tukaran</div>
     <div id="mx-log" style="padding-bottom:80px;"></div>
@@ -6662,11 +6684,68 @@
       })();
     }
 
+    // ── Penukar dua hala: taip di mana-mana kotak, kotak satu lagi dikira automatik.
+    //    Lebih dari baki → ditukar kepada jumlah maksimum yang ada.
+    function bacaNombor(s) { return parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0; }
+    function bacaSen(s) {
+      var t = String(s || '').replace(/[^0-9.]/g, ''), i = t.indexOf('.');
+      if (i !== -1) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, '').slice(0, 2);
+      return Math.round((parseFloat(t) || 0) * 100);
+    }
+    // Kemaskan teks kotak: nombor bulat sahaja, atau (perpuluhan) maks 2 tempat perpuluhan
+    function rapiNombor(s) { return String(s || '').replace(/[^0-9]/g, '').replace(/^0+(?=\d)/, ''); }
+    function rapiSen(s) {
+      var t = String(s || '').replace(/[^0-9.]/g, ''), i = t.indexOf('.');
+      if (i !== -1) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, '').slice(0, 2);
+      return t.replace(/^0+(?=\d)/, '');
+    }
+    function pautTukar(o) {
+      var st = { dapat: 0 };
+      function kemas() {
+        o.nota.textContent = st.dapat ? 'Ditolak: ' + o.fmtKos(o.kos(st.dapat)) + '  →  Dapat: ' + o.fmtDapat(st.dapat) :
+          'Taip jumlah di mana-mana kotak. Lebih dari baki → jadi jumlah maksimum.';
+      }
+      o.a.addEventListener('input', function() {
+        var r = rapiNombor(o.a.value), v = bacaNombor(r), m = o.maxA();
+        if (v > m) { v = m; r = v ? String(v) : ''; }
+        if (r !== o.a.value) o.a.value = r;
+        st.dapat = o.keDapat(v);
+        o.b.value = st.dapat ? o.tulisB(st.dapat) : '';
+        kemas();
+      });
+      o.b.addEventListener('input', function() {
+        var r = o.rapiB(o.b.value), v = o.bacaB(r), m = o.keDapat(o.maxA());
+        if (v > m) { v = m; r = v ? o.tulisB(v) : ''; }
+        if (r !== o.b.value) o.b.value = r;
+        st.dapat = v;
+        o.a.value = v ? String(o.kos(v)) : '';
+        kemas();
+      });
+      return {
+        dapat: function() { return st.dapat; },
+        kosong: function() { st.dapat = 0; o.a.value = ''; o.b.value = ''; kemas(); },
+        maks: function() {
+          var m = o.keDapat(o.maxA());
+          st.dapat = m; o.b.value = m ? o.tulisB(m) : ''; o.a.value = m ? String(o.kos(m)) : '';
+          kemas();
+        }
+      };
+    }
+
     // ── KEDAI PAK JUTA (dalam Jutawan): Dollar → coin ──
+    var tkJuta = pautTukar({
+      a: el('jk-in-dolar'), b: el('jk-in-coin'), nota: el('jk-nota'),
+      maxA: function() { return JW.dolar; },
+      keDapat: function(dolar) { return Math.floor(dolar * EKO.JW_COIN / 1000000 + 1e-9); },
+      kos: function(coin) { return Math.ceil(coin * 1000000 / EKO.JW_COIN - 1e-9); },
+      bacaB: bacaNombor, rapiB: rapiNombor, tulisB: function(v) { return String(v); },
+      fmtKos: duit, fmtDapat: function(v) { return v + ' coin'; }
+    });
     function lukisJk() {
       el('jk-dolar').textContent = duit(JW.dolar);
       el('jk-coin').textContent = DP.coin;
       el('jk-kadar').textContent = 'Kadar: $1,000,000 (1 level = ' + EKO.JW_KATA + ' perkataan) = ' + EKO.JW_COIN + ' coin';
+      tkJuta.kosong();
     }
     function bukaJwKedai() {
       if (!currentUser) return;
@@ -6681,37 +6760,49 @@
           dpMuat(function(ok2) {
             if (!ok2) { el('jk-cakap').textContent = 'Gagal memuat dompet.'; return; }
             lukisJk();
-            el('jk-cakap').textContent = JW.dolar >= 1000000 ? 'Selamat datang! Nak tukar dollar jadi coin?' :
-              'Selamat datang! Tabung awak belum cukup $1,000,000. Lulus satu level dulu ya.';
+            el('jk-cakap').textContent = JW.dolar >= 1000000 / EKO.JW_COIN ? 'Selamat datang! Nak tukar berapa dollar jadi coin?' :
+              'Selamat datang! Tabung awak masih kosong. Lulus satu level dulu ya.';
           });
         }).catch(function(e) { el('jk-cakap').textContent = 'Gagal memuat tabung: ' + (e.message || e); });
       });
     }
-    function tukarDolar(semua) {
+    function tukarDolar() {
       if (dpSibuk) return;
-      var juta = Math.floor(JW.dolar / 1000000);
-      if (!semua) juta = Math.min(juta, 1);
-      if (juta < 1) { penjaga('jk-watak', 'juta', 'sedih', 'Tabung tak cukup. Lulus level Jutawan dulu!', 'jk-cakap'); return; }
-      var dapat = juta * EKO.JW_COIN, dolarBaru = JW.dolar - juta * 1000000, coinBaru = DP.coin + dapat, b = db.batch();
+      var dapat = tkJuta.dapat(), kos = Math.ceil(dapat * 1000000 / EKO.JW_COIN - 1e-9);
+      if (dapat < 1 || kos > JW.dolar) { penjaga('jk-watak', 'juta', 'sedih', dapat < 1 ? 'Taip jumlah dulu (sekurang-kurangnya 1 coin).' : 'Tabung tak cukup!', 'jk-cakap'); return; }
+      var b = db.batch();
       dpSibuk = true;
-      b.set(kol('game_stat').doc('jutawan'), { dolar: firebase.firestore.FieldValue.increment(-juta * 1000000), updatedAt: Date.now() }, { merge: true });
+      b.set(kol('game_stat').doc('jutawan'), { dolar: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() }, { merge: true });
       b.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(dapat), updatedAt: Date.now() }, { merge: true });
-      dpLog(b, 'dolar>coin', duit(juta * 1000000) + ' → +' + dapat + ' coin');
+      dpLog(b, 'dolar>coin', duit(kos) + ' → +' + dapat + ' coin');
       b.commit().then(function() {
         dpSibuk = false;
-        JW.dolar = dolarBaru; jwSimpan(); DP.coin = coinBaru;
+        JW.dolar -= kos; jwSimpan(); DP.coin += dapat;
         lukisJk();
-        penjaga('jk-watak', 'juta', 'gembira', 'Terima kasih! +' + dapat + ' coin.', 'jk-cakap');
+        penjaga('jk-watak', 'juta', 'gembira', 'Terima kasih! ' + duit(kos) + ' → +' + dapat + ' coin.', 'jk-cakap');
       }).catch(function(e) { dpSibuk = false; el('jk-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
     }
 
     // ── MAGIC EXCHANGE (dalam Mini Game): coin → Ringgit Biru / Merah ──
+    function penukarRinggit(jenis) {
+      var kadar = jenis === 'biru' ? EKO.COIN_BIRU : EKO.COIN_MERAH, nama = jenis === 'biru' ? 'Biru' : 'Merah';
+      return pautTukar({
+        a: el('mx-in-coin-' + jenis), b: el('mx-in-rm-' + jenis), nota: el('mx-nota-' + jenis),
+        maxA: function() { return DP.coin; },
+        keDapat: function(coin) { return Math.floor(coin * 100 / kadar + 1e-9); },
+        kos: function(sen) { return Math.ceil(sen * kadar / 100 - 1e-9); },
+        bacaB: bacaSen, rapiB: rapiSen, tulisB: rm,
+        fmtKos: function(v) { return v + ' coin'; }, fmtDapat: function(v) { return rm(v) + ' ' + nama; }
+      });
+    }
+    var tkRM = { biru: penukarRinggit('biru'), merah: penukarRinggit('merah') };
     function lukisMx() {
       el('mx-coin').textContent = DP.coin;
       el('mx-biru').textContent = rm(DP.biruSen);
       el('mx-merah').textContent = rm(DP.merahSen);
       el('mx-kadar-biru').textContent = 'Kadar: 1.00 Biru = ' + EKO.COIN_BIRU.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_BIRU / EKO.KATA_COIN) + ' perkataan)';
       el('mx-kadar-merah').textContent = 'Kadar: 1.00 Merah = ' + EKO.COIN_MERAH.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_MERAH / EKO.KATA_COIN) + ' perkataan)';
+      tkRM.biru.kosong(); tkRM.merah.kosong();
     }
     function bukaMx() {
       if (!currentUser) return;
@@ -6724,39 +6815,39 @@
         dpSejarah('mx-log');
       });
     }
-    function tukarCoin(jenis, senMinta) {
+    function tukarCoin(jenis) {
       if (dpSibuk) return;
-      var kadar = jenis === 'biru' ? EKO.COIN_BIRU : EKO.COIN_MERAH;
-      var sen = senMinta === 'maks' ? Math.floor(DP.coin * 100 / kadar) : +senMinta;
-      var kos = Math.ceil(sen * kadar / 100);
+      var kadar = jenis === 'biru' ? EKO.COIN_BIRU : EKO.COIN_MERAH, nama = jenis === 'biru' ? 'Biru' : 'Merah';
+      var sen = tkRM[jenis].dapat(), kos = Math.ceil(sen * kadar / 100 - 1e-9);
       if (sen < 1 || kos > DP.coin) {
-        penjaga('mx-watak', 'magik', 'sedih', 'Coin tak cukup. Perlu ' + Math.ceil((sen || 1) * kadar / 100) + ' coin, awak ada ' + DP.coin + '.', 'mx-cakap');
+        penjaga('mx-watak', 'magik', 'sedih', sen < 1 ? 'Taip jumlah dulu. Paling sedikit 0.01 ' + nama + ' = ' + Math.ceil(kadar / 100 - 1e-9) + ' coin.' : 'Coin tak cukup!', 'mx-cakap');
         return;
       }
-      var baru = { coin: DP.coin - kos, biruSen: DP.biruSen + (jenis === 'biru' ? sen : 0), merahSen: DP.merahSen + (jenis === 'merah' ? sen : 0) }, b = db.batch();
-      dpSibuk = true;
-      var tambah = { coin: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() };
+      var b = db.batch(), tambah = { coin: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() };
       tambah[jenis === 'biru' ? 'biruSen' : 'merahSen'] = firebase.firestore.FieldValue.increment(sen);
+      dpSibuk = true;
       b.set(refDompet(), tambah, { merge: true });
-      dpLog(b, 'coin>' + jenis, kos + ' coin → +' + rm(sen) + ' ' + (jenis === 'biru' ? 'Biru' : 'Merah'));
+      dpLog(b, 'coin>' + jenis, kos + ' coin → +' + rm(sen) + ' ' + nama);
       b.commit().then(function() {
         dpSibuk = false;
-        DP = baru;
+        DP.coin -= kos;
+        if (jenis === 'biru') DP.biruSen += sen; else DP.merahSen += sen;
         lukisMx();
-        penjaga('mx-watak', 'magik', 'gembira', 'Abrakadabra! +' + rm(sen) + ' Ringgit ' + (jenis === 'biru' ? 'Biru' : 'Merah') + ' (-' + kos + ' coin)', 'mx-cakap');
+        penjaga('mx-watak', 'magik', 'gembira', 'Abrakadabra! -' + kos + ' coin → +' + rm(sen) + ' Ringgit ' + nama, 'mx-cakap');
         dpSejarah('mx-log');
       }).catch(function(e) { dpSibuk = false; el('mx-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
     }
     el('btn-jwl-kedai').onclick = bukaJwKedai;
-    el('btn-jk-satu').onclick = function() { tukarDolar(false); };
-    el('btn-jk-semua').onclick = function() { tukarDolar(true); };
+    el('btn-jk-maks').onclick = function() { tkJuta.maks(); };
+    el('btn-jk-tukar').onclick = tukarDolar;
     el('btn-jk-balik').onclick = bukaJwLevel;
     el('btn-mini-mx').onclick = bukaMx;
     el('btn-mx-balik').onclick = bukaMini;
     el('screen-mx').addEventListener('click', function(e) {
       var t = e.target;
-      if (!t || !t.getAttribute || !t.getAttribute('data-mx')) return;
-      tukarCoin(t.getAttribute('data-mx'), t.getAttribute('data-sen'));
+      if (!t || !t.getAttribute) return;
+      if (t.getAttribute('data-mx-maks')) tkRM[t.getAttribute('data-mx-maks')].maks();
+      else if (t.getAttribute('data-mx-tukar')) tukarCoin(t.getAttribute('data-mx-tukar'));
     });
     el('btn-jwl-bank').onclick = function() { jwTunda = null; bukaBank(false); };
     el('btn-jwl-batal').onclick = function() { jwTunda = null; el('jwl-kurang').style.display = 'none'; lukisJwLevel(); };
@@ -7032,6 +7123,11 @@
 
     function lukis() {
       var rows = SUSUNAN[lapisan], html = '';
+      // Kotak nombor perpuluhan (inputmode="decimal", cth Ringgit) → butang "." ganti "+"
+      if (lapisan === 'nombor' && elAktif && (elAktif.getAttribute('data-kb-inputmode') || '').toLowerCase() === 'decimal') {
+        rows = rows.slice();
+        rows[3] = ['.', '0', 'DEL'];
+      }
       // Kotak taip besar (textarea) → butang Enter (baris baru) sebelum Delete All
       if ((lapisan === 'huruf' || lapisan === 'simbol') && elAktif && elAktif.tagName === 'TEXTAREA') {
         rows = rows.slice();
