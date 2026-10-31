@@ -5586,9 +5586,21 @@
     /* MINI GAME — JUTAWAN */
     .jw-tajuk { font-size: 1.8rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 6px 0; }
     .jw-bar { border: 2px solid #000; border-radius: 8px; height: 14px; overflow: hidden; margin: 4px 0; }
-    #jwl-bar-isi, #gpl-bar-isi, #mml-bar-isi { height: 100%; width: 0; background: #000; }
+    #jwl-bar-isi, #gpl-bar-isi, #mml-bar-isi, #drl-bar-isi { height: 100%; width: 0; background: #000; }
     .jw-info { font-size: 0.85rem; text-align: center; margin: 6px 0; white-space: pre-line; min-height: 1.2em; }
     .jw-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 8px 0; }
+    /* DURI: piston tolak perkataan ke atas, duri atas timbunan, 3 lapis belon */
+    .dr-papan { position: relative; height: 456px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; margin: 4px 0 8px; }
+    .dr-k { position: absolute; width: 47%; height: 38px; padding: 0 4px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.95rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .dr-k.dr-pilih { background: #000; color: #fff; }
+    .dr-k.dr-salah { border-style: dashed; border-width: 3px; }
+    .dr-k.dr-batu { background: #888; color: #fff; border-color: #555; cursor: default; font-size: 0.7rem; letter-spacing: 2px; }
+    .dr-duri, .dr-belon, .dr-piston { position: absolute; left: 0; right: 0; }
+    .dr-duri svg, .dr-belon svg, .dr-piston svg { display: block; width: 100%; height: 100%; }
+    .dr-masa { display: flex; justify-content: center; gap: 4px; margin: 0 0 4px; }
+    .dr-masa i { display: block; width: 14px; height: 8px; border: 2px solid #000; border-radius: 3px; }
+    .dr-masa i.dr-isi { background: #000; }
     /* MEMORI: 12 kad (6 English + 6 BM), terbalikkan 2 kad satu langkah */
     .mm-atas { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 8px; }
     .mm-langkah { border: 3px solid #000; border-radius: 14px; padding: 2px 16px; text-align: center; }
@@ -5770,6 +5782,7 @@
       <button type="button" class="gm-kecil" data-pd-ke="pd-mini">Kedai</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-padan">Padan</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-memori">Memori</button>
+      <button type="button" class="gm-kecil" data-pd-ke="pd-duri">Duri</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-bank">Pelabuhan</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-jutawan">Jutawan</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-duit">Duit &amp; Exchange</button>
@@ -5890,6 +5903,60 @@
     </div>
     <button id="btn-mk-balik" class="btn" style="margin-top:12px;">Kembali ke Memori</button>
   </div>
+  <div id="screen-dr-level" class="screen">
+    <div class="status-bar" id="drl-status">DURI</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini" class="gm-aktif">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">DURI</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-duri">Panduan</button>
+      <button type="button" id="btn-drl-kedai" class="gm-kecil">Kedai Perak</button>
+      <button type="button" id="btn-drl-sr" class="gm-kecil">SR</button>
+    </div>
+    <div class="jw-bar"><div id="drl-bar-isi"></div></div>
+    <div id="drl-info" class="jw-info"></div>
+    <div id="drl-grid" class="jw-grid"></div>
+    <button id="btn-drl-main" class="btn btn-primary gm-utama">MAIN</button>
+  </div>
+  <div id="screen-dr" class="screen">
+    <div class="status-bar" id="dr-status">DURI</div>
+    <div class="mm-atas">
+      <div class="mm-emas">Perak<b id="dr-perak">-</b></div>
+      <div class="mm-langkah"><b id="dr-belon-n">3</b><span>BELON</span></div>
+      <button type="button" id="btn-dr-keluar" class="gm-kecil">Keluar</button>
+    </div>
+    <div class="dr-masa" id="dr-masa"></div>
+    <div id="dr-papan" class="dr-papan"></div>
+    <div id="dr-info" class="jw-info"></div>
+    <div id="dr-tamat" style="display:none;border:3px solid #000;border-radius:10px;padding:10px;margin:6px 0;text-align:center;">
+      <div id="dr-skor" style="font-size:1.5rem;font-weight:bold;"></div>
+      <div id="dr-skor-sub" style="font-size:0.85rem;margin-top:4px;white-space:pre-line;"></div>
+    </div>
+    <button id="btn-dr-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
+    <button id="btn-dr-baru" class="btn" style="display:none;">PUSINGAN BARU</button>
+  </div>
+  <div id="screen-dr-kedai" class="screen">
+    <div class="status-bar">KEDAI PERAK</div>
+    <div class="jw-tajuk" style="font-size:1.4rem;">KEDAI PERAK PAK LOGAM</div>
+    <div class="pj-kotak"><div class="pj-watak" id="dk-watak"></div><div class="pj-cakap" id="dk-cakap"></div></div>
+    <div class="dp-baki"><div>Perak (gram)<b id="dk-perak">-</b></div><div class="dp-gelap">Coin<b id="dk-coin">-</b></div></div>
+    <div class="dp-kadar" id="dk-kadar"></div>
+    <div class="dp-tukar">
+      <label>Perak (g)<input id="dk-in-perak" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+      <span class="dp-sama">=</span>
+      <label>Coin<input id="dk-in-coin" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="dk-nota"></div>
+    <div class="dp-btn">
+      <button type="button" id="btn-dk-maks">Maks</button>
+      <button type="button" id="btn-dk-tukar" class="dp-utama">JUAL PERAK</button>
+    </div>
+    <button id="btn-dk-balik" class="btn" style="margin-top:12px;">Kembali ke Duri</button>
+  </div>
   <div id="screen-gsr" class="screen">
     <div class="status-bar" id="gs-status">SR GAME</div>
     <div id="gs-info"></div>
@@ -5913,6 +5980,7 @@
     <button type="button" id="btn-mini-padan" class="mini-kad"><span class="mini-kedai" id="mini-padan-kedai"></span><span class="mini-teks">PADAN<span class="gb-sub" id="mini-padan-sub">Memuatkan...</span></span></button>
     <button type="button" id="btn-mini-jw" class="mini-kad"><span class="mini-kedai" id="mini-jw-kedai"></span><span class="mini-teks">JUTAWAN<span class="gb-sub" id="mini-jw-sub">Memuatkan...</span></span></button>
     <button type="button" id="btn-mini-mm" class="mini-kad"><span class="mini-kedai" id="mini-mm-kedai"></span><span class="mini-teks">MEMORI<span class="gb-sub" id="mini-mm-sub">Memuatkan...</span></span></button>
+    <button type="button" id="btn-mini-dr" class="mini-kad"><span class="mini-kedai" id="mini-dr-kedai"></span><span class="mini-teks">DURI<span class="gb-sub" id="mini-dr-sub">Memuatkan...</span></span></button>
     <div class="jw-info">Kedai buka bila ada stok perkataan. Stok datang dari kapal kargo di tab PELABUHAN.</div>
   </div>
   <div id="screen-jw-kedai" class="screen">
@@ -6801,6 +6869,350 @@
     el('btn-mk-tukar').onclick = jualEmas;
     el('btn-mk-balik').onclick = bukaMmLevel;
 
+    // ══ DURI: piston tolak perkataan ke atas · duri atas timbunan · 3 lapis belon · padankan English + BM untuk turunkan ══
+    // SR sendiri: users/{uid}/game_sr_duri · Stat: users/{uid}/game_stat/duri { main, lulus, perak }
+    var DR_KOL = 'game_sr_duri', DR_BIL = 10, DR_SR_MAKS = 5, DR_BELON = 3, DR_RUANG = 5, DR_MULA = 3, DR_DETIK = 6;
+    var DR_BARIS = 44, DR_BAWAH = 36;
+    var DR = { main: 0, lulus: 0, perak: 0, gsr: {} }, dr = null, drJam = null;
+    function drMuat(cb) {
+      kol(DR_KOL).get().then(function(snap) {
+        var g = {};
+        snap.forEach(function(doc) { g[doc.id] = 1; });
+        DR.gsr = g;
+        return kol('game_stat').doc('duri').get();
+      }).then(function(s) {
+        var d = (s && s.exists) ? s.data() : {};
+        DR.main = d.main || 0; DR.lulus = d.lulus || 0; DR.perak = d.perak || 0;
+        cb(true);
+      }).catch(function(e) { cb(false, e); });
+    }
+    function drOverdue(bank, cb) {
+      var dalam = {}, i;
+      for (i = 0; i < bank.length; i++) dalam[bank[i].id] = 1;
+      kol(DR_KOL).where('nextDueAt', '<=', Date.now()).orderBy('nextDueAt', 'asc').limit(DR_BIL).get().then(function(snap) {
+        var a = [];
+        snap.forEach(function(doc) { var d = doc.data(); if (dalam[doc.id]) a.push({ id: doc.id, en: d.en, bm: d.bm }); });
+        cb(a);
+      }).catch(function() { cb([]); });
+    }
+    // 10 perkataan: SR Duri sampai masa (maks 5) + perkataan baru · tiada 2 kotak dengan maksud BM / English sama
+    function drPilih(bank, overdue) {
+      var hasil = [], adaEn = {}, adaBm = {}, i, bilSr = 0;
+      function cuba(p) {
+        if (hasil.length >= DR_BIL) return false;
+        var en = samaKata(p.en), bm = samaKata(p.bm);
+        if (adaEn[en] || adaBm[bm]) return false;
+        adaEn[en] = 1; adaBm[bm] = 1; hasil.push(p);
+        return true;
+      }
+      for (i = 0; i < overdue.length && bilSr < DR_SR_MAKS; i++) if (cuba(overdue[i])) bilSr++;
+      for (i = 0; i < bank.length && hasil.length < DR_BIL; i++) if (!DR.gsr[bank[i].id]) cuba({ id: bank[i].id, en: bank[i].en, bm: bank[i].bm, baru: true });
+      for (i = 0; i < overdue.length && hasil.length < DR_BIL; i++) cuba(overdue[i]);
+      return hasil;
+    }
+    function bukaDrLevel() {
+      if (!currentUser) return;
+      drHenti(); dr = null;
+      showScreen('screen-dr-level');
+      el('drl-info').textContent = 'Memuatkan...';
+      muatLokal();
+      muatSR(false, function() {
+        muatBank(false, function(ok, e) {
+          if (!ok) { el('drl-info').textContent = 'Gagal memuat bank: ' + ((e && e.message) || ''); return; }
+          drMuat(function(ok2, e2) {
+            if (!ok2) { el('drl-info').textContent = 'Gagal memuat: ' + ((e2 && e2.message) || ''); return; }
+            lukisDrLevel();
+          });
+        });
+      });
+    }
+    function lukisDrLevel() {
+      var lv = DR.lulus + 1, mula = Math.floor((lv - 1) / 12) * 12, siap = (lv - 1) % 12, h = '', n, i;
+      for (i = 1; i <= 12; i++) {
+        n = mula + i;
+        if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-dr-main="1">' + n + '</button>';
+        else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
+      }
+      el('drl-grid').innerHTML = h;
+      el('drl-bar-isi').style.width = Math.round(siap / 12 * 100) + '%';
+      el('drl-status').textContent = 'DURI · Level ' + lv + ' · Perak ' + DR.perak + ' g';
+      el('drl-info').textContent = 'Set ' + (mula / 12 + 1) + ' · ' + siap + '/12 level lulus · Perak ' + DR.perak + ' g' +
+        '\nSetiap level: ' + DR_BIL + ' perkataan → +' + (DR_BIL * EKO.DR_PERAK_KATA) + ' g perak + BONUS BAKI BELON';
+      el('btn-drl-main').textContent = 'MAIN LEVEL ' + lv;
+    }
+    // Lukisan: duri (atas timbunan), belon (3 lapis), piston (bawah)
+    function svgDuri() {
+      var h = '<rect x="0" y="9" width="200" height="5" fill="#000"/>', x;
+      for (x = 4; x < 200; x += 12) h += '<path d="M' + x + ' 10 L' + (x + 4) + ' 0 L' + (x + 8) + ' 10 Z" fill="#000"/>';
+      return '<svg viewBox="0 0 200 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
+    }
+    function svgBelon(pecah) {
+      var h = '', i, cx;
+      for (i = 0; i < 3; i++) {
+        cx = 40 + i * 60;
+        if (pecah) h += '<path d="M' + (cx - 12) + ' 14 L' + (cx - 4) + ' 18 M' + (cx + 12) + ' 14 L' + (cx + 4) + ' 18 M' + cx + ' 2 V10 M' + (cx - 10) + ' 28 L' + (cx - 3) + ' 22 M' + (cx + 10) + ' 28 L' + (cx + 3) + ' 22" stroke="#000" stroke-width="2.5"/>';
+        else h += '<ellipse cx="' + cx + '" cy="14" rx="13" ry="13" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M' + (cx - 5) + ' 8 Q' + (cx - 3) + ' 5 ' + cx + ' 5" fill="none" stroke="#000" stroke-width="1.5"/>' +
+          '<path d="M' + cx + ' 27 l-2 3 h4 Z" fill="#000"/><path d="M' + cx + ' 30 q4 4 0 8" fill="none" stroke="#000" stroke-width="1.2"/>';
+      }
+      return '<svg viewBox="0 0 200 38" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
+    }
+    function svgPiston(tolak) {
+      var t = tolak ? 4 : 12;
+      return '<svg viewBox="0 0 200 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="20" y="0" width="160" height="5" fill="#000"/><rect x="92" y="' + (t - 7) + '" width="16" height="' + (36 - t) + '" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+        '<rect x="70" y="24" width="60" height="12" fill="#000"/><path d="M60 18 l6 -6 l6 6 M128 18 l6 -6 l6 6" fill="none" stroke="#000" stroke-width="2.5"/></svg>';
+    }
+    function drTinggi() { return Math.max(dr.kol[0].length, dr.kol[1].length); }
+    function lukisDr() {
+      var h = '', c, r, k, y, sel = dr.pilih;
+      // Belon: lapis k di atas ruang timbunan
+      for (k = 0; k < DR_BELON; k++) {
+        y = DR_BAWAH + (DR_RUANG + k) * DR_BARIS + 4;
+        if (k >= dr.pecah) h += '<div class="dr-belon" style="bottom:' + y + 'px;height:' + (DR_BARIS - 6) + 'px;">' + svgBelon(false) + '</div>';
+        else if (dr.letup === k) h += '<div class="dr-belon" style="bottom:' + y + 'px;height:' + (DR_BARIS - 6) + 'px;">' + svgBelon(true) + '</div>';
+      }
+      for (c = 0; c < 2; c++) for (r = 0; r < dr.kol[c].length; r++) {
+        k = dr.kol[c][r];
+        h += '<button type="button" class="dr-k' + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '51.5' : '1.5') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
+      }
+      h += '<div class="dr-duri" style="bottom:' + (DR_BAWAH + drTinggi() * DR_BARIS) + 'px;height:14px;">' + svgDuri() + '</div>';
+      h += '<div class="dr-piston" style="bottom:0;height:' + DR_BAWAH + 'px;">' + svgPiston(dr.tolakAnim) + '</div>';
+      el('dr-papan').innerHTML = h;
+      var b = el('dr-papan').querySelectorAll('[data-dr-k]');
+      for (c = 0; c < b.length; c++) { k = dr.kad[+b[c].getAttribute('data-dr-k')]; b[c].textContent = k.batu ? 'BATU' : k.teks; }
+      el('dr-belon-n').textContent = DR_BELON - dr.pecah;
+      var m = '';
+      for (c = 0; c < DR_DETIK; c++) m += '<i' + (c < dr.detik ? ' class="dr-isi"' : '') + '></i>';
+      el('dr-masa').innerHTML = dr.giliran.length ? m : '';
+    }
+    function drHenti() { if (drJam) { clearInterval(drJam); drJam = null; } }
+    function mulaDr() {
+      if (!currentUser) return;
+      drHenti();
+      showScreen('screen-dr');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      dr = null;
+      el('dr-tamat').style.display = 'none';
+      el('btn-dr-claim').style.display = 'none';
+      el('btn-dr-baru').style.display = 'none';
+      el('dr-papan').innerHTML = '';
+      el('dr-masa').innerHTML = '';
+      el('dr-perak').textContent = DR.perak + ' g';
+      el('dr-belon-n').textContent = DR_BELON;
+      el('dr-belon-n').parentNode.className = 'mm-langkah';
+      el('dr-info').textContent = 'Menyusun perkataan...';
+      var bank = senaraiBank();
+      drOverdue(bank, function(od) {
+        var pas = drPilih(bank, od), kad = [], i;
+        if (pas.length < DR_BIL) {
+          el('dr-info').textContent = 'KEDAI DURI TUTUP: TIADA STOK.\nPerlu ' + DR_BIL + ' perkataan, ada ' + pas.length + '.\nMuat kontena di tab PELABUHAN.';
+          el('btn-dr-baru').style.display = '';
+          return;
+        }
+        for (i = 0; i < pas.length; i++) { kad.push({ p: i, teks: pas[i].en }); kad.push({ p: i, teks: pas[i].bm }); }
+        kocok(kad);
+        for (i = 0; i < kad.length; i++) kad[i].id = i;
+        dr = { pas: pas, kad: kad, giliran: kad.slice(), kol: [[], []], pilih: -1, jumpa: 0, pecah: 0, letup: -1, detik: 0, tamat: false, lv: DR.lulus + 1, salah: null, tolakAnim: false };
+        for (i = 0; i < DR_MULA; i++) drMasuk();
+        el('dr-info').textContent = '';
+        el('dr-status').textContent = 'DURI · Level ' + dr.lv + ' · Padan ' + DR_BIL + ' perkataan';
+        lukisDr();
+        drJam = setInterval(function() {
+          if (!dr || dr.tamat || el('screen-dr').className.indexOf('active') === -1) { drHenti(); return; }
+          if (!dr.giliran.length) return;
+          dr.detik++;
+          if (dr.detik >= DR_DETIK) { dr.detik = 0; drTolak(false); } else lukisDr();
+        }, 1000);
+      });
+    }
+    // Satu baris baru masuk dari bawah (perkataan seterusnya, atau BATU bila perkataan dah habis)
+    function drMasuk() {
+      for (var c = 0; c < 2; c++) {
+        var k = dr.giliran.shift();
+        if (!k) { k = { id: dr.kad.length, batu: true }; dr.kad.push(k); }
+        dr.kol[c].unshift(k);
+      }
+    }
+    // Piston tolak: timbunan naik satu baris. Duri sampai belon → belon lapis itu pecah. Semua pecah → kalah.
+    function drTolak(salah) {
+      if (!dr || dr.tamat) return;
+      if (!dr.giliran.length && !salah) return;
+      drMasuk();
+      dr.tolakAnim = true;
+      while (dr.pecah < DR_BELON && drTinggi() > DR_RUANG + dr.pecah) { dr.letup = dr.pecah; dr.pecah++; }
+      lukisDr();
+      setTimeout(function() {
+        if (!dr) return;
+        dr.tolakAnim = false; dr.letup = -1;
+        if (dr.pecah >= DR_BELON) drTamat(false); else lukisDr();
+      }, 450);
+    }
+    function drCari(id) {
+      for (var c = 0; c < 2; c++) for (var r = 0; r < dr.kol[c].length; r++) if (dr.kol[c][r].id === id) return [c, r];
+      return null;
+    }
+    el('dr-papan').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-dr-k'))) t = t.parentNode;
+      if (!t || t === this || !dr || dr.tamat) return;
+      var id = +t.getAttribute('data-dr-k'), k = dr.kad[id];
+      if (k.batu) return;
+      if (dr.pilih === -1 || dr.pilih === id) { dr.pilih = dr.pilih === id ? -1 : id; lukisDr(); return; }
+      var a = dr.kad[dr.pilih];
+      if (a.p === k.p) {
+        // Betul: kedua-dua kotak hilang, yang di atas jatuh ke bawah (graviti), duri turun sekali
+        var pa = drCari(a.id), pb = drCari(k.id);
+        dr.kol[pa[0]].splice(pa[1], 1);
+        pb = drCari(k.id); dr.kol[pb[0]].splice(pb[1], 1);
+        dr.pilih = -1; dr.jumpa++;
+        el('dr-info').textContent = dr.pas[k.p].en + ' = ' + dr.pas[k.p].bm;
+        if (dr.jumpa >= DR_BIL) { lukisDr(); drTamat(true); return; }
+        if (!drTinggi() && dr.giliran.length) { drMasuk(); dr.detik = 0; }
+        lukisDr();
+        return;
+      }
+      // Salah: kotak bergaris putus-putus sekejap + piston terus tolak satu baris
+      dr.salah = {}; dr.salah[a.id] = 1; dr.salah[k.id] = 1;
+      dr.pilih = -1;
+      el('dr-info').textContent = 'Salah! Piston tolak.';
+      drTolak(true);
+      setTimeout(function() { if (dr) { dr.salah = null; if (!dr.tamat) lukisDr(); } }, 700);
+    });
+    function drSimpanSr(p) {
+      var ref = kol(DR_KOL).doc(p.id), now = Date.now();
+      if (p.baru) {
+        DR.gsr[p.id] = 1;
+        return ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(function() {});
+      }
+      ref.get().then(function(snap) {
+        if (!snap.exists) return;
+        var d = snap.data(), fasaBaru = (d.fasaSemasa || 0) + 1, sejarah = (d.sejarahFasa || []).slice();
+        sejarah.push({ fasa: d.fasaSemasa || 0, selesaiAt: now, labelFasa: getLabelFasaSR(d.fasaSemasa || 0) });
+        return ref.update({ fasaSemasa: fasaBaru, nextDueAt: now + getSRInterval(fasaBaru), sejarahFasa: sejarah, updatedAt: now });
+      }).catch(function() {});
+    }
+    // Menang: SR Duri dikemas kini + level lulus + perak (REWARD + BONUS BAKI BELON). Kalah: tiada ganjaran, SR tak berubah.
+    function drTamat(menang) {
+      var asas = DR_BIL * EKO.DR_PERAK_KATA, baki = menang ? DR_BELON - dr.pecah : 0, perak = asas + baki * EKO.DR_BONUS_BELON;
+      var ubah = { main: firebase.firestore.FieldValue.increment(1), updatedAt: Date.now() }, i;
+      drHenti();
+      dr.tamat = true;
+      DR.main++;
+      el('dr-masa').innerHTML = '';
+      if (menang) {
+        for (i = 0; i < dr.pas.length; i++) drSimpanSr(dr.pas[i]);
+        DR.lulus++;
+        ubah.lulus = firebase.firestore.FieldValue.increment(1);
+        ubah.perak = firebase.firestore.FieldValue.increment(perak);
+        dr.perakBaru = perak;
+      } else {
+        lukisDr();
+      }
+      kol('game_stat').doc('duri').set(ubah, { merge: true }).catch(function(e) { el('dr-info').textContent = 'Gagal simpan: ' + (e.message || e); });
+      el('dr-tamat').style.display = 'block';
+      el('btn-dr-claim').style.display = 'none';
+      el('btn-dr-baru').style.display = menang ? 'none' : '';
+      if (!menang) {
+        el('dr-skor').textContent = 'BELON PECAH!';
+        el('dr-skor-sub').textContent = 'Tiada ganjaran · cuba Level ' + dr.lv + ' lagi';
+        try { el('dr-tamat').scrollIntoView(false); } catch (e) {}
+        return;
+      }
+      el('dr-skor').textContent = 'MENANG LEVEL ' + dr.lv + '!';
+      el('dr-skor-sub').innerHTML = '<div class="mm-kira">' +
+        '<span class="mm-kol"><i>REWARD</i><span class="mm-kotak"><b>' + asas + ' g</b>' + DR_BIL + ' KATA</span></span><span class="mm-tanda">+</span>' +
+        '<span class="mm-kol"><i>BONUS</i><span class="mm-kotak mm-baki"><b id="dr-bonus-g">0 g</b>BAKI BELON</span></span><span class="mm-tanda">=</span>' +
+        '<span class="mm-kol"><i>JUMLAH</i><span class="mm-kotak mm-jumlah"><b id="dr-jum-g">' + asas + ' g</b>PERAK</span></span></div>';
+      try { el('dr-tamat').scrollIntoView(false); } catch (e) {}
+      // Animasi BONUS: kotak BELON berkelip, setiap kelip +bonus satu belon
+      var k = 0;
+      (function main() {
+        if (k < baki) {
+          k++;
+          el('dr-belon-n').parentNode.className = 'mm-langkah mm-tolak';
+          el('dr-bonus-g').textContent = (k * EKO.DR_BONUS_BELON) + ' g';
+          el('dr-jum-g').textContent = (asas + k * EKO.DR_BONUS_BELON) + ' g';
+          setTimeout(function() { el('dr-belon-n').parentNode.className = 'mm-langkah'; setTimeout(main, 150); }, 300);
+          return;
+        }
+        el('btn-dr-claim').textContent = 'CLAIM ' + perak + ' g PERAK';
+        el('btn-dr-claim').style.display = '';
+      })();
+    }
+    el('btn-dr-claim').onclick = function() {
+      if (!dr || !dr.perakBaru) return;
+      var lama = DR.perak, perak = dr.perakBaru;
+      dr.perakBaru = 0;
+      this.style.display = 'none';
+      DR.perak = lama + perak;
+      try { window.scrollTo(0, 0); } catch (e) {}
+      terbangCoin(el('dr-tamat'), el('dr-perak'), function() {
+        kiraNaik(el('dr-perak'), lama, DR.perak, function() { el('dr-perak').textContent = DR.perak + ' g'; el('btn-dr-baru').style.display = ''; });
+      });
+    };
+    el('btn-dr-baru').onclick = bukaDrLevel;
+    el('btn-dr-keluar').onclick = bukaDrLevel;
+    el('btn-drl-main').onclick = mulaDr;
+    el('drl-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-dr-main')) mulaDr(); });
+    el('btn-drl-sr').onclick = function() { bukaSenaraiGsr(DR_KOL, 'SR DURI', bukaDrLevel); };
+    el('btn-mini-dr').onclick = function() { masukKedai('dr', bukaDrLevel); };
+    // ── KEDAI PERAK (Pak Logam): jual perak → coin ──
+    var tkPerak = pautTukar({
+      a: el('dk-in-perak'), b: el('dk-in-coin'), nota: el('dk-nota'),
+      maxA: function() { return DR.perak; },
+      keDapat: function(g) { return Math.floor(g * EKO.PERAK_COIN + 1e-9); },
+      tepat: function(g) { return g * EKO.PERAK_COIN; },
+      kos: function(c) { return Math.ceil(c / EKO.PERAK_COIN - 1e-9); },
+      bacaB: bacaNombor, rapiB: rapiNombor, tulisB: function(v) { return String(v); },
+      tulisKecil: fmtKecil, fmtTepat: function(x) { return fmtKecil(x) + ' coin'; },
+      fmtKos: function(v) { return v + ' g perak'; }, fmtDapat: function(v) { return v + ' coin'; }
+    });
+    function lukisDk() {
+      el('dk-perak').textContent = DR.perak;
+      el('dk-coin').textContent = DP.coin;
+      el('dk-kadar').textContent = 'Kadar: 1 g perak = ' + EKO.PERAK_COIN + ' coin · 1 level Duri = ' + (DR_BIL * EKO.DR_PERAK_KATA) + ' g = ' + (DR_BIL * EKO.DR_PERAK_KATA * EKO.PERAK_COIN) + ' coin';
+      tkPerak.kosong();
+    }
+    function bukaDk() {
+      if (!currentUser) return;
+      showScreen('screen-dr-kedai');
+      el('dk-perak').textContent = '-'; el('dk-coin').textContent = '-';
+      penjaga('dk-watak', 'perak', 'masuk', 'Memuatkan...', 'dk-cakap');
+      drMuat(function(ok) {
+        if (!ok) { el('dk-cakap').textContent = 'Gagal memuat perak.'; return; }
+        dpMuat(function(ok2) {
+          if (!ok2) { el('dk-cakap').textContent = 'Gagal memuat dompet.'; return; }
+          lukisDk();
+          el('dk-cakap').textContent = DR.perak > 0 ? 'Perak berkilat! Saya beli semua. Nak jual berapa gram?' :
+            'Selamat datang ke kedai perak! Awak belum ada perak. Menang satu level Duri dulu ya.';
+        });
+      });
+    }
+    function jualPerak() {
+      if (dpSibuk) return;
+      var kos = Math.ceil(tkPerak.dapat() / EKO.PERAK_COIN - 1e-9), dapat = kos * EKO.PERAK_COIN;
+      if (kos < 1 || kos > DR.perak) {
+        penjaga('dk-watak', 'perak', 'sedih', kos >= 1 ? 'Perak awak tak cukup!' : 'Sekurang-kurangnya 1 g perak (= ' + EKO.PERAK_COIN + ' coin).', 'dk-cakap');
+        return;
+      }
+      var b = db.batch();
+      dpSibuk = true;
+      b.set(kol('game_stat').doc('duri'), { perak: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() }, { merge: true });
+      b.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(dapat), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'perak>coin', kos + ' g perak → +' + dapat + ' coin');
+      b.commit().then(function() {
+        dpSibuk = false;
+        DR.perak -= kos; DP.coin += dapat;
+        lukisDk();
+        penjaga('dk-watak', 'perak', 'gembira', 'Terima kasih! ' + kos + ' g perak → +' + dapat + ' coin.', 'dk-cakap');
+      }).catch(function(e) { dpSibuk = false; el('dk-cakap').textContent = 'Gagal jual: ' + (e.message || e); });
+    }
+    el('btn-drl-kedai').onclick = bukaDk;
+    el('btn-dk-maks').onclick = function() { tkPerak.maks(); };
+    el('btn-dk-tukar').onclick = jualPerak;
+    el('btn-dk-balik').onclick = bukaDrLevel;
+
 
     // ══ PELABUHAN (Bank) — setiap laci = sebuah KAPAL KARGO, setiap pasangan = 1 KONTENA ══
     // dibayar = bilangan kontena yang upahnya sudah dikira (kapal sudah belayar). Lama (tiada medan) = semua dikira sudah dibayar.
@@ -7450,7 +7862,7 @@
       });
     }
     // Stok setiap kedai = perkataan yang boleh dimainkan sekarang (SR sampai masa + baru). Tak cukup → TUTUP.
-    var STOK = { padan: { ada: 0, perlu: 6, buka: false }, jw: { ada: 0, perlu: 15, buka: false }, mm: { ada: 0, perlu: 6, buka: false } };
+    var STOK = { padan: { ada: 0, perlu: 6, buka: false }, jw: { ada: 0, perlu: 15, buka: false }, mm: { ada: 0, perlu: 6, buka: false }, dr: { ada: 0, perlu: 10, buka: false } };
     function kiraStokMini() {
       var bank = senaraiBank(), dalam = {}, i, now = Date.now();
       for (i = 0; i < bank.length; i++) dalam[bank[i].id] = 1;
@@ -7466,7 +7878,13 @@
           mmOverdue(bank, function(od3) {
             var p3 = mmPilih(bank, od3);
             STOK.mm = { ada: p3.length, perlu: MM_BIL, buka: p3.length >= MM_BIL };
-            lukisKadMini();
+            drMuat(function() {
+              drOverdue(bank, function(od4) {
+                var p4 = drPilih(bank, od4);
+                STOK.dr = { ada: p4.length, perlu: DR_BIL, buka: p4.length >= DR_BIL };
+                lukisKadMini();
+              });
+            });
           });
         });
       }).catch(function(e) { el('mini-padan-sub').textContent = 'Gagal semak stok: ' + (e.message || e); });
@@ -7486,12 +7904,13 @@
       satu('padan', 'btn-mini-padan', 'mini-padan-sub', 'mini-padan-kedai', 'Level ' + (GP.lulus + 1) + ' · stok ' + STOK.padan.ada + '/' + STOK.padan.perlu + ' · Tiket ' + GP.tiket);
       satu('jw', 'btn-mini-jw', 'mini-jw-sub', 'mini-jw-kedai', jwRingkas());
       satu('mm', 'btn-mini-mm', 'mini-mm-sub', 'mini-mm-kedai', 'Level ' + (MM.lulus + 1) + ' · stok ' + STOK.mm.ada + '/' + STOK.mm.perlu + ' · Emas ' + MM.emas + ' g');
+      satu('dr', 'btn-mini-dr', 'mini-dr-sub', 'mini-dr-kedai', 'Level ' + (DR.lulus + 1) + ' · stok ' + STOK.dr.ada + '/' + STOK.dr.perlu + ' · Perak ' + DR.perak + ' g');
       try { localStorage.setItem('mini_kedai_v1', JSON.stringify(lama)); } catch (e) {}
     }
     function masukKedai(k, buka) {
       if (STOK[k].buka) { buka(); return; }
       var n = el('mini-notis');
-      n.textContent = 'Kedai ' + (k === 'jw' ? 'Jutawan' : k === 'mm' ? 'Memori' : 'Padan') + ' TUTUP – tiada stok (ada ' + STOK[k].ada + '/' + STOK[k].perlu +
+      n.textContent = 'Kedai ' + (k === 'jw' ? 'Jutawan' : k === 'mm' ? 'Memori' : k === 'dr' ? 'Duri' : 'Padan') + ' TUTUP – tiada stok (ada ' + STOK[k].ada + '/' + STOK[k].perlu +
         ' perkataan). Muat kontena dan belayarkan kapal di tab PELABUHAN untuk buka semula.';
       n.style.display = 'block';
     }
@@ -7791,6 +8210,15 @@
           'Kedai Emas (page Level): jual emas → coin. 1 g = ' + EKO.EMAS_COIN + ' coin (1 level = ' + (6 * EKO.MM_EMAS_KATA * EKO.EMAS_COIN) + ' coin).',
           'SR Memori berasingan daripada SR Padan dan SR Jutawan (selang sama).'
         ]) +
+        '<h3 id="pd-duri">DURI (mini game)</h3>' + I([
+          'Kotak perkataan (English & BM bercampur) tersusun 2 lajur. Papan DURI sentiasa duduk atas timbunan. Di atas sekali ada 3 lapis BELON.',
+          'PISTON di bawah tolak satu baris baru setiap ' + 6 + ' saat (titik di atas papan = masa). Timbunan naik → duri naik.',
+          'Tekan perkataan English dan maksud BM yang sepadan → kedua-dua hilang, yang di atas jatuh (graviti), duri turun.',
+          'Salah pilih → piston terus tolak satu baris. Bila perkataan dah habis masuk, salah pilih tolak BATU (tak boleh dibuang).',
+          'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
+          'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
+          'Kedai Perak (page Level): jual perak → coin. 1 g = ' + EKO.PERAK_COIN + ' coin. SR Duri berasingan (selang sama).'
+        ]) +
         '<h3 id="pd-bank">PELABUHAN (Bank Perkataan)</h3>' + I([
           'Setiap laci Bahasa yang sudah masuk SR Bahasa ialah sebuah KAPAL KARGO. Laci baru masuk SR → tekan "Segar".',
           'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik KOTAK pilihan (bawah kapal) untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
@@ -7906,6 +8334,9 @@
     EKO.MM_EMAS_KATA = 1;                                                         // Memori: 1 perkataan = 1 g emas (1 level 6 perkataan = 6 g)
     EKO.EMAS_COIN = EKO.KATA_COIN / EKO.MM_EMAS_KATA;                             // Kedai Emas: 1 g emas = 10 coin
     EKO.MM_BONUS_BAKI = 1;                                                        // Memori: BONUS BAKI +1 g emas setiap langkah berbaki (menang sempurna 6 langkah = 12 g, 2x)
+    EKO.DR_PERAK_KATA = 1;                                                        // Duri: 1 perkataan = 1 g perak (1 level 10 perkataan = 10 g)
+    EKO.PERAK_COIN = EKO.KATA_COIN / EKO.DR_PERAK_KATA;                           // Kedai Perak: 1 g perak = 10 coin
+    EKO.DR_BONUS_BELON = 3;                                                       // Duri: BONUS +3 g perak setiap belon yang tak pecah (3 belon = 19 g)
     var DP = { coin: 0, biruSen: 0, merahSen: 0 }, dpSibuk = false;
 
     function rm(sen) { return (Math.floor(sen) / 100).toFixed(2); }
@@ -7958,6 +8389,8 @@
         '<circle cx="40" cy="11" r="2.2" fill="none" stroke="#000" stroke-width="1.5"/><path d="M40 13 V20 M35.5 17 Q40 22.5 44.5 17 M37 15.5 H43" fill="none" stroke="#000" stroke-width="1.5"/>' :
         topi === 'juta' ?
         '<rect x="27" y="6" width="26" height="16" fill="#000"/><rect x="20" y="21" width="40" height="4" fill="#000"/><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">$</text>' :
+        topi === 'perak' ?
+        '<path d="M20 24 Q22 8 40 8 Q58 8 60 24 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><rect x="18" y="22" width="44" height="5" fill="#000"/><text x="40" y="20" font-size="7" text-anchor="middle" fill="#000" font-weight="bold">PERAK</text>' :
         topi === 'emas' ?
         '<rect x="24" y="7" width="32" height="17" rx="3" fill="#000"/><rect x="20" y="22" width="40" height="4" fill="#000"/><text x="40" y="19" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">EMAS</text>' :
         topi === 'tiket' ?
