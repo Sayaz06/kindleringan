@@ -5596,6 +5596,7 @@
     .dr-k.dr-pilih { background: #000; color: #fff; }
     .dr-k.dr-salah { border-style: dashed; border-width: 3px; }
     .dr-k.dr-batu { background: #888; color: #fff; border-color: #555; cursor: default; font-size: 0.7rem; letter-spacing: 2px; }
+    .dr-k.dr-panjang { font-size: 0.72rem; line-height: 1.05; white-space: normal; }
     .dr-duri, .dr-belon, .dr-piston { position: absolute; left: 0; right: 0; }
     .dr-duri svg, .dr-belon svg, .dr-rod svg { display: block; width: 100%; height: 100%; }
     /* Piston: batang di atas + kotak badan di bawah (masa, maklumat, dan REWARD bila tamat) */
@@ -7088,7 +7089,7 @@
       }
       for (c = 0; c < 2; c++) for (r = 0; r < dr.kol[c].length; r++) {
         k = dr.kol[c][r];
-        h += '<button type="button" class="dr-k' + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '51.5' : '1.5') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
+        h += '<button type="button" class="dr-k' + (!k.batu && k.teks.length > 13 ? ' dr-panjang' : '') + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '51.5' : '1.5') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
       }
       h += '<div class="dr-duri" style="bottom:' + (DR_BAWAH + drTinggi() * DR_BARIS) + 'px;height:14px;">' + svgDuri() + '</div>';
       el('dr-lapis').innerHTML = h;
@@ -7098,7 +7099,7 @@
       el('dr-belon-n').textContent = DR_BELON - dr.pecah;
       var m = '';
       for (c = 0; c < DR_DETIK; c++) m += '<i' + (c < dr.detik ? ' class="dr-isi"' : '') + '></i>';
-      el('dr-masa').innerHTML = dr.giliran.length ? m : '';
+      el('dr-masa').innerHTML = m;
     }
     function drHenti() { if (drJam) { clearInterval(drJam); drJam = null; } }
     function mulaDr() {
@@ -7126,8 +7127,7 @@
           el('btn-dr-baru').style.display = '';
           return;
         }
-        for (i = 0; i < pas.length; i++) { kad.push({ p: i, teks: pas[i].en }); kad.push({ p: i, teks: pas[i].bm }); }
-        kocok(kad);
+        kad = drSusun(pas);
         for (i = 0; i < kad.length; i++) kad[i].id = i;
         dr = { pas: pas, kad: kad, giliran: kad.slice(), kol: [[], []], pilih: -1, jumpa: 0, pecah: 0, letup: -1, detik: 0, tamat: false, lv: DR.lulus + 1, salah: null, tolakAnim: false };
         for (i = 0; i < DR_MULA; i++) drMasuk();
@@ -7136,11 +7136,36 @@
         lukisDr();
         drJam = setInterval(function() {
           if (!dr || dr.tamat || el('screen-dr').className.indexOf('active') === -1) { drHenti(); return; }
-          if (!dr.giliran.length) return;
           dr.detik++;
           if (dr.detik >= DR_DETIK) { dr.detik = 0; drTolak(false); } else lukisDr();
         }, 1000);
       });
+    }
+    // Susunan baris: setiap baris 1 English + 1 BM, pasangan TAK PERNAH sebaris (mencabar),
+    // tapi setiap baris baru sentiasa melengkapkan pasangan yang dah ada di skrin (jarak 1-3 baris),
+    // jadi pemain pantas boleh simpan ketiga-tiga lapis belon.
+    function drSusun(pas) {
+      var ix = [], buka = [], baris = [], kad = [], i, r, a, b, o, j;
+      for (i = 0; i < pas.length; i++) ix.push(i);
+      kocok(ix);
+      function k(p, en) { return { p: p, teks: en ? pas[p].en : pas[p].bm }; }
+      r = Math.random() < 0.5;
+      a = ix.shift(); b = ix.shift();
+      baris.push([k(a, r), k(b, !r)]);
+      buka.push({ p: a, en: r, b: 0 }, { p: b, en: !r, b: 0 });
+      while (ix.length) {
+        j = (buka.length > 1 && baris.length - buka[0].b < 3 && Math.random() < 0.45) ? 1 : 0;
+        o = buka.splice(j, 1)[0];
+        a = ix.shift();
+        baris.push([k(o.p, !o.en), k(a, o.en)]);
+        buka.push({ p: a, en: o.en, b: baris.length - 1 });
+      }
+      baris.push([k(buka[0].p, !buka[0].en), k(buka[1].p, !buka[1].en)]);
+      for (i = 0; i < baris.length; i++) {
+        if (Math.random() < 0.5) baris[i].reverse();
+        kad.push(baris[i][0], baris[i][1]);
+      }
+      return kad;
     }
     // Satu baris baru masuk dari bawah (perkataan seterusnya, atau BATU bila perkataan dah habis)
     function drMasuk() {
@@ -7153,7 +7178,6 @@
     // Piston tolak: timbunan naik satu baris. Duri sampai belon → belon lapis itu pecah. Semua pecah → kalah.
     function drTolak(salah) {
       if (!dr || dr.tamat) return;
-      if (!dr.giliran.length && !salah) return;
       drMasuk();
       dr.tolakAnim = true;
       while (dr.pecah < DR_BELON && drTinggi() > DR_RUANG + dr.pecah) { dr.letup = dr.pecah; dr.pecah++; }
@@ -8333,7 +8357,8 @@
           'Kotak perkataan (English & BM bercampur) tersusun 2 lajur. Papan DURI sentiasa duduk atas timbunan. Di atas sekali ada 3 lapis BELON.',
           'PISTON di bawah tolak satu baris baru setiap ' + 6 + ' saat (titik di atas papan = masa). Timbunan naik → duri naik.',
           'Tekan perkataan English dan maksud BM yang sepadan → kedua-dua hilang, yang di atas jatuh (graviti), duri turun.',
-          'Salah pilih → piston terus tolak satu baris. Bila perkataan dah habis masuk, salah pilih tolak BATU (tak boleh dibuang).',
+          'Salah pilih → piston terus tolak satu baris. Bila semua perkataan dah masuk, piston terus tolak BATU (tak boleh dibuang) — habiskan cepat!',
+          'Setiap baris ada 1 English + 1 BM, pasangannya di baris lain. Setiap baris baru melengkapkan pasangan yang dah ada di skrin.',
           'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
           'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
           'Kedai Perak (page Level): jual perak → coin. 1 g = ' + EKO.PERAK_COIN + ' coin. SR Duri berasingan (selang sama).'
