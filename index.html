@@ -5752,6 +5752,14 @@
     #btn-gpl-kaunter, #btn-jwl-kedai, #btn-mml-kedai, #btn-drl-kedai { display: none !important; }
     /* Dalam game: bar tempat & bar mata wang disorok, keluar guna butang ‹ Arked / ‹ Keluar */
     [data-dlm-game] .gm-tab, [data-dlm-game] .mw-bar { display: none !important; }
+    /* Mata wang game (Tiket / Dollar / Emas / Perak) di kanan atas, macam game CoC */
+    .gc-bar { display: flex; justify-content: flex-end; margin: 0 0 6px; }
+    .gc-pil { display: flex; align-items: center; gap: 6px; min-width: 46%; padding: 2px 3px 2px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; }
+    .gc-pil span { flex: 1 1 auto; text-align: right; line-height: 1.05; white-space: nowrap; }
+    .gc-pil span small { display: block; font-size: 0.55rem; letter-spacing: 1px; }
+    .gc-pil span b { font-size: 1rem; }
+    .gc-pil i { flex: 0 0 26px; width: 26px; height: 26px; }
+    .gc-pil i svg { display: block; width: 26px; height: 26px; }
     .kd-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 6px 0 20px; }
     .kd-item { position: relative; width: 31.5%; margin: 0 0 10px; padding: 6px 2px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.75rem; text-align: center; cursor: pointer; }
@@ -9415,9 +9423,16 @@
         v = String(j === 'coin' ? DP.coin : rm(j === 'biru' ? DP.biruSen : DP.merahSen));
         if (a[i].textContent !== v) a[i].textContent = v;
       }
+      // Mata wang game di kanan atas
+      a = document.querySelectorAll('.screen.active [data-gc]');
+      for (i = 0; i < a.length; i++) {
+        j = a[i].getAttribute('data-gc');
+        v = j === 'tiket' ? String(GP.tiket) : j === 'dolar' ? duit(JW.dolar) : j === 'emas' ? MM.emas + ' g' : DR.perak + ' g';
+        if (a[i].textContent !== v) a[i].textContent = v;
+      }
     }
     window.mwLukis = mwLukis;
-    setInterval(function() { if (document.querySelector('.screen.active .mw-bar')) mwLukis(); }, 1000);
+    setInterval(function() { if (document.querySelector('.screen.active .mw-bar, .screen.active .gc-bar')) mwLukis(); }, 1000);
     (function() {
       var t = document.querySelectorAll('.gm-tab'), i, b, s, bar, x;
       for (i = 0; i < t.length; i++) {
@@ -9442,12 +9457,18 @@
     })();
     // Page dalam game arked: sorok bar tempat + bar mata wang, tambah butang keluar di kiri bar alat
     (function() {
-      var g = [['screen-gp-level', '‹ Arked', function() { bukaMini(); }], ['screen-jw-level', '‹ Arked', function() { bukaMini(); }],
-        ['screen-mm-level', '‹ Arked', function() { bukaMini(); }], ['screen-dr-level', '‹ Arked', function() { bukaMini(); }],
-        ['screen-game', '‹ Keluar', function() { bukaGpLevel(); }]], i, s, a, b;
+      var g = [['screen-gp-level', '‹ Arked', function() { bukaMini(); }, 'tiket'], ['screen-jw-level', '‹ Arked', function() { bukaMini(); }, 'dolar'],
+        ['screen-mm-level', '‹ Arked', function() { bukaMini(); }, 'emas'], ['screen-dr-level', '‹ Arked', function() { bukaMini(); }, 'perak'],
+        ['screen-game', '‹ Keluar', function() { bukaGpLevel(); }, 'tiket']], i, s, a, b, nm = { tiket: 'TIKET', dolar: 'DOLLAR', emas: 'EMAS', perak: 'PERAK' };
       for (i = 0; i < g.length; i++) {
         s = el(g[i][0]); if (!s) continue;
         s.setAttribute('data-dlm-game', '1');
+        // Bar mata wang game di kanan atas (Tiket / Dollar / Emas / Perak)
+        b = document.createElement('div');
+        b.className = 'gc-bar';
+        b.innerHTML = '<div class="gc-pil"><span><small>' + nm[g[i][3]] + '</small><b data-gc="' + g[i][3] + '">-</b></span><i>' +
+          svgCxIkon(g[i][3]) + '</i></div>';
+        s.insertBefore(b, s.firstChild);
         a = s.querySelector('.gm-alat'); if (!a) continue;
         b = document.createElement('button');
         b.type = 'button'; b.className = 'gm-kecil'; b.textContent = g[i][1]; b.onclick = g[i][2];
