@@ -5606,9 +5606,12 @@
     .mm-k.mm-hilang { visibility: hidden; }
     .mm-k.mm-dedah { background: #fff; border-style: dashed; color: #555; }
     .mm-k.mm-dedah:before { display: none; }
-    /* Bonus baki: [kad] + [BAKI] = [JUMLAH] */
-    .mm-kira { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0 2px; font-size: 1.4rem; font-weight: bold; }
-    .mm-kotak { border: 2px solid #000; border-radius: 10px; padding: 4px 8px; min-width: 64px; font-size: 0.65rem; letter-spacing: 1px; }
+    /* Bonus baki: REWARD [kad] + BONUS [baki langkah] = JUMLAH [emas] */
+    .mm-kira { display: flex; align-items: flex-end; justify-content: center; gap: 6px; margin: 8px 0 2px; font-size: 1.4rem; font-weight: bold; }
+    .mm-kol { text-align: center; }
+    .mm-kol i { display: block; font-style: normal; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px; }
+    .mm-tanda { padding-bottom: 14px; }
+    .mm-kotak { display: block; border: 2px solid #000; border-radius: 10px; padding: 4px 8px; min-width: 64px; font-size: 0.6rem; letter-spacing: 1px; }
     .mm-kotak b { display: block; font-size: 1.3rem; letter-spacing: 0; }
     .mm-kotak.mm-baki { border-style: dashed; border-width: 3px; }
     .mm-kotak.mm-jumlah { background: #000; color: #fff; }
@@ -6705,15 +6708,16 @@
         return;
       }
       el('mm-skor').textContent = 'MENANG LEVEL ' + mm.lv + '!';
-      el('mm-skor-sub').innerHTML = '<div class="mm-kira"><span class="mm-kotak"><b>' + asas + ' g</b>' + MM_BIL + ' KATA</span>+' +
-        '<span class="mm-kotak mm-baki"><b id="mm-baki-g">0 g</b>BAKI</span>=' +
-        '<span class="mm-kotak mm-jumlah"><b id="mm-jum-g">' + asas + ' g</b>EMAS</span></div>';
-      // Animasi BONUS BAKI: setiap langkah berbaki "dipindah" ke kotak BAKI
+      el('mm-skor-sub').innerHTML = '<div class="mm-kira">' +
+        '<span class="mm-kol"><i>REWARD</i><span class="mm-kotak"><b>' + asas + ' g</b>' + MM_BIL + ' KATA</span></span><span class="mm-tanda">+</span>' +
+        '<span class="mm-kol"><i>BONUS</i><span class="mm-kotak mm-baki"><b id="mm-baki-g">0 g</b>BAKI LANGKAH</span></span><span class="mm-tanda">=</span>' +
+        '<span class="mm-kol"><i>JUMLAH</i><span class="mm-kotak mm-jumlah"><b id="mm-jum-g">' + asas + ' g</b>EMAS</span></span></div>';
+      // Animasi BONUS: kotak LANGKAH (kekal tunjuk baki) berkelip, setiap kelip +1 baki langkah masuk ke kotak BONUS
       var k = 0;
+      el('mm-langkah').textContent = baki;
       (function main() {
         if (k < baki) {
           k++;
-          el('mm-langkah').textContent = baki - k;
           el('mm-langkah').parentNode.className = 'mm-langkah mm-tolak';
           el('mm-baki-g').textContent = (k * EKO.MM_BONUS_BAKI) + ' g';
           el('mm-jum-g').textContent = (asas + k * EKO.MM_BONUS_BAKI) + ' g';
