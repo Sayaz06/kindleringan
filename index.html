@@ -5754,6 +5754,14 @@
     [data-dlm-game] .gm-tab, [data-dlm-game] .mw-bar, [data-dlm-game] .mn-bar, #screen-mx .mn-bar { display: none !important; }
     /* Butang MENU di baris paling atas (atas bar mata wang), hanya di skrin yang ada bar tempat */
     .mn-bar { margin: 0 0 6px; }
+    /* METER KADAR TUKARAN (baca sahaja, ditetapkan dalam kod) */
+    .mx-meter { margin: 8px 0; padding: 6px 8px; border: 3px solid #000; border-radius: 10px; }
+    .mx-meter-tajuk { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px; }
+    .mx-meter-isi { display: flex; gap: 8px; margin: 4px 0; }
+    .mx-meter-isi > div { flex: 1 1 0; text-align: center; font-size: 0.7rem; }
+    .mx-meter-isi svg { display: block; width: 100%; max-width: 130px; height: auto; margin: 0 auto; }
+    .mx-meter-isi b { display: block; font-size: 0.95rem; }
+    .mx-meter-kira { padding-top: 4px; border-top: 2px dashed #000; font-size: 0.75rem; text-align: center; }
     .mn-bar button { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; cursor: pointer; }
     .mn-bar button svg { width: 16px; height: 14px; }
@@ -6176,6 +6184,7 @@
       <button type="button" id="btn-mx-refund" class="gm-kecil">Refund</button>
     </div>
     <div class="pj-kotak"><div class="pj-watak" id="mx-watak"></div><div class="pj-cakap" id="mx-cakap"></div></div>
+    <div class="mx-meter" id="mx-meter"></div>
     <div class="dp-baki">
       <div class="dp-gelap">Coin<b id="mx-coin">-</b></div>
       <div>Ringgit Biru<b id="mx-biru">-</b></div>
@@ -8681,10 +8690,14 @@
     // ══ DOMPET + PENJAGA KEDAI + MAGIC EXCHANGE ══
     // Unit asas: PERKATAAN. 1 perkataan = 10 coin. Semua kadar di sini (ubah di satu tempat sahaja).
     // Dompet: users/{uid}/game_stat/dompet { coin, biruSen, merahSen } · sejarah: users/{uid}/dompet_log
-    var EKO = { KATA_COIN: 10, JW_KATA: 15, BIRU_ASAS_KATA: 180, BIRU_ASAS_RM: 3.5, MERAH_X: 1.5 };
+    var EKO = { KATA_COIN: 10, JW_KATA: 15, BIRU_ASAS_KATA: 180, BIRU_ASAS_RM: 3.5, MERAH_ASAS_X: 1.5 };
     EKO.JW_COIN = EKO.JW_KATA * EKO.KATA_COIN;                                    // $1,000,000 = 150 coin
-    EKO.COIN_BIRU = EKO.BIRU_ASAS_KATA * EKO.KATA_COIN / EKO.BIRU_ASAS_RM;        // 1 Biru ≈ 514.29 coin
-    EKO.COIN_MERAH = EKO.COIN_BIRU / EKO.MERAH_X;                                 // 1 Merah ≈ 342.86 coin
+    // ══ METER KADAR TUKARAN: ubah 2 nombor ini sahaja (pengguna tak boleh ubah dalam app) ══
+    EKO.NILAI_BIRU = 2;     // nilai Ringgit Biru  × asal (1 = 514.29 coin, 2 = 1028.57 coin)
+    EKO.NILAI_MERAH = 2;    // nilai Ringgit Merah × asal (1 = 342.86 coin, 2 = 685.71 coin)
+    EKO.COIN_BIRU = EKO.BIRU_ASAS_KATA * EKO.KATA_COIN / EKO.BIRU_ASAS_RM * EKO.NILAI_BIRU;                    // 1 Biru (×2 = 1028.57 coin)
+    EKO.COIN_MERAH = EKO.BIRU_ASAS_KATA * EKO.KATA_COIN / EKO.BIRU_ASAS_RM / EKO.MERAH_ASAS_X * EKO.NILAI_MERAH; // 1 Merah (×2 = 685.71 coin)
+    EKO.MERAH_X = EKO.COIN_BIRU / EKO.COIN_MERAH;   // KALKULATOR: 1 Biru = ? Merah (ikut nilai coin, dikira sendiri)
     EKO.CAJ_REFUND = 0.2;                                                         // Kaunter Refund: caj 20%
     EKO.UPAH_POS = 2;                                                             // Pelabuhan: upah 2 coin setiap kontena (pasangan)
     EKO.GP_TIKET_KATA = 100;                                                      // Padan: 1 perkataan = 100 Tiket Arked (1 level 6 pasangan = 600 tiket)
@@ -8992,6 +9005,26 @@
         dpSejarah('mx-log');
       }).catch(function(e) { dpSibuk = false; el('mx-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
     }
+    // Meter kadar: jarum tunjuk nilai Ringgit berbanding asal (skala ×0 hingga ×4). Baca sahaja.
+    function svgMeter(x) {
+      var h = '<path d="M10 55 A40 40 0 0 1 90 55" fill="none" stroke="#000" stroke-width="6"/>', v, a, k = Math.max(0, Math.min(4, x));
+      for (v = 0; v <= 4; v++) {
+        a = Math.PI * (1 - v / 4);
+        h += '<path d="M' + (50 + 33 * Math.cos(a)).toFixed(1) + ' ' + (55 - 33 * Math.sin(a)).toFixed(1) + ' L' + (50 + 27 * Math.cos(a)).toFixed(1) + ' ' + (55 - 27 * Math.sin(a)).toFixed(1) + '" stroke="#000" stroke-width="2"/>' +
+          '<text x="' + (50 + 20 * Math.cos(a)).toFixed(1) + '" y="' + (58 - 20 * Math.sin(a)).toFixed(1) + '" font-size="7" text-anchor="middle">' + v + '</text>';
+      }
+      a = Math.PI * (1 - k / 4);
+      h += '<path d="M50 55 L' + (50 + 36 * Math.cos(a)).toFixed(1) + ' ' + (55 - 36 * Math.sin(a)).toFixed(1) + '" stroke="#000" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="55" r="4" fill="#000"/>';
+      return '<svg viewBox="0 0 100 62" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
+    }
+    function lukisMeter() {
+      function satu(nama, x, coin) {
+        return '<div>' + svgMeter(x) + '<b>NILAI ×' + x + '</b>1.00 ' + nama + ' = ' + coin.toFixed(2) + ' coin<br>≈ ' + Math.round(coin / EKO.KATA_COIN) + ' perkataan</div>';
+      }
+      el('mx-meter').innerHTML = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span><span>ditetapkan admin</span></div>' +
+        '<div class="mx-meter-isi">' + satu('Biru', EKO.NILAI_BIRU, EKO.COIN_BIRU) + satu('Merah', EKO.NILAI_MERAH, EKO.COIN_MERAH) + '</div>' +
+        '<div class="mx-meter-kira">KALKULATOR · 1.00 Biru = <b>' + EKO.MERAH_X.toFixed(2) + ' Merah</b> · 1.00 Merah = <b>' + (1 / EKO.MERAH_X).toFixed(4) + ' Biru</b></div>';
+    }
     function lukisMx() {
       el('mx-coin').textContent = DP.coin;
       el('mx-biru').textContent = rm(DP.biruSen);
@@ -8999,6 +9032,7 @@
       el('mx-kadar-biru').textContent = 'Kadar: 1.00 Biru = ' + EKO.COIN_BIRU.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_BIRU / EKO.KATA_COIN) + ' perkataan)';
       el('mx-kadar-merah').textContent = 'Kadar: 1.00 Merah = ' + EKO.COIN_MERAH.toFixed(2) + ' coin (≈ ' + Math.round(EKO.COIN_MERAH / EKO.KATA_COIN) + ' perkataan)';
       el('mx-kadar-silang').textContent = 'Kadar: 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah · 1.00 Merah = ' + (1 / EKO.MERAH_X).toFixed(4) + ' Biru (nilai coin sama, tiada caj)';
+      lukisMeter();
       tkRM.biru.kosong(); tkRM.merah.kosong(); tkSilang.merah.kosong(); tkSilang.biru.kosong();
     }
     function bukaMx() {
