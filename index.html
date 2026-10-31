@@ -5751,7 +5751,12 @@
     /* Kaunter tukar dalam setiap game arked dibuang → semua tukaran di BANK COIN */
     #btn-gpl-kaunter, #btn-jwl-kedai, #btn-mml-kedai, #btn-drl-kedai { display: none !important; }
     /* Dalam game: bar tempat & bar mata wang disorok, keluar guna butang ‹ Arked / ‹ Keluar */
-    [data-dlm-game] .gm-tab, [data-dlm-game] .mw-bar { display: none !important; }
+    [data-dlm-game] .gm-tab, [data-dlm-game] .mw-bar, [data-dlm-game] .mn-bar, #screen-mx .mn-bar { display: none !important; }
+    /* Butang MENU di baris paling atas (atas bar mata wang), hanya di skrin yang ada bar tempat */
+    .mn-bar { margin: 0 0 6px; }
+    .mn-bar button { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; cursor: pointer; }
+    .mn-bar button svg { width: 16px; height: 14px; }
     /* Mata wang game (Tiket / Dollar / Emas / Perak) di kanan atas, macam game CoC */
     .gc-bar { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0 0 6px; }
     .gc-pil.gc-lv { min-width: 0; }
@@ -7369,6 +7374,7 @@
     // Perkataan dah habis masuk: piston sendiri naik satu baris (kotak piston makin besar). BATU hanya bila salah padan.
     function drTolak(salah) {
       if (!dr || dr.tamat) return;
+      dr.pilih = -1;   // piston bergerak → semua pilihan dibatalkan
       if (!dr.giliran.length && !salah) {
         dr.naik++;
         DR_BAWAH = DR_DASAR + dr.naik * DR_BARIS;
@@ -9517,6 +9523,8 @@
       for (i = 0; i < t.length; i++) {
         x = t[i].querySelector('[data-gm-tab="mx"]');
         if (x) x.parentNode.removeChild(x);
+        x = t[i].querySelector('[data-gm-tab="menu"]');
+        if (x) x.parentNode.removeChild(x);
         x = t[i].querySelector('[data-gm-tab="mini"]');
         if (x) x.textContent = 'ARKED';
         if (!t[i].querySelector('[data-gm-tab="kd"]')) {
@@ -9531,6 +9539,11 @@
         bar.innerHTML = '<div class="mw-pil">' + svgMw('coin') + '<span><small>COIN</small><b data-mw="coin">-</b></span><button type="button" data-mw-tambah="coin">+</button></div>' +
           '<div class="mw-pil">' + svgMw('biru') + '<span><small>BIRU</small><b data-mw="biru">-</b></span><button type="button" data-mw-tambah="biru">+</button></div>' +
           '<div class="mw-pil">' + svgMw('merah') + '<span><small>MERAH</small><b data-mw="merah">-</b></span><button type="button" data-mw-tambah="merah">+</button></div>';
+        s.insertBefore(bar, s.firstChild);
+        // Butang MENU di baris paling atas
+        bar = document.createElement('div');
+        bar.className = 'mn-bar';
+        bar.innerHTML = '<button type="button" data-gm-tab="menu"><svg viewBox="0 0 16 14" xmlns="http://www.w3.org/2000/svg"><path d="M1 2 H15 M1 7 H15 M1 12 H15" stroke="#000" stroke-width="2.2"/></svg>MENU</button>';
         s.insertBefore(bar, s.firstChild);
       }
     })();
