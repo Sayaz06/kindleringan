@@ -5825,8 +5825,8 @@
     .kp-jeti { position: relative; margin-top: 26px; }
     .kp-jeti #gl-pilihan { margin: 0; border-width: 3px; border-radius: 0; }
     .kp-ketik { display: block; font-size: 0.6rem; margin-top: 2px; letter-spacing: 1px; }
-    .kp-tambat { position: absolute; left: 6px; bottom: 100%; width: 80px; height: 52px; cursor: pointer; z-index: 2; }
-    .kp-tambat svg { display: block; width: 80px; height: 52px; overflow: visible; }
+    .kp-tambat { position: absolute; left: 0; bottom: 100%; width: 34px; height: 52px; cursor: pointer; z-index: 2; }
+    .kp-tambat svg { display: block; width: 80px; height: 52px; overflow: visible; pointer-events: none; }
     .kt-kosong { width: 100%; text-align: center; font-size: 0.8rem; padding: 10px 0; border: 2px dashed #000; }
     .kt-kotak.kt-angkat { -webkit-transform: translateY(-26px); transform: translateY(-26px); border-style: dashed; }
     .kp-tajuk { font-weight: bold; margin: 12px 0 6px; border-bottom: 2px solid #000; padding-bottom: 2px; }
@@ -7668,10 +7668,11 @@
     // Dermaga: lantai jeti + besi bulat (bollard) + tali ke kapal + orang kecil
     // fase: ikat · geleng · lepas · jalan · lompat · naik   ·   sedia = ada kontena baru (bulatan putus-putus pada besi)
     function svgDermaga(fase, sedia) {
-      var px = { ikat: 16, geleng: 13, lepas: 36, jalan: 54, lompat: 68 }[fase], py = fase === 'lompat' ? -18 : 0, h = '';
-      if (sedia && fase === 'ikat') h += '<circle cx="46" cy="45" r="12" fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="3 3"/>';
-      h += '<rect x="42" y="41" width="8" height="11" fill="#000"/><rect x="39" y="38" width="14" height="5" rx="2" fill="#000"/>';
-      if (fase === 'ikat' || fase === 'geleng') h += '<path d="M46 43 Q64 36 74 4" fill="none" stroke="#000" stroke-width="2.5"/><path d="M41 46 Q46 49 51 46" fill="none" stroke="#000" stroke-width="2"/>';
+      // Besi bulat di tepi kiri (sebelah orang) supaya tak tertekan masa letak kontena
+      var px = { ikat: 25, geleng: 22, lepas: 20, jalan: 44, lompat: 64 }[fase], py = fase === 'lompat' ? -18 : 0, h = '';
+      if (sedia && fase === 'ikat') h += '<circle cx="10" cy="45" r="12" fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="3 3"/>';
+      h += '<rect x="6" y="41" width="8" height="11" fill="#000"/><rect x="3" y="38" width="14" height="5" rx="2" fill="#000"/>';
+      if (fase === 'ikat' || fase === 'geleng') h += '<path d="M10 43 Q52 34 74 4" fill="none" stroke="#000" stroke-width="2.5"/><path d="M5 46 Q10 49 15 46" fill="none" stroke="#000" stroke-width="2"/>';
       else if (fase === 'lepas' || fase === 'jalan' || fase === 'lompat') h += '<path d="M74 4 Q70 16 75 28" fill="none" stroke="#000" stroke-width="2.5"/>';
       if (px) {
         var tgn = fase === 'lepas' ? 'M' + (px - 5) + ' ' + (37 + py) + ' L' + px + ' ' + (41 + py) + ' L' + (px + 5) + ' ' + (37 + py) : 'M' + (px - 5) + ' ' + (43 + py) + ' L' + px + ' ' + (41 + py) + ' L' + (px + 5) + ' ' + (43 + py);
