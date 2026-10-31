@@ -5903,6 +5903,10 @@
     .mini-kad .mini-teks { flex: 1 1 auto; min-width: 0; font-size: 1.25rem; font-weight: bold; }
     .mini-kad .gb-sub { display: block; font-size: 0.75rem; font-weight: normal; margin-top: 3px; }
     .mini-kad.mini-tutup { border-style: dashed; color: #666; }
+    /* Lencana LEVEL di kanan setiap kad game (perisai hitam, bintang, nombor level) */
+    .mini-kad .mini-lv { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; margin-left: auto; color: #000; }
+    .mini-kad .mini-lv small { font-size: 0.6rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 2px; }
+    .mini-kad .mini-lv svg { display: block; width: 46px; height: 54px; }
     #mini-notis { display: none; border: 2px dashed #000; border-radius: 8px; padding: 8px 10px; margin: 0 0 10px; font-size: 0.85rem; font-weight: bold; }
     /* PELABUHAN — kapal kargo & kontena */
     .kp-besar { width: 100%; margin: 4px 0; overflow: hidden; }
@@ -8609,8 +8613,18 @@
     function lukisKadMini() {
       var lama = {};
       try { lama = JSON.parse(localStorage.getItem('mini_kedai_v1') || '{}') || {}; } catch (e) { lama = {}; }
-      function satu(k, idKad, idSub, idKedai, teksBuka) {
-        var st = STOK[k];
+      function lencana(n) {
+        var t = String(n), f = t.length > 3 ? 11 : t.length > 2 ? 14 : 18;
+        return '<small>LEVEL</small><svg viewBox="0 0 46 54" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M23 1 L44 7 V25 Q44 43 23 53 Q2 43 2 25 V7 Z" fill="#000"/>' +
+          '<path d="M23 5 L40 10 V25 Q40 40 23 49 Q6 40 6 25 V10 Z" fill="none" stroke="#fff" stroke-width="1.5"/>' +
+          '<path d="M23 9 L24.5 12.2 L28 12.5 L25.3 14.7 L26.2 18 L23 16.2 L19.8 18 L20.7 14.7 L18 12.5 L21.5 12.2 Z" fill="#fff"/>' +
+          '<text x="23" y="' + (36 + (18 - f) / 3) + '" font-size="' + f + '" font-weight="bold" text-anchor="middle" fill="#fff">' + t + '</text></svg>';
+      }
+      function satu(k, idKad, idSub, idKedai, teksBuka, lv) {
+        var st = STOK[k], b = el(idKad).querySelector('.mini-lv');
+        if (!b) { b = document.createElement('span'); b.className = 'mini-lv'; el(idKad).appendChild(b); }
+        if (b.getAttribute('data-lv') !== String(lv)) { b.setAttribute('data-lv', String(lv)); b.innerHTML = lencana(lv); }
         el(idKad).className = 'mini-kad' + (st.buka ? '' : ' mini-tutup');
         el(idSub).textContent = st.buka ? 'BUKA · ' + teksBuka : 'TUTUP – TIADA STOK · ada ' + st.ada + '/' + st.perlu + ' perkataan · muat kontena di Pelabuhan';
         // Baru dapat stok semula → pintu besi naik
@@ -8618,11 +8632,11 @@
         else el(idKedai).innerHTML = svgKedai(st.buka ? 'buka' : 'tutup');
         lama[k] = st.buka;
       }
-      satu('padan', 'btn-mini-padan', 'mini-padan-sub', 'mini-padan-kedai', 'Level ' + (GP.lulus + 1) + ' · stok ' + STOK.padan.ada + '/' + STOK.padan.perlu + ' · Tiket ' + GP.tiket);
-      satu('jw', 'btn-mini-jw', 'mini-jw-sub', 'mini-jw-kedai', jwRingkas());
-      satu('mm', 'btn-mini-mm', 'mini-mm-sub', 'mini-mm-kedai', 'Level ' + (MM.lulus + 1) + ' · stok ' + STOK.mm.ada + '/' + STOK.mm.perlu + ' · Emas ' + MM.emas + ' g');
-      satu('dr', 'btn-mini-dr', 'mini-dr-sub', 'mini-dr-kedai', 'Level ' + (DR.lulus + 1) + ' · stok ' + STOK.dr.ada + '/' + STOK.dr.perlu + ' · Perak ' + DR.perak + ' g');
-      satu('bs', 'btn-mini-bs', 'mini-bs-sub', 'mini-bs-kedai', 'Level ' + (BS.lulus + 1) + ' · stok ' + STOK.bs.ada + '/' + STOK.bs.perlu + ' · Gangsa ' + BS.gangsa + ' g');
+      satu('padan', 'btn-mini-padan', 'mini-padan-sub', 'mini-padan-kedai', 'stok ' + STOK.padan.ada + '/' + STOK.padan.perlu + ' · Tiket ' + GP.tiket, GP.lulus + 1);
+      satu('jw', 'btn-mini-jw', 'mini-jw-sub', 'mini-jw-kedai', jwRingkas().replace(/^Level \d+ · /, ''), JW.lulus + 1);
+      satu('mm', 'btn-mini-mm', 'mini-mm-sub', 'mini-mm-kedai', 'stok ' + STOK.mm.ada + '/' + STOK.mm.perlu + ' · Emas ' + MM.emas + ' g', MM.lulus + 1);
+      satu('dr', 'btn-mini-dr', 'mini-dr-sub', 'mini-dr-kedai', 'stok ' + STOK.dr.ada + '/' + STOK.dr.perlu + ' · Perak ' + DR.perak + ' g', DR.lulus + 1);
+      satu('bs', 'btn-mini-bs', 'mini-bs-sub', 'mini-bs-kedai', 'stok ' + STOK.bs.ada + '/' + STOK.bs.perlu + ' · Gangsa ' + BS.gangsa + ' g', BS.lulus + 1);
       try { localStorage.setItem('mini_kedai_v1', JSON.stringify(lama)); } catch (e) {}
     }
     function masukKedai(k, buka) {
