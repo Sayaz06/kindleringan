@@ -5762,6 +5762,19 @@
     .mx-meter-isi svg { display: block; width: 100%; max-width: 130px; height: auto; margin: 0 auto; }
     .mx-meter-isi b { display: block; font-size: 0.95rem; }
     .mx-meter-kira { padding-top: 4px; border-top: 2px dashed #000; font-size: 0.75rem; text-align: center; }
+    .mx-meter-tajuk button { padding: 1px 8px; border: 1.5px solid #000; border-radius: 10px; background: #fff; color: #000; font-family: inherit; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+    .mx-kadar { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin: 4px 0; font-size: 0.8rem; }
+    .mx-kadar b { font-size: 1.05rem; }
+    /* PANEL ADMIN (PIN): anak panah ▲▼ ubah kadar 1 perkataan setiap tekan */
+    .adm { margin-top: 6px; padding-top: 6px; border-top: 3px solid #000; }
+    .adm input { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 8px; border: 2px solid #000; border-radius: 6px; font-family: inherit; font-size: 1rem; }
+    .adm-baris { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+    .adm-baris > span { width: 54px; font-size: 0.75rem; font-weight: bold; }
+    .adm-baris button { width: 40px; height: 36px; padding: 0; border: 2px solid #000; border-radius: 8px; background: #fff; cursor: pointer; }
+    .adm-baris button svg { display: block; width: 16px; height: 12px; margin: 0 auto; }
+    .adm-baris b { flex: 1 1 auto; text-align: center; font-size: 1.3rem; }
+    .adm-baris b small { display: block; font-size: 0.6rem; font-weight: normal; }
+    .adm-nota { font-size: 0.7rem; text-align: center; margin: 4px 0; }
     .mn-bar button { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; cursor: pointer; }
     .mn-bar button svg { width: 16px; height: 14px; }
@@ -7687,6 +7700,7 @@
         var d = sd.data(), adaLama = (DP.upahTunggu || 0) > 0;
         DP.coin = d.coin || 0; DP.biruSen = d.biruSen || 0; DP.merahSen = d.merahSen || 0; DP.upahTunggu = d.upahTunggu || 0;
         DP.merahHariT = d.merahHariT || ''; DP.merahHariSen = d.merahHariSen || 0;
+        setKadar(d.kadarBiru, d.kadarMerah);
         mwLukis();
         if (!kdSibuk && (el('screen-kd').className.indexOf('active') !== -1 || el('screen-hj').className.indexOf('active') !== -1)) kdDompet();
         if (coinAnim) return;
@@ -8692,12 +8706,17 @@
     // Dompet: users/{uid}/game_stat/dompet { coin, biruSen, merahSen } · sejarah: users/{uid}/dompet_log
     var EKO = { KATA_COIN: 10, JW_KATA: 15, BIRU_ASAS_KATA: 180, BIRU_ASAS_RM: 3.5, MERAH_ASAS_X: 1.5 };
     EKO.JW_COIN = EKO.JW_KATA * EKO.KATA_COIN;                                    // $1,000,000 = 150 coin
-    // ══ METER KADAR TUKARAN: ubah 2 nombor ini sahaja (pengguna tak boleh ubah dalam app) ══
-    EKO.NILAI_BIRU = 2;     // nilai Ringgit Biru  × asal (1 = 514.29 coin, 2 = 1028.57 coin)
-    EKO.NILAI_MERAH = 2;    // nilai Ringgit Merah × asal (1 = 342.86 coin, 2 = 685.71 coin)
-    EKO.COIN_BIRU = EKO.BIRU_ASAS_KATA * EKO.KATA_COIN / EKO.BIRU_ASAS_RM * EKO.NILAI_BIRU;                    // 1 Biru (×2 = 1028.57 coin)
-    EKO.COIN_MERAH = EKO.BIRU_ASAS_KATA * EKO.KATA_COIN / EKO.BIRU_ASAS_RM / EKO.MERAH_ASAS_X * EKO.NILAI_MERAH; // 1 Merah (×2 = 685.71 coin)
-    EKO.MERAH_X = EKO.COIN_BIRU / EKO.COIN_MERAH;   // KALKULATOR: 1 Biru = ? Merah (ikut nilai coin, dikira sendiri)
+    // ══ KADAR TUKARAN dalam PERKATAAN: ditetapkan ADMIN dalam app (Exchange → Admin, perlu PIN) ══
+    // Disimpan dalam dompet (kadarBiru, kadarMerah). Nilai lalai di bawah dipakai jika admin belum tetapkan.
+    EKO.KADAR_LALAI = { biru: 103, merah: 69 };
+    function setKadar(b, m) {
+      EKO.BIRU_KATA = +b > 0 ? +b : EKO.KADAR_LALAI.biru;
+      EKO.MERAH_KATA = +m > 0 ? +m : EKO.KADAR_LALAI.merah;
+      EKO.COIN_BIRU = EKO.BIRU_KATA * EKO.KATA_COIN;     // 1.00 Biru = ? coin
+      EKO.COIN_MERAH = EKO.MERAH_KATA * EKO.KATA_COIN;   // 1.00 Merah = ? coin
+      EKO.MERAH_X = EKO.COIN_BIRU / EKO.COIN_MERAH;      // KALKULATOR: 1.00 Biru = ? Merah (dikira sendiri)
+    }
+    setKadar();
     EKO.CAJ_REFUND = 0.2;                                                         // Kaunter Refund: caj 20%
     EKO.UPAH_POS = 2;                                                             // Pelabuhan: upah 2 coin setiap kontena (pasangan)
     EKO.GP_TIKET_KATA = 100;                                                      // Padan: 1 perkataan = 100 Tiket Arked (1 level 6 pasangan = 600 tiket)
@@ -8717,6 +8736,7 @@
       refDompet().get().then(function(s) {
         var d = (s && s.exists) ? s.data() : {};
         DP = { coin: d.coin || 0, biruSen: d.biruSen || 0, merahSen: d.merahSen || 0, upahTunggu: d.upahTunggu || 0, merahHariT: d.merahHariT || '', merahHariSen: d.merahHariSen || 0 };
+        setKadar(d.kadarBiru, d.kadarMerah);
         cb(true);
       }).catch(function(e) { cb(false, e); });
     }
@@ -8947,13 +8967,14 @@
 
     // ── MAGIC EXCHANGE (dalam Mini Game): coin → Ringgit Biru / Merah ──
     function penukarRinggit(jenis) {
-      var kadar = jenis === 'biru' ? EKO.COIN_BIRU : EKO.COIN_MERAH, nama = jenis === 'biru' ? 'Biru' : 'Merah';
+      var nama = jenis === 'biru' ? 'Biru' : 'Merah';
+      function kadar() { return jenis === 'biru' ? EKO.COIN_BIRU : EKO.COIN_MERAH; }
       return pautTukar({
         a: el('mx-in-coin-' + jenis), b: el('mx-in-rm-' + jenis), nota: el('mx-nota-' + jenis),
         maxA: function() { return DP.coin; },
-        keDapat: function(coin) { return Math.floor(coin * 100 / kadar + 1e-9); },
-        tepat: function(coin) { return coin * 100 / kadar; },
-        kos: function(sen) { return Math.ceil(sen * kadar / 100 - 1e-9); },
+        keDapat: function(coin) { return Math.floor(coin * 100 / kadar() + 1e-9); },
+        tepat: function(coin) { return coin * 100 / kadar(); },
+        kos: function(sen) { return Math.ceil(sen * kadar() / 100 - 1e-9); },
         bacaB: bacaSen, rapiB: rapiSen, tulisB: rm,
         tulisKecil: function(sen) { return fmtKecil(sen / 100); }, fmtTepat: function(sen) { return fmtKecil(sen / 100) + ' ' + nama; },
         fmtKos: function(v) { return v + ' coin'; }, fmtDapat: function(v) { return rm(v) + ' ' + nama; }
@@ -8963,14 +8984,15 @@
     // ── MERAH ⇄ BIRU: nilai coin sama (1.00 Biru = EKO.MERAH_X Merah), tiada caj ──
     function nisbahSilang(dari) { return dari === 'merah' ? 1 / EKO.MERAH_X : EKO.MERAH_X; }
     function penukarSilang(dari) {
-      var x = nisbahSilang(dari), nDari = dari === 'merah' ? 'Merah' : 'Biru', nKe = dari === 'merah' ? 'Biru' : 'Merah';
+      var nDari = dari === 'merah' ? 'Merah' : 'Biru', nKe = dari === 'merah' ? 'Biru' : 'Merah';
+      function x() { return nisbahSilang(dari); }
       return pautTukar({
         a: el('mx-in-dari-' + dari), b: el('mx-in-ke-' + dari), nota: el('mx-nota-silang-' + dari),
         rapiA: rapiSen, bacaA: bacaSen, tulisA: rm,
         maxA: function() { return dari === 'merah' ? DP.merahSen : DP.biruSen; },
-        keDapat: function(sen) { return Math.floor(sen * x + 1e-9); },
-        tepat: function(sen) { return sen * x; },
-        kos: function(sen) { return Math.ceil(sen / x - 1e-9); },
+        keDapat: function(sen) { return Math.floor(sen * x() + 1e-9); },
+        tepat: function(sen) { return sen * x(); },
+        kos: function(sen) { return Math.ceil(sen / x() - 1e-9); },
         bacaB: bacaSen, rapiB: rapiSen, tulisB: rm,
         tulisKecil: function(sen) { return fmtKecil(sen / 100); }, fmtTepat: function(sen) { return fmtKecil(sen / 100) + ' ' + nKe; },
         fmtKos: function(sen) { return rm(sen) + ' ' + nDari; }, fmtDapat: function(sen) { return rm(sen) + ' ' + nKe; }
@@ -9005,26 +9027,72 @@
         dpSejarah('mx-log');
       }).catch(function(e) { dpSibuk = false; el('mx-cakap').textContent = 'Gagal tukar: ' + (e.message || e); });
     }
-    // Meter kadar: jarum tunjuk nilai Ringgit berbanding asal (skala ×0 hingga ×4). Baca sahaja.
-    function svgMeter(x) {
-      var h = '<path d="M10 55 A40 40 0 0 1 90 55" fill="none" stroke="#000" stroke-width="6"/>', v, a, k = Math.max(0, Math.min(4, x));
-      for (v = 0; v <= 4; v++) {
-        a = Math.PI * (1 - v / 4);
-        h += '<path d="M' + (50 + 33 * Math.cos(a)).toFixed(1) + ' ' + (55 - 33 * Math.sin(a)).toFixed(1) + ' L' + (50 + 27 * Math.cos(a)).toFixed(1) + ' ' + (55 - 27 * Math.sin(a)).toFixed(1) + '" stroke="#000" stroke-width="2"/>' +
-          '<text x="' + (50 + 20 * Math.cos(a)).toFixed(1) + '" y="' + (58 - 20 * Math.sin(a)).toFixed(1) + '" font-size="7" text-anchor="middle">' + v + '</text>';
-      }
-      a = Math.PI * (1 - k / 4);
-      h += '<path d="M50 55 L' + (50 + 36 * Math.cos(a)).toFixed(1) + ' ' + (55 - 36 * Math.sin(a)).toFixed(1) + '" stroke="#000" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="55" r="4" fill="#000"/>';
-      return '<svg viewBox="0 0 100 62" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
-    }
+    // ══ METER KADAR (baca sahaja) + PANEL ADMIN (PIN) ══
+    // PIN admin disimpan sebagai cincang dalam users/{uid}/game_stat/admin { pinCincang }
+    var ADM = { buka: false, fasa: '', b: 0, m: 0, cincang: null };
+    function cincangPin(p) { var h = 5381, t = (currentUser ? currentUser.uid : '') + ':' + p, i; for (i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return String(h >>> 0); }
+    function fmtC(n) { var t = String(Math.round(n)), r = ''; while (t.length > 3) { r = ',' + t.slice(-3) + r; t = t.slice(0, -3); } return t + r; }
+    function svgAnak(atas) { return '<svg viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg"><path d="' + (atas ? 'M8 1 L15 11 H1 Z' : 'M1 1 H15 L8 11 Z') + '" fill="#000"/></svg>'; }
     function lukisMeter() {
-      function satu(nama, x, coin) {
-        return '<div>' + svgMeter(x) + '<b>NILAI ×' + x + '</b>1.00 ' + nama + ' = ' + coin.toFixed(2) + ' coin<br>≈ ' + Math.round(coin / EKO.KATA_COIN) + ' perkataan</div>';
-      }
-      el('mx-meter').innerHTML = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span><span>ditetapkan admin</span></div>' +
-        '<div class="mx-meter-isi">' + satu('Biru', EKO.NILAI_BIRU, EKO.COIN_BIRU) + satu('Merah', EKO.NILAI_MERAH, EKO.COIN_MERAH) + '</div>' +
+      var h = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span>' + (ADM.fasa ? '' : '<button type="button" data-adm="buka">Admin</button>') + '</div>' +
+        '<div class="mx-kadar"><span>1.00 BIRU</span><span><b>' + EKO.BIRU_KATA + '</b> perkataan = ' + fmtC(EKO.COIN_BIRU) + ' coin</span></div>' +
+        '<div class="mx-kadar"><span>1.00 MERAH</span><span><b>' + EKO.MERAH_KATA + '</b> perkataan = ' + fmtC(EKO.COIN_MERAH) + ' coin</span></div>' +
         '<div class="mx-meter-kira">KALKULATOR · 1.00 Biru = <b>' + EKO.MERAH_X.toFixed(2) + ' Merah</b> · 1.00 Merah = <b>' + (1 / EKO.MERAH_X).toFixed(4) + ' Biru</b></div>';
+      if (ADM.fasa === 'pin' || ADM.fasa === 'cipta') {
+        h += '<div class="adm"><div class="adm-nota"><b>' + (ADM.fasa === 'cipta' ? 'CIPTA PIN ADMIN (4-6 digit)' : 'MASUKKAN PIN ADMIN') + '</b></div>' +
+          '<input id="adm-pin" type="password" inputmode="numeric" placeholder="PIN" autocomplete="off">' +
+          (ADM.fasa === 'cipta' ? '<input id="adm-pin2" type="password" inputmode="numeric" placeholder="Ulang PIN" autocomplete="off">' : '') +
+          '<div class="adm-nota" id="adm-msg"></div><div class="dp-btn"><button type="button" data-adm="tutup">Batal</button><button type="button" data-adm="masuk" class="dp-utama">' + (ADM.fasa === 'cipta' ? 'SIMPAN PIN' : 'MASUK') + '</button></div></div>';
+      } else if (ADM.fasa === 'ubah') {
+        var cb = ADM.b * EKO.KATA_COIN, cm = ADM.m * EKO.KATA_COIN;
+        h += '<div class="adm"><div class="adm-nota"><b>ADMIN · ▲▼ = 1 perkataan</b></div>' +
+          '<div class="adm-baris"><span>BIRU</span><button type="button" data-adm="b-">' + svgAnak(false) + '</button><b>' + ADM.b + '<small>perkataan · ' + fmtC(cb) + ' coin</small></b><button type="button" data-adm="b+">' + svgAnak(true) + '</button></div>' +
+          '<div class="adm-baris"><span>MERAH</span><button type="button" data-adm="m-">' + svgAnak(false) + '</button><b>' + ADM.m + '<small>perkataan · ' + fmtC(cm) + ' coin</small></b><button type="button" data-adm="m+">' + svgAnak(true) + '</button></div>' +
+          '<div class="adm-nota">PRATONTON · 1.00 Biru = ' + (cb / cm).toFixed(2) + ' Merah · Refund 1.00 Biru → ' + Math.floor(cb * (1 - EKO.CAJ_REFUND)) + ' coin' +
+          (ADM.m >= ADM.b ? '<br><b>Perhatian: Merah sama / lebih mahal dari Biru.</b>' : '') + '</div>' +
+          '<div class="adm-nota" id="adm-msg"></div><div class="dp-btn"><button type="button" data-adm="tutup">Batal</button><button type="button" data-adm="simpan" class="dp-utama">SIMPAN KADAR</button></div></div>';
+      }
+      el('mx-meter').innerHTML = h;
     }
+    el('mx-meter').addEventListener('click', function(e) {
+      var t = e.target, a;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-adm'))) t = t.parentNode;
+      if (!t || t === this) return;
+      a = t.getAttribute('data-adm');
+      if (a === 'buka') {
+        kol('game_stat').doc('admin').get().then(function(s) {
+          ADM.cincang = (s && s.exists) ? s.data().pinCincang || null : null;
+          ADM.fasa = ADM.cincang ? 'pin' : 'cipta';
+          lukisMeter();
+        }).catch(function(er) { el('mx-cakap').textContent = 'Gagal buka admin: ' + (er.message || er); });
+      } else if (a === 'tutup') { ADM.fasa = ''; lukisMeter(); }
+      else if (a === 'masuk') {
+        var p = String(el('adm-pin').value || '').replace(/\D/g, '');
+        if (!/^\d{4,6}$/.test(p)) { el('adm-msg').textContent = 'PIN mesti 4-6 digit.'; return; }
+        if (ADM.fasa === 'cipta') {
+          if (p !== String(el('adm-pin2').value || '').replace(/\D/g, '')) { el('adm-msg').textContent = 'PIN tak sama.'; return; }
+          ADM.cincang = cincangPin(p);
+          kol('game_stat').doc('admin').set({ pinCincang: ADM.cincang, updatedAt: Date.now() }, { merge: true }).catch(function() {});
+        } else if (cincangPin(p) !== ADM.cincang) { el('adm-msg').textContent = 'PIN salah.'; el('adm-pin').value = ''; return; }
+        ADM.fasa = 'ubah'; ADM.b = EKO.BIRU_KATA; ADM.m = EKO.MERAH_KATA;
+        lukisMeter();
+      }
+      else if (a === 'b+') { ADM.b++; lukisMeter(); }
+      else if (a === 'b-') { if (ADM.b > 1) ADM.b--; lukisMeter(); }
+      else if (a === 'm+') { ADM.m++; lukisMeter(); }
+      else if (a === 'm-') { if (ADM.m > 1) ADM.m--; lukisMeter(); }
+      else if (a === 'simpan') {
+        var lb = EKO.BIRU_KATA, lm = EKO.MERAH_KATA, bt = db.batch();
+        bt.set(refDompet(), { kadarBiru: ADM.b, kadarMerah: ADM.m, updatedAt: Date.now() }, { merge: true });
+        dpLog(bt, 'admin>kadar', 'ADMIN: kadar Biru ' + lb + ' → ' + ADM.b + ' perkataan · Merah ' + lm + ' → ' + ADM.m + ' perkataan');
+        bt.commit().then(function() {
+          setKadar(ADM.b, ADM.m);
+          ADM.fasa = '';
+          lukisMx();
+          el('mx-cakap').textContent = 'Kadar baru disimpan: 1.00 Biru = ' + EKO.BIRU_KATA + ' perkataan · 1.00 Merah = ' + EKO.MERAH_KATA + ' perkataan.';
+        }).catch(function(er) { el('adm-msg').textContent = 'Gagal simpan: ' + (er.message || er); });
+      }
+    });
     function lukisMx() {
       el('mx-coin').textContent = DP.coin;
       el('mx-biru').textContent = rm(DP.biruSen);
