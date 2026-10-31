@@ -827,6 +827,7 @@
         el.className = 'screen active';
         el.style.display = '';
       }
+      if (window.mwLukis) window.mwLukis();
     }
 
     // Kotak sahkan Ya / Batal (Kindle tidak sesuai guna confirm() asal pelayar)
@@ -5712,7 +5713,16 @@
     .mx-titik button.mx-on { color: #000; }
     .mx-titik button.mx-on .mx-bulat { background: #000; border-color: #000; }
     /* KEDAI ITEM: Merah (harga dunia sebenar) · Biru (reward) · Hijau (kesihatan + kad sticker harian) */
-    .gm-tab button { font-size: 0.66rem; padding: 10px 1px; }
+    .gm-tab button { font-size: 0.74rem; padding: 10px 1px; }
+    /* BAR MATA WANG (paling atas): Coin · Ringgit Biru · Ringgit Merah, butang + ke tempat tukar */
+    .mw-bar { display: flex; gap: 5px; margin: 0 0 6px; }
+    .mw-pil { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 4px; padding: 2px 2px 2px 5px; border: 2px solid #000; border-radius: 14px; background: #fff; }
+    .mw-pil svg { flex: 0 0 20px; width: 20px; height: 20px; }
+    .mw-pil span { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; line-height: 1.05; }
+    .mw-pil span small { display: block; font-size: 0.55rem; letter-spacing: 1px; }
+    .mw-pil span b { font-size: 0.95rem; }
+    .mw-pil button { flex: 0 0 26px; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 9px; background: #000; color: #fff; font-family: inherit; font-size: 1.2rem; font-weight: bold; line-height: 26px; cursor: pointer; }
+    #mini-dompet, #screen-kd > .dp-baki { display: none !important; }
     .kd-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 6px 0 20px; }
     .kd-item { position: relative; width: 31.5%; margin: 0 0 10px; padding: 6px 2px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.75rem; text-align: center; cursor: pointer; }
@@ -7561,6 +7571,7 @@
         var d = sd.data(), adaLama = (DP.upahTunggu || 0) > 0;
         DP.coin = d.coin || 0; DP.biruSen = d.biruSen || 0; DP.merahSen = d.merahSen || 0; DP.upahTunggu = d.upahTunggu || 0;
         DP.merahHariT = d.merahHariT || ''; DP.merahHariSen = d.merahHariSen || 0;
+        mwLukis();
         if (!kdSibuk && el('screen-kd').className.indexOf('active') !== -1) kdDompet();
         if (coinAnim) return;
         el('gb-coin').textContent = DP.coin;
@@ -8408,7 +8419,8 @@
       var biru = EKO.COIN_BIRU.toFixed(2), merah = EKO.COIN_MERAH.toFixed(2), caj = Math.round(EKO.CAJ_REFUND * 100);
       el('gm-panduan-isi').innerHTML =
         '<h3 id="pd-mini">BANDAR GAME: POS, KEDAI &amp; EXCHANGE</h3>' + I([
-          'Tab atas: MENU · PELABUHAN · MINI GAME (kedai-kedai) · EXCHANGE.',
+          'Bar paling atas = MATA WANG: Coin, Ringgit Biru, Ringgit Merah. Tekan + pada Biru / Merah untuk ke Magic Exchange (tukar coin). Tekan + pada Coin untuk ke Arked (main untuk dapat coin).',
+          'Bar kedua = TEMPAT: MENU · PELABUHAN · ARKED (mini game) · KEDAI.',
           'Setiap mini game ialah KEDAI. Kedai perlukan STOK perkataan (SR yang sudah sampai masa + perkataan baru) untuk dibuka.',
           'Stok tak cukup untuk satu pusingan → kedai TUTUP (Padan perlu 6, Jutawan perlu 15). Muat kontena di Pelabuhan untuk buka semula.',
           'Bila kedai dapat stok semula, pintu besinya naik terbuka.'
@@ -9334,16 +9346,56 @@
     el('btn-kd-padam').onclick = padamBarang;
     el('btn-kd-batal').onclick = function() { tutupBorang(); el('kd-info').textContent = ''; };
     el('btn-kd-claim').onclick = claimHijau;
-    // Tab KEDAI di semua bar navigasi game
+    // Bar kedua = TEMPAT: MENU · PELABUHAN · ARKED · KEDAI (EXCHANGE dibuang, masuk melalui butang + mata wang)
+    // Bar paling atas = MATA WANG di setiap skrin yang ada bar tempat
+    function svgMw(j) {
+      var a = '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">';
+      if (j === 'coin') return a + '<circle cx="10" cy="10" r="8.5" fill="#fff" stroke="#000" stroke-width="2"/><circle cx="10" cy="10" r="4.5" fill="none" stroke="#000" stroke-width="1.5"/></svg>';
+      return a + '<rect x="1" y="4" width="18" height="12" rx="2" fill="' + (j === 'merah' ? '#000' : '#fff') + '" stroke="#000" stroke-width="2"/>' +
+        '<text x="10" y="13.5" font-size="8" font-weight="bold" text-anchor="middle" fill="' + (j === 'merah' ? '#fff' : '#000') + '">RM</text></svg>';
+    }
+    function mwLukis() {
+      var a = document.querySelectorAll('.screen.active [data-mw]'), i, j, v;
+      for (i = 0; i < a.length; i++) {
+        j = a[i].getAttribute('data-mw');
+        v = String(j === 'coin' ? DP.coin : rm(j === 'biru' ? DP.biruSen : DP.merahSen));
+        if (a[i].textContent !== v) a[i].textContent = v;
+      }
+    }
+    window.mwLukis = mwLukis;
+    setInterval(function() { if (document.querySelector('.screen.active .mw-bar')) mwLukis(); }, 1000);
     (function() {
-      var t = document.querySelectorAll('.gm-tab'), i, b;
+      var t = document.querySelectorAll('.gm-tab'), i, b, s, bar, x;
       for (i = 0; i < t.length; i++) {
-        if (t[i].querySelector('[data-gm-tab="kd"]')) continue;
-        b = document.createElement('button');
-        b.type = 'button'; b.setAttribute('data-gm-tab', 'kd'); b.textContent = 'KEDAI';
-        t[i].appendChild(b);
+        x = t[i].querySelector('[data-gm-tab="mx"]');
+        if (x) x.parentNode.removeChild(x);
+        x = t[i].querySelector('[data-gm-tab="mini"]');
+        if (x) x.textContent = 'ARKED';
+        if (!t[i].querySelector('[data-gm-tab="kd"]')) {
+          b = document.createElement('button');
+          b.type = 'button'; b.setAttribute('data-gm-tab', 'kd'); b.textContent = 'KEDAI';
+          t[i].appendChild(b);
+        }
+        s = t[i].parentNode;
+        if (s.querySelector('.mw-bar')) continue;
+        bar = document.createElement('div');
+        bar.className = 'mw-bar';
+        bar.innerHTML = '<div class="mw-pil">' + svgMw('coin') + '<span><small>COIN</small><b data-mw="coin">-</b></span><button type="button" data-mw-tambah="coin">+</button></div>' +
+          '<div class="mw-pil">' + svgMw('biru') + '<span><small>BIRU</small><b data-mw="biru">-</b></span><button type="button" data-mw-tambah="biru">+</button></div>' +
+          '<div class="mw-pil">' + svgMw('merah') + '<span><small>MERAH</small><b data-mw="merah">-</b></span><button type="button" data-mw-tambah="merah">+</button></div>';
+        s.insertBefore(bar, s.firstChild);
       }
     })();
+    document.addEventListener('click', function(e) {
+      var t = e.target, j;
+      while (t && t !== document && !(t.getAttribute && t.getAttribute('data-mw-tambah'))) t = t.parentNode;
+      if (!t || t === document) return;
+      j = t.getAttribute('data-mw-tambah');
+      pus = null; jw = null;
+      if (j === 'coin') { bukaMini(); return; }
+      bukaMx();
+      pilihPanel(el('screen-mx'), j);
+    });
   })();
   </script>
 
