@@ -5701,6 +5701,48 @@
     .mx-titik .mx-bulat { display: block; width: 18px; height: 18px; margin: 0 auto 4px; border: 2px solid #999; border-radius: 50%; background: #fff; }
     .mx-titik button.mx-on { color: #000; }
     .mx-titik button.mx-on .mx-bulat { background: #000; border-color: #000; }
+    /* KEDAI ITEM: Merah (harga dunia sebenar) · Biru (reward) · Hijau (kesihatan + kad sticker harian) */
+    .gm-tab button { font-size: 0.66rem; padding: 10px 1px; }
+    .kd-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 6px 0 20px; }
+    .kd-item { position: relative; width: 31.5%; margin: 0 0 10px; padding: 6px 2px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.75rem; text-align: center; cursor: pointer; }
+    .kd-item svg { display: block; width: 38px; height: 38px; margin: 0 auto 2px; }
+    .kd-item b { display: block; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kd-item .kd-qty { position: absolute; top: -8px; right: -6px; min-width: 24px; height: 24px; padding: 0 4px; border-radius: 12px; background: #000; color: #fff; font-size: 0.85rem; font-weight: bold; line-height: 24px; }
+    .kd-item .kd-tag { display: inline-block; margin-top: 2px; padding: 0 5px; border: 1.5px solid #000; border-radius: 6px; font-style: normal; font-size: 0.6rem; font-weight: bold; }
+    .kd-item.kd-tambah, .kd-ubah .kd-item { border-style: dashed; }
+    .kd-troli { border: 3px solid #000; border-radius: 10px; padding: 8px; margin: 8px 0; }
+    .kd-troli-atas { font-size: 0.85rem; margin-bottom: 6px; }
+    .kd-troli-isi { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .kd-troli-isi button { padding: 4px 9px; border: 2px solid #000; border-radius: 12px; background: #fff; color: #000; font-family: inherit; font-size: 0.75rem; font-weight: bold; }
+    .kd-borang { border: 3px solid #000; border-radius: 10px; padding: 10px; margin: 8px 0; }
+    .kd-borang label { display: block; margin: 6px 0; font-size: 0.8rem; font-weight: bold; }
+    .kd-borang input { display: block; width: 100%; box-sizing: border-box; margin-top: 3px; padding: 8px; border: 2px solid #000; border-radius: 6px; font-family: inherit; font-size: 1rem; }
+    .kd-ikon { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 8px; }
+    .kd-ikon button { width: 44px; height: 44px; padding: 3px; border: 2px solid #ccc; border-radius: 6px; background: #fff; }
+    .kd-ikon button.kd-on { border: 3px solid #000; }
+    .kd-ikon svg { display: block; width: 100%; height: 100%; }
+    .kd-kad { border: 3px solid #000; border-radius: 10px; padding: 8px; margin: 6px 0 10px; }
+    .kd-kad-atas { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; }
+    .kd-petak-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 8px 0 4px; }
+    .kd-petak { position: relative; width: 31.5%; height: 70px; margin: 0 0 6px; padding-top: 4px; box-sizing: border-box; border: 2px dashed #000; border-radius: 8px;
+      font-size: 0.65rem; text-align: center; white-space: nowrap; overflow: visible; }
+    .kd-petak.kd-ada { border-style: solid; }
+    .kd-petak .kd-ik { display: block; width: 32px; height: 32px; margin: 0 auto 2px; }
+    .kd-petak .kd-cop { position: absolute; top: -8px; right: -6px; width: 34px; height: 34px; }
+    .kd-petak .kd-cop svg { display: block; width: 100%; height: 100%; }
+    .kd-tingkat { display: flex; gap: 4px; margin: 4px 0; }
+    .kd-tingkat span { flex: 1 1 0; padding: 3px 0; border: 2px solid #000; border-radius: 6px; font-size: 0.65rem; text-align: center; }
+    .kd-tingkat span b { display: block; font-size: 0.95rem; }
+    .kd-tingkat span.kd-on { background: #000; color: #fff; }
+    .kd-hari { display: flex; justify-content: center; align-items: center; gap: 4px; margin: 6px 0 2px; font-size: 0.7rem; font-weight: bold; }
+    .kd-hari i { display: block; width: 14px; height: 14px; border: 2px solid #000; border-radius: 50%; }
+    .kd-hari i.kd-isi { background: #000; }
+    .kd-pulang { display: flex; gap: 6px; margin-top: 6px; }
+    .kd-pulang div { flex: 1 1 0; padding: 4px; border: 2px solid #000; border-radius: 8px; font-size: 0.7rem; text-align: center; }
+    .kd-pulang div b { display: block; font-size: 1.1rem; }
+    .kd-pulang div.kd-hitam { background: #000; color: #fff; }
+    .kd-kecil { font-size: 0.7rem; text-align: center; margin-top: 4px; }
     .mx-arah { display: flex; gap: 6px; margin: 4px 0 8px; }
     .mx-arah button { flex: 1 1 0; padding: 7px 4px; border: 2px solid #000; border-radius: 6px; background: #fff; color: #000;
       font-family: inherit; font-weight: bold; font-size: 0.8rem; cursor: pointer; }
@@ -6089,6 +6131,48 @@
     </div>
     <div class="dp-tajuk">Sejarah tukaran</div>
     <div id="mx-log" style="padding-bottom:20px;"></div>
+  </div>
+  <div id="screen-kd" class="screen">
+    <div class="status-bar" id="kd-status">KEDAI ITEM</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+      <button type="button" data-gm-tab="kd" class="gm-aktif">KEDAI</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">KEDAI ITEM</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-kedai">Panduan</button>
+      <button type="button" id="btn-kd-ubah" class="gm-kecil">Ubah</button>
+    </div>
+    <div class="dp-baki">
+      <div>Ringgit Merah<b id="kd-merah">-</b></div>
+      <div>Ringgit Biru<b id="kd-biru">-</b></div>
+    </div>
+    <div class="mx-titik" id="kd-titik">
+      <button type="button" data-kd-pilih="merah" class="mx-on"><span class="mx-bulat"></span>MERAH</button>
+      <button type="button" data-kd-pilih="biru"><span class="mx-bulat"></span>BIRU</button>
+      <button type="button" data-kd-pilih="hijau"><span class="mx-bulat"></span>HIJAU</button>
+    </div>
+    <div class="dp-tajuk" id="kd-tajuk" style="font-size:0.85rem;">KEDAI MERAH</div>
+    <div id="kd-hijau" class="kd-kad" style="display:none;"></div>
+    <button id="btn-kd-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
+    <div id="kd-info" class="jw-info"></div>
+    <div id="kd-borang" class="kd-borang" style="display:none;">
+      <div class="dp-tajuk" id="kd-borang-tajuk" style="margin-top:0;">TAMBAH ITEM</div>
+      <label>Nama barang<input id="kd-in-nama" type="text" placeholder="cth Epal" autocomplete="off"></label>
+      <label>Harga (Ringgit <span id="kd-borang-duit">Merah</span>)<input id="kd-in-harga" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+      <div class="kd-ikon" id="kd-ikon"></div>
+      <div class="dp-btn" id="kd-kad-baris" style="margin-bottom:8px;"><button type="button" id="btn-kd-kad">KAD STICKER: TIDAK</button></div>
+      <div class="dp-btn">
+        <button type="button" id="btn-kd-batal">Batal</button>
+        <button type="button" id="btn-kd-padam">Padam</button>
+        <button type="button" id="btn-kd-simpan" class="dp-utama">SIMPAN</button>
+      </div>
+    </div>
+    <div id="kd-troli" class="kd-troli" style="display:none;"></div>
+    <div id="kd-grid" class="kd-grid"></div>
   </div>
   <div id="screen-mxr" class="screen">
     <div class="status-bar" id="mxr-status">KAUNTER REFUND</div>
@@ -7336,6 +7420,8 @@
         if (!sd || !sd.exists) return;
         var d = sd.data(), adaLama = (DP.upahTunggu || 0) > 0;
         DP.coin = d.coin || 0; DP.biruSen = d.biruSen || 0; DP.merahSen = d.merahSen || 0; DP.upahTunggu = d.upahTunggu || 0;
+        DP.merahHariT = d.merahHariT || ''; DP.merahHariSen = d.merahHariSen || 0;
+        if (!kdSibuk && el('screen-kd').className.indexOf('active') !== -1) kdDompet();
         if (coinAnim) return;
         el('gb-coin').textContent = DP.coin;
         tunjukAmbil();
@@ -8173,6 +8259,7 @@
       else if (k === 'pos') bukaBank(false);
       else if (k === 'mini') bukaMini();
       else if (k === 'mx') bukaMx();
+      else if (k === 'kd') bukaKd();
     });
 
     // ══ BUKU PANDUAN & PERATURAN — semua maklumat cara main dikumpul di sini ══
@@ -8251,6 +8338,15 @@
           'Kiraan boleh perpuluhan, tapi tukaran sekurang-kurangnya 1 coin / 0.01 Ringgit. Baki yang tak cukup satu unit kekal.',
           'Kaunter Refund (butang Refund): tukar Ringgit balik jadi coin dengan caj ' + caj + '%.',
           'Semua tukaran & refund direkod dalam Sejarah tukaran.'
+        ]) +
+        '<h3 id="pd-kedai">KEDAI ITEM (tab KEDAI)</h3>' + I([
+          'Semua barang awak tambah sendiri: tekan + TAMBAH, tulis nama, harga dan pilih gambar. Butang Ubah → tekan barang untuk ubah / padam.',
+          'KEDAI MERAH: barang ikut harga dunia sebenar, bayar Ringgit Merah. KEDAI BIRU: barang reward, bayar Ringgit Biru.',
+          'KEDAI HIJAU: barang kesihatan, bayar Ringgit Merah. Tanda 6 barang sebagai KAD STICKER.',
+          'Tekan barang = masuk troli (tekan nama dalam troli untuk kurangkan). BAYAR = tolak dari dompet.',
+          'Beli barang kad → petak itu dapat sticker. Kad reset setiap 12 malam.',
+          'Pulangan (Ringgit Merah) dari belanja Kedai Hijau hari itu: 3/6 sticker = ' + Math.round(EKO.HJ_SEPARUH * 100) + '% · 6/6 = ' + Math.round(EKO.HJ_PENUH * 100) + '% · kad penuh ' + EKO.HJ_STREAK_HARI + ' hari berturut = ' + Math.round(EKO.HJ_STREAK * 100) + '%. Tekan CLAIM.',
+          'Had pulangan sehari = ' + EKO.HJ_HAD_X + '× Ringgit Merah yang awak tukar dari coin hari itu (dari belajar). Refund Merah mengurangkan had.'
         ]);
     }
     function bukaPanduan(ke) {
@@ -8344,7 +8440,7 @@
     function dpMuat(cb) {
       refDompet().get().then(function(s) {
         var d = (s && s.exists) ? s.data() : {};
-        DP = { coin: d.coin || 0, biruSen: d.biruSen || 0, merahSen: d.merahSen || 0, upahTunggu: d.upahTunggu || 0 };
+        DP = { coin: d.coin || 0, biruSen: d.biruSen || 0, merahSen: d.merahSen || 0, upahTunggu: d.upahTunggu || 0, merahHariT: d.merahHariT || '', merahHariSen: d.merahHariSen || 0 };
         cb(true);
       }).catch(function(e) { cb(false, e); });
     }
@@ -8665,13 +8761,16 @@
       }
       var b = db.batch(), tambah = { coin: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() };
       tambah[jenis === 'biru' ? 'biruSen' : 'merahSen'] = firebase.firestore.FieldValue.increment(sen);
+      // Merah dari belajar hari ini (had pulangan Kedai Hijau)
+      var hari = kdHari(0), samaHari = DP.merahHariT === hari;
+      if (jenis === 'merah') { tambah.merahHariT = hari; tambah.merahHariSen = samaHari ? firebase.firestore.FieldValue.increment(sen) : sen; }
       dpSibuk = true;
       b.set(refDompet(), tambah, { merge: true });
       dpLog(b, 'coin>' + jenis, kos + ' coin → +' + rm(sen) + ' ' + nama);
       b.commit().then(function() {
         dpSibuk = false;
         DP.coin -= kos;
-        if (jenis === 'biru') DP.biruSen += sen; else DP.merahSen += sen;
+        if (jenis === 'biru') DP.biruSen += sen; else { DP.merahSen += sen; DP.merahHariSen = (samaHari ? DP.merahHariSen || 0 : 0) + sen; DP.merahHariT = hari; }
         lukisMx();
         penjaga('mx-watak', 'magik', 'gembira', 'Abrakadabra! -' + kos + ' coin → +' + rm(sen) + ' Ringgit ' + nama, 'mx-cakap');
         dpSejarah('mx-log');
@@ -8742,13 +8841,15 @@
       }
       var caj = Math.round(sen * kadarRm(jenis) / 100) - dapat, b = db.batch(), tolak = { coin: firebase.firestore.FieldValue.increment(dapat), updatedAt: Date.now() };
       tolak[jenis === 'biru' ? 'biruSen' : 'merahSen'] = firebase.firestore.FieldValue.increment(-sen);
+      var kurangHari = (jenis === 'merah' && DP.merahHariT === kdHari(0)) ? Math.min(sen, DP.merahHariSen || 0) : 0;
+      if (kurangHari > 0) tolak.merahHariSen = firebase.firestore.FieldValue.increment(-kurangHari);
       dpSibuk = true;
       b.set(refDompet(), tolak, { merge: true });
       dpLog(b, 'refund>' + jenis, 'REFUND ' + rm(sen) + ' ' + nama + ' → +' + dapat + ' coin (caj ' + caj + ' coin)');
       b.commit().then(function() {
         dpSibuk = false;
         DP.coin += dapat;
-        if (jenis === 'biru') DP.biruSen -= sen; else DP.merahSen -= sen;
+        if (jenis === 'biru') DP.biruSen -= sen; else { DP.merahSen -= sen; DP.merahHariSen = (DP.merahHariSen || 0) - kurangHari; }
         lukisMxr();
         penjaga('mxr-watak', 'magik', 'marah', 'Hmph! Nah, ambil ' + dapat + ' coin awak. Caj ' + caj + ' coin saya simpan. Jangan buat lagi!', 'mxr-cakap');
         dpSejarah('mxr-log');
@@ -8764,6 +8865,343 @@
     });
     el('btn-jwl-bank').onclick = function() { jwTunda = null; bukaBank(false); };
     el('btn-jwl-batal').onclick = function() { jwTunda = null; el('jwl-kurang').style.display = 'none'; lukisJwLevel(); };
+
+    // ══ KEDAI ITEM: semua barang ditambah sendiri oleh pengguna ══
+    // Barang: users/{uid}/kedai_item/{id} { kedai: merah|biru|hijau, nama, sen, ikon, kad, at }
+    // Kad sihat: users/{uid}/game_stat/hijau { tarikh, sticker{id:1}, belanjaSen, diambilSen, streak, streakTarikh }
+    EKO.HJ_SEPARUH = 0.3;     // 3/6 sticker → pulangan 30% belanja Hijau hari itu
+    EKO.HJ_PENUH = 1.5;       // 6/6 sticker → 150%
+    EKO.HJ_STREAK = 2;        // kad penuh 7 hari berturut → 200%
+    EKO.HJ_STREAK_HARI = 7;
+    EKO.HJ_HAD_X = 1.5;       // had pulangan sehari = 1.5× Merah ditukar dari coin hari itu
+    var KD_KAD = 6, kdSibuk = false;
+    var KD = { item: [], hijau: {}, kedai: 'merah', ubah: false, troli: { merah: {}, biru: {}, hijau: {} }, edit: null, ikon: 'buah', kad: false, sahPadam: false };
+    var KD_NAMA = { merah: 'KEDAI MERAH · harga dunia sebenar', biru: 'KEDAI BIRU · item reward', hijau: 'KEDAI HIJAU · kesihatan' };
+    var KD_IKON = ['buah', 'sayur', 'air', 'susu', 'telur', 'roti', 'ubat', 'senaman', 'buku', 'pen', 'makan', 'minum', 'baju', 'game', 'hadiah', 'kotak'];
+    var KD_SVG = {
+      buah: '<path d="M20 12 C12 6 4 14 8 26 C11 34 17 35 20 32 C23 35 29 34 32 26 C36 14 28 6 20 12 Z"/><path d="M20 12 Q21 6 26 4"/>',
+      sayur: '<path d="M8 34 L25 12 L30 17 Z"/><path d="M27 14 L30 4 M28 15 L36 12 M28 14 L35 6"/><path d="M14 27 L17 29 M19 21 L22 23"/>',
+      air: '<path d="M16 4 H24 V9 L27 13 V35 H13 V13 L16 9 Z"/><path d="M13 20 H27 M13 28 H27"/>',
+      susu: '<path d="M12 14 L16 6 H24 L28 14 V35 H12 Z"/><path d="M12 14 H28 M24 6 L28 14"/><path d="M16 24 Q20 20 24 24 Q20 28 16 24 Z"/>',
+      telur: '<ellipse cx="20" cy="22" rx="10" ry="13"/><path d="M15 18 Q17 13 20 12"/>',
+      roti: '<path d="M8 18 C8 8 32 8 32 18 C32 20 30 21 29 21 V34 H11 V21 C10 21 8 20 8 18 Z"/><path d="M15 15 L17 13 M20 15 L22 13 M25 15 L27 13"/>',
+      ubat: '<g transform="rotate(-35 20 20)"><rect x="5" y="14" width="30" height="12" rx="6"/><path d="M20 14 V26"/></g>',
+      senaman: '<path d="M12 20 H28"/><rect x="5" y="12" width="7" height="16" rx="1"/><rect x="28" y="12" width="7" height="16" rx="1"/><path d="M3 17 V23 M37 17 V23"/>',
+      buku: '<path d="M20 10 C14 6 8 7 5 9 V33 C8 31 14 30 20 34 C26 30 32 31 35 33 V9 C32 7 26 6 20 10 Z M20 10 V34"/>',
+      pen: '<path d="M8 32 L10 26 L28 8 L32 12 L14 30 Z M25 11 L29 15 M10 26 L14 30"/>',
+      makan: '<path d="M6 20 H34 C34 28 28 33 20 33 C12 33 6 28 6 20 Z"/><path d="M14 16 Q16 12 14 8 M20 16 Q22 12 20 8 M26 16 Q28 12 26 8"/>',
+      minum: '<path d="M10 12 H28 L26 34 H12 Z"/><path d="M28 16 C34 16 34 26 27 26"/><path d="M20 12 L24 3"/>',
+      baju: '<path d="M14 6 L6 12 L10 18 L13 16 V34 H27 V16 L30 18 L34 12 L26 6 C24 10 16 10 14 6 Z"/>',
+      game: '<rect x="5" y="13" width="30" height="16" rx="8"/><path d="M11 21 H17 M14 18 V24"/><circle cx="26" cy="19" r="1.5"/><circle cx="29" cy="23" r="1.5"/>',
+      hadiah: '<rect x="7" y="16" width="26" height="18"/><rect x="5" y="11" width="30" height="5"/><path d="M20 11 V34 M20 11 C16 4 10 6 14 11 M20 11 C24 4 30 6 26 11"/>',
+      kotak: '<path d="M6 13 L20 6 L34 13 V29 L20 36 L6 29 Z M6 13 L20 20 L34 13 M20 20 V36"/>',
+      tambah: '<circle cx="20" cy="20" r="15"/><path d="M20 12 V28 M12 20 H28"/>'
+    };
+    function svgIkon(n, kls) {
+      return '<svg' + (kls ? ' class="' + kls + '"' : '') + ' viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#000" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">' + (KD_SVG[n] || KD_SVG.kotak) + '</svg>';
+    }
+    function svgCop() {
+      return '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="18" fill="#000"/><circle cx="20" cy="20" r="15" fill="none" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 2"/>' +
+        '<path d="M20 8 L23.5 16 L32 16.5 L25.5 22 L27.5 30.5 L20 26 L12.5 30.5 L14.5 22 L8 16.5 L16.5 16 Z" fill="#fff"/></svg>';
+    }
+    function kdHari(off) {
+      var t = new Date(Date.now() + (off || 0) * 86400000);
+      return t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2) + '-' + ('0' + t.getDate()).slice(-2);
+    }
+    function refHijau() { return kol('game_stat').doc('hijau'); }
+    function kdDuitF(k) { return k === 'biru' ? 'biruSen' : 'merahSen'; }
+    function kdDuitNama(k) { return k === 'biru' ? 'Biru' : 'Merah'; }
+    function kdSenarai(k) { var a = [], i; for (i = 0; i < KD.item.length; i++) if (KD.item[i].kedai === k) a.push(KD.item[i]); return a; }
+    function kdCari(id) { for (var i = 0; i < KD.item.length; i++) if (KD.item[i].id === id) return KD.item[i]; return null; }
+    function kadItem() { var a = [], i; for (i = 0; i < KD.item.length && a.length < KD_KAD; i++) if (KD.item[i].kedai === 'hijau' && KD.item[i].kad) a.push(KD.item[i]); return a; }
+    function kdMuat(cb) {
+      kol('kedai_item').get().then(function(snap) {
+        var a = [];
+        snap.forEach(function(doc) { var x = doc.data(); a.push({ id: doc.id, kedai: x.kedai || 'merah', nama: x.nama || '', sen: x.sen || 0, ikon: x.ikon || 'kotak', kad: !!x.kad, at: x.at || 0 }); });
+        a.sort(function(p, q) { return p.at - q.at; });
+        KD.item = a;
+        return refHijau().get();
+      }).then(function(s) {
+        KD.hijau = (s && s.exists) ? s.data() : {};
+        dpMuat(function(ok, e) { cb(ok, e); });
+      }).catch(function(e) { cb(false, e); });
+    }
+    // Kiraan kad sihat hari ini
+    function hjKira() {
+      var hari = kdHari(0), h = KD.hijau || {}, kini = h.tarikh === hari, st = kini ? (h.sticker || {}) : {}, kad = kadItem(), n = 0, i;
+      for (i = 0; i < kad.length; i++) if (st[kad[i].id]) n++;
+      var streak = (h.streakTarikh === hari || h.streakTarikh === kdHari(-1)) ? (h.streak || 0) : 0;
+      var cukup = kad.length === KD_KAD, penuh = cukup && n >= KD_KAD;
+      var pct = penuh ? (streak >= EKO.HJ_STREAK_HARI ? EKO.HJ_STREAK : EKO.HJ_PENUH) : (cukup && n >= 3 ? EKO.HJ_SEPARUH : 0);
+      var belanja = kini ? (h.belanjaSen || 0) : 0, diambil = kini ? (h.diambilSen || 0) : 0;
+      var had = Math.floor(EKO.HJ_HAD_X * (DP.merahHariT === hari ? Math.max(0, DP.merahHariSen || 0) : 0));
+      var sah = Math.floor(belanja * pct + 1e-9);
+      return { hari: hari, kad: kad, st: st, n: n, streak: streak, cukup: cukup, penuh: penuh, pct: pct, belanja: belanja, diambil: diambil, had: had, sah: sah,
+        boleh: Math.max(0, Math.min(sah, had) - diambil) };
+    }
+    function kdDompet() {
+      el('kd-merah').textContent = rm(DP.merahSen);
+      el('kd-biru').textContent = rm(DP.biruSen);
+      if (KD.kedai === 'hijau') lukisHijau();
+    }
+    function lukisHijau() {
+      var k = hjKira(), h = '', i, it, t = new Date();
+      h += '<div class="kd-kad-atas"><span>KAD SIHAT HARIAN</span><span>' + t.getDate() + '/' + (t.getMonth() + 1) + ' · reset 12 malam</span></div><div class="kd-petak-grid">';
+      for (i = 0; i < KD_KAD; i++) {
+        it = k.kad[i];
+        if (!it) { h += '<div class="kd-petak">' + svgIkon('tambah', 'kd-ik') + 'kosong</div>'; continue; }
+        h += '<div class="kd-petak' + (k.st[it.id] ? ' kd-ada' : '') + '" data-kd-petak="' + it.id + '">' + svgIkon(it.ikon, 'kd-ik') + escKapal(it.nama) +
+          (k.st[it.id] ? '<span class="kd-cop">' + svgCop() + '</span>' : '') + '</div>';
+      }
+      h += '</div><div class="kd-tingkat">' +
+        '<span' + (k.pct === EKO.HJ_SEPARUH ? ' class="kd-on"' : '') + '><b>3/6</b>' + Math.round(EKO.HJ_SEPARUH * 100) + '%</span>' +
+        '<span' + (k.pct === EKO.HJ_PENUH ? ' class="kd-on"' : '') + '><b>6/6</b>' + Math.round(EKO.HJ_PENUH * 100) + '%</span>' +
+        '<span' + (k.pct === EKO.HJ_STREAK ? ' class="kd-on"' : '') + '><b>' + EKO.HJ_STREAK_HARI + ' HARI</b>' + Math.round(EKO.HJ_STREAK * 100) + '%</span></div>';
+      h += '<div class="kd-hari">';
+      for (i = 0; i < EKO.HJ_STREAK_HARI; i++) h += '<i' + (i < Math.min(k.streak, EKO.HJ_STREAK_HARI) ? ' class="kd-isi"' : '') + '></i>';
+      h += '&nbsp;' + k.streak + '/' + EKO.HJ_STREAK_HARI + ' HARI</div>';
+      h += '<div class="kd-pulang"><div>BELANJA HARI INI<b>' + rm(k.belanja) + '</b></div><div>STICKER<b>' + k.n + '/' + KD_KAD + '</b></div>' +
+        '<div class="kd-hitam">PULANGAN<b>' + rm(k.boleh) + '</b></div></div>';
+      h += '<div class="kd-kecil">HAD HARI INI ' + rm(k.had) + ' Merah' + (k.diambil ? ' · DAH CLAIM ' + rm(k.diambil) : '') + '</div>';
+      if (!k.cukup) h += '<div class="kd-kecil"><b>Tanda ' + KD_KAD + ' barang sebagai KAD STICKER (Ubah → tekan barang).</b></div>';
+      else if (k.sah > k.diambil && k.had <= k.diambil) h += '<div class="kd-kecil"><b>Had penuh. Belajar dan tukar coin ke Merah untuk naikkan had.</b></div>';
+      el('kd-hijau').innerHTML = h;
+      el('btn-kd-claim').style.display = k.boleh >= 1 ? '' : 'none';
+      el('btn-kd-claim').textContent = 'CLAIM ' + rm(k.boleh) + ' MERAH';
+    }
+    function lukisKd() {
+      var k = KD.kedai, s = el('screen-kd'), b = s.querySelectorAll('[data-kd-pilih]'), i, it = kdSenarai(k), tr = KD.troli[k], h = '';
+      for (i = 0; i < b.length; i++) b[i].className = b[i].getAttribute('data-kd-pilih') === k ? 'mx-on' : '';
+      el('kd-merah').textContent = rm(DP.merahSen);
+      el('kd-biru').textContent = rm(DP.biruSen);
+      el('kd-tajuk').textContent = KD_NAMA[k] + ' · bayar ' + kdDuitNama(k);
+      el('btn-kd-ubah').textContent = KD.ubah ? 'Siap' : 'Ubah';
+      el('kd-hijau').style.display = k === 'hijau' ? '' : 'none';
+      if (k === 'hijau') lukisHijau(); else el('btn-kd-claim').style.display = 'none';
+      for (i = 0; i < it.length; i++) {
+        h += '<button type="button" class="kd-item" data-kd-item="' + it[i].id + '">' + (tr[it[i].id] ? '<span class="kd-qty">' + tr[it[i].id] + '</span>' : '') +
+          svgIkon(it[i].ikon) + '<b>' + escKapal(it[i].nama) + '</b>' + rm(it[i].sen) + (k === 'hijau' && it[i].kad ? '<br><i class="kd-tag">KAD</i>' : '') + '</button>';
+      }
+      h += '<button type="button" class="kd-item kd-tambah" data-kd-tambah="1">' + svgIkon('tambah') + '<b>TAMBAH</b>barang baru</button>';
+      i = it.length % 3;
+      if (i === 1) h += '<span class="kd-item" style="visibility:hidden;"></span>';
+      el('kd-grid').innerHTML = h;
+      el('kd-grid').className = 'kd-grid' + (KD.ubah ? ' kd-ubah' : '');
+      lukisTroli();
+    }
+    function kdJumlah(k) {
+      var tr = KD.troli[k], n = 0, sen = 0, id, it;
+      for (id in tr) { it = kdCari(id); if (it) { n += tr[id]; sen += it.sen * tr[id]; } }
+      return { n: n, sen: sen };
+    }
+    function lukisTroli() {
+      var k = KD.kedai, tr = KD.troli[k], j = kdJumlah(k), h = '', id, it, ada = DP[kdDuitF(k)];
+      if (!j.n) { el('kd-troli').style.display = 'none'; return; }
+      h += '<div class="kd-troli-atas"><b>TROLI</b> · ' + j.n + ' barang · ' + rm(j.sen) + ' ' + kdDuitNama(k) + ' · baki selepas bayar ' + (ada >= j.sen ? rm(ada - j.sen) : 'TAK CUKUP') + '</div><div class="kd-troli-isi">';
+      for (id in tr) { it = kdCari(id); if (it) h += '<button type="button" data-kd-kurang="' + id + '">' + escKapal(it.nama) + ' ×' + tr[id] + '</button>'; }
+      h += '</div><div class="dp-btn"><button type="button" data-kd-kosong="1">Kosongkan</button><button type="button" data-kd-bayar="1" class="dp-utama">BAYAR ' + rm(j.sen) + '</button></div>';
+      el('kd-troli').innerHTML = h;
+      el('kd-troli').style.display = '';
+    }
+    function bukaKd() {
+      if (!currentUser) return;
+      showScreen('screen-kd');
+      tutupBorang();
+      el('kd-info').textContent = 'Memuatkan...';
+      kdMuat(function(ok, e) {
+        if (!ok) { el('kd-info').textContent = 'Gagal memuat kedai: ' + ((e && e.message) || ''); return; }
+        el('kd-info').textContent = '';
+        lukisKd();
+      });
+    }
+    // ── Borang tambah / ubah barang ──
+    function lukisIkon() {
+      var h = '', i, n;
+      for (i = 0; i < KD_IKON.length; i++) { n = KD_IKON[i]; h += '<button type="button" data-kd-ikon="' + n + '"' + (n === KD.ikon ? ' class="kd-on"' : '') + '>' + svgIkon(n) + '</button>'; }
+      el('kd-ikon').innerHTML = h;
+      el('btn-kd-kad').textContent = 'KAD STICKER: ' + (KD.kad ? 'YA' : 'TIDAK');
+      el('btn-kd-kad').className = KD.kad ? 'dp-utama' : '';
+    }
+    function bukaBorang(it) {
+      var k = KD.kedai;
+      KD.edit = it || {}; KD.sahPadam = false;
+      KD.ikon = it ? it.ikon : (k === 'hijau' ? 'buah' : k === 'biru' ? 'hadiah' : 'buku');
+      KD.kad = it ? !!it.kad : (k === 'hijau' && kadItem().length < KD_KAD);
+      el('kd-borang-tajuk').textContent = (it ? 'UBAH BARANG · ' : 'TAMBAH BARANG · ') + KD_NAMA[k].split(' · ')[0];
+      el('kd-borang-duit').textContent = kdDuitNama(k);
+      el('kd-in-nama').value = it ? it.nama : '';
+      el('kd-in-harga').value = it ? rm(it.sen) : '';
+      el('kd-kad-baris').style.display = k === 'hijau' ? '' : 'none';
+      el('btn-kd-padam').style.display = it ? '' : 'none';
+      el('btn-kd-padam').textContent = 'Padam';
+      lukisIkon();
+      el('kd-borang').style.display = 'block';
+      el('kd-info').textContent = '';
+      try { el('kd-borang').scrollIntoView(true); } catch (e) {}
+    }
+    function tutupBorang() { KD.edit = null; el('kd-borang').style.display = 'none'; }
+    function simpanBarang() {
+      if (!KD.edit) return;
+      var k = KD.kedai, nama = String(el('kd-in-nama').value || '').replace(/^\s+|\s+$/g, '').slice(0, 24), sen = bacaSen(el('kd-in-harga').value), id = KD.edit.id, i, nKad = 0;
+      if (!nama) { el('kd-info').textContent = 'Tulis nama barang.'; return; }
+      if (sen < 1) { el('kd-info').textContent = 'Tulis harga barang.'; return; }
+      if (sen > 999999) { el('kd-info').textContent = 'Harga paling tinggi 9999.99.'; return; }
+      var kad = k === 'hijau' && KD.kad;
+      for (i = 0; i < KD.item.length; i++) if (KD.item[i].kedai === 'hijau' && KD.item[i].kad && KD.item[i].id !== id) nKad++;
+      if (kad && nKad >= KD_KAD) { el('kd-info').textContent = 'Kad sticker dah ada ' + KD_KAD + ' barang. Buang KAD dari barang lain dulu.'; return; }
+      if (!id) id = 'it' + Date.now().toString(36) + Math.floor(Math.random() * 1e4);
+      var data = { kedai: k, nama: nama, sen: sen, ikon: KD.ikon, kad: kad, at: KD.edit.at || Date.now() };
+      el('btn-kd-simpan').disabled = true;
+      kol('kedai_item').doc(id).set(data).then(function() {
+        el('btn-kd-simpan').disabled = false;
+        var lama = kdCari(id);
+        data.id = id;
+        if (lama) KD.item[KD.item.indexOf(lama)] = data; else KD.item.push(data);
+        tutupBorang();
+        el('kd-info').textContent = (lama ? 'Dikemas kini: ' : 'Ditambah: ') + nama + ' · ' + rm(sen);
+        lukisKd();
+      }).catch(function(e) { el('btn-kd-simpan').disabled = false; el('kd-info').textContent = 'Gagal simpan: ' + (e.message || e); });
+    }
+    function padamBarang() {
+      var it = KD.edit && KD.edit.id && kdCari(KD.edit.id);
+      if (!it) return;
+      if (!KD.sahPadam) { KD.sahPadam = true; el('btn-kd-padam').textContent = 'TEKAN LAGI'; return; }
+      kol('kedai_item').doc(it.id).delete().then(function() {
+        KD.item.splice(KD.item.indexOf(it), 1);
+        delete KD.troli[it.kedai][it.id];
+        tutupBorang();
+        el('kd-info').textContent = 'Dipadam: ' + it.nama;
+        lukisKd();
+      }).catch(function(e) { el('kd-info').textContent = 'Gagal padam: ' + (e.message || e); });
+    }
+    el('kd-in-harga').addEventListener('input', function() { var v = rapiSen(this.value); if (v !== this.value) this.value = v; });
+    // ── Bayar troli (transaksi: baki disemak terus di Firebase) ──
+    function bayarTroli() {
+      if (kdSibuk) return;
+      var k = KD.kedai, tr = KD.troli[k], j = kdJumlah(k), f = kdDuitF(k), nama = kdDuitNama(k), id, it, senarai = [], baru = [];
+      if (!j.n) return;
+      for (id in tr) { it = kdCari(id); if (it) senarai.push(it.nama + (tr[id] > 1 ? ' ×' + tr[id] : '')); }
+      kdSibuk = true;
+      el('kd-info').textContent = 'Membayar...';
+      db.runTransaction(function(tx) {
+        return tx.get(refDompet()).then(function(sd) {
+          var d = (sd && sd.exists) ? sd.data() : {};
+          if ((d[f] || 0) < j.sen) throw new Error('KURANG');
+          return (k === 'hijau' ? tx.get(refHijau()) : Promise.resolve(null)).then(function(sh) {
+            var ub = { updatedAt: Date.now() };
+            ub[f] = firebase.firestore.FieldValue.increment(-j.sen);
+            tx.set(refDompet(), ub, { merge: true });
+            tx.set(kol('dompet_log').doc(), { jenis: 'beli>' + k, ket: 'BELI (' + KD_NAMA[k].split(' · ')[0] + ') ' + senarai.join(', ') + ' → -' + rm(j.sen) + ' ' + nama, at: Date.now() });
+            if (k !== 'hijau') return null;
+            var hari = kdHari(0), lm = (sh && sh.exists) ? sh.data() : {}, h, kad = kadItem(), n = 0, i;
+            h = lm.tarikh === hari ? { tarikh: hari, sticker: lm.sticker || {}, belanjaSen: lm.belanjaSen || 0, diambilSen: lm.diambilSen || 0 } :
+              { tarikh: hari, sticker: {}, belanjaSen: 0, diambilSen: 0 };
+            h.streak = lm.streak || 0; h.streakTarikh = lm.streakTarikh || '';
+            h.belanjaSen += j.sen;
+            for (i = 0; i < kad.length; i++) {
+              if (tr[kad[i].id] && !h.sticker[kad[i].id]) { h.sticker[kad[i].id] = 1; baru.push(kad[i].id); }
+              if (h.sticker[kad[i].id]) n++;
+            }
+            if (kad.length === KD_KAD && n >= KD_KAD && h.streakTarikh !== hari) {
+              h.streak = (h.streakTarikh === kdHari(-1) ? h.streak : 0) + 1;
+              h.streakTarikh = hari;
+            }
+            tx.set(refHijau(), h);
+            return h;
+          });
+        });
+      }).then(function(h) {
+        kdSibuk = false;
+        DP[f] -= j.sen;
+        if (h) KD.hijau = h;
+        KD.troli[k] = {};
+        el('kd-info').textContent = 'Terima kasih! -' + rm(j.sen) + ' ' + nama + (baru.length ? ' · +' + baru.length + ' sticker' : '');
+        lukisKd();
+        copSticker(baru);
+      }).catch(function(e) {
+        kdSibuk = false;
+        el('kd-info').textContent = e && e.message === 'KURANG' ? 'Ringgit ' + nama + ' tak cukup! Tukar coin di EXCHANGE.' : 'Gagal bayar: ' + ((e && e.message) || e);
+        dpMuat(function() { lukisKd(); });
+      });
+    }
+    // Animasi sticker ditampal (3 bingkai pendek, sesuai e-ink)
+    function copSticker(ids) {
+      var i, c, a = [];
+      for (i = 0; i < ids.length; i++) { c = el('kd-hijau').querySelector('[data-kd-petak="' + ids[i] + '"] .kd-cop'); if (c) a.push(c); }
+      if (!a.length) return;
+      var fr = [['hidden', 'scale(1)'], ['visible', 'scale(1.6)'], ['visible', 'scale(1.2)'], ['visible', 'scale(1)']], n = 0;
+      (function main() {
+        for (i = 0; i < a.length; i++) { a[i].style.visibility = fr[n][0]; a[i].style.transform = fr[n][1]; a[i].style.webkitTransform = fr[n][1]; }
+        n++;
+        if (n < fr.length) setTimeout(main, 180);
+      })();
+    }
+    // CLAIM pulangan Kad Sihat → Ringgit Merah
+    function claimHijau() {
+      if (kdSibuk) return;
+      kdSibuk = true;
+      var lama = DP.merahSen;
+      db.runTransaction(function(tx) {
+        return tx.get(refDompet()).then(function(sd) {
+          var d = (sd && sd.exists) ? sd.data() : {};
+          DP.merahSen = d.merahSen || 0; DP.biruSen = d.biruSen || 0; DP.merahHariT = d.merahHariT || ''; DP.merahHariSen = d.merahHariSen || 0;
+          return tx.get(refHijau()).then(function(sh) {
+            KD.hijau = (sh && sh.exists) ? sh.data() : {};
+            var k = hjKira();
+            if (k.boleh < 1) return 0;
+            tx.set(refDompet(), { merahSen: firebase.firestore.FieldValue.increment(k.boleh), updatedAt: Date.now() }, { merge: true });
+            tx.set(refHijau(), { diambilSen: k.diambil + k.boleh }, { merge: true });
+            tx.set(kol('dompet_log').doc(), { jenis: 'hijau>merah', ket: 'PULANGAN KAD SIHAT (' + k.n + '/' + KD_KAD + ' sticker, ' + Math.round(k.pct * 100) + '%) +' + rm(k.boleh) + ' Merah', at: Date.now() });
+            return k.boleh;
+          });
+        });
+      }).then(function(c) {
+        if (!c) { kdSibuk = false; lukisKd(); return; }
+        lama = DP.merahSen;
+        KD.hijau.diambilSen = (KD.hijau.diambilSen || 0) + c;
+        el('btn-kd-claim').style.display = 'none';
+        try { window.scrollTo(0, 0); } catch (e) {}
+        terbangCoin(el('btn-kd-claim').style.display === 'none' ? el('kd-hijau') : el('btn-kd-claim'), el('kd-merah'), function() {
+          DP.merahSen = lama + c;
+          kdSibuk = false;
+          el('kd-info').textContent = 'Pulangan +' + rm(c) + ' Ringgit Merah!';
+          lukisKd();
+        });
+      }).catch(function(e) { kdSibuk = false; el('kd-info').textContent = 'Gagal claim: ' + ((e && e.message) || e); });
+    }
+    el('screen-kd').addEventListener('click', function(e) {
+      var t = e.target, a;
+      while (t && t !== this && !(t.getAttribute && (t.getAttribute('data-kd-pilih') || t.getAttribute('data-kd-item') || t.getAttribute('data-kd-tambah') ||
+        t.getAttribute('data-kd-kurang') || t.getAttribute('data-kd-kosong') || t.getAttribute('data-kd-bayar') || t.getAttribute('data-kd-ikon')))) t = t.parentNode;
+      if (!t || t === this) return;
+      if ((a = t.getAttribute('data-kd-pilih'))) { KD.kedai = a; tutupBorang(); el('kd-info').textContent = ''; lukisKd(); }
+      else if ((a = t.getAttribute('data-kd-item'))) {
+        if (KD.ubah) { bukaBorang(kdCari(a)); return; }
+        KD.troli[KD.kedai][a] = (KD.troli[KD.kedai][a] || 0) + 1;
+        lukisKd();
+      }
+      else if (t.getAttribute('data-kd-tambah')) bukaBorang(null);
+      else if ((a = t.getAttribute('data-kd-kurang'))) { var tr = KD.troli[KD.kedai]; tr[a]--; if (tr[a] <= 0) delete tr[a]; lukisKd(); }
+      else if (t.getAttribute('data-kd-kosong')) { KD.troli[KD.kedai] = {}; lukisKd(); }
+      else if (t.getAttribute('data-kd-bayar')) bayarTroli();
+      else if ((a = t.getAttribute('data-kd-ikon'))) { KD.ikon = a; lukisIkon(); }
+    });
+    el('btn-kd-ubah').onclick = function() { KD.ubah = !KD.ubah; tutupBorang(); el('kd-info').textContent = KD.ubah ? 'Tekan barang untuk ubah atau padam.' : ''; lukisKd(); };
+    el('btn-kd-kad').onclick = function() { KD.kad = !KD.kad; lukisIkon(); };
+    el('btn-kd-simpan').onclick = simpanBarang;
+    el('btn-kd-padam').onclick = padamBarang;
+    el('btn-kd-batal').onclick = function() { tutupBorang(); el('kd-info').textContent = ''; };
+    el('btn-kd-claim').onclick = claimHijau;
+    // Tab KEDAI di semua bar navigasi game
+    (function() {
+      var t = document.querySelectorAll('.gm-tab'), i, b;
+      for (i = 0; i < t.length; i++) {
+        if (t[i].querySelector('[data-gm-tab="kd"]')) continue;
+        b = document.createElement('button');
+        b.type = 'button'; b.setAttribute('data-gm-tab', 'kd'); b.textContent = 'KEDAI';
+        t[i].appendChild(b);
+      }
+    })();
   })();
   </script>
 
