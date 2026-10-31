@@ -5592,7 +5592,7 @@
     /* DURI: piston tolak perkataan ke atas, duri atas timbunan, 3 lapis belon */
     .dr-papan { position: relative; height: 456px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; margin: 4px 0 0; }
     .dr-adegan { position: absolute; left: 0; top: 0; pointer-events: none; }
-    .dr-k { position: absolute; width: 41%; height: 38px; padding: 0 4px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
+    .dr-k { position: absolute; width: 42.5%; height: 38px; padding: 0 4px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.95rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .dr-k.dr-pilih { background: #000; color: #fff; }
     .dr-k.dr-salah { border-style: dashed; border-width: 3px; }
@@ -5604,7 +5604,7 @@
     /* Piston: batang di atas + kotak badan di bawah (masa, maklumat, dan REWARD bila tamat) */
     .dr-piston { bottom: 0; z-index: 2; }
     .dr-rod { height: 30px; }
-    .dr-badan { box-sizing: border-box; margin: 0 4px; padding: 4px 6px; border: 3px solid #000; border-bottom: 0; border-radius: 8px 8px 0 0; background: #fff; overflow: hidden; text-align: center; }
+    .dr-badan { box-sizing: border-box; margin: 0 7%; padding: 4px 6px; border: 3px solid #000; border-bottom: 0; border-radius: 8px 8px 0 0; background: #fff; overflow: hidden; text-align: center; }
     .dr-badan .dr-info { font-size: 0.85rem; font-weight: bold; white-space: pre-line; margin: 2px 0; }
     .dr-badan .mm-kira { margin: 4px 0 6px; }
     .dr-badan .btn { margin: 0; padding: 10px; }
@@ -7045,7 +7045,7 @@
     // Lukisan: duri (atas timbunan), belon (3 lapis), piston (bawah)
     // Duri sampai lapis belon (belon boleh ditarik turun oleh orang lidi) → lapis itu pecah
     function drCucuk() { while (dr.pecah < DR_BELON && drTinggi() + dr.naik > DR_RUANG - dr.tarik + dr.pecah) { dr.letup = dr.pecah; dr.pecah++; } }
-    // Salah padan: orang lidi tarik tali, semua belon turun satu baris
+    // Salah padan: penggulung tali kiri & kanan gulung tali, semua belon turun satu baris
     function drTarik() {
       if (!dr || dr.tamat) return;
       dr.tarik++; dr.tarikAnim = true;
@@ -7057,12 +7057,13 @@
         if (dr.pecah >= DR_BELON) drTamat(false); else lukisDr();
       }, 450);
     }
-    // Adegan: 3 lapis belon bersambung tali → tali melintang → takal di dinding → orang lidi di atas piston.
-    // Tali melengkung bila longgar, makin tegang bila belon ditarik turun.
+    // Adegan: belon (gas helium, terapung) diikat pada palang. Dua tali tegang lurus ke bawah di tepi kiri & kanan,
+    // diikat pada penggulung tali di dinding. Salah padan → penggulung berpusing, tali makin pendek, belon turun.
     function svgAdegan() {
-      var p = el('dr-papan'), W = p.clientWidth, H = p.clientHeight, t = dr.tarik, cx = [0.2, 0.43, 0.66], s = '', k, i, x, b, cy, ke;
+      var p = el('dr-papan'), W = p.clientWidth, H = p.clientHeight, t = dr.tarik, cx = [0.24, 0.5, 0.76], s = '', k, i, x, b, cy, ke;
       function Y(v) { return Math.round(H - v); }
-      var yb = DR_DASAR + (DR_RUANG + Math.min(dr.pecah, DR_BELON - 1) - t) * DR_BARIS + 2, x0 = W * 0.1, x1 = W * 0.76, xr = W * 0.925, py = Y(DR_DASAR + DR_RUANG * DR_BARIS + 10);
+      var yb = DR_DASAR + (DR_RUANG + Math.min(dr.pecah, DR_BELON - 1) - t) * DR_BARIS + 2, xl = Math.round(W * 0.035), xr = W - xl;
+      var gy = Y(DR_DASAR + 14), gr = Math.min(11, 7 + t * 1.5), sud = (t * 60 + (dr.tarikAnim ? 30 : 0)) * Math.PI / 180;
       for (k = 0; k < DR_BELON; k++) {
         b = DR_DASAR + (DR_RUANG + k - t) * DR_BARIS + 4; cy = Y(b + 24);
         for (i = 0; i < 3; i++) {
@@ -7078,23 +7079,17 @@
           }
         }
       }
-      // Takal di dinding kanan
-      s += '<path d="M' + xr + ' ' + py + ' H' + W + '" stroke="#000" stroke-width="3"/><circle cx="' + xr + '" cy="' + py + '" r="6" fill="#fff" stroke="#000" stroke-width="2.5"/>';
-      var kaki = Y(DR_BAWAH), tarik = dr.tarikAnim, bahu = kaki - (tarik ? 30 : 38), tgn = bahu - (tarik ? 0 : 6), hx = xr + 6;
-      if (dr.pecah < DR_BELON) {
-        // Tali melintang bawah belon + tali ke takal (melengkung bila longgar)
-        var sag = Math.max(0, 18 - t * 9), yy = Y(yb);
-        s += '<path d="M' + x0 + ' ' + yy + ' H' + x1 + '" stroke="#000" stroke-width="3"/>' +
-          '<path d="M' + x1 + ' ' + yy + ' Q' + ((x1 + xr) / 2) + ' ' + (Math.max(yy, py) + sag) + ' ' + (xr - 4) + ' ' + (py + 4) + '" fill="none" stroke="#000" stroke-width="2"/>';
+      // Palang + dua tali tegang (simetri kiri & kanan)
+      if (dr.pecah < DR_BELON) s += '<path d="M' + xl + ' ' + Y(yb) + ' H' + xr + '" stroke="#000" stroke-width="3"/>' +
+        '<path d="M' + xl + ' ' + Y(yb) + ' V' + (gy - gr) + ' M' + xr + ' ' + Y(yb) + ' V' + (gy - gr) + '" stroke="#000" stroke-width="2"/>';
+      // Penggulung tali di dinding kiri & kanan (gulungan makin tebal bila tali digulung)
+      function gulung(gx, arah) {
+        var g = '<path d="M' + gx + ' ' + gy + ' H' + (arah < 0 ? 0 : W) + '" stroke="#000" stroke-width="3"/>' +
+          '<circle cx="' + gx + '" cy="' + gy + '" r="' + gr + '" fill="#fff" stroke="#000" stroke-width="2.5"/>', j, a;
+        for (j = 0; j < 3; j++) { a = sud * arah + j * 2.094; g += '<path d="M' + gx + ' ' + gy + ' L' + (gx + Math.cos(a) * gr).toFixed(1) + ' ' + (gy + Math.sin(a) * gr).toFixed(1) + '" stroke="#000" stroke-width="1.5"/>'; }
+        return g + '<circle cx="' + gx + '" cy="' + gy + '" r="2" fill="#000"/>';
       }
-      // Tali turun dari takal ke tangan
-      s += '<path d="M' + hx + ' ' + py + ' V' + tgn + '" stroke="#000" stroke-width="2"/>';
-      // Orang lidi berdiri atas piston (bila tarik: badan merendah, tangan ke bawah)
-      var cxo = xr - (tarik ? 3 : 0), pin = kaki - 18;
-      s += '<circle cx="' + cxo + '" cy="' + (bahu - 8) + '" r="6" fill="#fff" stroke="#000" stroke-width="2"/>' +
-        '<path d="M' + cxo + ' ' + (bahu - 2) + ' L' + xr + ' ' + pin + ' M' + xr + ' ' + pin + ' L' + (xr - 6) + ' ' + kaki + ' M' + xr + ' ' + pin + ' L' + (xr + 6) + ' ' + kaki +
-        ' M' + cxo + ' ' + (bahu + 2) + ' L' + hx + ' ' + tgn + '" stroke="#000" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
-        '<path d="M' + hx + ' ' + tgn + ' q6 8 0 14" fill="none" stroke="#000" stroke-width="1.5"/>';
+      s += gulung(xl, -1) + gulung(xr, 1);
       return '<svg class="dr-adegan" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
     }
     function svgDuri() {
@@ -7114,7 +7109,7 @@
     }
     function svgPiston(tolak) {
       return '<svg viewBox="0 0 200 30" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect x="4" y="0" width="192" height="6" fill="#000"/><rect x="90" y="6" width="20" height="24" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+        '<rect x="14" y="0" width="172" height="6" fill="#000"/><rect x="90" y="6" width="20" height="24" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
         '<path d="M90 14 H110 M90 22 H110" stroke="#000" stroke-width="1.5"/>' +
         (tolak ? '<path d="M40 24 l8 -9 l8 9 M144 24 l8 -9 l8 9" fill="none" stroke="#000" stroke-width="3"/>' : '') + '</svg>';
     }
@@ -7147,9 +7142,9 @@
       h += svgAdegan();
       for (c = 0; c < 2; c++) for (r = 0; r < dr.kol[c].length; r++) {
         k = dr.kol[c][r];
-        h += '<button type="button" class="dr-k' + (!k.batu && k.teks.length > 13 ? ' dr-panjang' : '') + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '43.5' : '1.5') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
+        h += '<button type="button" class="dr-k' + (!k.batu && k.teks.length > 13 ? ' dr-panjang' : '') + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '50.5' : '7') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
       }
-      h += '<div class="dr-duri" style="right:15%;bottom:' + (DR_BAWAH + drTinggi() * DR_BARIS) + 'px;height:14px;">' + svgDuri() + '</div>';
+      h += '<div class="dr-duri" style="left:6%;right:6%;bottom:' + (DR_BAWAH + drTinggi() * DR_BARIS) + 'px;height:14px;">' + svgDuri() + '</div>';
       el('dr-lapis').innerHTML = h;
       el('dr-rod').innerHTML = svgPiston(dr.tolakAnim);
       var b = el('dr-lapis').querySelectorAll('[data-dr-k]');
@@ -8420,7 +8415,7 @@
           'Kotak perkataan (English & BM bercampur) tersusun 2 lajur. Papan DURI sentiasa duduk atas timbunan. Di atas sekali ada 3 lapis BELON.',
           'PISTON di bawah tolak satu baris baru setiap ' + 6 + ' saat (titik di atas papan = masa). Timbunan naik → duri naik.',
           'Tekan perkataan English dan maksud BM yang sepadan → kedua-dua hilang, yang di atas jatuh (graviti), duri turun.',
-          'Salah pilih → orang lidi tarik tali, semua belon turun satu baris (makin dekat dengan duri, tali makin tegang). Bila semua perkataan dah masuk, piston sendiri naik setiap 6 saat — habiskan cepat!',
+          'Salah pilih → penggulung tali di kiri & kanan gulung tali, semua belon turun satu baris (makin dekat dengan duri). Bila semua perkataan dah masuk, piston sendiri naik setiap 6 saat — habiskan cepat!',
           'Setiap baris ada 1 English + 1 BM, pasangannya di baris lain. Setiap baris baru melengkapkan pasangan yang dah ada di skrin.',
           'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
           'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
