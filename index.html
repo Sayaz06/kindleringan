@@ -6972,7 +6972,7 @@
     // ══ DURI: piston tolak perkataan ke atas · duri atas timbunan · 3 lapis belon · padankan English + BM untuk turunkan ══
     // SR sendiri: users/{uid}/game_sr_duri · Stat: users/{uid}/game_stat/duri { main, lulus, perak }
     var DR_KOL = 'game_sr_duri', DR_BIL = 10, DR_SR_MAKS = 5, DR_BELON = 3, DR_RUANG = 5, DR_MULA = 3, DR_DETIK = 6;
-    var DR_BARIS = 44, DR_BAWAH = 36;
+    var DR_BARIS = 44, DR_BAWAH = 36, DR_DASAR = 36;  // DR_DASAR = kedudukan asal piston (belon ikut ini), DR_BAWAH = piston sekarang
     var DR = { main: 0, lulus: 0, perak: 0, gsr: {} }, dr = null, drJam = null;
     function drMuat(cb) {
       kol(DR_KOL).get().then(function(snap) {
@@ -7068,7 +7068,7 @@
       var p = el('dr-papan'), perlu = (DR_RUANG + DR_BELON) * DR_BARIS + 20, atas = p.getBoundingClientRect().top;
       var h = Math.max(perlu + 96, Math.floor((window.innerHeight || 700) - atas - 4));
       p.style.height = h + 'px';
-      DR_BAWAH = h - perlu;
+      DR_DASAR = DR_BAWAH = h - perlu;
       drPiston(DR_BAWAH);
     }
     function drPiston(t) { el('dr-piston').style.height = t + 'px'; el('dr-badan').style.height = (t - 30) + 'px'; }
@@ -7090,7 +7090,7 @@
       var h = '', c, r, k, y, sel = dr.pilih;
       // Belon: lapis k di atas ruang timbunan
       for (k = 0; k < DR_BELON; k++) {
-        y = DR_BAWAH + (DR_RUANG + k) * DR_BARIS + 4;
+        y = DR_DASAR + (DR_RUANG + k) * DR_BARIS + 4;
         if (k >= dr.pecah) h += '<div class="dr-belon" style="bottom:' + y + 'px;height:' + (DR_BARIS - 6) + 'px;">' + svgBelon(false) + '</div>';
         else if (dr.letup === k) h += '<div class="dr-belon" style="bottom:' + y + 'px;height:' + (DR_BARIS - 6) + 'px;">' + svgBelon(true) + '</div>';
       }
@@ -7136,7 +7136,7 @@
         }
         kad = drSusun(pas);
         for (i = 0; i < kad.length; i++) kad[i].id = i;
-        dr = { pas: pas, kad: kad, giliran: kad.slice(), kol: [[], []], pilih: -1, jumpa: 0, pecah: 0, letup: -1, detik: 0, tamat: false, lv: DR.lulus + 1, salah: null, tolakAnim: false };
+        dr = { pas: pas, kad: kad, giliran: kad.slice(), kol: [[], []], pilih: -1, jumpa: 0, pecah: 0, letup: -1, detik: 0, tamat: false, lv: DR.lulus + 1, salah: null, tolakAnim: false, naik: 0 };
         for (i = 0; i < DR_MULA; i++) drMasuk();
         el('dr-info').textContent = '';
         el('dr-status').textContent = 'DURI · Level ' + dr.lv + ' · Padan ' + DR_BIL + ' perkataan';
@@ -7183,11 +7183,16 @@
       }
     }
     // Piston tolak: timbunan naik satu baris. Duri sampai belon → belon lapis itu pecah. Semua pecah → kalah.
+    // Perkataan dah habis masuk: piston sendiri naik satu baris (kotak piston makin besar). BATU hanya bila salah padan.
     function drTolak(salah) {
       if (!dr || dr.tamat) return;
-      drMasuk();
+      if (!dr.giliran.length && !salah) {
+        dr.naik++;
+        DR_BAWAH = DR_DASAR + dr.naik * DR_BARIS;
+        drPiston(DR_BAWAH);
+      } else drMasuk();
       dr.tolakAnim = true;
-      while (dr.pecah < DR_BELON && drTinggi() > DR_RUANG + dr.pecah) { dr.letup = dr.pecah; dr.pecah++; }
+      while (dr.pecah < DR_BELON && drTinggi() + dr.naik > DR_RUANG + dr.pecah) { dr.letup = dr.pecah; dr.pecah++; }
       lukisDr();
       setTimeout(function() {
         if (!dr) return;
@@ -8364,7 +8369,7 @@
           'Kotak perkataan (English & BM bercampur) tersusun 2 lajur. Papan DURI sentiasa duduk atas timbunan. Di atas sekali ada 3 lapis BELON.',
           'PISTON di bawah tolak satu baris baru setiap ' + 6 + ' saat (titik di atas papan = masa). Timbunan naik → duri naik.',
           'Tekan perkataan English dan maksud BM yang sepadan → kedua-dua hilang, yang di atas jatuh (graviti), duri turun.',
-          'Salah pilih → piston terus tolak satu baris. Bila semua perkataan dah masuk, piston terus tolak BATU (tak boleh dibuang) — habiskan cepat!',
+          'Salah pilih → piston terus tolak satu baris. Bila semua perkataan dah masuk, piston sendiri naik setiap 6 saat — habiskan cepat! Salah pilih ketika itu tolak BATU (tak boleh dibuang).',
           'Setiap baris ada 1 English + 1 BM, pasangannya di baris lain. Setiap baris baru melengkapkan pasangan yang dah ada di skrin.',
           'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
           'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
