@@ -5723,6 +5723,9 @@
     .mw-pil span b { font-size: 0.95rem; }
     .mw-pil button { flex: 0 0 26px; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 9px; background: #000; color: #fff; font-family: inherit; font-size: 1.2rem; font-weight: bold; line-height: 26px; cursor: pointer; }
     #mini-dompet, #screen-kd > .dp-baki { display: none !important; }
+    /* Magic Exchange = page sendiri: tiada bar tempat, tiada titik, baki dah ada di bar mata wang */
+    #screen-mx .gm-tab, #screen-mx > .dp-baki, #screen-mx > .mx-titik { display: none !important; }
+    #mx-tajuk { flex: 1 1 auto; min-width: 0; overflow: hidden; visibility: hidden; }
     .kd-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 6px 0 20px; }
     .kd-item { position: relative; width: 31.5%; margin: 0 0 10px; padding: 6px 2px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.75rem; text-align: center; cursor: pointer; }
@@ -6079,8 +6082,10 @@
       <button type="button" data-gm-tab="mx" class="gm-aktif">EXCHANGE</button>
     </div>
     <div class="gm-alat">
-      <span class="gm-alat-tajuk">MAGIC EXCHANGE</span>
+      <button type="button" id="btn-mx-balik" class="gm-kecil">‹ Kembali</button>
+      <span class="gm-alat-tajuk" id="mx-tajuk">BIRU</span>
       <button type="button" class="gm-kecil" data-panduan="pd-duit">Panduan</button>
+      <button type="button" id="btn-mx-sejarah" class="gm-kecil">Sejarah</button>
       <button type="button" id="btn-mx-refund" class="gm-kecil">Refund</button>
     </div>
     <div class="pj-kotak"><div class="pj-watak" id="mx-watak"></div><div class="pj-cakap" id="mx-cakap"></div></div>
@@ -6156,8 +6161,11 @@
     </div>
     </div>
     </div>
+    <div class="dp-btn" id="mx-silang-baris" style="margin-top:14px;"><button type="button" id="btn-mx-silang">⇄</button></div>
+    <div id="mx-sejarah" style="display:none;">
     <div class="dp-tajuk">Sejarah tukaran</div>
     <div id="mx-log" style="padding-bottom:20px;"></div>
+    </div>
   </div>
   <div id="screen-kd" class="screen">
     <div class="status-bar" id="kd-status">KEDAI ITEM</div>
@@ -8487,7 +8495,8 @@
           'Unit asas ialah PERKATAAN: 1 perkataan = ' + EKO.KATA_COIN + ' coin. Satu level Jutawan ($1,000,000) = ' + EKO.JW_COIN + ' coin. Upah Pelabuhan = ' + EKO.UPAH_POS + ' coin setiap kontena.',
           'Kedai Pak Juta (dalam Jutawan): tukar Dollar → coin.',
           'Magic Exchange: tukar coin → Ringgit Biru (1.00 = ' + biru + ' coin) atau Ringgit Merah (1.00 = ' + merah + ' coin).',
-          'Titik ketiga (MERAH ⇄ BIRU): tukar terus Ringgit Merah ke Biru atau Biru ke Merah. 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah (nilai coin sama, tiada caj).',
+          'Tekan + pada Biru → page Ringgit Biru. Tekan + pada Merah → page Ringgit Merah. ‹ Kembali → balik ke tempat tadi. Sejarah → senarai tukaran.',
+          'Butang bawah panel: tukar terus Ringgit Merah → Biru (di page Biru) atau Biru → Merah (di page Merah). 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah (nilai coin sama, tiada caj).',
           'Ringgit BIRU untuk item godaan (cth Coca-Cola). Ringgit MERAH untuk item yang digalakkan (cth air soya), sebab itu lebih murah.',
           'Taip jumlah di mana-mana kotak, kotak sebelah dikira sendiri. Lebih dari baki → jadi jumlah maksimum. Maks = tukar semua.',
           'Kiraan boleh perpuluhan, tapi tukaran sekurang-kurangnya 1 coin / 0.01 Ringgit. Baki yang tak cukup satu unit kekal.',
@@ -8542,7 +8551,7 @@
     document.addEventListener('touchend', function(e) {
       if (!leret || !e.changedTouches || !e.changedTouches[0]) { leret = null; return; }
       var dx = e.changedTouches[0].clientX - leret.x, dy = e.changedTouches[0].clientY - leret.y;
-      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && leret.s) {
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && leret.s && leret.s.id !== 'screen-mx') {
         var p = leret.s.querySelectorAll('[data-mx-panel]'), urut = [], kini = 0, k;
         for (k = 0; k < p.length; k++) { urut.push(p[k].getAttribute('data-mx-panel')); if (p[k].style.display !== 'none') kini = k; }
         k = kini + (dx < 0 ? 1 : -1);
@@ -9011,7 +9020,7 @@
       }).catch(function(e) { dpSibuk = false; el('mxr-cakap').textContent = 'Gagal refund: ' + (e.message || e); });
     }
     el('btn-mx-refund').onclick = bukaMxr;
-    el('btn-mxr-balik').onclick = bukaMx;
+    el('btn-mxr-balik').onclick = function() { bukaMxJenis(MXJ.asal); };
     el('screen-mxr').addEventListener('click', function(e) {
       var t = e.target;
       if (!t || !t.getAttribute) return;
@@ -9394,9 +9403,43 @@
       j = t.getAttribute('data-mw-tambah');
       pus = null; jw = null;
       if (j === 'coin') { bukaMini(); return; }
-      bukaMx();
-      pilihPanel(el('screen-mx'), j);
+      var a = document.querySelector('.screen.active'), g = a && a.querySelector('.gm-tab .gm-aktif');
+      if (a && a.id !== 'screen-mx' && a.id !== 'screen-mxr') MXJ.balik = g ? g.getAttribute('data-gm-tab') : 'mini';
+      bukaMxJenis(j);
     });
+    // Magic Exchange sebagai page sendiri: page Biru / page Merah, butang ⇄ untuk tukar Merah↔Biru, Sejarah, Kembali
+    var MXJ = { asal: 'biru', panel: 'biru', sejarah: false, balik: 'mini' };
+    function mxPapar() {
+      var s = el('screen-mx'), sj = MXJ.sejarah, nm = MXJ.asal === 'biru' ? 'BIRU' : 'MERAH', lain = MXJ.asal === 'biru' ? 'Merah' : 'Biru';
+      pilihPanel(s, MXJ.panel);
+      s.querySelector('.mx-geser').style.display = sj ? 'none' : '';
+      s.querySelector('.pj-kotak').style.display = sj ? 'none' : '';
+      el('mx-silang-baris').style.display = sj ? 'none' : '';
+      el('mx-sejarah').style.display = sj ? '' : 'none';
+      el('btn-mx-sejarah').textContent = sj ? 'Tutup' : 'Sejarah';
+      el('mx-tajuk').textContent = sj ? 'SEJARAH' : MXJ.panel === 'silang' ? lain.toUpperCase() + ' → ' + nm : nm;
+      el('mx-status').textContent = 'MAGIC EXCHANGE · ' + (sj ? 'SEJARAH TUKARAN' : 'RINGGIT ' + nm);
+      var nmT = MXJ.asal === 'biru' ? 'Biru' : 'Merah';
+      el('btn-mx-silang').textContent = MXJ.panel === 'silang' ? 'Kembali: beli Ringgit ' + nmT + ' dengan coin' : 'Ada Ringgit ' + lain + '? Tukar ' + lain + ' → ' + nmT;
+    }
+    function bukaMxJenis(j) {
+      MXJ.asal = j === 'merah' ? 'merah' : 'biru'; MXJ.panel = MXJ.asal; MXJ.sejarah = false;
+      bukaMx();
+      mxPapar();
+    }
+    el('btn-mx-silang').onclick = function() {
+      if (MXJ.panel === 'silang') MXJ.panel = MXJ.asal;
+      else { MXJ.panel = 'silang'; pilihArah(MXJ.asal === 'biru' ? 'merah' : 'biru'); }
+      mxPapar();
+    };
+    el('btn-mx-sejarah').onclick = function() { MXJ.sejarah = !MXJ.sejarah; if (MXJ.sejarah) dpSejarah('mx-log'); mxPapar(); };
+    el('btn-mx-balik').onclick = function() {
+      var k = MXJ.balik;
+      if (k === 'menu') showScreen('screen-menu');
+      else if (k === 'pos') bukaBank(false);
+      else if (k === 'kd') bukaKd();
+      else bukaMini();
+    };
   })();
   </script>
 
