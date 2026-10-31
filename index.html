@@ -5603,7 +5603,7 @@
     .dr-duri svg, .dr-belon svg, .dr-rod svg { display: block; width: 100%; height: 100%; }
     /* Piston: batang di atas + kotak badan di bawah (masa, maklumat, dan REWARD bila tamat) */
     .dr-piston { bottom: 0; z-index: 2; }
-    .dr-rod { height: 30px; }
+    .dr-rod { height: 46px; }
     .dr-badan { box-sizing: border-box; margin: 0 7%; padding: 4px 6px; border: 3px solid #000; border-bottom: 0; border-radius: 8px 8px 0 0; background: #fff; overflow: hidden; text-align: center; }
     .dr-badan .dr-info { font-size: 0.85rem; font-weight: bold; white-space: pre-line; margin: 2px 0; }
     .dr-badan .mm-kira { margin: 4px 0 6px; }
@@ -7090,6 +7090,33 @@
         return g + '<circle cx="' + gx + '" cy="' + gy + '" r="2" fill="#000"/>';
       }
       s += gulung(xl, -1) + gulung(xr, 1);
+      // Kabel enjin penggulung: dari dinding kiri, ikut siling, turun ke penggulung kanan
+      s += '<path d="M4 ' + gy + ' V5 H' + (W - 4) + ' V' + gy + '" fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="5 3"/>';
+      // Dua orang lidi duduk atas kotak piston, setiap seorang jaga tuas (suis).
+      // Kanan: tuas PISTON (ON bila piston naik). Kiri: tuas PENGGULUNG (ON bila salah padan).
+      var Fy = Y(DR_BAWAH - 46);
+      function wayar(x0, x1, y) {
+        var w = 'M' + x0 + ' ' + y, n = Math.max(2, Math.round(Math.abs(x1 - x0) / 10)), dx = (x1 - x0) / n, j;
+        for (j = 0; j < n; j++) w += ' q' + (dx / 2).toFixed(1) + ' ' + (j % 2 ? 3 : -3) + ' ' + dx.toFixed(1) + ' 0';
+        return '<path d="' + w + '" fill="none" stroke="#000" stroke-width="1.5"/>';
+      }
+      function orang(xf, xt, arah, on) {
+        var cd = on ? 3 * arah : 0, bahu = Fy - 25, hujung = xt + (on ? 10 : -10) * arah;
+        return '<rect x="' + (xf - 6) + '" y="' + (Fy - 8) + '" width="12" height="8" fill="#fff" stroke="#000" stroke-width="1.5"/>' +
+          '<path d="M' + xf + ' ' + (Fy - 10) + ' L' + (xf + cd) + ' ' + bahu + ' M' + xf + ' ' + (Fy - 10) + ' L' + (xf + 8 * arah) + ' ' + (Fy - 11) + ' L' + (xf + 9 * arah) + ' ' + Fy +
+          ' M' + (xf + cd) + ' ' + (bahu + 3) + ' L' + hujung + ' ' + (Fy - 20) + '" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+          '<circle cx="' + (xf + cd) + '" cy="' + (bahu - 6) + '" r="5" fill="#fff" stroke="#000" stroke-width="2"/>' +
+          (on ? '<path d="M' + (xf + cd - 2) + ' ' + (bahu - 4) + ' q2 2 4 0" fill="none" stroke="#000" stroke-width="1.2"/>' : '') +
+          '<rect x="' + (xt - 7) + '" y="' + (Fy - 7) + '" width="14" height="7" fill="#000"/>' +
+          '<path d="M' + xt + ' ' + (Fy - 7) + ' L' + hujung + ' ' + (Fy - 20) + '" stroke="#000" stroke-width="2.5"/>' +
+          '<circle cx="' + hujung + '" cy="' + (Fy - 20) + '" r="3" fill="' + (on ? '#000' : '#fff') + '" stroke="#000" stroke-width="1.5"/>' +
+          '<text x="' + xt + '" y="' + (Fy - 1.5) + '" font-size="5" text-anchor="middle" fill="#fff" font-weight="bold">' + (on ? 'ON' : 'OFF') + '</text>';
+      }
+      var tk = Math.round(W * 0.84), tl = Math.round(W * 0.16);
+      // Wayar: tuas kanan → batang piston; tuas kiri → penggulung kiri
+      s += wayar(tk - 7, Math.round(W / 2) + 12, Fy - 2) +
+        '<path d="M' + (tl - 7) + ' ' + (Fy - 3) + ' C' + (tl - 20) + ' ' + (Fy - 3) + ' ' + (xl + gr + 14) + ' ' + gy + ' ' + (xl + gr) + ' ' + gy + '" fill="none" stroke="#000" stroke-width="1.5"/>';
+      s += orang(tk - 28, tk, 1, dr.tolakAnim) + orang(tl + 28, tl, -1, dr.tarikAnim);
       return '<svg class="dr-adegan" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
     }
     function svgDuri() {
@@ -7108,26 +7135,25 @@
       return '<svg viewBox="0 0 200 38" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
     }
     function svgPiston(tolak) {
-      return '<svg viewBox="0 0 200 30" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect x="14" y="0" width="172" height="6" fill="#000"/><rect x="90" y="6" width="20" height="24" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
-        '<path d="M90 14 H110 M90 22 H110" stroke="#000" stroke-width="1.5"/>' +
-        (tolak ? '<path d="M40 24 l8 -9 l8 9 M144 24 l8 -9 l8 9" fill="none" stroke="#000" stroke-width="3"/>' : '') + '</svg>';
+      return '<svg viewBox="0 0 200 46" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="14" y="0" width="172" height="6" fill="#000"/><rect x="90" y="6" width="20" height="40" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+        '<path d="M90 16 H110 M90 26 H110 M90 36 H110" stroke="#000" stroke-width="1.5"/></svg>';
     }
     // Saiz papan ikut skrin: piston duduk paling bawah skrin, ruang lebih jadi kotak badan piston
     function drUkur() {
       var p = el('dr-papan'), perlu = (DR_RUANG + DR_BELON) * DR_BARIS + 20, atas = p.getBoundingClientRect().top;
-      var h = Math.max(perlu + 96, Math.floor((window.innerHeight || 700) - atas - 4));
+      var h = Math.max(perlu + 110, Math.floor((window.innerHeight || 700) - atas - 4));
       p.style.height = h + 'px';
       DR_DASAR = DR_BAWAH = h - perlu;
       drPiston(DR_BAWAH);
     }
-    function drPiston(t) { el('dr-piston').style.height = t + 'px'; el('dr-badan').style.height = (t - 30) + 'px'; }
+    function drPiston(t) { el('dr-piston').style.height = t + 'px'; el('dr-badan').style.height = (t - 46) + 'px'; }
     // Tamat: kotak piston naik (jika perlu) supaya REWARD muat tanpa scroll.
     // Menang → BATU retak dan hancur dulu, duri turun atas piston. Kalah → timbunan naik bersama piston.
     function drBesar(menang) {
       el('dr-info').textContent = '';
       el('dr-masa').innerHTML = '';
-      var t = Math.max(DR_BAWAH, el('dr-tamat').offsetHeight + 30 + 70);
+      var t = Math.max(DR_BAWAH, el('dr-tamat').offsetHeight + 46 + 70);
       function naik() { DR_BAWAH = t; drPiston(t); lukisDr(); }
       if (!menang) { naik(); return; }
       var b = el('dr-lapis').querySelectorAll('.dr-batu'), i;
@@ -8419,6 +8445,7 @@
           'Setiap baris ada 1 English + 1 BM, pasangannya di baris lain. Setiap baris baru melengkapkan pasangan yang dah ada di skrin.',
           'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
           'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
+          'Orang lidi kanan jaga tuas PISTON, orang lidi kiri jaga tuas PENGGULUNG TALI.',
           'Kedai Perak (page Level): jual perak → coin. 1 g = ' + EKO.PERAK_COIN + ' coin. SR Duri berasingan (selang sama).'
         ]) +
         '<h3 id="pd-bank">PELABUHAN (Bank Perkataan)</h3>' + I([
