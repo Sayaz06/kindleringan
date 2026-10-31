@@ -9054,7 +9054,7 @@
           '<div class="mx-kata"><span><b>' + kata + '</b> perkataan</span><span class="mx-panah">' +
           '<button type="button" data-adm="' + k + '+">' + svgAnak(true) + '</button><button type="button" data-adm="' + k + '-">' + svgAnak(false) + '</button></span></div></div>';
       }
-      var h = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span>' + (ubah ? '<span>MOD ADMIN</span>' : '<button type="button" data-adm="buka">ditetapkan admin</button>') + '</div>' +
+      var h = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span>' + (ubah ? '<span>MOD ADMIN</span>' : '') + '</div>' +
         '<div class="mx-meter-isi">' + satu('b', 'Biru', b, cb) + satu('m', 'Merah', m, cm) + '</div>' +
         '<div class="mx-meter-kira">KALKULATOR · 1.00 Biru = <b>' + x.toFixed(2) + ' Merah</b> · 1.00 Merah = <b>' + (1 / x).toFixed(4) + ' Biru</b></div>';
       if (ADM.fasa === 'pin' || ADM.fasa === 'cipta') {
