@@ -5590,15 +5590,22 @@
     .jw-info { font-size: 0.85rem; text-align: center; margin: 6px 0; white-space: pre-line; min-height: 1.2em; }
     .jw-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 8px 0; }
     /* DURI: piston tolak perkataan ke atas, duri atas timbunan, 3 lapis belon */
-    .dr-papan { position: relative; height: 456px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; margin: 4px 0 8px; }
+    .dr-papan { position: relative; height: 456px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; margin: 4px 0 0; }
     .dr-k { position: absolute; width: 47%; height: 38px; padding: 0 4px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.95rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .dr-k.dr-pilih { background: #000; color: #fff; }
     .dr-k.dr-salah { border-style: dashed; border-width: 3px; }
     .dr-k.dr-batu { background: #888; color: #fff; border-color: #555; cursor: default; font-size: 0.7rem; letter-spacing: 2px; }
     .dr-duri, .dr-belon, .dr-piston { position: absolute; left: 0; right: 0; }
-    .dr-duri svg, .dr-belon svg, .dr-piston svg { display: block; width: 100%; height: 100%; }
-    .dr-masa { display: flex; justify-content: center; gap: 4px; margin: 0 0 4px; }
+    .dr-duri svg, .dr-belon svg, .dr-rod svg { display: block; width: 100%; height: 100%; }
+    /* Piston: batang di atas + kotak badan di bawah (masa, maklumat, dan REWARD bila tamat) */
+    .dr-piston { bottom: 0; z-index: 2; }
+    .dr-rod { height: 30px; }
+    .dr-badan { box-sizing: border-box; margin: 0 4px; padding: 4px 6px; border: 3px solid #000; border-bottom: 0; border-radius: 8px 8px 0 0; background: #fff; overflow: hidden; text-align: center; }
+    .dr-badan .dr-info { font-size: 0.85rem; font-weight: bold; white-space: pre-line; margin: 2px 0; }
+    .dr-badan .mm-kira { margin: 4px 0 6px; }
+    .dr-badan .btn { margin: 0; padding: 10px; }
+    .dr-masa { display: flex; justify-content: center; gap: 4px; margin: 2px 0 4px; }
     .dr-masa i { display: block; width: 14px; height: 8px; border: 2px solid #000; border-radius: 3px; }
     .dr-masa i.dr-isi { background: #000; }
     /* MEMORI: 12 kad (6 English + 6 BM), terbalikkan 2 kad satu langkah */
@@ -5971,15 +5978,22 @@
       <div class="mm-langkah"><b id="dr-belon-n">3</b><span>BELON</span></div>
       <button type="button" id="btn-dr-keluar" class="gm-kecil">Keluar</button>
     </div>
-    <div class="dr-masa" id="dr-masa"></div>
-    <div id="dr-papan" class="dr-papan"></div>
-    <div id="dr-info" class="jw-info"></div>
-    <div id="dr-tamat" style="display:none;border:3px solid #000;border-radius:10px;padding:10px;margin:6px 0;text-align:center;">
-      <div id="dr-skor" style="font-size:1.5rem;font-weight:bold;"></div>
-      <div id="dr-skor-sub" style="font-size:0.85rem;margin-top:4px;white-space:pre-line;"></div>
+    <div id="dr-papan" class="dr-papan">
+      <div id="dr-lapis"></div>
+      <div id="dr-piston" class="dr-piston">
+        <div id="dr-rod" class="dr-rod"></div>
+        <div id="dr-badan" class="dr-badan">
+          <div class="dr-masa" id="dr-masa"></div>
+          <div id="dr-info" class="dr-info"></div>
+          <div id="dr-tamat" style="display:none;">
+            <div id="dr-skor" style="font-size:1.2rem;font-weight:bold;"></div>
+            <div id="dr-skor-sub" style="font-size:0.85rem;white-space:pre-line;"></div>
+          </div>
+          <button id="btn-dr-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
+          <button id="btn-dr-baru" class="btn" style="display:none;">PUSINGAN BARU</button>
+        </div>
+      </div>
     </div>
-    <button id="btn-dr-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
-    <button id="btn-dr-baru" class="btn" style="display:none;">PUSINGAN BARU</button>
   </div>
   <div id="screen-dr-kedai" class="screen">
     <div class="status-bar">KEDAI PERAK</div>
@@ -7042,10 +7056,26 @@
       return '<svg viewBox="0 0 200 38" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
     }
     function svgPiston(tolak) {
-      var t = tolak ? 4 : 12;
-      return '<svg viewBox="0 0 200 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect x="20" y="0" width="160" height="5" fill="#000"/><rect x="92" y="' + (t - 7) + '" width="16" height="' + (36 - t) + '" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
-        '<rect x="70" y="24" width="60" height="12" fill="#000"/><path d="M60 18 l6 -6 l6 6 M128 18 l6 -6 l6 6" fill="none" stroke="#000" stroke-width="2.5"/></svg>';
+      return '<svg viewBox="0 0 200 30" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="4" y="0" width="192" height="6" fill="#000"/><rect x="90" y="6" width="20" height="24" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+        '<path d="M90 14 H110 M90 22 H110" stroke="#000" stroke-width="1.5"/>' +
+        (tolak ? '<path d="M40 24 l8 -9 l8 9 M144 24 l8 -9 l8 9" fill="none" stroke="#000" stroke-width="3"/>' : '') + '</svg>';
+    }
+    // Saiz papan ikut skrin: piston duduk paling bawah skrin, ruang lebih jadi kotak badan piston
+    function drUkur() {
+      var p = el('dr-papan'), perlu = (DR_RUANG + DR_BELON) * DR_BARIS + 20, atas = p.getBoundingClientRect().top;
+      var h = Math.max(perlu + 96, Math.floor((window.innerHeight || 700) - atas - 4));
+      p.style.height = h + 'px';
+      DR_BAWAH = h - perlu;
+      drPiston(DR_BAWAH);
+    }
+    function drPiston(t) { el('dr-piston').style.height = t + 'px'; el('dr-badan').style.height = (t - 30) + 'px'; }
+    // Tamat: kotak piston naik sedikit (jika perlu) supaya REWARD muat tanpa scroll
+    function drBesar() {
+      el('dr-info').textContent = '';
+      el('dr-masa').innerHTML = '';
+      var t = Math.max(DR_BAWAH, 238);
+      if (t !== DR_BAWAH) drPiston(t);
     }
     function drTinggi() { return Math.max(dr.kol[0].length, dr.kol[1].length); }
     function lukisDr() {
@@ -7061,9 +7091,9 @@
         h += '<button type="button" class="dr-k' + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '51.5' : '1.5') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
       }
       h += '<div class="dr-duri" style="bottom:' + (DR_BAWAH + drTinggi() * DR_BARIS) + 'px;height:14px;">' + svgDuri() + '</div>';
-      h += '<div class="dr-piston" style="bottom:0;height:' + DR_BAWAH + 'px;">' + svgPiston(dr.tolakAnim) + '</div>';
-      el('dr-papan').innerHTML = h;
-      var b = el('dr-papan').querySelectorAll('[data-dr-k]');
+      el('dr-lapis').innerHTML = h;
+      el('dr-rod').innerHTML = svgPiston(dr.tolakAnim);
+      var b = el('dr-lapis').querySelectorAll('[data-dr-k]');
       for (c = 0; c < b.length; c++) { k = dr.kad[+b[c].getAttribute('data-dr-k')]; b[c].textContent = k.batu ? 'BATU' : k.teks; }
       el('dr-belon-n').textContent = DR_BELON - dr.pecah;
       var m = '';
@@ -7080,8 +7110,10 @@
       el('dr-tamat').style.display = 'none';
       el('btn-dr-claim').style.display = 'none';
       el('btn-dr-baru').style.display = 'none';
-      el('dr-papan').innerHTML = '';
+      el('dr-lapis').innerHTML = '';
       el('dr-masa').innerHTML = '';
+      el('dr-rod').innerHTML = svgPiston(false);
+      drUkur();
       el('dr-perak').textContent = DR.perak + ' g';
       el('dr-belon-n').textContent = DR_BELON;
       el('dr-belon-n').parentNode.className = 'mm-langkah';
@@ -7200,7 +7232,7 @@
       if (!menang) {
         el('dr-skor').textContent = 'BELON PECAH!';
         el('dr-skor-sub').textContent = 'Tiada ganjaran · cuba Level ' + dr.lv + ' lagi';
-        try { el('dr-tamat').scrollIntoView(false); } catch (e) {}
+        drBesar();
         return;
       }
       el('dr-skor').textContent = 'MENANG LEVEL ' + dr.lv + '!';
@@ -7208,7 +7240,7 @@
         '<span class="mm-kol"><i>REWARD</i><span class="mm-kotak"><b>' + asas + ' g</b>' + DR_BIL + ' KATA</span></span><span class="mm-tanda">+</span>' +
         '<span class="mm-kol"><i>BONUS</i><span class="mm-kotak mm-baki"><b id="dr-bonus-g">0 g</b>BAKI BELON</span></span><span class="mm-tanda">=</span>' +
         '<span class="mm-kol"><i>JUMLAH</i><span class="mm-kotak mm-jumlah"><b id="dr-jum-g">' + asas + ' g</b>PERAK</span></span></div>';
-      try { el('dr-tamat').scrollIntoView(false); } catch (e) {}
+      drBesar();
       // Animasi BONUS: kotak BELON berkelip, setiap kelip +bonus satu belon
       var k = 0;
       (function main() {
