@@ -5606,6 +5606,13 @@
     .mm-k.mm-hilang { visibility: hidden; }
     .mm-k.mm-dedah { background: #fff; border-style: dashed; color: #555; }
     .mm-k.mm-dedah:before { display: none; }
+    /* Bonus baki: [kad] + [BAKI] = [JUMLAH] */
+    .mm-kira { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0 2px; font-size: 1.4rem; font-weight: bold; }
+    .mm-kotak { border: 2px solid #000; border-radius: 10px; padding: 4px 8px; min-width: 64px; font-size: 0.65rem; letter-spacing: 1px; }
+    .mm-kotak b { display: block; font-size: 1.3rem; letter-spacing: 0; }
+    .mm-kotak.mm-baki { border-style: dashed; border-width: 3px; }
+    .mm-kotak.mm-jumlah { background: #000; color: #fff; }
+    .mm-langkah.mm-tolak { background: #000; color: #fff; }
     .jw-l { width: 23%; height: 62px; margin: 0 0 8px; padding: 0; border: 2px solid #000; border-radius: 10px; background: #fff; color: #000;
       font-family: inherit; font-size: 1.4rem; font-weight: bold; line-height: 1.1; cursor: pointer; }
     .jw-l.jw-siap { background: #000; color: #fff; font-size: 0.8rem; }
@@ -6583,7 +6590,7 @@
       el('mml-bar-isi').style.width = Math.round(siap / 12 * 100) + '%';
       el('mml-status').textContent = 'MEMORI · Level ' + lv + ' · Emas ' + MM.emas + ' g';
       el('mml-info').textContent = 'Set ' + (mula / 12 + 1) + ' · ' + siap + '/12 level lulus · Emas ' + MM.emas + ' g' +
-        '\nSetiap level: buka semua ' + (MM_BIL * 2) + ' kad dalam ' + MM_LANGKAH + ' langkah → +' + (MM_BIL * EKO.MM_EMAS_KATA) + ' g emas';
+        '\nSetiap level: buka semua ' + (MM_BIL * 2) + ' kad dalam ' + MM_LANGKAH + ' langkah → +' + (MM_BIL * EKO.MM_EMAS_KATA) + ' g emas + BONUS BAKI';
       el('btn-mml-main').textContent = 'MAIN LEVEL ' + lv;
     }
     function mulaMm() {
@@ -6597,6 +6604,7 @@
       el('mm-grid').innerHTML = '';
       el('mm-emas').textContent = MM.emas + ' g';
       el('mm-langkah').textContent = MM_LANGKAH;
+      el('mm-langkah').parentNode.className = 'mm-langkah';
       el('mm-info').textContent = 'Menyusun kad...';
       var bank = senaraiBank();
       mmOverdue(bank, function(od) {
@@ -6670,9 +6678,11 @@
       }).catch(function() {});
     }
     // Menang: SR dikemas kini + level lulus + emas (disimpan terus di Firebase; CLAIM = animasi emas masuk)
+    // BONUS BAKI: setiap langkah berbaki = +EKO.MM_BONUS_BAKI g emas (animasi: langkah turun satu-satu, kotak BAKI naik)
     // Kalah: tiada ganjaran, SR tidak diubah (perkataan keluar semula), kad yang tinggal didedahkan untuk belajar
     function mmTamat(menang) {
-      var emas = MM_BIL * EKO.MM_EMAS_KATA, ubah = { main: firebase.firestore.FieldValue.increment(1), updatedAt: Date.now() }, i;
+      var asas = MM_BIL * EKO.MM_EMAS_KATA, baki = menang ? mm.langkah : 0, bonus = baki * EKO.MM_BONUS_BAKI, emas = asas + bonus;
+      var ubah = { main: firebase.firestore.FieldValue.increment(1), updatedAt: Date.now() }, i;
       mm.tamat = true;
       MM.main++;
       if (menang) {
@@ -6686,13 +6696,33 @@
       }
       kol('game_stat').doc('memori').set(ubah, { merge: true }).catch(function(e) { el('mm-info').textContent = 'Gagal simpan: ' + (e.message || e); });
       el('mm-tamat').style.display = 'block';
-      el('mm-skor').textContent = menang ? 'MENANG LEVEL ' + mm.lv + '!' : 'LANGKAH HABIS';
-      el('mm-skor-sub').textContent = menang ? 'Semua ' + MM_BIL + ' pasangan dijumpai dengan ' + mm.langkah + ' langkah berbaki.\nGanjaran: ' + emas + ' g emas untuk ' + MM_BIL + ' perkataan.' :
-        'Tiada ganjaran. Kad yang tinggal ditunjukkan di atas, ingat pasangannya!\nCuba Level ' + mm.lv + ' sekali lagi.';
-      el('btn-mm-claim').textContent = 'CLAIM ' + emas + ' g EMAS';
-      el('btn-mm-claim').style.display = menang ? '' : 'none';
-      el('btn-mm-baru').style.display = menang ? 'none' : '';
       el('mm-info').textContent = '';
+      el('btn-mm-claim').style.display = 'none';
+      el('btn-mm-baru').style.display = menang ? 'none' : '';
+      if (!menang) {
+        el('mm-skor').textContent = 'LANGKAH HABIS';
+        el('mm-skor-sub').textContent = 'Tiada ganjaran · cuba Level ' + mm.lv + ' lagi';
+        return;
+      }
+      el('mm-skor').textContent = 'MENANG LEVEL ' + mm.lv + '!';
+      el('mm-skor-sub').innerHTML = '<div class="mm-kira"><span class="mm-kotak"><b>' + asas + ' g</b>' + MM_BIL + ' KATA</span>+' +
+        '<span class="mm-kotak mm-baki"><b id="mm-baki-g">0 g</b>BAKI</span>=' +
+        '<span class="mm-kotak mm-jumlah"><b id="mm-jum-g">' + asas + ' g</b>EMAS</span></div>';
+      // Animasi BONUS BAKI: setiap langkah berbaki "dipindah" ke kotak BAKI
+      var k = 0;
+      (function main() {
+        if (k < baki) {
+          k++;
+          el('mm-langkah').textContent = baki - k;
+          el('mm-langkah').parentNode.className = 'mm-langkah mm-tolak';
+          el('mm-baki-g').textContent = (k * EKO.MM_BONUS_BAKI) + ' g';
+          el('mm-jum-g').textContent = (asas + k * EKO.MM_BONUS_BAKI) + ' g';
+          setTimeout(function() { el('mm-langkah').parentNode.className = 'mm-langkah'; setTimeout(main, 150); }, 250);
+          return;
+        }
+        el('btn-mm-claim').textContent = 'CLAIM ' + emas + ' g EMAS';
+        el('btn-mm-claim').style.display = '';
+      })();
     }
     el('btn-mm-claim').onclick = function() {
       if (!mm || !mm.emasBaru) return;
@@ -7751,6 +7781,7 @@
           '12 kad tertutup disusun rawak: 6 perkataan English + 6 maksud BM. Terbalikkan 2 kad = 1 langkah.',
           'Dua kad sepadan (English + maksudnya) → kedua-dua kad hilang. Tak sepadan → tertutup semula, tapi kedudukan tetap sama. Ingat kedudukannya!',
           'Ada ' + 12 + ' langkah sahaja. Jumpa semua 6 pasangan sebelum langkah habis → MENANG → CLAIM ' + (6 * EKO.MM_EMAS_KATA) + ' g emas, level lulus, perkataan masuk / naik SR Memori.',
+          'BONUS BAKI: setiap langkah yang tinggal = +' + EKO.MM_BONUS_BAKI + ' g emas. Menang sempurna (6 langkah, baki 6) = ' + (6 * EKO.MM_EMAS_KATA + 6 * EKO.MM_BONUS_BAKI) + ' g.',
           'Langkah habis → tiada ganjaran, SR tidak berubah, kad yang tinggal didedahkan supaya awak boleh ingat. Ulang level yang sama.',
           'Setiap game: paling banyak 3 dari SR Memori yang sudah sampai masa, selebihnya perkataan baru. Kurang dari 6 → kedai Memori TUTUP.',
           'Kedai Emas (page Level): jual emas → coin. 1 g = ' + EKO.EMAS_COIN + ' coin (1 level = ' + (6 * EKO.MM_EMAS_KATA * EKO.EMAS_COIN) + ' coin).',
@@ -7870,6 +7901,7 @@
     EKO.GP_SALAH_MAKS = 0;                                                        // Padan: lulus level hanya jika salah <= 0 (tiada salah)
     EKO.MM_EMAS_KATA = 1;                                                         // Memori: 1 perkataan = 1 g emas (1 level 6 perkataan = 6 g)
     EKO.EMAS_COIN = EKO.KATA_COIN / EKO.MM_EMAS_KATA;                             // Kedai Emas: 1 g emas = 10 coin
+    EKO.MM_BONUS_BAKI = 1;                                                        // Memori: BONUS BAKI +1 g emas setiap langkah berbaki (menang sempurna 6 langkah = 12 g, 2x)
     var DP = { coin: 0, biruSen: 0, merahSen: 0 }, dpSibuk = false;
 
     function rm(sen) { return (Math.floor(sen) / 100).toFixed(2); }
