@@ -5586,9 +5586,26 @@
     /* MINI GAME — JUTAWAN */
     .jw-tajuk { font-size: 1.8rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 6px 0; }
     .jw-bar { border: 2px solid #000; border-radius: 8px; height: 14px; overflow: hidden; margin: 4px 0; }
-    #jwl-bar-isi, #gpl-bar-isi { height: 100%; width: 0; background: #000; }
+    #jwl-bar-isi, #gpl-bar-isi, #mml-bar-isi { height: 100%; width: 0; background: #000; }
     .jw-info { font-size: 0.85rem; text-align: center; margin: 6px 0; white-space: pre-line; min-height: 1.2em; }
     .jw-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 8px 0; }
+    /* MEMORI: 12 kad (6 English + 6 BM), terbalikkan 2 kad satu langkah */
+    .mm-atas { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 8px; }
+    .mm-langkah { border: 3px solid #000; border-radius: 14px; padding: 2px 16px; text-align: center; }
+    .mm-langkah b { display: block; font-size: 2rem; line-height: 1.1; }
+    .mm-langkah span { font-size: 0.7rem; font-weight: bold; letter-spacing: 1px; }
+    .mm-emas { border: 2px solid #000; border-radius: 10px; padding: 4px 10px; font-size: 0.8rem; text-align: center; }
+    .mm-emas b { display: block; font-size: 1.1rem; }
+    .mm-grid { display: flex; flex-wrap: wrap; justify-content: space-between; }
+    .mm-k { position: relative; width: 31.5%; height: 66px; margin: 0 0 8px; padding: 2px; border: 2px solid #000; border-radius: 8px;
+      background: #000; color: #000; font-family: inherit; font-size: 0.9rem; font-weight: bold; cursor: pointer; word-break: normal; overflow: hidden; }
+    .mm-k:before { content: ''; position: absolute; left: 6px; top: 6px; right: 6px; bottom: 6px; border: 2px dashed #fff; border-radius: 4px; }
+    .mm-k.mm-pusing { -webkit-transform: scaleX(0.15); transform: scaleX(0.15); }
+    .mm-k.mm-buka { background: #fff; border-width: 3px; }
+    .mm-k.mm-buka:before { display: none; }
+    .mm-k.mm-hilang { visibility: hidden; }
+    .mm-k.mm-dedah { background: #fff; border-style: dashed; color: #555; }
+    .mm-k.mm-dedah:before { display: none; }
     .jw-l { width: 23%; height: 62px; margin: 0 0 8px; padding: 0; border: 2px solid #000; border-radius: 10px; background: #fff; color: #000;
       font-family: inherit; font-size: 1.4rem; font-weight: bold; line-height: 1.1; cursor: pointer; }
     .jw-l.jw-siap { background: #000; color: #fff; font-size: 0.8rem; }
@@ -5742,6 +5759,7 @@
     <div class="pd-isi-tab">
       <button type="button" class="gm-kecil" data-pd-ke="pd-mini">Kedai</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-padan">Padan</button>
+      <button type="button" class="gm-kecil" data-pd-ke="pd-memori">Memori</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-bank">Pelabuhan</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-jutawan">Jutawan</button>
       <button type="button" class="gm-kecil" data-pd-ke="pd-duit">Duit &amp; Exchange</button>
@@ -5809,6 +5827,59 @@
     </div>
     <button id="btn-gk-balik" class="btn" style="margin-top:12px;">Kembali ke Padan</button>
   </div>
+  <div id="screen-mm-level" class="screen">
+    <div class="status-bar" id="mml-status">MEMORI</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="menu">MENU</button>
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini" class="gm-aktif">MINI GAME</button>
+      <button type="button" data-gm-tab="mx">EXCHANGE</button>
+    </div>
+    <div class="gm-alat">
+      <span class="gm-alat-tajuk">MEMORI</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-memori">Panduan</button>
+      <button type="button" id="btn-mml-kedai" class="gm-kecil">Kedai Emas</button>
+      <button type="button" id="btn-mml-sr" class="gm-kecil">SR</button>
+    </div>
+    <div class="jw-bar"><div id="mml-bar-isi"></div></div>
+    <div id="mml-info" class="jw-info"></div>
+    <div id="mml-grid" class="jw-grid"></div>
+    <button id="btn-mml-main" class="btn btn-primary gm-utama">MAIN</button>
+  </div>
+  <div id="screen-mm" class="screen">
+    <div class="status-bar" id="mm-status">MEMORI</div>
+    <div class="mm-atas">
+      <div class="mm-emas">Emas<b id="mm-emas">-</b></div>
+      <div class="mm-langkah"><b id="mm-langkah">12</b><span>LANGKAH</span></div>
+      <button type="button" id="btn-mm-keluar" class="gm-kecil">Keluar</button>
+    </div>
+    <div id="mm-info" class="jw-info"></div>
+    <div id="mm-grid" class="mm-grid"></div>
+    <div id="mm-tamat" style="display:none;border:3px solid #000;border-radius:10px;padding:10px;margin:6px 0;text-align:center;">
+      <div id="mm-skor" style="font-size:1.5rem;font-weight:bold;"></div>
+      <div id="mm-skor-sub" style="font-size:0.85rem;margin-top:4px;white-space:pre-line;"></div>
+    </div>
+    <button id="btn-mm-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
+    <button id="btn-mm-baru" class="btn" style="display:none;">PUSINGAN BARU</button>
+  </div>
+  <div id="screen-mm-kedai" class="screen">
+    <div class="status-bar">KEDAI EMAS</div>
+    <div class="jw-tajuk" style="font-size:1.4rem;">KEDAI EMAS TAUKE MAS</div>
+    <div class="pj-kotak"><div class="pj-watak" id="mk-watak"></div><div class="pj-cakap" id="mk-cakap"></div></div>
+    <div class="dp-baki"><div>Emas (gram)<b id="mk-emas">-</b></div><div class="dp-gelap">Coin<b id="mk-coin">-</b></div></div>
+    <div class="dp-kadar" id="mk-kadar"></div>
+    <div class="dp-tukar">
+      <label>Emas (g)<input id="mk-in-emas" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+      <span class="dp-sama">=</span>
+      <label>Coin<input id="mk-in-coin" type="text" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+    </div>
+    <div class="dp-nota" id="mk-nota"></div>
+    <div class="dp-btn">
+      <button type="button" id="btn-mk-maks">Maks</button>
+      <button type="button" id="btn-mk-tukar" class="dp-utama">JUAL EMAS</button>
+    </div>
+    <button id="btn-mk-balik" class="btn" style="margin-top:12px;">Kembali ke Memori</button>
+  </div>
   <div id="screen-gsr" class="screen">
     <div class="status-bar" id="gs-status">SR GAME</div>
     <div id="gs-info"></div>
@@ -5831,6 +5902,7 @@
     <div id="mini-notis"></div>
     <button type="button" id="btn-mini-padan" class="mini-kad"><span class="mini-kedai" id="mini-padan-kedai"></span><span class="mini-teks">PADAN<span class="gb-sub" id="mini-padan-sub">Memuatkan...</span></span></button>
     <button type="button" id="btn-mini-jw" class="mini-kad"><span class="mini-kedai" id="mini-jw-kedai"></span><span class="mini-teks">JUTAWAN<span class="gb-sub" id="mini-jw-sub">Memuatkan...</span></span></button>
+    <button type="button" id="btn-mini-mm" class="mini-kad"><span class="mini-kedai" id="mini-mm-kedai"></span><span class="mini-teks">MEMORI<span class="gb-sub" id="mini-mm-sub">Memuatkan...</span></span></button>
     <div class="jw-info">Kedai buka bila ada stok perkataan. Stok datang dari kapal kargo di tab PELABUHAN.</div>
   </div>
   <div id="screen-jw-kedai" class="screen">
@@ -6441,6 +6513,259 @@
     el('btn-gk-maks').onclick = function() { tkTiket.maks(); };
     el('btn-gk-tukar').onclick = tukarTiket;
     el('btn-gk-balik').onclick = bukaGpLevel;
+
+    // ══ MEMORI: 12 kad (6 English + 6 BM) disusun rawak, terbalikkan 2 kad satu langkah, 12 langkah sahaja ══
+    // SR sendiri: users/{uid}/game_sr_memori · Stat: users/{uid}/game_stat/memori { main, lulus, emas }
+    var MM_KOL = 'game_sr_memori', MM_BIL = 6, MM_LANGKAH = 12;
+    var MM = { main: 0, lulus: 0, emas: 0, gsr: {} }, mm = null;
+    function mmMuat(cb) {
+      kol(MM_KOL).get().then(function(snap) {
+        var g = {};
+        snap.forEach(function(doc) { g[doc.id] = 1; });
+        MM.gsr = g;
+        return kol('game_stat').doc('memori').get();
+      }).then(function(s) {
+        var d = (s && s.exists) ? s.data() : {};
+        MM.main = d.main || 0; MM.lulus = d.lulus || 0; MM.emas = d.emas || 0;
+        cb(true);
+      }).catch(function(e) { cb(false, e); });
+    }
+    // SR Memori yang sudah sampai masa (dan masih ada dalam bank)
+    function mmOverdue(bank, cb) {
+      var dalam = {}, i;
+      for (i = 0; i < bank.length; i++) dalam[bank[i].id] = 1;
+      kol(MM_KOL).where('nextDueAt', '<=', Date.now()).orderBy('nextDueAt', 'asc').limit(MM_BIL).get().then(function(snap) {
+        var a = [];
+        snap.forEach(function(doc) { var d = doc.data(); if (dalam[doc.id]) a.push({ id: doc.id, en: d.en, bm: d.bm }); });
+        cb(a);
+      }).catch(function() { cb([]); });
+    }
+    // 6 perkataan: SR Memori sampai masa (maks 3) + perkataan baru · tiada 2 kad dengan maksud BM / English sama
+    function mmPilih(bank, overdue) {
+      var hasil = [], adaEn = {}, adaBm = {}, i, bilSr = 0;
+      function cuba(p) {
+        if (hasil.length >= MM_BIL) return false;
+        var en = samaKata(p.en), bm = samaKata(p.bm);
+        if (adaEn[en] || adaBm[bm]) return false;
+        adaEn[en] = 1; adaBm[bm] = 1; hasil.push(p);
+        return true;
+      }
+      for (i = 0; i < overdue.length && bilSr < BIL_SR; i++) if (cuba(overdue[i])) bilSr++;
+      for (i = 0; i < bank.length && hasil.length < MM_BIL; i++) if (!MM.gsr[bank[i].id]) cuba({ id: bank[i].id, en: bank[i].en, bm: bank[i].bm, baru: true });
+      for (i = 0; i < overdue.length && hasil.length < MM_BIL; i++) cuba(overdue[i]);
+      return hasil;
+    }
+    function bukaMmLevel() {
+      if (!currentUser) return;
+      mm = null;
+      showScreen('screen-mm-level');
+      el('mml-info').textContent = 'Memuatkan...';
+      muatLokal();
+      muatSR(false, function() {
+        muatBank(false, function(ok, e) {
+          if (!ok) { el('mml-info').textContent = 'Gagal memuat bank: ' + ((e && e.message) || ''); return; }
+          mmMuat(function(ok2, e2) {
+            if (!ok2) { el('mml-info').textContent = 'Gagal memuat: ' + ((e2 && e2.message) || ''); return; }
+            lukisMmLevel();
+          });
+        });
+      });
+    }
+    function lukisMmLevel() {
+      var lv = MM.lulus + 1, mula = Math.floor((lv - 1) / 12) * 12, siap = (lv - 1) % 12, h = '', n, i;
+      for (i = 1; i <= 12; i++) {
+        n = mula + i;
+        if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-mm-main="1">' + n + '</button>';
+        else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
+      }
+      el('mml-grid').innerHTML = h;
+      el('mml-bar-isi').style.width = Math.round(siap / 12 * 100) + '%';
+      el('mml-status').textContent = 'MEMORI · Level ' + lv + ' · Emas ' + MM.emas + ' g';
+      el('mml-info').textContent = 'Set ' + (mula / 12 + 1) + ' · ' + siap + '/12 level lulus · Emas ' + MM.emas + ' g' +
+        '\nSetiap level: buka semua ' + (MM_BIL * 2) + ' kad dalam ' + MM_LANGKAH + ' langkah → +' + (MM_BIL * EKO.MM_EMAS_KATA) + ' g emas';
+      el('btn-mml-main').textContent = 'MAIN LEVEL ' + lv;
+    }
+    function mulaMm() {
+      if (!currentUser) return;
+      showScreen('screen-mm');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      mm = null;
+      el('mm-tamat').style.display = 'none';
+      el('btn-mm-claim').style.display = 'none';
+      el('btn-mm-baru').style.display = 'none';
+      el('mm-grid').innerHTML = '';
+      el('mm-emas').textContent = MM.emas + ' g';
+      el('mm-langkah').textContent = MM_LANGKAH;
+      el('mm-info').textContent = 'Menyusun kad...';
+      var bank = senaraiBank();
+      mmOverdue(bank, function(od) {
+        var pas = mmPilih(bank, od), kad = [], i;
+        if (pas.length < MM_BIL) {
+          el('mm-info').textContent = 'KEDAI MEMORI TUTUP: TIADA STOK.\nPerlu ' + MM_BIL + ' perkataan, ada ' + pas.length + '.\nMuat kontena di tab PELABUHAN.';
+          el('btn-mm-baru').style.display = '';
+          return;
+        }
+        for (i = 0; i < pas.length; i++) { kad.push({ p: i, teks: pas[i].en }); kad.push({ p: i, teks: pas[i].bm }); }
+        mm = { pas: pas, kad: kocok(kad), buka: [], langkah: MM_LANGKAH, jumpa: 0, kunci: false, tamat: false, lv: MM.lulus + 1 };
+        var h = '';
+        for (i = 0; i < mm.kad.length; i++) h += '<button type="button" class="mm-k" data-mm-k="' + i + '"></button>';
+        el('mm-grid').innerHTML = h;
+        el('mm-info').textContent = '';
+        el('mm-status').textContent = 'MEMORI · Level ' + mm.lv + ' · Cari ' + MM_BIL + ' pasangan';
+      });
+    }
+    function mmKad(i) { return el('mm-grid').children[i]; }
+    function mmTutup(i) { var b = mmKad(i); b.className = 'mm-k'; b.textContent = ''; mm.kad[i].buka = false; }
+    function mmBuka(i) {
+      var b = mmKad(i);
+      mm.kad[i].buka = true;
+      b.className = 'mm-k mm-pusing';
+      setTimeout(function() { b.className = 'mm-k mm-buka'; b.textContent = mm.kad[i].teks; }, 90);
+    }
+    el('mm-grid').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-mm-k'))) t = t.parentNode;
+      if (!t || t === this || !mm || mm.kunci || mm.tamat) return;
+      var i = +t.getAttribute('data-mm-k'), k = mm.kad[i];
+      if (k.buka || k.hilang || mm.buka.length >= 2) return;
+      mmBuka(i);
+      mm.buka.push(i);
+      if (mm.buka.length < 2) return;
+      // Dua kad terbuka = satu langkah
+      mm.langkah--;
+      el('mm-langkah').textContent = mm.langkah;
+      var a = mm.buka[0], b = mm.buka[1];
+      mm.kunci = true;
+      if (mm.kad[a].p === mm.kad[b].p) {
+        var p = mm.pas[mm.kad[a].p];
+        el('mm-info').textContent = p.en + ' = ' + p.bm;
+        setTimeout(function() {
+          mm.kad[a].hilang = mm.kad[b].hilang = true;
+          mmKad(a).className = 'mm-k mm-hilang'; mmKad(b).className = 'mm-k mm-hilang';
+          mm.buka = []; mm.kunci = false; mm.jumpa++;
+          if (mm.jumpa >= MM_BIL) mmTamat(true);
+          else if (mm.langkah <= 0) mmTamat(false);
+        }, 650);
+      } else {
+        setTimeout(function() {
+          mmTutup(a); mmTutup(b);
+          mm.buka = []; mm.kunci = false;
+          if (mm.langkah <= 0) mmTamat(false);
+        }, 1000);
+      }
+    });
+    // Simpan SR Memori: baru → fasa 0 · SR → naik satu fasa
+    function mmSimpanSr(p) {
+      var ref = kol(MM_KOL).doc(p.id), now = Date.now();
+      if (p.baru) {
+        MM.gsr[p.id] = 1;
+        return ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(function() {});
+      }
+      ref.get().then(function(snap) {
+        if (!snap.exists) return;
+        var d = snap.data(), fasaBaru = (d.fasaSemasa || 0) + 1, sejarah = (d.sejarahFasa || []).slice();
+        sejarah.push({ fasa: d.fasaSemasa || 0, selesaiAt: now, labelFasa: getLabelFasaSR(d.fasaSemasa || 0) });
+        return ref.update({ fasaSemasa: fasaBaru, nextDueAt: now + getSRInterval(fasaBaru), sejarahFasa: sejarah, updatedAt: now });
+      }).catch(function() {});
+    }
+    // Menang: SR dikemas kini + level lulus + emas (disimpan terus di Firebase; CLAIM = animasi emas masuk)
+    // Kalah: tiada ganjaran, SR tidak diubah (perkataan keluar semula), kad yang tinggal didedahkan untuk belajar
+    function mmTamat(menang) {
+      var emas = MM_BIL * EKO.MM_EMAS_KATA, ubah = { main: firebase.firestore.FieldValue.increment(1), updatedAt: Date.now() }, i;
+      mm.tamat = true;
+      MM.main++;
+      if (menang) {
+        for (i = 0; i < mm.pas.length; i++) mmSimpanSr(mm.pas[i]);
+        MM.lulus++;
+        ubah.lulus = firebase.firestore.FieldValue.increment(1);
+        ubah.emas = firebase.firestore.FieldValue.increment(emas);
+        mm.emasBaru = emas;
+      } else {
+        for (i = 0; i < mm.kad.length; i++) if (!mm.kad[i].hilang) { mmKad(i).className = 'mm-k mm-dedah'; mmKad(i).textContent = mm.kad[i].teks; }
+      }
+      kol('game_stat').doc('memori').set(ubah, { merge: true }).catch(function(e) { el('mm-info').textContent = 'Gagal simpan: ' + (e.message || e); });
+      el('mm-tamat').style.display = 'block';
+      el('mm-skor').textContent = menang ? 'MENANG LEVEL ' + mm.lv + '!' : 'LANGKAH HABIS';
+      el('mm-skor-sub').textContent = menang ? 'Semua ' + MM_BIL + ' pasangan dijumpai dengan ' + mm.langkah + ' langkah berbaki.\nGanjaran: ' + emas + ' g emas untuk ' + MM_BIL + ' perkataan.' :
+        'Tiada ganjaran. Kad yang tinggal ditunjukkan di atas, ingat pasangannya!\nCuba Level ' + mm.lv + ' sekali lagi.';
+      el('btn-mm-claim').textContent = 'CLAIM ' + emas + ' g EMAS';
+      el('btn-mm-claim').style.display = menang ? '' : 'none';
+      el('btn-mm-baru').style.display = menang ? 'none' : '';
+      el('mm-info').textContent = '';
+    }
+    el('btn-mm-claim').onclick = function() {
+      if (!mm || !mm.emasBaru) return;
+      var lama = MM.emas, emas = mm.emasBaru;
+      mm.emasBaru = 0;
+      this.style.display = 'none';
+      MM.emas = lama + emas;
+      try { window.scrollTo(0, 0); } catch (e) {}
+      terbangCoin(el('mm-tamat'), el('mm-emas'), function() {
+        kiraNaik(el('mm-emas'), lama, MM.emas, function() { el('mm-emas').textContent = MM.emas + ' g'; el('btn-mm-baru').style.display = ''; });
+      });
+    };
+    el('btn-mm-baru').onclick = bukaMmLevel;
+    el('btn-mm-keluar').onclick = bukaMmLevel;
+    el('btn-mml-main').onclick = mulaMm;
+    el('mml-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-mm-main')) mulaMm(); });
+    el('btn-mml-sr').onclick = function() { bukaSenaraiGsr(MM_KOL, 'SR MEMORI', bukaMmLevel); };
+    el('btn-mini-mm').onclick = function() { masukKedai('mm', bukaMmLevel); };
+    // ── KEDAI EMAS (Tauke Mas): jual emas → coin ──
+    var tkEmas = pautTukar({
+      a: el('mk-in-emas'), b: el('mk-in-coin'), nota: el('mk-nota'),
+      maxA: function() { return MM.emas; },
+      keDapat: function(g) { return Math.floor(g * EKO.EMAS_COIN + 1e-9); },
+      tepat: function(g) { return g * EKO.EMAS_COIN; },
+      kos: function(c) { return Math.ceil(c / EKO.EMAS_COIN - 1e-9); },
+      bacaB: bacaNombor, rapiB: rapiNombor, tulisB: function(v) { return String(v); },
+      tulisKecil: fmtKecil, fmtTepat: function(x) { return fmtKecil(x) + ' coin'; },
+      fmtKos: function(v) { return v + ' g emas'; }, fmtDapat: function(v) { return v + ' coin'; }
+    });
+    function lukisMk() {
+      el('mk-emas').textContent = MM.emas;
+      el('mk-coin').textContent = DP.coin;
+      el('mk-kadar').textContent = 'Kadar: 1 g emas = ' + EKO.EMAS_COIN + ' coin · 1 level Memori = ' + (MM_BIL * EKO.MM_EMAS_KATA) + ' g = ' + (MM_BIL * EKO.MM_EMAS_KATA * EKO.EMAS_COIN) + ' coin';
+      tkEmas.kosong();
+    }
+    function bukaMk() {
+      if (!currentUser) return;
+      showScreen('screen-mm-kedai');
+      el('mk-emas').textContent = '-'; el('mk-coin').textContent = '-';
+      penjaga('mk-watak', 'emas', 'masuk', 'Memuatkan...', 'mk-cakap');
+      mmMuat(function(ok) {
+        if (!ok) { el('mk-cakap').textContent = 'Gagal memuat emas.'; return; }
+        dpMuat(function(ok2) {
+          if (!ok2) { el('mk-cakap').textContent = 'Gagal memuat dompet.'; return; }
+          lukisMk();
+          el('mk-cakap').textContent = MM.emas > 0 ? 'Mari, mari! Emas tulen awak saya beli dengan harga terbaik. Nak jual berapa gram?' :
+            'Selamat datang ke kedai emas! Awak belum ada emas. Menang satu level Memori dulu ya.';
+        });
+      });
+    }
+    function jualEmas() {
+      if (dpSibuk) return;
+      var kos = Math.ceil(tkEmas.dapat() / EKO.EMAS_COIN - 1e-9), dapat = kos * EKO.EMAS_COIN;
+      if (kos < 1 || kos > MM.emas) {
+        penjaga('mk-watak', 'emas', 'sedih', kos >= 1 ? 'Emas awak tak cukup!' : 'Sekurang-kurangnya 1 g emas (= ' + EKO.EMAS_COIN + ' coin).', 'mk-cakap');
+        return;
+      }
+      var b = db.batch();
+      dpSibuk = true;
+      b.set(kol('game_stat').doc('memori'), { emas: firebase.firestore.FieldValue.increment(-kos), updatedAt: Date.now() }, { merge: true });
+      b.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(dapat), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'emas>coin', kos + ' g emas → +' + dapat + ' coin');
+      b.commit().then(function() {
+        dpSibuk = false;
+        MM.emas -= kos; DP.coin += dapat;
+        lukisMk();
+        penjaga('mk-watak', 'emas', 'gembira', 'Terima kasih! ' + kos + ' g emas → +' + dapat + ' coin.', 'mk-cakap');
+      }).catch(function(e) { dpSibuk = false; el('mk-cakap').textContent = 'Gagal jual: ' + (e.message || e); });
+    }
+    el('btn-mml-kedai').onclick = bukaMk;
+    el('btn-mk-maks').onclick = function() { tkEmas.maks(); };
+    el('btn-mk-tukar').onclick = jualEmas;
+    el('btn-mk-balik').onclick = bukaMmLevel;
 
 
     // ══ PELABUHAN (Bank) — setiap laci = sebuah KAPAL KARGO, setiap pasangan = 1 KONTENA ══
@@ -7091,7 +7416,7 @@
       });
     }
     // Stok setiap kedai = perkataan yang boleh dimainkan sekarang (SR sampai masa + baru). Tak cukup → TUTUP.
-    var STOK = { padan: { ada: 0, perlu: 6, buka: false }, jw: { ada: 0, perlu: 15, buka: false } };
+    var STOK = { padan: { ada: 0, perlu: 6, buka: false }, jw: { ada: 0, perlu: 15, buka: false }, mm: { ada: 0, perlu: 6, buka: false } };
     function kiraStokMini() {
       var bank = senaraiBank(), dalam = {}, i, now = Date.now();
       for (i = 0; i < bank.length; i++) dalam[bank[i].id] = 1;
@@ -7103,7 +7428,13 @@
       }).then(function(s2) {
         var p2 = jwPilih(bank, od(s2));
         STOK.jw = { ada: p2.length, perlu: JW_BIL, buka: p2.length >= JW_BIL };
-        lukisKadMini();
+        mmMuat(function() {
+          mmOverdue(bank, function(od3) {
+            var p3 = mmPilih(bank, od3);
+            STOK.mm = { ada: p3.length, perlu: MM_BIL, buka: p3.length >= MM_BIL };
+            lukisKadMini();
+          });
+        });
       }).catch(function(e) { el('mini-padan-sub').textContent = 'Gagal semak stok: ' + (e.message || e); });
     }
     function lukisKadMini() {
@@ -7120,12 +7451,13 @@
       }
       satu('padan', 'btn-mini-padan', 'mini-padan-sub', 'mini-padan-kedai', 'Level ' + (GP.lulus + 1) + ' · stok ' + STOK.padan.ada + '/' + STOK.padan.perlu + ' · Tiket ' + GP.tiket);
       satu('jw', 'btn-mini-jw', 'mini-jw-sub', 'mini-jw-kedai', jwRingkas());
+      satu('mm', 'btn-mini-mm', 'mini-mm-sub', 'mini-mm-kedai', 'Level ' + (MM.lulus + 1) + ' · stok ' + STOK.mm.ada + '/' + STOK.mm.perlu + ' · Emas ' + MM.emas + ' g');
       try { localStorage.setItem('mini_kedai_v1', JSON.stringify(lama)); } catch (e) {}
     }
     function masukKedai(k, buka) {
       if (STOK[k].buka) { buka(); return; }
       var n = el('mini-notis');
-      n.textContent = 'Kedai ' + (k === 'jw' ? 'Jutawan' : 'Padan') + ' TUTUP – tiada stok (ada ' + STOK[k].ada + '/' + STOK[k].perlu +
+      n.textContent = 'Kedai ' + (k === 'jw' ? 'Jutawan' : k === 'mm' ? 'Memori' : 'Padan') + ' TUTUP – tiada stok (ada ' + STOK[k].ada + '/' + STOK[k].perlu +
         ' perkataan). Muat kontena dan belayarkan kapal di tab PELABUHAN untuk buka semula.';
       n.style.display = 'block';
     }
@@ -7415,6 +7747,15 @@
           'Bar atas: Level · SR game (jumlah perkataan dalam SR Padan) · Baru (belum masuk SR Padan).',
           'Butang SR: senarai SR Padan (sampai masa & belum sampai masa).'
         ]) +
+        '<h3 id="pd-memori">MEMORI (mini game)</h3>' + I([
+          '12 kad tertutup disusun rawak: 6 perkataan English + 6 maksud BM. Terbalikkan 2 kad = 1 langkah.',
+          'Dua kad sepadan (English + maksudnya) → kedua-dua kad hilang. Tak sepadan → tertutup semula, tapi kedudukan tetap sama. Ingat kedudukannya!',
+          'Ada ' + 12 + ' langkah sahaja. Jumpa semua 6 pasangan sebelum langkah habis → MENANG → CLAIM ' + (6 * EKO.MM_EMAS_KATA) + ' g emas, level lulus, perkataan masuk / naik SR Memori.',
+          'Langkah habis → tiada ganjaran, SR tidak berubah, kad yang tinggal didedahkan supaya awak boleh ingat. Ulang level yang sama.',
+          'Setiap game: paling banyak 3 dari SR Memori yang sudah sampai masa, selebihnya perkataan baru. Kurang dari 6 → kedai Memori TUTUP.',
+          'Kedai Emas (page Level): jual emas → coin. 1 g = ' + EKO.EMAS_COIN + ' coin (1 level = ' + (6 * EKO.MM_EMAS_KATA * EKO.EMAS_COIN) + ' coin).',
+          'SR Memori berasingan daripada SR Padan dan SR Jutawan (selang sama).'
+        ]) +
         '<h3 id="pd-bank">PELABUHAN (Bank Perkataan)</h3>' + I([
           'Setiap laci Bahasa yang sudah masuk SR Bahasa ialah sebuah KAPAL KARGO. Laci baru masuk SR → tekan "Segar".',
           'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik KOTAK pilihan (bawah kapal) untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
@@ -7527,6 +7868,8 @@
     EKO.GP_TIKET_KATA = 100;                                                      // Padan: 1 perkataan = 100 Tiket Arked (1 level 6 pasangan = 600 tiket)
     EKO.TIKET_COIN = EKO.GP_TIKET_KATA / EKO.KATA_COIN;                           // Kaunter Tiket: 10 tiket = 1 coin
     EKO.GP_SALAH_MAKS = 0;                                                        // Padan: lulus level hanya jika salah <= 0 (tiada salah)
+    EKO.MM_EMAS_KATA = 1;                                                         // Memori: 1 perkataan = 1 g emas (1 level 6 perkataan = 6 g)
+    EKO.EMAS_COIN = EKO.KATA_COIN / EKO.MM_EMAS_KATA;                             // Kedai Emas: 1 g emas = 10 coin
     var DP = { coin: 0, biruSen: 0, merahSen: 0 }, dpSibuk = false;
 
     function rm(sen) { return (Math.floor(sen) / 100).toFixed(2); }
@@ -7579,6 +7922,8 @@
         '<circle cx="40" cy="11" r="2.2" fill="none" stroke="#000" stroke-width="1.5"/><path d="M40 13 V20 M35.5 17 Q40 22.5 44.5 17 M37 15.5 H43" fill="none" stroke="#000" stroke-width="1.5"/>' :
         topi === 'juta' ?
         '<rect x="27" y="6" width="26" height="16" fill="#000"/><rect x="20" y="21" width="40" height="4" fill="#000"/><text x="40" y="18" font-size="10" text-anchor="middle" fill="#fff" font-weight="bold">$</text>' :
+        topi === 'emas' ?
+        '<rect x="24" y="7" width="32" height="17" rx="3" fill="#000"/><rect x="20" y="22" width="40" height="4" fill="#000"/><text x="40" y="19" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">EMAS</text>' :
         topi === 'tiket' ?
         '<path d="M22 24 Q40 6 58 24 Z" fill="#000"/><rect x="52" y="21" width="16" height="4" rx="2" fill="#000"/>' +
         '<rect x="29" y="11" width="22" height="9" fill="#fff" stroke="#000" stroke-width="1.2"/><text x="40" y="18" font-size="6" text-anchor="middle" font-weight="bold" fill="#000">TIKET</text>' :
