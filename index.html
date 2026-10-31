@@ -5773,6 +5773,12 @@
     .mx-meter.mx-ubah .mx-panah button { border-color: #000; }
     /* PANEL ADMIN (PIN): anak panah ▲▼ pada meter ubah kadar 1 perkataan setiap tekan */
     .adm { margin-top: 6px; padding-top: 6px; border-top: 3px solid #000; }
+    /* BANK PUSAT: meter kadar disorok dalam satu butang, masuk perlu PIN admin */
+    #mx-meter { padding: 0; border: 0; }
+    #mx-meter .adm { margin: 0; padding: 8px; border: 3px solid #000; border-radius: 10px; }
+    .mx-bp-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 8px; border: 2px solid #000; border-radius: 10px; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.85rem; font-weight: bold; letter-spacing: 2px; cursor: pointer; }
+    .mx-bp-btn svg { width: 20px; height: 20px; }
     .adm input { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 8px; border: 2px solid #000; border-radius: 6px; font-family: inherit; font-size: 1rem; }
     .adm-nota { font-size: 0.7rem; text-align: center; margin: 4px 0; }
     .mn-bar button { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; color: #000;
@@ -6327,6 +6333,14 @@
     <div class="hj-atas"><div><small>KAD SIHAT HARIAN</small><b id="hj-masa">-</b></div><div><small>RINGGIT MERAH</small><b id="hj-merah">-</b></div></div>
     <div id="kd-hijau"></div>
     <button id="btn-kd-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
+    <div style="height:30px;"></div>
+  </div>
+  <div id="screen-bp" class="screen">
+    <div class="status-bar">BANK PUSAT · ADMIN</div>
+    <div class="gm-alat"><button type="button" id="btn-bp-balik" class="gm-kecil">‹ Kembali</button></div>
+    <div class="jw-tajuk" style="font-size:1.4rem;">BANK PUSAT</div>
+    <div class="adm-nota" id="bp-msg">Tetapkan nilai Ringgit dalam perkataan. ▲▼ = 1 perkataan.</div>
+    <div class="mx-meter mx-ubah" id="bp-meter"></div>
     <div style="height:30px;"></div>
   </div>
   <div id="screen-mxr" class="screen">
@@ -9045,44 +9059,54 @@
       h += '<path d="M50 55 L' + (50 + 36 * Math.cos(a)).toFixed(1) + ' ' + (55 - 36 * Math.sin(a)).toFixed(1) + '" stroke="#000" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="55" r="4" fill="#000"/>';
       return '<svg viewBox="-8 -4 116 66" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
     }
+    var SVG_BP = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 9 L12 3 L22 9 Z" fill="#000"/><path d="M5 11 V19 M10 11 V19 M14 11 V19 M19 11 V19" stroke="#000" stroke-width="2.5"/><rect x="2" y="20" width="20" height="2.5" fill="#000"/></svg>';
+    // Page Exchange: butang BANK PUSAT sahaja (tekan → PIN admin → masuk page Bank Pusat)
     function lukisMeter() {
-      var ubah = ADM.fasa === 'ubah', b = ubah ? ADM.b : EKO.BIRU_KATA, m = ubah ? ADM.m : EKO.MERAH_KATA,
-        cb = b * EKO.KATA_COIN, cm = m * EKO.KATA_COIN, x = cb / cm;
+      var h;
+      if (ADM.fasa === 'pin' || ADM.fasa === 'cipta') {
+        h = '<div class="adm"><div class="adm-nota"><b>BANK PUSAT · ' + (ADM.fasa === 'cipta' ? 'CIPTA PIN ADMIN (4-6 digit)' : 'MASUKKAN PIN ADMIN') + '</b></div>' +
+          '<input id="adm-pin" type="password" inputmode="numeric" placeholder="PIN" autocomplete="off">' +
+          (ADM.fasa === 'cipta' ? '<input id="adm-pin2" type="password" inputmode="numeric" placeholder="Ulang PIN" autocomplete="off">' : '') +
+          '<div class="adm-nota" id="adm-msg"></div><div class="dp-btn"><button type="button" data-adm="tutup">Batal</button><button type="button" data-adm="masuk" class="dp-utama">' + (ADM.fasa === 'cipta' ? 'SIMPAN PIN' : 'MASUK') + '</button></div></div>';
+      } else h = '<button type="button" class="mx-bp-btn" data-adm="buka">' + SVG_BP + 'BANK PUSAT</button>';
+      el('mx-meter').innerHTML = h;
+    }
+    // Page Bank Pusat: meter jarum + ▲▼ + SIMPAN (PIN dah disemak masa masuk)
+    function lukisBp() {
+      var b = ADM.b, m = ADM.m, cb = b * EKO.KATA_COIN, cm = m * EKO.KATA_COIN, x = cb / cm, beza = b !== EKO.BIRU_KATA || m !== EKO.MERAH_KATA;
       function satu(k, nama, kata, coin) {
         return '<div>' + svgMeter(kata) + '<b class="mx-nama">' + nama.toUpperCase() + '</b>' +
           '<div class="mx-kotak">1.00 ' + nama + ' = ' + fmtC(coin) + ' coin</div>' +
           '<div class="mx-kata"><span><b>' + kata + '</b> perkataan</span><span class="mx-panah">' +
           '<button type="button" data-adm="' + k + '+">' + svgAnak(true) + '</button><button type="button" data-adm="' + k + '-">' + svgAnak(false) + '</button></span></div></div>';
       }
-      var h = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span>' + (ubah ? '<span>MOD ADMIN</span>' : '') + '</div>' +
+      el('bp-meter').innerHTML = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span><span>' + (beza ? 'BELUM DISIMPAN' : '') + '</span></div>' +
         '<div class="mx-meter-isi">' + satu('b', 'Biru', b, cb) + satu('m', 'Merah', m, cm) + '</div>' +
-        '<div class="mx-meter-kira">KALKULATOR · 1.00 Biru = <b>' + x.toFixed(2) + ' Merah</b> · 1.00 Merah = <b>' + (1 / x).toFixed(4) + ' Biru</b></div>';
-      if (ADM.fasa === 'pin' || ADM.fasa === 'cipta') {
-        h += '<div class="adm"><div class="adm-nota"><b>' + (ADM.fasa === 'cipta' ? 'CIPTA PIN ADMIN (4-6 digit)' : 'MASUKKAN PIN ADMIN') + '</b></div>' +
-          '<input id="adm-pin" type="password" inputmode="numeric" placeholder="PIN" autocomplete="off">' +
-          (ADM.fasa === 'cipta' ? '<input id="adm-pin2" type="password" inputmode="numeric" placeholder="Ulang PIN" autocomplete="off">' : '') +
-          '<div class="adm-nota" id="adm-msg"></div><div class="dp-btn"><button type="button" data-adm="tutup">Batal</button><button type="button" data-adm="masuk" class="dp-utama">' + (ADM.fasa === 'cipta' ? 'SIMPAN PIN' : 'MASUK') + '</button></div></div>';
-      } else if (ubah) {
-        h += '<div class="adm"><div class="adm-nota"><b>▲▼ = 1 perkataan</b> · Refund 1.00 Biru → ' + Math.floor(cb * (1 - EKO.CAJ_REFUND)) + ' coin' +
-          (m >= b ? '<br><b>Perhatian: Merah sama / lebih mahal dari Biru.</b>' : '') + '</div>' +
-          '<div class="adm-nota" id="adm-msg"></div><div class="dp-btn"><button type="button" data-adm="tutup">Batal</button><button type="button" data-adm="simpan" class="dp-utama">SIMPAN KADAR</button></div></div>';
-      }
-      el('mx-meter').className = 'mx-meter' + (ubah ? ' mx-ubah' : '');
-      el('mx-meter').innerHTML = h;
+        '<div class="mx-meter-kira">KALKULATOR · 1.00 Biru = <b>' + x.toFixed(2) + ' Merah</b> · 1.00 Merah = <b>' + (1 / x).toFixed(4) + ' Biru</b></div>' +
+        '<div class="adm"><div class="adm-nota">Refund 1.00 Biru → ' + Math.floor(cb * (1 - EKO.CAJ_REFUND)) + ' coin · Refund 1.00 Merah → ' + Math.floor(cm * (1 - EKO.CAJ_REFUND)) + ' coin' +
+        (m >= b ? '<br><b>Perhatian: Merah sama / lebih mahal dari Biru.</b>' : '') + '</div>' +
+        '<div class="dp-btn"><button type="button" data-adm="reset">Batal</button><button type="button" data-adm="simpan" class="dp-utama">SIMPAN KADAR</button></div></div>';
+    }
+    function bukaBp() {
+      ADM.fasa = ''; ADM.b = EKO.BIRU_KATA; ADM.m = EKO.MERAH_KATA;
+      showScreen('screen-bp');
+      el('bp-msg').textContent = 'Tetapkan nilai Ringgit dalam perkataan. ▲▼ = 1 perkataan.';
+      lukisBp();
+    }
+    el('btn-bp-balik').onclick = function() { bukaMxJenis(MXJ.asal); };
+    function klikAdm(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-adm'))) t = t.parentNode;
+      return (!t || t === this) ? '' : t.getAttribute('data-adm');
     }
     el('mx-meter').addEventListener('click', function(e) {
-      var t = e.target, a;
-      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-adm'))) t = t.parentNode;
-      if (!t || t === this) return;
-      a = t.getAttribute('data-adm');
-      // Anak panah sebelum masuk PIN → buka panel PIN dulu
-      if (/^[bm][+-]$/.test(a) && ADM.fasa !== 'ubah') { if (ADM.fasa) return; a = 'buka'; }
+      var a = klikAdm.call(this, e);
       if (a === 'buka') {
         kol('game_stat').doc('admin').get().then(function(s) {
           ADM.cincang = (s && s.exists) ? s.data().pinCincang || null : null;
           ADM.fasa = ADM.cincang ? 'pin' : 'cipta';
           lukisMeter();
-        }).catch(function(er) { el('mx-cakap').textContent = 'Gagal buka admin: ' + (er.message || er); });
+        }).catch(function(er) { el('mx-cakap').textContent = 'Gagal buka Bank Pusat: ' + (er.message || er); });
       } else if (a === 'tutup') { ADM.fasa = ''; lukisMeter(); }
       else if (a === 'masuk') {
         var p = String(el('adm-pin').value || '').replace(/\D/g, '');
@@ -9092,24 +9116,30 @@
           ADM.cincang = cincangPin(p);
           kol('game_stat').doc('admin').set({ pinCincang: ADM.cincang, updatedAt: Date.now() }, { merge: true }).catch(function() {});
         } else if (cincangPin(p) !== ADM.cincang) { el('adm-msg').textContent = 'PIN salah.'; el('adm-pin').value = ''; return; }
-        ADM.fasa = 'ubah'; ADM.b = EKO.BIRU_KATA; ADM.m = EKO.MERAH_KATA;
         lukisMeter();
+        bukaBp();
       }
-      else if (a === 'b+') { ADM.b++; lukisMeter(); }
-      else if (a === 'b-') { if (ADM.b > 1) ADM.b--; lukisMeter(); }
-      else if (a === 'm+') { ADM.m++; lukisMeter(); }
-      else if (a === 'm-') { if (ADM.m > 1) ADM.m--; lukisMeter(); }
+    });
+    el('bp-meter').addEventListener('click', function(e) {
+      var a = klikAdm.call(this, e);
+      if (a === 'b+') ADM.b++;
+      else if (a === 'b-') { if (ADM.b > 1) ADM.b--; }
+      else if (a === 'm+') ADM.m++;
+      else if (a === 'm-') { if (ADM.m > 1) ADM.m--; }
+      else if (a === 'reset') { ADM.b = EKO.BIRU_KATA; ADM.m = EKO.MERAH_KATA; el('bp-msg').textContent = 'Perubahan dibatalkan.'; }
       else if (a === 'simpan') {
-        var lb = EKO.BIRU_KATA, lm = EKO.MERAH_KATA, bt = db.batch();
-        bt.set(refDompet(), { kadarBiru: ADM.b, kadarMerah: ADM.m, updatedAt: Date.now() }, { merge: true });
-        dpLog(bt, 'admin>kadar', 'ADMIN: kadar Biru ' + lb + ' → ' + ADM.b + ' perkataan · Merah ' + lm + ' → ' + ADM.m + ' perkataan');
+        var lb = EKO.BIRU_KATA, lm = EKO.MERAH_KATA, nb = ADM.b, nm = ADM.m, bt = db.batch();
+        bt.set(refDompet(), { kadarBiru: nb, kadarMerah: nm, updatedAt: Date.now() }, { merge: true });
+        dpLog(bt, 'admin>kadar', 'BANK PUSAT: kadar Biru ' + lb + ' → ' + nb + ' perkataan · Merah ' + lm + ' → ' + nm + ' perkataan');
+        el('bp-msg').textContent = 'Menyimpan...';
         bt.commit().then(function() {
-          setKadar(ADM.b, ADM.m);
-          ADM.fasa = '';
-          lukisMx();
-          el('mx-cakap').textContent = 'Kadar baru disimpan: 1.00 Biru = ' + EKO.BIRU_KATA + ' perkataan · 1.00 Merah = ' + EKO.MERAH_KATA + ' perkataan.';
-        }).catch(function(er) { el('adm-msg').textContent = 'Gagal simpan: ' + (er.message || er); });
-      }
+          setKadar(nb, nm);
+          lukisBp();
+          el('bp-msg').textContent = 'Kadar baru disimpan: 1.00 Biru = ' + EKO.BIRU_KATA + ' perkataan · 1.00 Merah = ' + EKO.MERAH_KATA + ' perkataan.';
+        }).catch(function(er) { el('bp-msg').textContent = 'Gagal simpan: ' + (er.message || er); });
+        return;
+      } else return;
+      lukisBp();
     });
     function lukisMx() {
       el('mx-coin').textContent = DP.coin;
