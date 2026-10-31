@@ -5750,6 +5750,8 @@
     .cx-orang svg { display: block; width: 24px; height: 36px; }
     /* Kaunter tukar dalam setiap game arked dibuang → semua tukaran di BANK COIN */
     #btn-gpl-kaunter, #btn-jwl-kedai, #btn-mml-kedai, #btn-drl-kedai { display: none !important; }
+    /* Dalam game: bar tempat & bar mata wang disorok, keluar guna butang ‹ Arked / ‹ Keluar */
+    [data-dlm-game] .gm-tab, [data-dlm-game] .mw-bar { display: none !important; }
     .kd-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 6px 0 20px; }
     .kd-item { position: relative; width: 31.5%; margin: 0 0 10px; padding: 6px 2px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.75rem; text-align: center; cursor: pointer; }
@@ -9436,6 +9438,20 @@
           '<div class="mw-pil">' + svgMw('biru') + '<span><small>BIRU</small><b data-mw="biru">-</b></span><button type="button" data-mw-tambah="biru">+</button></div>' +
           '<div class="mw-pil">' + svgMw('merah') + '<span><small>MERAH</small><b data-mw="merah">-</b></span><button type="button" data-mw-tambah="merah">+</button></div>';
         s.insertBefore(bar, s.firstChild);
+      }
+    })();
+    // Page dalam game arked: sorok bar tempat + bar mata wang, tambah butang keluar di kiri bar alat
+    (function() {
+      var g = [['screen-gp-level', '‹ Arked', function() { bukaMini(); }], ['screen-jw-level', '‹ Arked', function() { bukaMini(); }],
+        ['screen-mm-level', '‹ Arked', function() { bukaMini(); }], ['screen-dr-level', '‹ Arked', function() { bukaMini(); }],
+        ['screen-game', '‹ Keluar', function() { bukaGpLevel(); }]], i, s, a, b;
+      for (i = 0; i < g.length; i++) {
+        s = el(g[i][0]); if (!s) continue;
+        s.setAttribute('data-dlm-game', '1');
+        a = s.querySelector('.gm-alat'); if (!a) continue;
+        b = document.createElement('button');
+        b.type = 'button'; b.className = 'gm-kecil'; b.textContent = g[i][1]; b.onclick = g[i][2];
+        a.insertBefore(b, a.firstChild);
       }
     })();
     document.addEventListener('click', function(e) {
