@@ -5748,6 +5748,8 @@
     .cx-kaunter svg { width: 46px; height: 60px; margin-bottom: 6px; }
     .cx-orang { position: absolute; left: 0; top: 0; width: 24px; height: 36px; z-index: 3; pointer-events: none; }
     .cx-orang svg { display: block; width: 24px; height: 36px; }
+    /* Kaunter tukar dalam setiap game arked dibuang → semua tukaran di BANK COIN */
+    #btn-gpl-kaunter, #btn-jwl-kedai, #btn-mml-kedai, #btn-drl-kedai { display: none !important; }
     .kd-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 6px 0 20px; }
     .kd-item { position: relative; width: 31.5%; margin: 0 0 10px; padding: 6px 2px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.75rem; text-align: center; cursor: pointer; }
@@ -6065,6 +6067,7 @@
         <div class="cx-kanan"><div class="cx-kaunter" id="cx-kaunter"></div></div>
       </div>
       <div class="cx-orang" id="cx-orang"></div>
+      <div class="cx-orang" id="cx-orang2"></div>
     </div>
     <div id="cx-info" class="jw-info"></div>
   </div>
@@ -6602,7 +6605,7 @@
       el('gp-papan').style.display = 'none';
       el('gp-tamat').style.display = 'block';
       el('gp-skor').textContent = lulus ? 'LULUS LEVEL ' + lv + '!' : 'BELUM LULUS';
-      el('gp-skor-sub').textContent = (lulus ? '+' + tiket + ' Tiket Arked (= ' + Math.floor(tiket / EKO.TIKET_COIN) + ' coin di Kaunter Tiket)' :
+      el('gp-skor-sub').textContent = (lulus ? '+' + tiket + ' Tiket Arked (= ' + Math.floor(tiket / EKO.TIKET_COIN) + ' coin di Bank Coin)' :
           pus.cubaanSalah + ' cubaan salah. Level ' + lv + ' mesti dipadankan tanpa salah. Cuba lagi!') + '\n' +
         (pus.bilSr ? pus.bilSr + ' SR game naik fasa' : '') +
         (pus.bilSr && pus.pasangan.length - pus.bilSr ? ' · ' : '') +
@@ -8477,7 +8480,7 @@
           'Tekan perkataan English (kotak hitam), kemudian maksudnya dalam BM (kotak putih). Pasangan betul akan hilang.',
           'LEVEL: setiap level = satu pusingan 6 pasangan. 12 level satu set. PUSINGAN BARU → page Level → MAIN LEVEL (atau tekan nombor level).',
           'Lulus level = keenam-enam pasangan dipadankan TANPA salah → +' + (6 * EKO.GP_TIKET_KATA) + ' Tiket Arked. Ada salah → ulang level yang sama (SR tetap dikemas kini).',
-          'Kaunter Tiket (page Level): tukar Tiket Arked → coin. ' + EKO.TIKET_COIN + ' tiket = 1 coin (1 level = ' + (6 * EKO.GP_TIKET_KATA / EKO.TIKET_COIN) + ' coin).',
+          'Tukar Tiket Arked → coin di BANK COIN (tekan + pada Coin). ' + EKO.TIKET_COIN + ' tiket = 1 coin (1 level = ' + (6 * EKO.GP_TIKET_KATA / EKO.TIKET_COIN) + ' coin).',
           'Setiap pusingan ada 6 pasangan: paling banyak 3 dari SR Padan yang sudah sampai masa, selebihnya perkataan baru (ikut susunan laluan, lama dahulu).',
           'Tiada SR sampai masa → keenam-enam pasangan ialah perkataan baru. Kurang dari 6 → kedai Padan TUTUP.',
           'Selepas dipadankan: perkataan baru masuk SR Padan (fasa 1, muncul semula selepas 20 minit). Perkataan SR naik satu fasa.',
@@ -8494,7 +8497,7 @@
           'BONUS BAKI: setiap langkah yang tinggal = +' + EKO.MM_BONUS_BAKI + ' g emas. Menang sempurna (6 langkah, baki 6) = ' + (6 * EKO.MM_EMAS_KATA + 6 * EKO.MM_BONUS_BAKI) + ' g.',
           'Langkah habis → tiada ganjaran, SR tidak berubah, kad yang tinggal didedahkan supaya awak boleh ingat. Ulang level yang sama.',
           'Setiap game: paling banyak 3 dari SR Memori yang sudah sampai masa, selebihnya perkataan baru. Kurang dari 6 → kedai Memori TUTUP.',
-          'Kedai Emas (page Level): jual emas → coin. 1 g = ' + EKO.EMAS_COIN + ' coin (1 level = ' + (6 * EKO.MM_EMAS_KATA * EKO.EMAS_COIN) + ' coin).',
+          'Tukar emas → coin di BANK COIN (tekan + pada Coin). 1 g = ' + EKO.EMAS_COIN + ' coin (1 level = ' + (6 * EKO.MM_EMAS_KATA * EKO.EMAS_COIN) + ' coin).',
           'SR Memori berasingan daripada SR Padan dan SR Jutawan (selang sama).'
         ]) +
         '<h3 id="pd-duri">DURI (mini game)</h3>' + I([
@@ -8506,7 +8509,7 @@
           'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
           'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
           'Orang lidi kanan jaga tuas PISTON, orang lidi kiri jaga tuas PENGGULUNG TALI.',
-          'Kedai Perak (page Level): jual perak → coin. 1 g = ' + EKO.PERAK_COIN + ' coin. SR Duri berasingan (selang sama).'
+          'Tukar perak → coin di BANK COIN (tekan + pada Coin). 1 g = ' + EKO.PERAK_COIN + ' coin. SR Duri berasingan (selang sama).'
         ]) +
         '<h3 id="pd-bank">PELABUHAN (Bank Perkataan)</h3>' + I([
           'Setiap laci Bahasa yang sudah masuk SR Bahasa ialah sebuah KAPAL KARGO. Laci baru masuk SR → tekan "Segar".',
@@ -8528,11 +8531,10 @@
           'Jawapan salah → perkataan itu TIDAK masuk / tidak diubah dalam SR, dan keluar semula sebagai soalan pertama permainan seterusnya.',
           'SR Jutawan berasingan daripada SR game Padan (selang sama).',
           'Pilihan jawapan salah tidak akan ada perkataan yang maksud BM-nya sama dengan soalan.',
-          '12 level satu set. Butang Kedai $ → tukar dollar jadi coin.'
+          '12 level satu set. Tukar dollar → coin di BANK COIN (tekan + pada Coin).'
         ]) +
         '<h3 id="pd-duit">DUIT, KEDAI &amp; EXCHANGE</h3>' + I([
           'Unit asas ialah PERKATAAN: 1 perkataan = ' + EKO.KATA_COIN + ' coin. Satu level Jutawan ($1,000,000) = ' + EKO.JW_COIN + ' coin. Upah Pelabuhan = ' + EKO.UPAH_POS + ' coin setiap kontena.',
-          'Kedai Pak Juta (dalam Jutawan): tukar Dollar → coin.',
           'Magic Exchange: tukar coin → Ringgit Biru (1.00 = ' + biru + ' coin) atau Ringgit Merah (1.00 = ' + merah + ' coin).',
           'Tekan + pada Biru → page Ringgit Biru. Tekan + pada Merah → page Ringgit Merah. ‹ Kembali → balik ke tempat tadi. Sejarah → senarai tukaran.',
           'Butang bawah panel: tukar terus Ringgit Merah → Biru (di page Biru) atau Biru → Merah (di page Merah). 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah (nilai coin sama, tiada caj).',
@@ -9491,34 +9493,39 @@
       { k: 'perak', nama: 'PERAK', dari: 'DURI', doc: 'duri', f: 'perak', ada: function() { return DR.perak; }, set: function(v) { DR.perak = v; },
         coin: function(a) { return Math.floor(a * EKO.PERAK_COIN + 1e-9); }, kos: function(c) { return Math.ceil(c / EKO.PERAK_COIN - 1e-9); }, fmt: function(a) { return a + ' g'; } }
     ];
-    var cxSibuk = false, cxBawa = '';
+    var cxSibuk = false;
+    // Dua orang lidi: pegawai BANK (duduk di bank) dan penjaga KAUNTER COIN (bertopi, berdiri di kaunter coin)
+    var CXO = { bank: { id: 'cx-orang', bawa: '', topi: false }, coin: { id: 'cx-orang2', bawa: '', topi: true } };
     function svgCxIkon(k) {
       var a = '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">';
       if (k === 'tiket') return a + '<path d="M1 5 H19 V8 A2 2 0 0 0 19 12 V15 H1 V12 A2 2 0 0 0 1 8 Z" fill="#fff" stroke="#000" stroke-width="1.8"/><path d="M7 5 V15" stroke="#000" stroke-dasharray="2 1.5"/></svg>';
       if (k === 'dolar') return a + '<circle cx="10" cy="10" r="8.5" fill="#fff" stroke="#000" stroke-width="1.8"/><text x="10" y="14.5" font-size="12" font-weight="bold" text-anchor="middle">$</text></svg>';
       return a + '<path d="M2 16 L5 7 H15 L18 16 Z" fill="' + (k === 'emas' ? '#000' : '#fff') + '" stroke="#000" stroke-width="1.8"/><path d="M6 10 H10" stroke="' + (k === 'emas' ? '#fff' : '#000') + '" stroke-width="1.2"/></svg>';
     }
-    // Pegawai bank: duduk / jalan (kaki bersilang) · bawa beg mata wang atau timbunan coin
-    function svgCxOrang(f, bawa) {
+    // Orang lidi: duduk / berdiri / jalan (kaki bersilang) · bawa beg mata wang, beg kecil baki, atau timbunan coin
+    function svgCxOrang(f, bawa, topi) {
       var kaki = f === 'duduk' ? 'M12 23 L18 24 L18 33' : f === 'j1' ? 'M12 23 L7 35 M12 23 L16 35' : 'M12 23 L10 35 M12 23 L14 35';
       var tgn = bawa ? 'M12 14 L19 17 M12 14 L19 19' : 'M12 14 L6 21 M12 14 L18 21', b = '';
       if (bawa === 'beg') b = '<path d="M17 15 Q16 13 18 12 H22 Q24 13 23 15 L24 24 H16 Z" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M18 12 L20 10 L22 12" fill="none" stroke="#000" stroke-width="1.2"/>';
+      if (bawa === 'baki') b = '<path d="M17.5 17 Q17 15.5 18.5 15 H21.5 Q23 15.5 22.5 17 L23 22 H17 Z" fill="#fff" stroke="#000" stroke-width="1.3"/>';
       if (bawa === 'coin') b = '<ellipse cx="20" cy="22" rx="4" ry="1.8" fill="#fff" stroke="#000" stroke-width="1.2"/><ellipse cx="20" cy="19.5" rx="4" ry="1.8" fill="#fff" stroke="#000" stroke-width="1.2"/><ellipse cx="20" cy="17" rx="4" ry="1.8" fill="#fff" stroke="#000" stroke-width="1.2"/>';
       return '<svg viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="6" r="4.5" fill="#fff" stroke="#000" stroke-width="1.8"/>' +
+        (topi ? '<path d="M7 3 H17 L15 0.5 H9 Z" fill="#000"/>' : '') +
         (f === 'duduk' ? '<rect x="7" y="23" width="9" height="3" fill="#000"/><path d="M8 26 V35 M15 26 V35" stroke="#000" stroke-width="1.5"/>' : '') +
         '<path d="M12 10.5 V23 ' + kaki + ' ' + tgn + '" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>' + b + '</svg>';
     }
-    function cxLetak(x, y, f) {
-      var o = el('cx-orang');
-      o.style.left = Math.round(x) + 'px'; o.style.top = Math.round(y) + 'px';
-      o.innerHTML = svgCxOrang(f, cxBawa);
+    function cxLetak(o, x, y, f) {
+      var e = el(o.id);
+      e.style.left = Math.round(x) + 'px'; e.style.top = Math.round(y) + 'px';
+      e.innerHTML = svgCxOrang(f, o.bawa, o.topi);
     }
     function cxTempat() {
       var bank = el('cx-bank'), kiri = el('cx-kiri'), kn = el('cx-kaunter'), L = el('cx-lantai').getBoundingClientRect();
       function r(e) { var b = e.getBoundingClientRect(); return { l: b.left - L.left, t: b.top - L.top, r: b.right - L.left, b: b.bottom - L.top, h: b.height }; }
       var rb = r(bank), rk = r(kiri), rn = r(kn);
-      return { duduk: { x: (rb.l + rb.r) / 2 - 12, y: rb.b + 4 }, lorong: (rk.r + rn.l) / 2 - 12, kiri: rk.r - 4, kanan: rn.l - 22, r: r };
+      return { duduk: { x: (rb.l + rb.r) / 2 - 12, y: rb.b + 4 }, jaga: { x: rn.l + 8, y: rn.b - 46 }, lorong: (rk.r + rn.l) / 2 - 12, kiri: rk.r - 4, kanan: rn.l - 22, dlm: rn.l + 8, r: r };
     }
+    function cxRehat() { var p = cxTempat(); CXO.bank.bawa = ''; CXO.coin.bawa = ''; cxLetak(CXO.bank, p.duduk.x, p.duduk.y, 'duduk'); cxLetak(CXO.coin, p.jaga.x, p.jaga.y, 'j2'); }
     function lukisCx() {
       var h = '', i, c, n;
       for (i = 0; i < CX.length; i++) {
@@ -9539,7 +9546,6 @@
       showScreen('screen-cx');
       el('cx-bank').querySelector('b').innerHTML = svgMw('coin') + '<span id="cx-coin">-</span>';
       el('cx-info').textContent = 'Memuatkan...';
-      cxBawa = '';
       jwLokal();
       var st = kol('game_stat'), dok = {};
       st.doc('padan').get().then(function(s) { dok.padan = s; return st.doc('jutawan').get(); })
@@ -9551,12 +9557,12 @@
           dpMuat(function(ok) {
             el('cx-info').textContent = ok ? 'Tekan COLLECT · pegawai bank akan ambil dan tukarkan jadi coin.' : 'Gagal memuat dompet.';
             lukisCx();
-            var p = cxTempat(); cxLetak(p.duduk.x, p.duduk.y, 'duduk');
+            cxRehat();
           });
         }).catch(function(e) { el('cx-info').textContent = 'Gagal memuat: ' + (e.message || e); });
     }
     // Jalan ikut titik-titik: setiap titik boleh ada aksi (berhenti sekejap). Bingkai pendek, sesuai e-ink.
-    function cxJalan(titik, siap) {
+    function cxJalan(o, titik, siap) {
       var bingkai = [], i, j, a = titik[0], q, n;
       for (i = 1; i < titik.length; i++) {
         q = titik[i]; n = Math.max(1, Math.round(Math.sqrt((q.x - a.x) * (q.x - a.x) + (q.y - a.y) * (q.y - a.y)) / 45));
@@ -9569,11 +9575,12 @@
         if (el('screen-cx').className.indexOf('active') === -1) { siap(); return; }
         var b = bingkai[k];
         if (b.aksi) b.aksi();
-        cxLetak(b.x, b.y, b.f);
+        cxLetak(o, b.x, b.y, b.f);
         k++;
         if (k < bingkai.length) setTimeout(main, b.lama || 140); else siap();
       })();
     }
+    // COLLECT: pegawai bank ambil SEMUA → kaunter coin tukar → baki (jika ada) dibawa balik oleh penjaga kaunter coin
     function cxCollect(kk) {
       if (cxSibuk || dpSibuk) return;
       var c = null, i;
@@ -9581,10 +9588,10 @@
       if (!c) return;
       cxSibuk = true;
       lukisCx();
-      var ref = kol('game_stat').doc(c.doc), lama = DP.coin, dapat = 0, kos = 0, baki = 0;
+      var ref = kol('game_stat').doc(c.doc), lama = DP.coin, dapat = 0, kos = 0, baki = 0, ada = 0;
       db.runTransaction(function(tx) {
         return tx.get(ref).then(function(s) {
-          var ada = (s && s.exists) ? s.data()[c.f] || 0 : 0;
+          ada = (s && s.exists) ? s.data()[c.f] || 0 : 0;
           dapat = c.coin(ada); kos = c.kos(dapat); baki = ada - kos;
           if (dapat < 1) return 0;
           var u = { updatedAt: Date.now() };
@@ -9598,23 +9605,40 @@
         if (!n) { cxSibuk = false; lukisCx(); el('cx-info').textContent = 'Tak cukup untuk 1 coin.'; return; }
         DP.coin = lama + dapat;
         el('cx-info').textContent = 'Pegawai bank pergi ke kaunter ' + c.nama + '...';
-        var p = cxTempat(), kt = el('cx-kiri').querySelector('[data-cx="' + kk + '"]'), rk = p.r(kt), y = rk.t + rk.h / 2 - 18;
-        cxJalan([
-          { x: p.duduk.x, y: p.duduk.y }, { x: p.lorong, y: p.duduk.y }, { x: p.lorong, y: y },
-          { x: p.kiri, y: y, aksi: function() { cxBawa = 'beg'; c.set(baki); kt.querySelector('.cx-k-nilai').textContent = c.fmt(baki); kt.querySelector('span').textContent = '= ' + c.coin(baki) + ' coin'; el('cx-info').textContent = 'Ambil ' + c.fmt(kos) + ' → bawa ke kaunter coin...'; } },
-          { x: p.lorong, y: y },
-          { x: p.kanan, y: y, aksi: function() { cxBawa = 'coin'; el('cx-info').textContent = 'Tukar jadi ' + dapat + ' coin → simpan dalam bank...'; } },
-          { x: p.lorong, y: y }, { x: p.lorong, y: p.duduk.y }, { x: p.duduk.x, y: p.duduk.y }
-        ], function() {
-          cxBawa = '';
-          var p2 = cxTempat(); cxLetak(p2.duduk.x, p2.duduk.y, 'duduk');
+        var p = cxTempat(), kt = el('cx-kiri').querySelector('[data-cx="' + kk + '"]'), rk = p.r(kt), y = rk.t + rk.h / 2 - 18, tunggu = 1;
+        function papar(v) { kt.querySelector('.cx-k-nilai').textContent = c.fmt(v); kt.querySelector('span').textContent = '= ' + c.coin(v) + ' coin'; }
+        function habis() {
+          if (--tunggu > 0) return;
+          cxRehat();
           kiraNaik(el('cx-coin'), lama, DP.coin, function() {
             el('cx-coin').textContent = DP.coin;
             cxSibuk = false;
             lukisCx();
-            el('cx-info').textContent = '+' + dapat + ' coin masuk bank (' + c.fmt(kos) + ' dari ' + c.dari + ').';
+            el('cx-info').textContent = '+' + dapat + ' coin masuk bank (' + c.fmt(kos) + ' dari ' + c.dari + ')' + (baki > 0 ? ' · baki ' + c.fmt(baki) + ' dihantar balik.' : '.');
           });
-        });
+        }
+        // Penjaga kaunter coin turun ke paras kaunter dulu, tunggu pegawai bank
+        cxJalan(CXO.coin, [{ x: p.jaga.x, y: p.jaga.y }, { x: p.dlm, y: y }], function() {});
+        cxJalan(CXO.bank, [
+          { x: p.duduk.x, y: p.duduk.y }, { x: p.lorong, y: p.duduk.y }, { x: p.lorong, y: y },
+          { x: p.kiri, y: y, aksi: function() { CXO.bank.bawa = 'beg'; c.set(baki); papar(0); el('cx-info').textContent = 'Ambil semua ' + c.fmt(ada) + ' → bawa ke kaunter coin...'; } },
+          { x: p.lorong, y: y },
+          { x: p.kanan, y: y, aksi: function() {
+            CXO.bank.bawa = 'coin';
+            el('cx-info').textContent = 'Tukar jadi ' + dapat + ' coin' + (baki > 0 ? ' · baki ' + c.fmt(baki) + ' dihantar balik ke kaunter ' + c.nama : '') + '...';
+            if (baki > 0) {
+              tunggu++;
+              CXO.coin.bawa = 'baki';
+              // Penjaga kaunter coin hantar baki balik ke kaunter kiri, kemudian kembali ke kaunter coin
+              cxJalan(CXO.coin, [
+                { x: p.dlm, y: y }, { x: p.lorong + 10, y: y + 10 },
+                { x: p.kiri, y: y + 10, aksi: function() { CXO.coin.bawa = ''; papar(baki); } },
+                { x: p.lorong + 10, y: y + 10 }, { x: p.dlm, y: y }, { x: p.jaga.x, y: p.jaga.y }
+              ], habis);
+            }
+          } },
+          { x: p.lorong, y: y }, { x: p.lorong, y: p.duduk.y }, { x: p.duduk.x, y: p.duduk.y }
+        ], habis);
       }).catch(function(e) { cxSibuk = false; lukisCx(); el('cx-info').textContent = 'Gagal collect: ' + ((e && e.message) || e); });
     }
     el('cx-kiri').addEventListener('click', function(e) {
