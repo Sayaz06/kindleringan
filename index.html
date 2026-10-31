@@ -5855,6 +5855,9 @@
     .kd-item .kd-qty { position: absolute; top: -8px; right: -6px; min-width: 24px; height: 24px; padding: 0 4px; border-radius: 12px; background: #000; color: #fff; font-size: 0.85rem; font-weight: bold; line-height: 24px; }
     .kd-item .kd-tag { display: inline-block; margin-top: 2px; padding: 0 5px; border: 1.5px solid #000; border-radius: 6px; font-style: normal; font-size: 0.6rem; font-weight: bold; }
     .kd-item.kd-tambah, .kd-ubah .kd-item { border-style: dashed; }
+    /* SEDEKAH: kotak tetap di Kedai Merah & Biru, jumlah bebas (melebihi baki → jadi baki maksimum) */
+    .kd-item.kd-sedekah, .kd-ubah .kd-item.kd-sedekah { border-style: solid; border-width: 3px; }
+    .kd-sd-nota { font-size: 0.75rem; min-height: 1.1em; margin: 2px 0 6px; }
     .kd-troli { border: 3px solid #000; border-radius: 10px; padding: 8px; margin: 8px 0; }
     .kd-troli-atas { font-size: 0.85rem; margin-bottom: 6px; }
     .kd-troli-isi { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
@@ -6396,6 +6399,16 @@
         <button type="button" id="btn-kd-batal">Batal</button>
         <button type="button" id="btn-kd-padam">Padam</button>
         <button type="button" id="btn-kd-simpan" class="dp-utama">SIMPAN</button>
+      </div>
+    </div>
+    <div id="kd-sedekah" class="kd-borang" style="display:none;">
+      <div class="dp-tajuk" id="kd-sd-tajuk" style="margin-top:0;">SEDEKAH</div>
+      <label>Jumlah sedekah (Ringgit <span id="kd-sd-duit">Merah</span>)<input id="kd-in-sedekah" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>
+      <div class="kd-sd-nota" id="kd-sd-nota"></div>
+      <div class="dp-btn">
+        <button type="button" id="btn-sd-batal">Batal</button>
+        <button type="button" id="btn-sd-maks">Maks</button>
+        <button type="button" id="btn-sd-beri" class="dp-utama">SEDEKAH</button>
       </div>
     </div>
     <div id="kd-troli" class="kd-troli" style="display:none;"></div>
@@ -9013,6 +9026,7 @@
           'KEDAI MERAH: barang ikut harga dunia sebenar, bayar Ringgit Merah. KEDAI BIRU: barang reward, bayar Ringgit Biru.',
           'KEDAI HIJAU: barang kesihatan, bayar Ringgit Merah. Tanda 6 barang sebagai KAD STICKER.',
           'Tekan barang = masuk troli (tekan nama dalam troli untuk kurangkan). BAYAR = tolak dari dompet.',
+          'SEDEKAH (Kedai Merah & Biru): tekan kotak SEDEKAH, taip apa-apa jumlah. Jumlah melebihi baki → ditukar sendiri jadi baki maksimum (cth baki 1.00, taip 2.00 → jadi 1.00). Direkod dalam Sejarah tukaran.',
           'Beli barang kad → petak itu dapat sticker. Kad reset setiap 12 malam.',
           'Pulangan (Ringgit Merah) dari belanja Kedai Hijau hari itu: 3/6 sticker = ' + Math.round(EKO.HJ_SEPARUH * 100) + '% · 6/6 = ' + Math.round(EKO.HJ_PENUH * 100) + '% · kad penuh ' + EKO.HJ_STREAK_HARI + ' hari berturut = ' + Math.round(EKO.HJ_STREAK * 100) + '%. Tekan CLAIM.',
           'Had pulangan sehari = ' + EKO.HJ_HAD_X + '× Ringgit Merah yang awak tukar dari coin hari itu (dari belajar). Refund Merah mengurangkan had.'
@@ -9796,9 +9810,10 @@
         h += '<button type="button" class="kd-item" data-kd-item="' + it[i].id + '">' + (tr[it[i].id] ? '<span class="kd-qty">' + tr[it[i].id] + '</span>' : '') +
           svgIkon(it[i].ikon) + '<b>' + escKapal(it[i].nama) + '</b>' + rm(it[i].sen) + (k === 'hijau' && it[i].kad ? '<br><i class="kd-tag">KAD</i>' : '') + '</button>';
       }
+      if (k !== 'hijau') h += '<button type="button" class="kd-item kd-sedekah" data-kd-sedekah="1">' + SVG_SEDEKAH + '<b>SEDEKAH</b>apa-apa jumlah</button>';
       h += '<button type="button" class="kd-item kd-tambah" data-kd-tambah="1">' + svgIkon('tambah') + '<b>TAMBAH</b>barang baru</button>';
-      i = it.length % 3;
-      if (i === 1) h += '<span class="kd-item" style="visibility:hidden;"></span>';
+      i = (it.length + 1 + (k !== 'hijau' ? 1 : 0)) % 3;
+      if (i === 2) h += '<span class="kd-item" style="visibility:hidden;"></span>';
       el('kd-grid').innerHTML = h;
       el('kd-grid').className = 'kd-grid' + (KD.ubah ? ' kd-ubah' : '');
       lukisTroli();
@@ -9841,6 +9856,7 @@
       KD.edit = it || {}; KD.sahPadam = false;
       KD.ikon = it ? it.ikon : (k === 'hijau' ? 'buah' : k === 'biru' ? 'hadiah' : 'buku');
       KD.kad = it ? !!it.kad : (k === 'hijau' && kadItem().length < KD_KAD);
+      el('kd-sedekah').style.display = 'none';
       el('kd-borang-tajuk').textContent = (it ? 'UBAH BARANG · ' : 'TAMBAH BARANG · ') + KD_NAMA[k].split(' · ')[0];
       el('kd-borang-duit').textContent = kdDuitNama(k);
       el('kd-in-nama').value = it ? it.nama : '';
@@ -9853,7 +9869,59 @@
       el('kd-info').textContent = '';
       try { el('kd-borang').scrollIntoView(true); } catch (e) {}
     }
-    function tutupBorang() { KD.edit = null; el('kd-borang').style.display = 'none'; }
+    function tutupBorang() { KD.edit = null; el('kd-borang').style.display = 'none'; el('kd-sedekah').style.display = 'none'; }
+    // ── SEDEKAH (Kedai Merah & Biru): taip apa-apa jumlah, lebih dari baki → ditukar jadi baki maksimum ──
+    var SVG_SEDEKAH = '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M20 21 C12 15 8 11 11 7 C13.5 4 17.5 5 20 8.5 C22.5 5 26.5 4 29 7 C32 11 28 15 20 21 Z" fill="#000"/>' +
+      '<path d="M3 27 H11 L17 29 H24 Q26 29 26 31 Q26 33 24 33 H17 M26 31 L32 27 Q36 26 35 29 L27 36 H11 L3 36" fill="none" stroke="#000" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+    function sdBaki() { return DP[kdDuitF(KD.kedai)] || 0; }
+    function sdSemak() {
+      var e = el('kd-in-sedekah'), v = rapiSen(e.value), baki = sdBaki();
+      if (bacaSen(v) > baki) { v = rm(baki); el('kd-sd-nota').textContent = 'Melebihi baki → ditukar ke jumlah maksimum ' + rm(baki) + '.'; }
+      else el('kd-sd-nota').textContent = 'Baki Ringgit ' + kdDuitNama(KD.kedai) + ': ' + rm(baki);
+      if (v !== e.value) e.value = v;
+    }
+    function bukaSedekah() {
+      tutupBorang();
+      el('kd-sd-tajuk').textContent = 'SEDEKAH · ' + KD_NAMA[KD.kedai].split(' · ')[0];
+      el('kd-sd-duit').textContent = kdDuitNama(KD.kedai);
+      el('kd-in-sedekah').value = '';
+      el('kd-sd-nota').textContent = 'Baki Ringgit ' + kdDuitNama(KD.kedai) + ': ' + rm(sdBaki());
+      el('kd-sedekah').style.display = 'block';
+      el('kd-info').textContent = '';
+      try { el('kd-sedekah').scrollIntoView(true); } catch (e) {}
+    }
+    function beriSedekah() {
+      if (kdSibuk) return;
+      sdSemak();
+      var k = KD.kedai, f = kdDuitF(k), nama = kdDuitNama(k), sen = Math.min(bacaSen(el('kd-in-sedekah').value), sdBaki());
+      if (sen < 1) { el('kd-sd-nota').textContent = sdBaki() < 1 ? 'Ringgit ' + nama + ' kosong. Tekan + pada Ringgit ' + nama + ' di atas.' : 'Tulis jumlah sedekah.'; return; }
+      kdSibuk = true;
+      el('kd-sd-nota').textContent = 'Menghantar sedekah...';
+      db.runTransaction(function(tx) {
+        return tx.get(refDompet()).then(function(sd) {
+          var d = (sd && sd.exists) ? sd.data() : {}, n = Math.min(sen, d[f] || 0), ub = { updatedAt: Date.now() };
+          if (n < 1) throw new Error('KURANG');
+          ub[f] = firebase.firestore.FieldValue.increment(-n);
+          tx.set(refDompet(), ub, { merge: true });
+          tx.set(kol('dompet_log').doc(), { jenis: 'sedekah>' + k, ket: 'SEDEKAH (' + KD_NAMA[k].split(' · ')[0] + ') → -' + rm(n) + ' ' + nama, at: Date.now() });
+          return n;
+        });
+      }).then(function(n) {
+        kdSibuk = false;
+        DP[f] -= n;
+        tutupBorang();
+        el('kd-info').textContent = 'Terima kasih! Sedekah ' + rm(n) + ' Ringgit ' + nama + ' diterima. Semoga diberkati.';
+        lukisKd();
+      }).catch(function(e) {
+        kdSibuk = false;
+        el('kd-sd-nota').textContent = e && e.message === 'KURANG' ? 'Ringgit ' + nama + ' tak cukup.' : 'Gagal: ' + ((e && e.message) || e);
+        dpMuat(function() { lukisKd(); });
+      });
+    }
+    el('kd-in-sedekah').addEventListener('input', sdSemak);
+    el('btn-sd-maks').onclick = function() { el('kd-in-sedekah').value = rm(sdBaki()); sdSemak(); };
+    el('btn-sd-batal').onclick = function() { tutupBorang(); };
+    el('btn-sd-beri').onclick = beriSedekah;
     function simpanBarang() {
       if (!KD.edit) return;
       var k = KD.kedai, nama = String(el('kd-in-nama').value || '').replace(/^\s+|\s+$/g, '').slice(0, 24), sen = bacaSen(el('kd-in-harga').value), id = KD.edit.id, i, nKad = 0;
@@ -9986,7 +10054,7 @@
     el('screen-kd').addEventListener('click', function(e) {
       var t = e.target, a;
       while (t && t !== this && !(t.getAttribute && (t.getAttribute('data-kd-pilih') || t.getAttribute('data-kd-item') || t.getAttribute('data-kd-tambah') ||
-        t.getAttribute('data-kd-kurang') || t.getAttribute('data-kd-kosong') || t.getAttribute('data-kd-bayar') || t.getAttribute('data-kd-ikon')))) t = t.parentNode;
+        t.getAttribute('data-kd-kurang') || t.getAttribute('data-kd-kosong') || t.getAttribute('data-kd-bayar') || t.getAttribute('data-kd-ikon') || t.getAttribute('data-kd-sedekah')))) t = t.parentNode;
       if (!t || t === this) return;
       if ((a = t.getAttribute('data-kd-pilih'))) { KD.kedai = a; tutupBorang(); el('kd-info').textContent = ''; lukisKd(); }
       else if ((a = t.getAttribute('data-kd-item'))) {
@@ -9994,6 +10062,7 @@
         KD.troli[KD.kedai][a] = (KD.troli[KD.kedai][a] || 0) + 1;
         lukisKd();
       }
+      else if (t.getAttribute('data-kd-sedekah')) bukaSedekah();
       else if (t.getAttribute('data-kd-tambah')) bukaBorang(null);
       else if ((a = t.getAttribute('data-kd-kurang'))) { var tr = KD.troli[KD.kedai]; tr[a]--; if (tr[a] <= 0) delete tr[a]; lukisKd(); }
       else if (t.getAttribute('data-kd-kosong')) { KD.troli[KD.kedai] = {}; lukisKd(); }
