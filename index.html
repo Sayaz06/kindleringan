@@ -5753,7 +5753,11 @@
     /* Dalam game: bar tempat & bar mata wang disorok, keluar guna butang ‹ Arked / ‹ Keluar */
     [data-dlm-game] .gm-tab, [data-dlm-game] .mw-bar { display: none !important; }
     /* Mata wang game (Tiket / Dollar / Emas / Perak) di kanan atas, macam game CoC */
-    .gc-bar { display: flex; justify-content: flex-end; margin: 0 0 6px; }
+    .gc-bar { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0 0 6px; }
+    .gc-pil.gc-lv { min-width: 0; }
+    .gc-pil.gc-lv i svg text { font-size: 8px; font-weight: bold; }
+    /* Page Level game: bar status disorok (level di bawah mata wang, nama game di tajuk besar) */
+    [data-dlm-level] .status-bar { display: none !important; }
     .gc-pil { display: flex; align-items: center; gap: 6px; min-width: 46%; padding: 2px 3px 2px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; }
     .gc-pil span { flex: 1 1 auto; text-align: right; line-height: 1.05; white-space: nowrap; }
     .gc-pil span small { display: block; font-size: 0.55rem; letter-spacing: 1px; }
@@ -9430,6 +9434,13 @@
         v = j === 'tiket' ? String(GP.tiket) : j === 'dolar' ? duit(JW.dolar) : j === 'emas' ? MM.emas + ' g' : DR.perak + ' g';
         if (a[i].textContent !== v) a[i].textContent = v;
       }
+      // Level game di bawah mata wang (perisai bernombor macam CoC)
+      a = document.querySelectorAll('.screen.active [data-gl]');
+      for (i = 0; i < a.length; i++) {
+        j = a[i].getAttribute('data-gl');
+        v = String((j === 'tiket' ? GP.lulus : j === 'dolar' ? JW.lulus : j === 'emas' ? MM.lulus : DR.lulus) + 1);
+        if (a[i].textContent !== v) a[i].textContent = v;
+      }
     }
     window.mwLukis = mwLukis;
     setInterval(function() { if (document.querySelector('.screen.active .mw-bar, .screen.active .gc-bar')) mwLukis(); }, 1000);
@@ -9467,8 +9478,11 @@
         b = document.createElement('div');
         b.className = 'gc-bar';
         b.innerHTML = '<div class="gc-pil"><span><small>' + nm[g[i][3]] + '</small><b data-gc="' + g[i][3] + '">-</b></span><i>' +
-          svgCxIkon(g[i][3]) + '</i></div>';
+          svgCxIkon(g[i][3]) + '</i></div>' +
+          '<div class="gc-pil gc-lv"><span><small>LEVEL</small><b data-gl="' + g[i][3] + '">-</b></span><i><svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M13 1 L23 5 V12 Q23 20 13 25 Q3 20 3 12 V5 Z" fill="#000"/><path d="M13 7 L14.8 11 L19 11.3 L15.8 14 L16.8 18.2 L13 16 L9.2 18.2 L10.2 14 L7 11.3 L11.2 11 Z" fill="#fff"/></svg></i></div>';
         s.insertBefore(b, s.firstChild);
+        if (g[i][0] !== 'screen-game') s.setAttribute('data-dlm-level', '1');
         a = s.querySelector('.gm-alat'); if (!a) continue;
         b = document.createElement('button');
         b.type = 'button'; b.className = 'gm-kecil'; b.textContent = g[i][1]; b.onclick = g[i][2];
