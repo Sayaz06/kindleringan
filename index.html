@@ -5597,6 +5597,7 @@
     .dr-k.dr-salah { border-style: dashed; border-width: 3px; }
     .dr-k.dr-batu { background: #888; color: #fff; border-color: #555; cursor: default; font-size: 0.7rem; letter-spacing: 2px; }
     .dr-k.dr-panjang { font-size: 0.72rem; line-height: 1.05; white-space: normal; }
+    .dr-k.dr-batu.dr-retak { background: #fff; color: #000; border-style: dashed; letter-spacing: 6px; }
     .dr-duri, .dr-belon, .dr-piston { position: absolute; left: 0; right: 0; }
     .dr-duri svg, .dr-belon svg, .dr-rod svg { display: block; width: 100%; height: 100%; }
     /* Piston: batang di atas + kotak badan di bawah (masa, maklumat, dan REWARD bila tamat) */
@@ -7071,12 +7072,18 @@
       drPiston(DR_BAWAH);
     }
     function drPiston(t) { el('dr-piston').style.height = t + 'px'; el('dr-badan').style.height = (t - 30) + 'px'; }
-    // Tamat: kotak piston naik sedikit (jika perlu) supaya REWARD muat tanpa scroll
-    function drBesar() {
+    // Tamat: kotak piston naik (jika perlu) supaya REWARD muat tanpa scroll.
+    // Menang → BATU retak dan hancur dulu, duri turun atas piston. Kalah → timbunan naik bersama piston.
+    function drBesar(menang) {
       el('dr-info').textContent = '';
       el('dr-masa').innerHTML = '';
-      var t = Math.max(DR_BAWAH, 238);
-      if (t !== DR_BAWAH) drPiston(t);
+      var t = Math.max(DR_BAWAH, el('dr-tamat').offsetHeight + 30 + 70);
+      function naik() { DR_BAWAH = t; drPiston(t); lukisDr(); }
+      if (!menang) { naik(); return; }
+      var b = el('dr-lapis').querySelectorAll('.dr-batu'), i;
+      if (!b.length) { naik(); return; }
+      for (i = 0; i < b.length; i++) { b[i].className += ' dr-retak'; b[i].textContent = '· · ·'; }
+      setTimeout(function() { if (!dr) return; dr.kol = [[], []]; naik(); }, 350);
     }
     function drTinggi() { return Math.max(dr.kol[0].length, dr.kol[1].length); }
     function lukisDr() {
@@ -7099,7 +7106,7 @@
       el('dr-belon-n').textContent = DR_BELON - dr.pecah;
       var m = '';
       for (c = 0; c < DR_DETIK; c++) m += '<i' + (c < dr.detik ? ' class="dr-isi"' : '') + '></i>';
-      el('dr-masa').innerHTML = m;
+      el('dr-masa').innerHTML = dr.tamat ? '' : m;
     }
     function drHenti() { if (drJam) { clearInterval(drJam); drJam = null; } }
     function mulaDr() {
@@ -7256,7 +7263,7 @@
       if (!menang) {
         el('dr-skor').textContent = 'BELON PECAH!';
         el('dr-skor-sub').textContent = 'Tiada ganjaran · cuba Level ' + dr.lv + ' lagi';
-        drBesar();
+        drBesar(false);
         return;
       }
       el('dr-skor').textContent = 'MENANG LEVEL ' + dr.lv + '!';
@@ -7264,7 +7271,7 @@
         '<span class="mm-kol"><i>REWARD</i><span class="mm-kotak"><b>' + asas + ' g</b>' + DR_BIL + ' KATA</span></span><span class="mm-tanda">+</span>' +
         '<span class="mm-kol"><i>BONUS</i><span class="mm-kotak mm-baki"><b id="dr-bonus-g">0 g</b>BAKI BELON</span></span><span class="mm-tanda">=</span>' +
         '<span class="mm-kol"><i>JUMLAH</i><span class="mm-kotak mm-jumlah"><b id="dr-jum-g">' + asas + ' g</b>PERAK</span></span></div>';
-      drBesar();
+      drBesar(true);
       // Animasi BONUS: kotak BELON berkelip, setiap kelip +bonus satu belon
       var k = 0;
       (function main() {
