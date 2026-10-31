@@ -5591,7 +5591,8 @@
     .jw-grid { display: flex; flex-wrap: wrap; justify-content: space-between; margin: 8px 0; }
     /* DURI: piston tolak perkataan ke atas, duri atas timbunan, 3 lapis belon */
     .dr-papan { position: relative; height: 456px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; margin: 4px 0 0; }
-    .dr-k { position: absolute; width: 47%; height: 38px; padding: 0 4px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
+    .dr-adegan { position: absolute; left: 0; top: 0; pointer-events: none; }
+    .dr-k { position: absolute; width: 41%; height: 38px; padding: 0 4px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.95rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .dr-k.dr-pilih { background: #000; color: #fff; }
     .dr-k.dr-salah { border-style: dashed; border-width: 3px; }
@@ -7042,6 +7043,60 @@
       el('btn-drl-main').textContent = 'MAIN LEVEL ' + lv;
     }
     // Lukisan: duri (atas timbunan), belon (3 lapis), piston (bawah)
+    // Duri sampai lapis belon (belon boleh ditarik turun oleh orang lidi) → lapis itu pecah
+    function drCucuk() { while (dr.pecah < DR_BELON && drTinggi() + dr.naik > DR_RUANG - dr.tarik + dr.pecah) { dr.letup = dr.pecah; dr.pecah++; } }
+    // Salah padan: orang lidi tarik tali, semua belon turun satu baris
+    function drTarik() {
+      if (!dr || dr.tamat) return;
+      dr.tarik++; dr.tarikAnim = true;
+      drCucuk();
+      lukisDr();
+      setTimeout(function() {
+        if (!dr) return;
+        dr.tarikAnim = false; dr.letup = -1;
+        if (dr.pecah >= DR_BELON) drTamat(false); else lukisDr();
+      }, 450);
+    }
+    // Adegan: 3 lapis belon bersambung tali → tali melintang → takal di dinding → orang lidi di atas piston.
+    // Tali melengkung bila longgar, makin tegang bila belon ditarik turun.
+    function svgAdegan() {
+      var p = el('dr-papan'), W = p.clientWidth, H = p.clientHeight, t = dr.tarik, cx = [0.2, 0.43, 0.66], s = '', k, i, x, b, cy, ke;
+      function Y(v) { return Math.round(H - v); }
+      var yb = DR_DASAR + (DR_RUANG + Math.min(dr.pecah, DR_BELON - 1) - t) * DR_BARIS + 2, x0 = W * 0.1, x1 = W * 0.76, xr = W * 0.925, py = Y(DR_DASAR + DR_RUANG * DR_BARIS + 10);
+      for (k = 0; k < DR_BELON; k++) {
+        b = DR_DASAR + (DR_RUANG + k - t) * DR_BARIS + 4; cy = Y(b + 24);
+        for (i = 0; i < 3; i++) {
+          x = Math.round(W * cx[i]);
+          if (k >= dr.pecah) {
+            ke = k > dr.pecah ? Y(b - DR_BARIS + 24) - 13 : Y(yb);
+            s += '<ellipse cx="' + x + '" cy="' + cy + '" rx="13" ry="13" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+              '<path d="M' + (x - 5) + ' ' + (cy - 6) + ' Q' + (x - 3) + ' ' + (cy - 9) + ' ' + x + ' ' + (cy - 9) + '" fill="none" stroke="#000" stroke-width="1.5"/>' +
+              '<path d="M' + x + ' ' + (cy + 13) + ' l-2 3 h4 Z" fill="#000"/><path d="M' + x + ' ' + (cy + 16) + ' V' + ke + '" stroke="#000" stroke-width="1.2"/>';
+          } else if (dr.letup === k) {
+            s += '<path d="M' + (x - 12) + ' ' + cy + ' L' + (x - 4) + ' ' + (cy + 4) + ' M' + (x + 12) + ' ' + cy + ' L' + (x + 4) + ' ' + (cy + 4) + ' M' + x + ' ' + (cy - 12) + ' V' + (cy - 4) +
+              ' M' + (x - 10) + ' ' + (cy + 14) + ' L' + (x - 3) + ' ' + (cy + 8) + ' M' + (x + 10) + ' ' + (cy + 14) + ' L' + (x + 3) + ' ' + (cy + 8) + '" stroke="#000" stroke-width="2.5"/>';
+          }
+        }
+      }
+      // Takal di dinding kanan
+      s += '<path d="M' + xr + ' ' + py + ' H' + W + '" stroke="#000" stroke-width="3"/><circle cx="' + xr + '" cy="' + py + '" r="6" fill="#fff" stroke="#000" stroke-width="2.5"/>';
+      var kaki = Y(DR_BAWAH), tarik = dr.tarikAnim, bahu = kaki - (tarik ? 30 : 38), tgn = bahu - (tarik ? 0 : 6), hx = xr + 6;
+      if (dr.pecah < DR_BELON) {
+        // Tali melintang bawah belon + tali ke takal (melengkung bila longgar)
+        var sag = Math.max(0, 18 - t * 9), yy = Y(yb);
+        s += '<path d="M' + x0 + ' ' + yy + ' H' + x1 + '" stroke="#000" stroke-width="3"/>' +
+          '<path d="M' + x1 + ' ' + yy + ' Q' + ((x1 + xr) / 2) + ' ' + (Math.max(yy, py) + sag) + ' ' + (xr - 4) + ' ' + (py + 4) + '" fill="none" stroke="#000" stroke-width="2"/>';
+      }
+      // Tali turun dari takal ke tangan
+      s += '<path d="M' + hx + ' ' + py + ' V' + tgn + '" stroke="#000" stroke-width="2"/>';
+      // Orang lidi berdiri atas piston (bila tarik: badan merendah, tangan ke bawah)
+      var cxo = xr - (tarik ? 3 : 0), pin = kaki - 18;
+      s += '<circle cx="' + cxo + '" cy="' + (bahu - 8) + '" r="6" fill="#fff" stroke="#000" stroke-width="2"/>' +
+        '<path d="M' + cxo + ' ' + (bahu - 2) + ' L' + xr + ' ' + pin + ' M' + xr + ' ' + pin + ' L' + (xr - 6) + ' ' + kaki + ' M' + xr + ' ' + pin + ' L' + (xr + 6) + ' ' + kaki +
+        ' M' + cxo + ' ' + (bahu + 2) + ' L' + hx + ' ' + tgn + '" stroke="#000" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M' + hx + ' ' + tgn + ' q6 8 0 14" fill="none" stroke="#000" stroke-width="1.5"/>';
+      return '<svg class="dr-adegan" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
+    }
     function svgDuri() {
       var h = '<rect x="0" y="9" width="200" height="5" fill="#000"/>', x;
       for (x = 4; x < 200; x += 12) h += '<path d="M' + x + ' 10 L' + (x + 4) + ' 0 L' + (x + 8) + ' 10 Z" fill="#000"/>';
@@ -7088,17 +7143,13 @@
     function drTinggi() { return Math.max(dr.kol[0].length, dr.kol[1].length); }
     function lukisDr() {
       var h = '', c, r, k, y, sel = dr.pilih;
-      // Belon: lapis k di atas ruang timbunan
-      for (k = 0; k < DR_BELON; k++) {
-        y = DR_DASAR + (DR_RUANG + k) * DR_BARIS + 4;
-        if (k >= dr.pecah) h += '<div class="dr-belon" style="bottom:' + y + 'px;height:' + (DR_BARIS - 6) + 'px;">' + svgBelon(false) + '</div>';
-        else if (dr.letup === k) h += '<div class="dr-belon" style="bottom:' + y + 'px;height:' + (DR_BARIS - 6) + 'px;">' + svgBelon(true) + '</div>';
-      }
+      // Belon bertali + orang lidi di tepi (pegang tali melalui takal)
+      h += svgAdegan();
       for (c = 0; c < 2; c++) for (r = 0; r < dr.kol[c].length; r++) {
         k = dr.kol[c][r];
-        h += '<button type="button" class="dr-k' + (!k.batu && k.teks.length > 13 ? ' dr-panjang' : '') + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '51.5' : '1.5') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
+        h += '<button type="button" class="dr-k' + (!k.batu && k.teks.length > 13 ? ' dr-panjang' : '') + (k.batu ? ' dr-batu' : k.id === sel ? ' dr-pilih' : dr.salah && dr.salah[k.id] ? ' dr-salah' : '') + '" data-dr-k="' + k.id + '" style="left:' + (c ? '43.5' : '1.5') + '%;bottom:' + (DR_BAWAH + r * DR_BARIS + 3) + 'px;"></button>';
       }
-      h += '<div class="dr-duri" style="bottom:' + (DR_BAWAH + drTinggi() * DR_BARIS) + 'px;height:14px;">' + svgDuri() + '</div>';
+      h += '<div class="dr-duri" style="right:15%;bottom:' + (DR_BAWAH + drTinggi() * DR_BARIS) + 'px;height:14px;">' + svgDuri() + '</div>';
       el('dr-lapis').innerHTML = h;
       el('dr-rod').innerHTML = svgPiston(dr.tolakAnim);
       var b = el('dr-lapis').querySelectorAll('[data-dr-k]');
@@ -7136,7 +7187,7 @@
         }
         kad = drSusun(pas);
         for (i = 0; i < kad.length; i++) kad[i].id = i;
-        dr = { pas: pas, kad: kad, giliran: kad.slice(), kol: [[], []], pilih: -1, jumpa: 0, pecah: 0, letup: -1, detik: 0, tamat: false, lv: DR.lulus + 1, salah: null, tolakAnim: false, naik: 0 };
+        dr = { pas: pas, kad: kad, giliran: kad.slice(), kol: [[], []], pilih: -1, jumpa: 0, pecah: 0, letup: -1, detik: 0, tamat: false, lv: DR.lulus + 1, salah: null, tolakAnim: false, naik: 0, tarik: 0, tarikAnim: false };
         for (i = 0; i < DR_MULA; i++) drMasuk();
         el('dr-info').textContent = '';
         el('dr-status').textContent = 'DURI · Level ' + dr.lv + ' · Padan ' + DR_BIL + ' perkataan';
@@ -7192,7 +7243,7 @@
         drPiston(DR_BAWAH);
       } else drMasuk();
       dr.tolakAnim = true;
-      while (dr.pecah < DR_BELON && drTinggi() + dr.naik > DR_RUANG + dr.pecah) { dr.letup = dr.pecah; dr.pecah++; }
+      drCucuk();
       lukisDr();
       setTimeout(function() {
         if (!dr) return;
@@ -7224,11 +7275,11 @@
         lukisDr();
         return;
       }
-      // Salah: kotak bergaris putus-putus sekejap + piston terus tolak satu baris
+      // Salah: kotak bergaris putus-putus sekejap + orang lidi tarik belon turun satu baris
       dr.salah = {}; dr.salah[a.id] = 1; dr.salah[k.id] = 1;
       dr.pilih = -1;
-      el('dr-info').textContent = 'Salah! Piston tolak.';
-      drTolak(true);
+      el('dr-info').textContent = 'Salah! Belon ditarik turun.';
+      drTarik();
       setTimeout(function() { if (dr) { dr.salah = null; if (!dr.tamat) lukisDr(); } }, 700);
     });
     function drSimpanSr(p) {
@@ -8369,7 +8420,7 @@
           'Kotak perkataan (English & BM bercampur) tersusun 2 lajur. Papan DURI sentiasa duduk atas timbunan. Di atas sekali ada 3 lapis BELON.',
           'PISTON di bawah tolak satu baris baru setiap ' + 6 + ' saat (titik di atas papan = masa). Timbunan naik → duri naik.',
           'Tekan perkataan English dan maksud BM yang sepadan → kedua-dua hilang, yang di atas jatuh (graviti), duri turun.',
-          'Salah pilih → piston terus tolak satu baris. Bila semua perkataan dah masuk, piston sendiri naik setiap 6 saat — habiskan cepat! Salah pilih ketika itu tolak BATU (tak boleh dibuang).',
+          'Salah pilih → orang lidi tarik tali, semua belon turun satu baris (makin dekat dengan duri, tali makin tegang). Bila semua perkataan dah masuk, piston sendiri naik setiap 6 saat — habiskan cepat!',
           'Setiap baris ada 1 English + 1 BM, pasangannya di baris lain. Setiap baris baru melengkapkan pasangan yang dah ada di skrin.',
           'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
           'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
