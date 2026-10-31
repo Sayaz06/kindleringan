@@ -5758,22 +5758,22 @@
     .mx-meter { margin: 8px 0; padding: 6px 8px; border: 3px solid #000; border-radius: 10px; }
     .mx-meter-tajuk { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px; }
     .mx-meter-isi { display: flex; gap: 8px; margin: 4px 0; }
-    .mx-meter-isi > div { flex: 1 1 0; text-align: center; font-size: 0.7rem; }
-    .mx-meter-isi svg { display: block; width: 100%; max-width: 130px; height: auto; margin: 0 auto; }
-    .mx-meter-isi b { display: block; font-size: 0.95rem; }
+    .mx-meter-isi > div { flex: 1 1 0; min-width: 0; text-align: center; font-size: 0.7rem; }
+    .mx-meter-isi svg { display: block; width: 100%; max-width: 140px; height: auto; margin: 0 auto; }
+    .mx-meter-isi b.mx-nama { display: block; font-size: 1.1rem; letter-spacing: 1px; margin-top: 2px; }
     .mx-meter-kira { padding-top: 4px; border-top: 2px dashed #000; font-size: 0.75rem; text-align: center; }
-    .mx-meter-tajuk button { padding: 1px 8px; border: 1.5px solid #000; border-radius: 10px; background: #fff; color: #000; font-family: inherit; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
-    .mx-kadar { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; margin: 4px 0; font-size: 0.8rem; }
-    .mx-kadar b { font-size: 1.05rem; }
-    /* PANEL ADMIN (PIN): anak panah ▲▼ ubah kadar 1 perkataan setiap tekan */
+    .mx-meter-tajuk button { padding: 0; border: 0; background: none; color: #000; font-family: inherit; font-size: 0.7rem; font-weight: normal; letter-spacing: 1px; cursor: pointer; }
+    .mx-kotak { margin: 4px 0; padding: 4px 2px; border: 2px solid #000; border-radius: 6px; font-size: 0.75rem; white-space: nowrap; overflow: hidden; }
+    .mx-kata { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.75rem; }
+    .mx-kata b { font-size: 1.15rem; }
+    .mx-panah { display: flex; flex-direction: column; gap: 3px; }
+    .mx-panah button { width: 34px; height: 24px; padding: 0; border: 2px solid transparent; border-radius: 6px; background: #fff; cursor: pointer; }
+    .mx-panah button svg { display: block; width: 16px; height: 12px; margin: 0 auto; }
+    .mx-meter.mx-ubah { border-style: dashed; }
+    .mx-meter.mx-ubah .mx-panah button { border-color: #000; }
+    /* PANEL ADMIN (PIN): anak panah ▲▼ pada meter ubah kadar 1 perkataan setiap tekan */
     .adm { margin-top: 6px; padding-top: 6px; border-top: 3px solid #000; }
     .adm input { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 8px; border: 2px solid #000; border-radius: 6px; font-family: inherit; font-size: 1rem; }
-    .adm-baris { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
-    .adm-baris > span { width: 54px; font-size: 0.75rem; font-weight: bold; }
-    .adm-baris button { width: 40px; height: 36px; padding: 0; border: 2px solid #000; border-radius: 8px; background: #fff; cursor: pointer; }
-    .adm-baris button svg { display: block; width: 16px; height: 12px; margin: 0 auto; }
-    .adm-baris b { flex: 1 1 auto; text-align: center; font-size: 1.3rem; }
-    .adm-baris b small { display: block; font-size: 0.6rem; font-weight: normal; }
     .adm-nota { font-size: 0.7rem; text-align: center; margin: 4px 0; }
     .mn-bar button { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; cursor: pointer; }
@@ -9033,25 +9033,41 @@
     function cincangPin(p) { var h = 5381, t = (currentUser ? currentUser.uid : '') + ':' + p, i; for (i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return String(h >>> 0); }
     function fmtC(n) { var t = String(Math.round(n)), r = ''; while (t.length > 3) { r = ',' + t.slice(-3) + r; t = t.slice(0, -3); } return t + r; }
     function svgAnak(atas) { return '<svg viewBox="0 0 16 12" xmlns="http://www.w3.org/2000/svg"><path d="' + (atas ? 'M8 1 L15 11 H1 Z' : 'M1 1 H15 L8 11 Z') + '" fill="#000"/></svg>'; }
+    // Meter jarum: skala 0 hingga 200 perkataan (besar sendiri jika kadar lebih 200)
+    function svgMeter(kata) {
+      var mx = Math.max(200, Math.ceil(kata / 100) * 100), h = '<path d="M10 55 A40 40 0 0 1 90 55" fill="none" stroke="#000" stroke-width="6"/>', v, a;
+      for (v = 0; v <= 4; v++) {
+        a = Math.PI * (1 - v / 4);
+        h += '<path d="M' + (50 + 33 * Math.cos(a)).toFixed(1) + ' ' + (55 - 33 * Math.sin(a)).toFixed(1) + ' L' + (50 + 27 * Math.cos(a)).toFixed(1) + ' ' + (55 - 27 * Math.sin(a)).toFixed(1) + '" stroke="#000" stroke-width="2"/>' +
+          '<text x="' + (50 + 50 * Math.cos(a)).toFixed(1) + '" y="' + (57 - 50 * Math.sin(a)).toFixed(1) + '" font-size="7" text-anchor="middle">' + (mx * v / 4) + '</text>';
+      }
+      a = Math.PI * (1 - Math.min(kata, mx) / mx);
+      h += '<path d="M50 55 L' + (50 + 36 * Math.cos(a)).toFixed(1) + ' ' + (55 - 36 * Math.sin(a)).toFixed(1) + '" stroke="#000" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="55" r="4" fill="#000"/>';
+      return '<svg viewBox="-8 -4 116 66" xmlns="http://www.w3.org/2000/svg">' + h + '</svg>';
+    }
     function lukisMeter() {
-      var h = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span>' + (ADM.fasa ? '' : '<button type="button" data-adm="buka">Admin</button>') + '</div>' +
-        '<div class="mx-kadar"><span>1.00 BIRU</span><span><b>' + EKO.BIRU_KATA + '</b> perkataan = ' + fmtC(EKO.COIN_BIRU) + ' coin</span></div>' +
-        '<div class="mx-kadar"><span>1.00 MERAH</span><span><b>' + EKO.MERAH_KATA + '</b> perkataan = ' + fmtC(EKO.COIN_MERAH) + ' coin</span></div>' +
-        '<div class="mx-meter-kira">KALKULATOR · 1.00 Biru = <b>' + EKO.MERAH_X.toFixed(2) + ' Merah</b> · 1.00 Merah = <b>' + (1 / EKO.MERAH_X).toFixed(4) + ' Biru</b></div>';
+      var ubah = ADM.fasa === 'ubah', b = ubah ? ADM.b : EKO.BIRU_KATA, m = ubah ? ADM.m : EKO.MERAH_KATA,
+        cb = b * EKO.KATA_COIN, cm = m * EKO.KATA_COIN, x = cb / cm;
+      function satu(k, nama, kata, coin) {
+        return '<div>' + svgMeter(kata) + '<b class="mx-nama">' + nama.toUpperCase() + '</b>' +
+          '<div class="mx-kotak">1.00 ' + nama + ' = ' + fmtC(coin) + ' coin</div>' +
+          '<div class="mx-kata"><span><b>' + kata + '</b> perkataan</span><span class="mx-panah">' +
+          '<button type="button" data-adm="' + k + '+">' + svgAnak(true) + '</button><button type="button" data-adm="' + k + '-">' + svgAnak(false) + '</button></span></div></div>';
+      }
+      var h = '<div class="mx-meter-tajuk"><span>METER KADAR TUKARAN</span>' + (ubah ? '<span>MOD ADMIN</span>' : '<button type="button" data-adm="buka">ditetapkan admin</button>') + '</div>' +
+        '<div class="mx-meter-isi">' + satu('b', 'Biru', b, cb) + satu('m', 'Merah', m, cm) + '</div>' +
+        '<div class="mx-meter-kira">KALKULATOR · 1.00 Biru = <b>' + x.toFixed(2) + ' Merah</b> · 1.00 Merah = <b>' + (1 / x).toFixed(4) + ' Biru</b></div>';
       if (ADM.fasa === 'pin' || ADM.fasa === 'cipta') {
         h += '<div class="adm"><div class="adm-nota"><b>' + (ADM.fasa === 'cipta' ? 'CIPTA PIN ADMIN (4-6 digit)' : 'MASUKKAN PIN ADMIN') + '</b></div>' +
           '<input id="adm-pin" type="password" inputmode="numeric" placeholder="PIN" autocomplete="off">' +
           (ADM.fasa === 'cipta' ? '<input id="adm-pin2" type="password" inputmode="numeric" placeholder="Ulang PIN" autocomplete="off">' : '') +
           '<div class="adm-nota" id="adm-msg"></div><div class="dp-btn"><button type="button" data-adm="tutup">Batal</button><button type="button" data-adm="masuk" class="dp-utama">' + (ADM.fasa === 'cipta' ? 'SIMPAN PIN' : 'MASUK') + '</button></div></div>';
-      } else if (ADM.fasa === 'ubah') {
-        var cb = ADM.b * EKO.KATA_COIN, cm = ADM.m * EKO.KATA_COIN;
-        h += '<div class="adm"><div class="adm-nota"><b>ADMIN · ▲▼ = 1 perkataan</b></div>' +
-          '<div class="adm-baris"><span>BIRU</span><button type="button" data-adm="b-">' + svgAnak(false) + '</button><b>' + ADM.b + '<small>perkataan · ' + fmtC(cb) + ' coin</small></b><button type="button" data-adm="b+">' + svgAnak(true) + '</button></div>' +
-          '<div class="adm-baris"><span>MERAH</span><button type="button" data-adm="m-">' + svgAnak(false) + '</button><b>' + ADM.m + '<small>perkataan · ' + fmtC(cm) + ' coin</small></b><button type="button" data-adm="m+">' + svgAnak(true) + '</button></div>' +
-          '<div class="adm-nota">PRATONTON · 1.00 Biru = ' + (cb / cm).toFixed(2) + ' Merah · Refund 1.00 Biru → ' + Math.floor(cb * (1 - EKO.CAJ_REFUND)) + ' coin' +
-          (ADM.m >= ADM.b ? '<br><b>Perhatian: Merah sama / lebih mahal dari Biru.</b>' : '') + '</div>' +
+      } else if (ubah) {
+        h += '<div class="adm"><div class="adm-nota"><b>▲▼ = 1 perkataan</b> · Refund 1.00 Biru → ' + Math.floor(cb * (1 - EKO.CAJ_REFUND)) + ' coin' +
+          (m >= b ? '<br><b>Perhatian: Merah sama / lebih mahal dari Biru.</b>' : '') + '</div>' +
           '<div class="adm-nota" id="adm-msg"></div><div class="dp-btn"><button type="button" data-adm="tutup">Batal</button><button type="button" data-adm="simpan" class="dp-utama">SIMPAN KADAR</button></div></div>';
       }
+      el('mx-meter').className = 'mx-meter' + (ubah ? ' mx-ubah' : '');
       el('mx-meter').innerHTML = h;
     }
     el('mx-meter').addEventListener('click', function(e) {
@@ -9059,6 +9075,8 @@
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-adm'))) t = t.parentNode;
       if (!t || t === this) return;
       a = t.getAttribute('data-adm');
+      // Anak panah sebelum masuk PIN → buka panel PIN dulu
+      if (/^[bm][+-]$/.test(a) && ADM.fasa !== 'ubah') { if (ADM.fasa) return; a = 'buka'; }
       if (a === 'buka') {
         kol('game_stat').doc('admin').get().then(function(s) {
           ADM.cincang = (s && s.exists) ? s.data().pinCincang || null : null;
