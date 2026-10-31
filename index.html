@@ -5755,6 +5755,32 @@
     /* Mata wang game (Tiket / Dollar / Emas / Perak) di kanan atas, macam game CoC */
     .gc-bar { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0 0 6px; }
     .gc-pil.gc-lv { min-width: 0; }
+    /* KAD SIHAT: satu butang di Kedai Hijau → page sendiri dengan laluan ganjaran (gaya CoC, hitam putih) */
+    .kd-hj-btn { display: flex; align-items: center; gap: 10px; width: 100%; margin: 6px 0 10px; padding: 8px 10px; border: 3px solid #000; border-radius: 10px; background: #fff; color: #000;
+      font-family: inherit; text-align: left; cursor: pointer; }
+    .kd-hj-btn svg { flex: 0 0 36px; width: 36px; height: 36px; }
+    .kd-hj-btn span { flex: 1 1 auto; min-width: 0; }
+    .kd-hj-btn span b { display: block; font-size: 1rem; }
+    .kd-hj-btn span small { font-size: 0.75rem; }
+    .kd-hj-btn i { flex: 0 0 auto; padding: 6px 10px; border-radius: 8px; background: #000; color: #fff; font-style: normal; font-weight: bold; font-size: 0.8rem; white-space: nowrap; }
+    .hj-atas { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin: 4px 0 8px; padding: 6px 10px; border: 3px solid #000; border-radius: 10px; }
+    .hj-atas b { font-size: 1.05rem; }
+    .hj-atas small { display: block; font-size: 0.7rem; }
+    .hj-atas div:last-child { text-align: right; }
+    .hj-sek { margin: 12px 0 4px; padding-bottom: 2px; border-bottom: 2px solid #000; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; }
+    .hj-jejak { position: relative; height: 84px; margin: 6px 0; }
+    .hj-hadiah { position: absolute; top: 0; min-width: 64px; padding: 3px 4px; border: 2px dashed #000; border-radius: 8px; background: #fff; text-align: center;
+      -webkit-transform: translateX(-50%); transform: translateX(-50%); }
+    .hj-hadiah b { display: block; font-size: 1.05rem; }
+    .hj-hadiah small { display: block; font-size: 0.55rem; }
+    .hj-hadiah.hj-dapat { border-style: solid; background: #000; color: #fff; }
+    .hj-bar { position: absolute; left: 2%; right: 2%; top: 60px; height: 12px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; }
+    .hj-bar i { display: block; height: 100%; background: #000; }
+    .hj-nod { position: absolute; top: 59px; width: 16px; height: 16px; margin-left: -8px; box-sizing: border-box; border: 2px solid #000; background: #fff;
+      -webkit-transform: rotate(45deg); transform: rotate(45deg); }
+    .hj-nod.hj-on { background: #000; }
+    .hj-nod.hj-besar { top: 55px; width: 24px; height: 24px; margin-left: -12px; }
+    .hj-nod svg { display: block; width: 100%; height: 100%; -webkit-transform: rotate(-45deg); transform: rotate(-45deg); }
     .gc-pil.gc-lv i svg text { font-size: 8px; font-weight: bold; }
     /* Page Level game: bar status disorok (level di bawah mata wang, nama game di tajuk besar) */
     [data-dlm-level] .status-bar { display: none !important; }
@@ -6247,8 +6273,7 @@
       <button type="button" data-kd-pilih="hijau"><span class="mx-bulat"></span>HIJAU</button>
     </div>
     <div class="dp-tajuk" id="kd-tajuk" style="font-size:0.85rem;">KEDAI MERAH</div>
-    <div id="kd-hijau" class="kd-kad" style="display:none;"></div>
-    <button id="btn-kd-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
+    <button type="button" id="btn-kd-hj" class="kd-hj-btn" style="display:none;"></button>
     <div id="kd-info" class="jw-info"></div>
     <div id="kd-borang" class="kd-borang" style="display:none;">
       <div class="dp-tajuk" id="kd-borang-tajuk" style="margin-top:0;">TAMBAH ITEM</div>
@@ -6264,6 +6289,18 @@
     </div>
     <div id="kd-troli" class="kd-troli" style="display:none;"></div>
     <div id="kd-grid" class="kd-grid"></div>
+  </div>
+  <div id="screen-hj" class="screen">
+    <div class="status-bar">KAD SIHAT HARIAN</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-hj-balik" class="gm-kecil">‹ Kedai</button>
+      <span class="gm-alat-tajuk" style="visibility:hidden;">KAD</span>
+      <button type="button" class="gm-kecil" data-panduan="pd-kedai">Panduan</button>
+    </div>
+    <div class="hj-atas"><div><small>KAD SIHAT HARIAN</small><b id="hj-masa">-</b></div><div><small>RINGGIT MERAH</small><b id="hj-merah">-</b></div></div>
+    <div id="kd-hijau"></div>
+    <button id="btn-kd-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
+    <div style="height:30px;"></div>
   </div>
   <div id="screen-mxr" class="screen">
     <div class="status-bar" id="mxr-status">KAUNTER REFUND</div>
@@ -7636,7 +7673,7 @@
         DP.coin = d.coin || 0; DP.biruSen = d.biruSen || 0; DP.merahSen = d.merahSen || 0; DP.upahTunggu = d.upahTunggu || 0;
         DP.merahHariT = d.merahHariT || ''; DP.merahHariSen = d.merahHariSen || 0;
         mwLukis();
-        if (!kdSibuk && el('screen-kd').className.indexOf('active') !== -1) kdDompet();
+        if (!kdSibuk && (el('screen-kd').className.indexOf('active') !== -1 || el('screen-hj').className.indexOf('active') !== -1)) kdDompet();
         if (coinAnim) return;
         el('gb-coin').textContent = DP.coin;
         tunjukAmbil();
@@ -9164,30 +9201,59 @@
       el('kd-biru').textContent = rm(DP.biruSen);
       if (KD.kedai === 'hijau') lukisHijau();
     }
+    // Kad Sihat: kad sticker + 2 laluan ganjaran (sticker hari ini · kad penuh berturut) gaya CoC, hitam putih
     function lukisHijau() {
-      var k = hjKira(), h = '', i, it, t = new Date();
-      h += '<div class="kd-kad-atas"><span>KAD SIHAT HARIAN</span><span>' + t.getDate() + '/' + (t.getMonth() + 1) + ' · reset 12 malam</span></div><div class="kd-petak-grid">';
+      var k = hjKira(), h = '', i, it, t = new Date(), esok = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1), min = Math.max(0, Math.floor((esok - t) / 60000));
+      var CEK = '<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M2.2 5.2 L4.2 7.2 L7.8 3.2" fill="none" stroke="#fff" stroke-width="1.6"/></svg>';
+      function pos(n, max) { return 8 + n / max * 80; }
+      function jejak(n, max, nilai, hadiah) {
+        var j = '<div class="hj-jejak">', x, m;
+        for (x = 0; x < hadiah.length; x++) {
+          m = hadiah[x];
+          j += '<div class="hj-hadiah' + (nilai >= m.n ? ' hj-dapat' : '') + '" style="left:' + pos(m.n, max) + '%;"><b>' + m.b + '</b><small>' + m.s + '</small></div>';
+        }
+        j += '<div class="hj-bar"><i style="width:' + (nilai > 0 ? (pos(Math.min(nilai, max), max) - 2) / 96 * 100 : 0) + '%;"></i></div>';
+        for (x = 1; x <= max; x++) {
+          var besar = false;
+          for (m = 0; m < hadiah.length; m++) if (hadiah[m].n === x) besar = true;
+          j += '<span class="hj-nod' + (nilai >= x ? ' hj-on' : '') + (besar ? ' hj-besar' : '') + '" style="left:' + pos(x, max) + '%;">' + (besar && nilai >= x ? CEK : '') + '</span>';
+        }
+        return j + '</div>';
+      }
+      el('hj-masa').textContent = t.getDate() + '/' + (t.getMonth() + 1) + ' · reset dalam ' + Math.floor(min / 60) + 'j ' + (min % 60) + 'm';
+      el('hj-merah').textContent = rm(DP.merahSen);
+      h += '<div class="hj-sek">KAD STICKER · ' + k.n + '/' + KD_KAD + '</div><div class="kd-petak-grid">';
       for (i = 0; i < KD_KAD; i++) {
         it = k.kad[i];
         if (!it) { h += '<div class="kd-petak">' + svgIkon('tambah', 'kd-ik') + 'kosong</div>'; continue; }
         h += '<div class="kd-petak' + (k.st[it.id] ? ' kd-ada' : '') + '" data-kd-petak="' + it.id + '">' + svgIkon(it.ikon, 'kd-ik') + escKapal(it.nama) +
           (k.st[it.id] ? '<span class="kd-cop">' + svgCop() + '</span>' : '') + '</div>';
       }
-      h += '</div><div class="kd-tingkat">' +
-        '<span' + (k.pct === EKO.HJ_SEPARUH ? ' class="kd-on"' : '') + '><b>3/6</b>' + Math.round(EKO.HJ_SEPARUH * 100) + '%</span>' +
-        '<span' + (k.pct === EKO.HJ_PENUH ? ' class="kd-on"' : '') + '><b>6/6</b>' + Math.round(EKO.HJ_PENUH * 100) + '%</span>' +
-        '<span' + (k.pct === EKO.HJ_STREAK ? ' class="kd-on"' : '') + '><b>' + EKO.HJ_STREAK_HARI + ' HARI</b>' + Math.round(EKO.HJ_STREAK * 100) + '%</span></div>';
-      h += '<div class="kd-hari">';
-      for (i = 0; i < EKO.HJ_STREAK_HARI; i++) h += '<i' + (i < Math.min(k.streak, EKO.HJ_STREAK_HARI) ? ' class="kd-isi"' : '') + '></i>';
-      h += '&nbsp;' + k.streak + '/' + EKO.HJ_STREAK_HARI + ' HARI</div>';
-      h += '<div class="kd-pulang"><div>BELANJA HARI INI<b>' + rm(k.belanja) + '</b></div><div>STICKER<b>' + k.n + '/' + KD_KAD + '</b></div>' +
-        '<div class="kd-hitam">PULANGAN<b>' + rm(k.boleh) + '</b></div></div>';
+      h += '</div>';
+      if (!k.cukup) h += '<div class="kd-kecil"><b>Tanda ' + KD_KAD + ' barang sebagai KAD STICKER (Kedai Hijau → Ubah → tekan barang).</b></div>';
+      h += '<div class="hj-sek">GANJARAN HARI INI</div>' + jejak(k.n, KD_KAD, k.cukup ? k.n : 0, [
+        { n: 3, b: Math.round(EKO.HJ_SEPARUH * 100) + '%', s: '3 STICKER' }, { n: 6, b: Math.round(EKO.HJ_PENUH * 100) + '%', s: '6 STICKER' }]);
+      h += '<div class="hj-sek">KAD PENUH BERTURUT · ' + Math.min(k.streak, EKO.HJ_STREAK_HARI) + '/' + EKO.HJ_STREAK_HARI + ' HARI</div>' +
+        jejak(k.streak, EKO.HJ_STREAK_HARI, k.streak, [{ n: EKO.HJ_STREAK_HARI, b: Math.round(EKO.HJ_STREAK * 100) + '%', s: EKO.HJ_STREAK_HARI + ' HARI' }]);
+      h += '<div class="kd-pulang"><div>BELANJA HARI INI<b>' + rm(k.belanja) + '</b></div><div>KADAR<b>' + Math.round(k.pct * 100) + '%</b></div>' +
+        '<div class="kd-hitam" id="hj-pulang">PULANGAN<b>' + rm(k.boleh) + '</b></div></div>';
       h += '<div class="kd-kecil">HAD HARI INI ' + rm(k.had) + ' Merah' + (k.diambil ? ' · DAH CLAIM ' + rm(k.diambil) : '') + '</div>';
-      if (!k.cukup) h += '<div class="kd-kecil"><b>Tanda ' + KD_KAD + ' barang sebagai KAD STICKER (Ubah → tekan barang).</b></div>';
-      else if (k.sah > k.diambil && k.had <= k.diambil) h += '<div class="kd-kecil"><b>Had penuh. Belajar dan tukar coin ke Merah untuk naikkan had.</b></div>';
+      if (k.cukup && k.sah > k.diambil && k.had <= k.diambil) h += '<div class="kd-kecil"><b>Had penuh. Belajar dan tukar coin ke Merah untuk naikkan had.</b></div>';
       el('kd-hijau').innerHTML = h;
       el('btn-kd-claim').style.display = k.boleh >= 1 ? '' : 'none';
       el('btn-kd-claim').textContent = 'CLAIM ' + rm(k.boleh) + ' MERAH';
+      // Butang di Kedai Hijau
+      el('btn-kd-hj').innerHTML = '<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="5" width="28" height="27" rx="3" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+        '<circle cx="12" cy="13" r="3.5" fill="' + (k.n >= 1 ? '#000' : '#fff') + '" stroke="#000" stroke-width="1.5"/><circle cx="24" cy="13" r="3.5" fill="' + (k.n >= 2 ? '#000' : '#fff') + '" stroke="#000" stroke-width="1.5"/>' +
+        '<circle cx="12" cy="24" r="3.5" fill="' + (k.n >= 3 ? '#000' : '#fff') + '" stroke="#000" stroke-width="1.5"/><circle cx="24" cy="24" r="3.5" fill="' + (k.n >= 4 ? '#000' : '#fff') + '" stroke="#000" stroke-width="1.5"/></svg>' +
+        '<span><b>KAD SIHAT HARIAN</b><small>Sticker ' + k.n + '/' + KD_KAD + ' · berturut ' + k.streak + '/' + EKO.HJ_STREAK_HARI + ' hari</small></span>' +
+        (k.boleh >= 1 ? '<i>CLAIM ' + rm(k.boleh) + '</i>' : '<i>BUKA</i>');
+    }
+    function bukaHj() {
+      showScreen('screen-hj');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      lukisHijau();
+      if (KD.copBaru && KD.copBaru.length) { copSticker(KD.copBaru); KD.copBaru = null; }
     }
     function lukisKd() {
       var k = KD.kedai, s = el('screen-kd'), b = s.querySelectorAll('[data-kd-pilih]'), i, it = kdSenarai(k), tr = KD.troli[k], h = '';
@@ -9196,8 +9262,8 @@
       el('kd-biru').textContent = rm(DP.biruSen);
       el('kd-tajuk').textContent = KD_NAMA[k] + ' · bayar ' + kdDuitNama(k);
       el('btn-kd-ubah').textContent = KD.ubah ? 'Siap' : 'Ubah';
-      el('kd-hijau').style.display = k === 'hijau' ? '' : 'none';
-      if (k === 'hijau') lukisHijau(); else el('btn-kd-claim').style.display = 'none';
+      el('btn-kd-hj').style.display = k === 'hijau' ? '' : 'none';
+      if (k === 'hijau') lukisHijau();
       for (i = 0; i < it.length; i++) {
         h += '<button type="button" class="kd-item" data-kd-item="' + it[i].id + '">' + (tr[it[i].id] ? '<span class="kd-qty">' + tr[it[i].id] + '</span>' : '') +
           svgIkon(it[i].ikon) + '<b>' + escKapal(it[i].nama) + '</b>' + rm(it[i].sen) + (k === 'hijau' && it[i].kad ? '<br><i class="kd-tag">KAD</i>' : '') + '</button>';
@@ -9337,10 +9403,10 @@
         KD.troli[k] = {};
         el('kd-info').textContent = 'Terima kasih! -' + rm(j.sen) + ' ' + nama + (baru.length ? ' · +' + baru.length + ' sticker' : '');
         lukisKd();
-        copSticker(baru);
+        if (baru.length) KD.copBaru = baru;
       }).catch(function(e) {
         kdSibuk = false;
-        el('kd-info').textContent = e && e.message === 'KURANG' ? 'Ringgit ' + nama + ' tak cukup! Tukar coin di EXCHANGE.' : 'Gagal bayar: ' + ((e && e.message) || e);
+        el('kd-info').textContent = e && e.message === 'KURANG' ? 'Ringgit ' + nama + ' tak cukup! Tekan + pada Ringgit ' + nama + ' di atas.' : 'Gagal bayar: ' + ((e && e.message) || e);
         dpMuat(function() { lukisKd(); });
       });
     }
@@ -9381,7 +9447,7 @@
         KD.hijau.diambilSen = (KD.hijau.diambilSen || 0) + c;
         el('btn-kd-claim').style.display = 'none';
         try { window.scrollTo(0, 0); } catch (e) {}
-        terbangCoin(el('btn-kd-claim').style.display === 'none' ? el('kd-hijau') : el('btn-kd-claim'), el('kd-merah'), function() {
+        terbangCoin(el('hj-pulang') || el('kd-hijau'), el('hj-merah'), function() {
           DP.merahSen = lama + c;
           kdSibuk = false;
           el('kd-info').textContent = 'Pulangan +' + rm(c) + ' Ringgit Merah!';
@@ -9412,6 +9478,8 @@
     el('btn-kd-padam').onclick = padamBarang;
     el('btn-kd-batal').onclick = function() { tutupBorang(); el('kd-info').textContent = ''; };
     el('btn-kd-claim').onclick = claimHijau;
+    el('btn-kd-hj').onclick = bukaHj;
+    el('btn-hj-balik').onclick = function() { showScreen('screen-kd'); lukisKd(); };
     // Bar kedua = TEMPAT: MENU · PELABUHAN · ARKED · KEDAI (EXCHANGE dibuang, masuk melalui butang + mata wang)
     // Bar paling atas = MATA WANG di setiap skrin yang ada bar tempat
     function svgMw(j) {
