@@ -5676,6 +5676,14 @@
     .jw-anak.jw-kini { background: #000; color: #fff; font-size: 1.25rem; }
     .jw-anak.jw-kosong { visibility: hidden; }
     #jwt-tangga .jw-kini { cursor: pointer; }
+    /* Tangga hadiah bergulung: 11 slot tetap, anak tangga semasa sentiasa di BAWAH, semua turun satu slot bila jawapan betul */
+    .jw-tingkap { position: relative; height: 418px; overflow: hidden; }
+    .jw-gulung { position: absolute; left: 0; right: 0; top: 0; }
+    .jw-slot { height: 38px; box-sizing: border-box; padding: 4px 0; }
+    .jw-slot .jw-anak { margin: 0 12%; height: 30px; box-sizing: border-box; padding: 0 4px; line-height: 26px; }
+    .jw-slot .jw-anak.jw-dapat { background: #000; color: #fff; }
+    .jw-slot .jw-anak.jw-dapat:before { content: '\2713  '; }
+    .jw-auto { text-align: center; font-size: 0.85rem; font-weight: bold; letter-spacing: 1px; min-height: 1.2em; margin: 6px 0; }
     .jw-hadiah { text-align: center; font-weight: bold; font-size: 1.2rem; border: 2px solid #000; border-radius: 16px; margin: 6px 20%; padding: 4px; }
     .jw-soalan { font-size: 2.2rem; font-weight: bold; text-align: center; margin: 14px 0; word-break: break-word; line-height: 1.15; }
     .jw-p { display: block; width: 100%; text-align: left; padding: 12px 16px; margin: 0 0 8px; border: 2px solid #000; border-radius: 24px;
@@ -6511,6 +6519,7 @@
   <div id="screen-jw-tangga" class="screen">
     <div class="status-bar" id="jwt-status">JUTAWAN</div>
     <div id="jwt-tangga"></div>
+    <div id="jwt-auto" class="jw-auto"></div>
     <button id="btn-jwt-main" class="btn btn-primary" style="margin-top:8px;">MAIN</button>
     <button id="btn-jwt-keluar" class="btn">Keluar (wang hangus)</button>
   </div>
@@ -8900,17 +8909,55 @@
       }).catch(function(e) { jwMemilih = false; el('jwl-info').textContent = 'Gagal memuat SR Jutawan: ' + (e.message || e); });
     }
     var jwTunda = null; // fungsi untuk teruskan sebagai latihan (bila perkataan tak cukup)
-    // Tangga: $1,000,000 sentiasa di atas, di bawahnya anak tangga semasa + 10 seterusnya (semakin naik)
-    // Anak tangga yang dah lepas diganti ruang kosong → butang MAIN & Keluar kekal di tempat yang sama (paling bawah)
+    // TANGGA HADIAH: $1,000,000 sentiasa di atas. Di bawahnya tingkap 11 slot: anak tangga semasa di slot PALING BAWAH,
+    // anak tangga seterusnya di atasnya (slot kosong di atas bila hampir tamat).
+    // Jawapan betul → semua anak tangga TURUN satu slot (macam mesin spin): $100 keluar ke bawah, $200 ambil tempatnya,
+    // $300 ambil tempat $200 ... kemudian soalan seterusnya muncul sendiri (tak perlu tekan MAIN lagi).
+    var JW_SLOT = 11, JW_PIC = 38;
+    function jwSlot(cur) {
+      var n = jw.soalan.length, atas = Math.min(n - 2, cur + JW_SLOT - 1), a = [], k;
+      for (k = atas; k >= cur; k--) a.push(k);
+      while (a.length < JW_SLOT) a.unshift(-1);
+      return a;
+    }
+    function jwSlotHtml(k, kls) { return '<div class="jw-slot">' + (k < 0 ? '' : '<div class="jw-anak' + (kls || '') + '">' + duit(hadiahJw(k)) + '</div>') + '</div>'; }
+    function jwTanggaHtml(cur, gulung) {
+      var n = jw.soalan.length, a = jwSlot(cur), h = '', i;
+      for (i = 0; i < a.length; i++) h += jwSlotHtml(a[i], !gulung && a[i] === cur ? ' jw-kini' : '');
+      if (gulung) h += jwSlotHtml(cur - 1, ' jw-dapat');
+      return '<div class="jw-anak jw-juta' + (!gulung && cur === n - 1 ? ' jw-kini' : '') + '">' + duit(JW_HADIAH[JW_BIL - 1]) + '</div>' +
+        '<div class="jw-tingkap"><div class="jw-gulung" id="jwt-gulung"' + (gulung ? ' style="top:-' + JW_PIC + 'px;"' : '') + '>' + h + '</div></div>';
+    }
+    function jwTanggaStatus() {
+      el('jwt-status').textContent = 'JUTAWAN · ' + (jw.latihan ? 'LATIHAN (tiada ganjaran)' : 'Level ' + (JW.lulus + 1)) +
+        ' · Soalan ' + (jw.i + 1) + '/' + jw.soalan.length + ' · Wang ' + duit(jw.menang);
+    }
     function tunjukTangga() {
       showScreen('screen-jw-tangga');
-      var n = jw.soalan.length, h = '<div class="jw-anak jw-juta' + (jw.i === n - 1 ? ' jw-kini' : '') + '">' + duit(JW_HADIAH[JW_BIL - 1]) + '</div>', i, bil = 0;
-      var hujung = Math.min(n - 2, jw.i + 10);
-      for (i = hujung; i >= jw.i; i--) { h += '<div class="jw-anak' + (i === jw.i ? ' jw-kini' : '') + '">' + duit(hadiahJw(i)) + '</div>'; bil++; }
-      for (i = bil; i < Math.min(11, n - 1); i++) h += '<div class="jw-anak jw-kosong' + (i === 0 ? ' jw-kini' : '') + '">-</div>';
-      el('jwt-tangga').innerHTML = h;
-      el('jwt-status').textContent = 'JUTAWAN · ' + (jw.latihan ? 'LATIHAN (tiada ganjaran)' : 'Level ' + (JW.lulus + 1)) +
-        ' · Soalan ' + (jw.i + 1) + '/' + n + ' · Wang ' + duit(jw.menang);
+      jw.gulung = false;
+      el('jwt-tangga').innerHTML = jwTanggaHtml(jw.i, false);
+      el('jwt-auto').textContent = 'Tekan MAIN atau ' + duit(hadiahJw(jw.i)) + ' untuk mula';
+      el('btn-jwt-main').style.display = '';
+      jwTanggaStatus();
+    }
+    // Lepas jawapan betul: tangga bergulung turun satu slot, anak tangga baru jadi semasa, terus ke soalan seterusnya
+    function jwGulung() {
+      var j = jw, top = [-JW_PIC, -27, -14, -4, 0], f = 0;
+      showScreen('screen-jw-tangga');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      j.gulung = true;
+      el('btn-jwt-main').style.display = 'none';
+      el('jwt-auto').textContent = 'BETUL! +' + duit(hadiahJw(j.i - 1));
+      el('jwt-tangga').innerHTML = jwTanggaHtml(j.i, true);
+      jwTanggaStatus();
+      setTimeout(function langkah() {
+        if (jw !== j || j.tamat) return;
+        f++;
+        if (f < top.length) { el('jwt-gulung').style.top = top[f] + 'px'; setTimeout(langkah, 130); return; }
+        el('jwt-tangga').innerHTML = jwTanggaHtml(j.i, false);
+        el('jwt-auto').textContent = 'Soalan seterusnya: ' + duit(hadiahJw(j.i));
+        setTimeout(function() { if (jw === j && !j.tamat) { j.gulung = false; tunjukSoalan(); } }, 800);
+      }, 450);
     }
     function tunjukSoalan() {
       var s = jw.soalan[jw.i], h = '', i, b;
@@ -8999,7 +9046,7 @@
         jw.menang = hadiahJw(jw.i);
         jwSr(s.p, true);
         jw.i++;
-        setTimeout(function() { if (jw.i >= jw.soalan.length) tamatJw('menang'); else tunjukTangga(); }, 900);
+        setTimeout(function() { if (jw.i >= jw.soalan.length) tamatJw('menang'); else jwGulung(); }, 900);
       } else {
         t.className = 'jw-p jw-salah';
         butang[s.betul].className = 'jw-p jw-betul';
@@ -9196,11 +9243,11 @@
     el('btn-jwl-main').onclick = mulaJw;
     el('jwl-grid').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-jw-main')) mulaJw(); });
     el('btn-jwl-sr').onclick = function() { bukaSenaraiGsr(JW_KOL, 'SR JUTAWAN', bukaJwLevel); };
-    el('btn-jwt-main').onclick = function() { if (jw && !jw.tamat) tunjukSoalan(); };
+    el('btn-jwt-main').onclick = function() { if (jw && !jw.tamat && !jw.gulung) tunjukSoalan(); };
     // Tekan anak tangga semasa (cth $100) pun boleh terus main
     el('jwt-tangga').addEventListener('click', function(e) {
       var t = e.target;
-      if (t && t.className && String(t.className).indexOf('jw-kini') !== -1 && jw && !jw.tamat) tunjukSoalan();
+      if (t && t.className && String(t.className).indexOf('jw-kini') !== -1 && jw && !jw.tamat && !jw.gulung) tunjukSoalan();
     });
     el('btn-jwt-keluar').onclick = function() { tamatJw('keluar'); };
     el('btn-jws-keluar').onclick = function() { if (jw && !jw.kunci) tamatJw('keluar'); };
