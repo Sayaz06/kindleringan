@@ -6663,7 +6663,27 @@
     }
     // Bank pasangan — dari game_bank. Cache pendek (2 minit) supaya padanan dari peranti lain (HP ↔ Kindle) cepat sampai.
     var SEGAR_BANK_MS = 2 * 60 * 1000;
+    // ══ INDEKS SR GAME ("katalog"): satu dokumen game_sr_indeks/{koleksi} { v: 1, ids: [...] } ══
+    // Senarai ID perkataan yang dah masuk SR game tu. Kindle baca SATU dokumen ni, bukan ratusan dokumen SR.
+    // Kali pertama (indeks belum wujud) → bina dari koleksi lama SEKALI sahaja, lepas tu dikemas kini setiap kali perkataan masuk / dibuang.
+    function refIndeks(namaKol) { return kol('game_sr_indeks').doc(namaKol); }
+    function muatIndeks(namaKol) {
+      return refIndeks(namaKol).get().then(function(s) {
+        var d = (s && s.exists) ? s.data() : null, g = {}, i;
+        if (d && d.v === 1 && d.ids) { for (i = 0; i < d.ids.length; i++) g[d.ids[i]] = 1; return g; }
+        return kol(namaKol).get().then(function(snap) {
+          var ids = [];
+          snap.forEach(function(doc) { g[doc.id] = 1; ids.push(doc.id); });
+          refIndeks(namaKol).set({ v: 1, ids: ids, updatedAt: Date.now() }).catch(function() {});
+          return g;
+        });
+      });
+    }
+    function indeksTambah(namaKol, id) { refIndeks(namaKol).set({ ids: firebase.firestore.FieldValue.arrayUnion(id), updatedAt: Date.now() }, { merge: true }).catch(function() {}); }
+    function indeksBuang(namaKol, id) { refIndeks(namaKol).set({ ids: firebase.firestore.FieldValue.arrayRemove(id), updatedAt: Date.now() }, { merge: true }).catch(function() {}); }
+    // Bank: bila pendengar masa nyata game_bank dah hidup (lepas buka Pelabuhan), S.bank sentiasa terkini → tak baca semula semua laci
     function muatBank(paksa, cb) {
+      if (S.bankTs && typeof unsubBank === 'function' && dengarUid === (currentUser && currentUser.uid)) { cb(true); return; }
       if (!paksa && S.bankTs && Date.now() - S.bankTs < SEGAR_BANK_MS) { cb(true); return; }
       kol('game_bank').get().then(function(snap) {
         var b = {};
@@ -6674,9 +6694,7 @@
     // Senarai kunci yang sudah ada dalam SR game (untuk tahu perkataan mana yang masih BARU)
     function muatGsr(paksa, cb) {
       if (!paksa && S.gsrTs && Date.now() - S.gsrTs < SEGAR_BANK_MS) { cb(true); return; }
-      kol('game_sr').get().then(function(snap) {
-        var g = {};
-        snap.forEach(function(doc) { g[doc.id] = 1; });
+      muatIndeks('game_sr').then(function(g) {
         S.gsr = g; S.gsrTs = Date.now(); simpanLokal(); cb(true);
       }).catch(function(e) { cb(false, e); });
     }
@@ -6695,7 +6713,9 @@
     function senaraiBank() {
       var a = [], ada = {}, urutan = [], i, j, id;
       for (i = 0; i < S.sr.length; i++) if (S.bank[S.sr[i].id]) urutan.push(S.sr[i].id);
-      for (id in S.bank) if (urutan.indexOf(id) === -1) urutan.push(id);
+      var dahAda = {};
+      for (i = 0; i < urutan.length; i++) dahAda[urutan[i]] = 1;
+      for (id in S.bank) if (!dahAda[id]) urutan.push(id);
       for (i = 0; i < urutan.length; i++) {
         var p = S.bank[urutan[i]].pasangan || [];
         for (j = 0; j < p.length; j++) {
@@ -6761,7 +6781,7 @@
         snap.forEach(function(doc) {
           var d = doc.data();
           // Pasangan yang sudah dibuang dari bank → buang juga dari SR game
-          if (!dalamBank[doc.id]) { doc.ref.delete().catch(function() {}); delete S.gsr[doc.id]; return; }
+          if (!dalamBank[doc.id]) { doc.ref.delete().catch(function() {}); delete S.gsr[doc.id]; indeksBuang('game_sr', doc.id); return; }
           overdue.push({ id: doc.id, en: d.en, bm: d.bm, fasa: d.fasaSemasa || 0 });
         });
         var pas = pilihPasangan(bank, overdue);
@@ -6789,7 +6809,7 @@
     function kemaskiniSrGame(p) {
       var ref = kol('game_sr').doc(p.id), now = Date.now();
       if (p.baru) {
-        S.gsr[p.id] = 1; simpanLokal();
+        S.gsr[p.id] = 1; simpanLokal(); indeksTambah('game_sr', p.id);
         ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now })
           .catch(function(e) { el('gp-info').textContent = 'Gagal simpan SR game: ' + (e.message || e); });
         return;
@@ -6968,9 +6988,7 @@
     var MM_KOL = 'game_sr_memori', MM_BIL = 6, MM_LANGKAH = 12;
     var MM = { main: 0, lulus: 0, emas: 0, gsr: {} }, mm = null;
     function mmMuat(cb) {
-      kol(MM_KOL).get().then(function(snap) {
-        var g = {};
-        snap.forEach(function(doc) { g[doc.id] = 1; });
+      muatIndeks(MM_KOL).then(function(g) {
         MM.gsr = g;
         return kol('game_stat').doc('memori').get();
       }).then(function(s) {
@@ -7109,7 +7127,7 @@
     function mmSimpanSr(p) {
       var ref = kol(MM_KOL).doc(p.id), now = Date.now();
       if (p.baru) {
-        MM.gsr[p.id] = 1;
+        MM.gsr[p.id] = 1; indeksTambah(MM_KOL, p.id);
         return ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(function() {});
       }
       ref.get().then(function(snap) {
@@ -7246,9 +7264,7 @@
     var DR_BARIS = 44, DR_BAWAH = 36, DR_DASAR = 36;  // DR_DASAR = kedudukan asal piston (belon ikut ini), DR_BAWAH = piston sekarang
     var DR = { main: 0, lulus: 0, perak: 0, gsr: {} }, dr = null, drJam = null;
     function drMuat(cb) {
-      kol(DR_KOL).get().then(function(snap) {
-        var g = {};
-        snap.forEach(function(doc) { g[doc.id] = 1; });
+      muatIndeks(DR_KOL).then(function(g) {
         DR.gsr = g;
         return kol('game_stat').doc('duri').get();
       }).then(function(s) {
@@ -7577,7 +7593,7 @@
     function drSimpanSr(p) {
       var ref = kol(DR_KOL).doc(p.id), now = Date.now();
       if (p.baru) {
-        DR.gsr[p.id] = 1;
+        DR.gsr[p.id] = 1; indeksTambah(DR_KOL, p.id);
         return ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(function() {});
       }
       ref.get().then(function(snap) {
@@ -7658,9 +7674,7 @@
     var BS_KOL = 'game_sr_betulsalah', BS_BIL = 10, BS_SR_MAKS = 5, BS_MASA = 40, BS_NYAWA = 3, BS_JEDA = 1100;
     var BS = { main: 0, lulus: 0, gangsa: 0, gsr: {} }, bs = null, bsJam = null;
     function bsMuat(cb) {
-      kol(BS_KOL).get().then(function(snap) {
-        var g = {};
-        snap.forEach(function(doc) { g[doc.id] = 1; });
+      muatIndeks(BS_KOL).then(function(g) {
         BS.gsr = g;
         return kol('game_stat').doc('betulsalah').get();
       }).then(function(s) {
@@ -7720,7 +7734,7 @@
       var ref = kol(BS_KOL).doc(p.id), now = Date.now();
       if (p.baru) {
         p.baru = false;
-        BS.gsr[p.id] = 1;
+        BS.gsr[p.id] = 1; indeksTambah(BS_KOL, p.id);
         return ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(function() {});
       }
       ref.get().then(function(snap) {
@@ -8091,8 +8105,10 @@
         if (!snap || !snap.forEach) return;
         var b = {};
         snap.forEach(function(doc) { var d = doc.data(); b[doc.id] = { title: d.title || '', pasangan: d.pasangan || [], dibayar: d.dibayar }; });
-        S.bank = b; S.bankTs = Date.now(); simpanLokal();
-        if (layar) return;
+        S.bank = b; S.bankTs = Date.now();
+        // Kapal sedang bergerak → tangguh simpan salinan ke Kindle (berat) sampai animasi habis
+        if (layar) { S.tangguhSimpan = true; return; }
+        simpanLokal();
         var aktif = (document.querySelector('.screen.active') || {}).id;
         if (aktif === 'screen-gbank' && S.sr.length) lukisBank();
         else if (aktif === 'screen-gbank-laci' && L && L.baris.length) { lukisLaci(); lukisKapalLaci(false); }
@@ -8129,9 +8145,9 @@
       penjaga('gb-watak', 'kapten', 'masuk', 'Memuatkan...', 'gb-cakap');
       muatSR(paksa, function(ok, e) {
         if (!ok) { el('gb-info').textContent = 'Gagal memuat laci SR: ' + ((e && e.message) || ''); return; }
-        muatBank(true, function(ok2, e2) {
+        muatBank(!!paksa, function(ok2, e2) {
           if (!ok2) { el('gb-info').textContent = 'Gagal memuat bank: ' + ((e2 && e2.message) || ''); return; }
-          muatGsr(true, function() {
+          muatGsr(!!paksa, function() {
             // Stok perkataan baru untuk kedai (belum masuk SR Padan)
             var bank = senaraiBank(), baru = 0;
             for (var i = 0; i < bank.length; i++) if (!S.gsr[bank[i].id]) baru++;
@@ -8234,16 +8250,22 @@
         return;
       }
       var upah = baru * EKO.UPAH_POS, b = db.batch();
-      dpSibuk = true; layar = true;
+      layar = true; belayarGagal = '';
       el('gl-info').textContent = '';
       b.set(kol('game_bank').doc(id), { dibayar: n, updatedAt: Date.now() }, { merge: true });
       b.set(refDompet(), { upahTunggu: firebase.firestore.FieldValue.increment(upah), updatedAt: Date.now() }, { merge: true });
       dpLog(b, 'kapal>belayar', 'Kapal belayar: ' + title + ' · ' + baru + ' kontena · upah ' + upah + ' coin');
-      b.commit().then(function() {
-        dpSibuk = false;
-        if (S.bank[id]) S.bank[id].dibayar = n;
-        simpanLokal();
-        DP.upahTunggu = (DP.upahTunggu || 0) + upah;
+      // RINGAN: kapal terus belayar — tak tunggu Firebase jawab. Firebase simpan di belakang tabir (gagal → nilai dipulangkan).
+      if (S.bank[id]) S.bank[id].dibayar = n;
+      DP.upahTunggu = (DP.upahTunggu || 0) + upah;
+      b.commit().catch(function(e) {
+        if (S.bank[id]) S.bank[id].dibayar = dib;
+        DP.upahTunggu = Math.max(0, (DP.upahTunggu || 0) - upah);
+        tunjukAmbil();
+        var m = 'Alamak, kapal "' + title + '" gagal disimpan (' + (e.message || e) + '). Upah dibatalkan. Cuba belayar sekali lagi.';
+        if (layar) belayarGagal = m; else { penjaga('gb-watak', 'kapten', 'sedih', m, 'gb-cakap'); if (!L && el('screen-gbank').className.indexOf('active') !== -1) lukisBank(); }
+      });
+      (function() {
         animDermaga(['lepas', 'jalan', 'lompat', 'naik'], 300, function() {
           el('gl-kelasi').style.display = 'block';
           lukisLaci();
@@ -8255,11 +8277,16 @@
             else setTimeout(function() { el('gl-kelasi').style.display = 'none'; sampaiPelabuhan(title, baru, upah); }, 300);
           })();
         });
-      }).catch(function(e) { dpSibuk = false; layar = false; el('gl-info').textContent = 'Gagal belayar: ' + (e.message || e); });
+      })();
     }
     // Kapal dah keluar skrin → kembali ke pelabuhan, Kapten kira upah
+    var belayarGagal = '';
     function sampaiPelabuhan(title, baru, upah) {
       L = null; layar = false;
+      // Simpan salinan ke Kindle SEKALI sahaja, selepas animasi habis
+      S.tangguhSimpan = false; simpanLokal();
+      // Firebase gagal simpan masa kapal bergerak → Kapten beritahu (ganti mesej "dah sampai")
+      if (belayarGagal) { var mg = belayarGagal; belayarGagal = ''; setTimeout(function() { penjaga('gb-watak', 'kapten', 'sedih', mg, 'gb-cakap'); lukisBank(); }, 0); }
       geserKapal(0);
       showScreen('screen-gbank');
       lukisBank();
@@ -8298,11 +8325,16 @@
       var t = DP.upahTunggu || 0, lama = DP.coin;
       if (t <= 0 || dpSibuk || coinAnim) return;
       var b = db.batch();
-      dpSibuk = true; coinAnim = true;
+      coinAnim = true;
       b.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(t), upahTunggu: firebase.firestore.FieldValue.increment(-t), updatedAt: Date.now() }, { merge: true });
       dpLog(b, 'upah>pelabuhan', 'Ambil upah pelabuhan +' + t + ' coin');
-      b.commit().then(function() {
-        dpSibuk = false;
+      // RINGAN: syiling terus terbang — tak tunggu Firebase jawab. Gagal → coin & upah dipulangkan.
+      b.commit().catch(function(e) {
+        DP.coin -= t; DP.upahTunggu = (DP.upahTunggu || 0) + t;
+        el('gb-coin').textContent = DP.coin; tunjukAmbil(); mwLukis();
+        el('gb-cakap').textContent = 'Gagal ambil upah: ' + (e.message || e) + '. Tekan AMBIL sekali lagi.';
+      });
+      (function() {
         DP.coin = lama + t; DP.upahTunggu = 0;
         tunjukAmbil();
         penjaga('gb-watak', 'kapten', 'gembira', 'Terima kasih kerana bekerja keras! +' + t + ' coin masuk dompet.', 'gb-cakap');
@@ -8313,7 +8345,7 @@
         setTimeout(function() {
           if (el('screen-gbank').className.indexOf('active') !== -1) penjaga('gb-watak', 'kapten', 'diam', kaptenAyat, 'gb-cakap');
         }, 3500);
-      }).catch(function(e) { dpSibuk = false; coinAnim = false; el('gb-cakap').textContent = 'Gagal ambil upah: ' + (e.message || e); });
+      })();
     }
 
     // ══ BANK — padan perkataan dalam satu laci ══
@@ -8699,9 +8731,7 @@
     }
     function jwMuat(paksa, cb) {
       if (!paksa && JW.gsrTs && Date.now() - JW.gsrTs < SEGAR_MS) { cb(true); return; }
-      kol(JW_KOL).get().then(function(snap) {
-        var g = {};
-        snap.forEach(function(doc) { g[doc.id] = 1; });
+      muatIndeks(JW_KOL).then(function(g) {
         JW.gsr = g;
         return kol('game_stat').doc('jutawan').get();
       }).then(function(s) {
@@ -8904,7 +8934,7 @@
         snap.forEach(function(doc) {
           var d = doc.data();
           // Pasangan yang sudah dibuang dari bank → buang juga dari SR Jutawan
-          if (!dalamBank[doc.id]) { doc.ref.delete().catch(function() {}); delete JW.gsr[doc.id]; return; }
+          if (!dalamBank[doc.id]) { doc.ref.delete().catch(function() {}); delete JW.gsr[doc.id]; indeksBuang(JW_KOL, doc.id); return; }
           overdue.push({ id: doc.id, en: d.en, bm: d.bm });
         });
         var pas = jwPilih(bank, overdue);
@@ -9019,7 +9049,7 @@
       if (!betul) { JW.ulangi[p.id] = 1; jwSimpan(); return; }
       if (JW.ulangi[p.id]) { delete JW.ulangi[p.id]; jwSimpan(); }
       if (p.baru) {
-        JW.gsr[p.id] = 1; jwSimpan();
+        JW.gsr[p.id] = 1; jwSimpan(); indeksTambah(JW_KOL, p.id);
         ref.set({ en: p.en, bm: p.bm, hafalAt: now, fasaSemasa: 0, nextDueAt: now + getSRInterval(0), sejarahFasa: [], createdAt: now, updatedAt: now }).catch(gagal);
         return;
       }
