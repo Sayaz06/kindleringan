@@ -5955,9 +5955,12 @@
     /* SIGNBOARD FREE PARKING di jeti tempat tambat (sewa dari Kapten) */
     #gb-tambat.gb-papan .kb { padding-top: 58px; }
     /* Penjaga parking (orang lidi bertopi) di jeti + bubble cakap kecil. Tekan dia untuk cabut signboard. */
+    /* Jeti dilebarkan bila ada signboard → penjaga berdiri ATAS jeti (tak terapung bila kapal belayar), tali dipanjangkan ke kapal */
+    #gb-tambat.gb-papan .kb-jeti { flex-basis: 52px; }
+    #gb-tambat.gb-papan .kb-tali { width: 46px; -webkit-transform: rotate(8.5deg); transform: rotate(8.5deg); }
     .kb-jaga { position: absolute; left: 36px; top: -24px; width: 13px; height: 24px; cursor: pointer; }
     .kb-jaga svg { display: block; width: 13px; height: 24px; }
-    .kb-jaga-cakap { position: absolute; left: 54px; top: -58px; width: 220px; padding: 3px 7px; border: 2px solid #000; border-radius: 9px; background: #fff;
+    .kb-jaga-cakap { position: absolute; left: 56px; top: -58px; width: 220px; padding: 3px 7px; border: 2px solid #000; border-radius: 9px; background: #fff;
       font-size: 0.62rem; line-height: 1.25; white-space: normal; cursor: pointer; }
     .kb-jaga-cakap:before { content: ''; position: absolute; left: -8px; bottom: 6px; border: 4px solid transparent; border-right: 6px solid #000; }
     .kb-jaga-cakap b { font-size: 0.66rem; }
