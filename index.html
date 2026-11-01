@@ -5953,7 +5953,17 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
     .kb.kb-sasar { padding-top: 20px; }
     /* SIGNBOARD FREE PARKING di jeti tempat tambat (sewa dari Kapten) */
-    #gb-tambat.gb-papan .kb { padding-top: 50px; }
+    #gb-tambat.gb-papan .kb { padding-top: 58px; }
+    /* Penjaga parking (orang lidi bertopi) di jeti + bubble cakap kecil. Tekan dia untuk cabut signboard. */
+    .kb-jaga { position: absolute; left: 36px; top: -24px; width: 13px; height: 24px; cursor: pointer; }
+    .kb-jaga svg { display: block; width: 13px; height: 24px; }
+    .kb-jaga-cakap { position: absolute; left: 54px; top: -58px; width: 220px; padding: 3px 7px; border: 2px solid #000; border-radius: 9px; background: #fff;
+      font-size: 0.62rem; line-height: 1.25; white-space: normal; cursor: pointer; }
+    .kb-jaga-cakap:before { content: ''; position: absolute; left: -8px; bottom: 6px; border: 4px solid transparent; border-right: 6px solid #000; }
+    .kb-jaga-cakap b { font-size: 0.66rem; }
+    .gb-papan-baris { display: flex; justify-content: flex-end; margin: -2px 0 4px; }
+    .gb-papan-baris button { display: flex; align-items: center; gap: 5px; }
+    .gb-papan-baris button i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; background: #000; color: #fff; font-style: normal; font-size: 0.7rem; line-height: 14px; text-align: center; }
     .kb-papan { position: absolute; left: -2px; top: -50px; width: 44px; height: 46px; pointer-events: none; }
     .kb-papan svg { display: block; width: 44px; height: 46px; }
     .kb-air { height: 36px; display: flex; align-items: flex-end; padding: 0 0 4px 6px; font-size: 0.65rem; }
@@ -6557,7 +6567,6 @@
     <div class="pj-kotak"><div class="pj-watak" id="gb-watak"></div><div class="pj-cakap" id="gb-cakap"></div></div>
     <button type="button" id="btn-gb-ambil" class="btn btn-primary" style="margin:0 0 8px;display:none;">AMBIL UPAH</button>
     <button type="button" id="btn-gb-mula" class="btn" style="margin:0 0 10px;">PANGGIL KAPAL KOSONG</button>
-    <button type="button" id="btn-gb-papan" class="btn" style="margin:0 0 10px;"></button>
     <div class="dp-baki">
       <div>Kapal belayar<b id="gb-laluan">-</b></div>
       <div>Kontena<b id="gb-bungkus">-</b></div>
@@ -7998,7 +8007,7 @@
       var l = S.sr[i], n = bilKontena(i), dib = dibayarLaci(l.id), k, kk = '';
       for (k = 0; k < Math.min(n, 18); k++) kk += '<i class="kb-k' + (k >= dib ? ' kb-b' : '') + '"></i>';
       if (n > 18) kk += '<span class="kb-lebih">+' + (n - 18) + '</span>';
-      return '<div class="kb' + (tambat ? ' kb-sasar' : '') + '" data-gb-id="' + i + '"><div class="kb-jeti"><i class="kb-besi"></i><i class="kb-tali"></i>' + (tambat && PAPAN.ada ? SVG_PAPAN : '') +
+      return '<div class="kb' + (tambat ? ' kb-sasar' : '') + '" data-gb-id="' + i + '"><div class="kb-jeti"><i class="kb-besi"></i><i class="kb-tali"></i>' + (tambat && PAPAN.ada ? htmlPapan() : '') +
         (tambat ? '<i class="kb-orang">' + ORANG_KECIL + '</i>' : '') + '</div>' +
         '<div class="kb-kapal"><div class="kb-muat">' + kk + '</div><div class="kb-badan">' + escKapal(l.title) + '</div>' +
         (tambat ? '<i class="kb-bendera"></i>' : '') + '</div></div>';
@@ -8006,7 +8015,7 @@
     function lukisTambat() {
       el('gb-tambat').className = 'kp-pelabuhan' + (PAPAN.ada ? ' gb-papan' : '');
       el('gb-tambat').innerHTML = tambatIdx >= 0 ? htmlKapal(tambatIdx, true) :
-        '<div class="kb kb-sasar"><div class="kb-jeti"><i class="kb-besi"></i>' + (PAPAN.ada ? SVG_PAPAN : '') + '</div><div class="kb-kapal"><div class="kb-air">' +
+        '<div class="kb kb-sasar"><div class="kb-jeti"><i class="kb-besi"></i>' + (PAPAN.ada ? htmlPapan() : '') + '</div><div class="kb-kapal"><div class="kb-air">' +
         (PAPAN.ada ? 'Tempat tambat kosong · semua kapal dah ada muatan' : 'Tempat tambat kosong · tekan PANGGIL KAPAL KOSONG') + '</div></div></div>';
       lukisPapanBtn();
     }
@@ -8137,7 +8146,10 @@
     }
     // Ketik kapal / besi pengikat → tali dibuka → kelasi lompat naik → kapal ke dermaga
     function klikKapal(e) {
-      var t = e.target;
+      var t = e.target, pj = t;
+      // Tekan penjaga parking / bubble dia → cabut signboard (bukan bawa kapal ke dermaga)
+      while (pj && pj !== this && !(pj.getAttribute && pj.getAttribute('data-papan'))) pj = pj.parentNode;
+      if (pj && pj !== this) { papanTekan(); return; }
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gb-id'))) t = t.parentNode;
       if (layar) return;
       if (!t || t === this) {
@@ -8487,11 +8499,33 @@
     var PAPAN_JAM = 3600000;
     function refPapan() { return kol('game_stat').doc('pelabuhan'); }
     function papanMasa(ms) { var m = Math.max(0, Math.floor(ms / 60000)); return (m >= 60 ? Math.floor(m / 60) + 'j ' : '') + (m % 60) + 'm'; }
+    // Penjaga parking di jeti: signboard + orang lidi bertopi + bubble cakap
+    var PAPAN_SAH = 0;
+    function papanCakap() {
+      var now = Date.now();
+      if (PAPAN_SAH > now) return '<b>Nak cabut signboard?</b> Tekan saya sekali lagi. Sewa tak dipulangkan.';
+      return '<b>Saya jaga FREE PARKING.</b> Dipasang ' + papanMasa(now - PAPAN.at) + ' · sewa ' + rm(PAPAN.jam * EKO.PAPAN_SEN) + ' Biru · jam baru dalam ' +
+        papanMasa(PAPAN.at + PAPAN.jam * PAPAN_JAM - now) + '. Tekan saya untuk cabut.';
+    }
+    function htmlPapan() {
+      return SVG_PAPAN + '<i class="kb-jaga" data-papan="1"><svg viewBox="0 0 13 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 3.5 H10.5 L9 1 H4 Z" fill="#000"/>' +
+        '<circle cx="6.5" cy="6" r="2.6" fill="#fff" stroke="#000" stroke-width="1.3"/><path d="M6.5 8.6 V16 M2 11 L6.5 12 L11 9 M6.5 16 L3.5 23.5 M6.5 16 L9.5 23.5" fill="none" stroke="#000" stroke-width="1.5"/></svg></i>' +
+        '<span class="kb-jaga-cakap" id="gb-jaga-cakap" data-papan="1">' + papanCakap() + '</span>';
+    }
     function lukisPapanBtn() {
-      var b = el('btn-gb-papan'), now = Date.now();
+      var b = el('btn-gb-papan'), c = el('gb-jaga-cakap');
       el('btn-gb-mula').style.display = PAPAN.ada ? 'none' : '';
-      if (PAPAN.ada) b.textContent = 'CABUT SIGNBOARD · dipasang ' + papanMasa(now - PAPAN.at) + ' · sewa ' + rm(PAPAN.jam * EKO.PAPAN_SEN) + ' Biru · jam seterusnya ' + papanMasa(PAPAN.at + PAPAN.jam * PAPAN_JAM - now);
-      else b.textContent = 'SEWA SIGNBOARD FREE PARKING · ' + rm(EKO.PAPAN_SEN) + ' Biru / jam';
+      b.parentNode.style.display = PAPAN.ada ? 'none' : '';
+      b.innerHTML = '<i>P</i>Sewa signboard · ' + rm(EKO.PAPAN_SEN) + ' Biru/jam';
+      if (c) c.innerHTML = papanCakap();
+    }
+    // Tekan penjaga: kali pertama minta pengesahan (5 saat), kali kedua cabut
+    function papanTekan() {
+      if (!PAPAN.ada || papanSibuk || layar) return;
+      if (PAPAN_SAH > Date.now()) { PAPAN_SAH = 0; cabutPapan(); return; }
+      PAPAN_SAH = Date.now() + 5000;
+      lukisPapanBtn();
+      setTimeout(function() { if (PAPAN_SAH && PAPAN_SAH <= Date.now()) { PAPAN_SAH = 0; lukisPapanBtn(); } }, 5100);
     }
     // Kira & bayar sewa jam yang dah bermula. Baki tak cukup → Kapten ambil balik signboard.
     function papanSewa(cb) {
@@ -9148,7 +9182,7 @@
           'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik KOTAK pilihan (bawah kapal) untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
           'Kontena kelabu = muatan baru. Ketik BESI BULAT (tali kapal) di jeti (kotak pilihan bawah kapal) → tali dilepas, kelasi naik, kapal keluar ke laut, kembali ke pelabuhan, Kapten kira upah ' + EKO.UPAH_POS + ' coin setiap kontena baru → tekan AMBIL untuk masukkan ke dompet.',
           'Upah sengaja sedikit — ganjaran besar datang daripada menghafal dalam game. Kontena dibuang dari kapal yang sudah belayar → upahnya ditolak semula.',
-          'SIGNBOARD FREE PARKING: tekan SEWA SIGNBOARD → Kapten pasang signboard di jeti tempat tambat. Selagi signboard ada, kapal kosong SENTIASA menunggu di atas (tak perlu PANGGIL). Sewa ' + rm(EKO.PAPAN_SEN) + ' Ringgit Biru setiap jam (jam pertama dibayar masa sewa, jam seterusnya dibayar bila jam baru bermula, walaupun app ditutup). Tekan CABUT SIGNBOARD bila-bila masa (walaupun belum cukup sejam) — tiada bayaran balik. Ringgit Biru tak cukup → Kapten ambil balik signboard.',
+          'SIGNBOARD FREE PARKING: tekan butang kecil P Sewa signboard (atas tempat tambat) → Kapten pasang signboard di jeti tempat tambat. Selagi signboard ada, kapal kosong SENTIASA menunggu di atas (tak perlu PANGGIL). Sewa ' + rm(EKO.PAPAN_SEN) + ' Ringgit Biru setiap jam (jam pertama dibayar masa sewa, jam seterusnya dibayar bila jam baru bermula, walaupun app ditutup). Penjaga parking (orang lidi bertopi) jaga signboard dan beritahu masa & sewa dalam bubble. Nak cabut: tekan penjaga / bubble dia DUA KALI, bila-bila masa (walaupun belum cukup sejam) — tiada bayaran balik. Ringgit Biru tak cukup → Kapten ambil balik signboard.',
           'Pelabuhan: ATAS = TEMPAT TAMBAT. Tekan PANGGIL KAPAL KOSONG → kapal kosong masuk dan diikat pada besi. Ketik besi pengikat → tali dibuka, kelasi lompat naik, kapal ke DERMAGA. Kapal yang ada kontena belum belayar kekal di tempat tambat sampai belayar. BAWAH = KAPAL BERMUATAN (scroll untuk edit, ketik untuk ke dermaga).',
           'Perkataan biasa (the, is, a, to...) dikelabukan dan tidak boleh dipilih.',
           'Pasangan yang sama dalam kapal berlainan dikira SATU sahaja dalam game & SR.',
