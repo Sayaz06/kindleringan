@@ -5944,6 +5944,10 @@
     .kb-badan { background: #000; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 4px 18px; border-radius: 0 0 22px 22px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
     .kb.kb-sasar { padding-top: 20px; }
+    /* SIGNBOARD FREE PARKING di jeti tempat tambat (sewa dari Kapten) */
+    #gb-tambat.gb-papan .kb { padding-top: 50px; }
+    .kb-papan { position: absolute; left: -2px; top: -50px; width: 44px; height: 46px; pointer-events: none; }
+    .kb-papan svg { display: block; width: 44px; height: 46px; }
     .kb-air { height: 36px; display: flex; align-items: flex-end; padding: 0 0 4px 6px; font-size: 0.65rem; }
     .kp-atas { display: flex; align-items: flex-end; min-height: 120px; padding: 0 10% 0 5%; }
     .kp-atas .kt-timbun { flex: 1 1 auto; min-width: 0; }
@@ -6544,6 +6548,7 @@
     <div class="pj-kotak"><div class="pj-watak" id="gb-watak"></div><div class="pj-cakap" id="gb-cakap"></div></div>
     <button type="button" id="btn-gb-ambil" class="btn btn-primary" style="margin:0 0 8px;display:none;">AMBIL UPAH</button>
     <button type="button" id="btn-gb-mula" class="btn" style="margin:0 0 10px;">PANGGIL KAPAL KOSONG</button>
+    <button type="button" id="btn-gb-papan" class="btn" style="margin:0 0 10px;"></button>
     <div class="dp-baki">
       <div>Kapal belayar<b id="gb-laluan">-</b></div>
       <div>Kontena<b id="gb-bungkus">-</b></div>
@@ -7974,18 +7979,27 @@
     var tambatIdx = -1; // kapal yang sedang diikat di TEMPAT TAMBAT (atas)
     function bilKontena(i) { var b = S.bank[S.sr[i].id]; return b ? (b.pasangan || []).length : 0; }
     // Satu baris kapal: jeti + besi (+ tali) · kontena kecil sebaris · nama laci atas badan hitam
+    // SIGNBOARD FREE PARKING: game_stat/pelabuhan { papan, papanAt, papanJam } · sewa 1 sen sejam (dibayar setiap jam bermula)
+    var PAPAN = { ada: false, at: 0, jam: 0 }, papanSibuk = false;
+    var SVG_PAPAN = '<i class="kb-papan"><svg viewBox="0 0 44 46" xmlns="http://www.w3.org/2000/svg"><rect x="29" y="22" width="3" height="24" fill="#000"/>' +
+      '<rect x="1" y="1" width="42" height="24" rx="3" fill="#fff" stroke="#000" stroke-width="2"/><rect x="4" y="4" width="14" height="18" rx="2" fill="#000"/>' +
+      '<text x="11" y="18.5" font-size="15" font-weight="bold" text-anchor="middle" fill="#fff">P</text>' +
+      '<text x="31" y="12" font-size="6.5" font-weight="bold" text-anchor="middle">FREE</text><text x="31" y="20" font-size="4.6" font-weight="bold" text-anchor="middle">PARKING</text></svg></i>';
     function htmlKapal(i, tambat) {
       var l = S.sr[i], n = bilKontena(i), dib = dibayarLaci(l.id), k, kk = '';
       for (k = 0; k < Math.min(n, 18); k++) kk += '<i class="kb-k' + (k >= dib ? ' kb-b' : '') + '"></i>';
       if (n > 18) kk += '<span class="kb-lebih">+' + (n - 18) + '</span>';
-      return '<div class="kb' + (tambat ? ' kb-sasar' : '') + '" data-gb-id="' + i + '"><div class="kb-jeti"><i class="kb-besi"></i><i class="kb-tali"></i>' +
+      return '<div class="kb' + (tambat ? ' kb-sasar' : '') + '" data-gb-id="' + i + '"><div class="kb-jeti"><i class="kb-besi"></i><i class="kb-tali"></i>' + (tambat && PAPAN.ada ? SVG_PAPAN : '') +
         (tambat ? '<i class="kb-orang">' + ORANG_KECIL + '</i>' : '') + '</div>' +
         '<div class="kb-kapal"><div class="kb-muat">' + kk + '</div><div class="kb-badan">' + escKapal(l.title) + '</div>' +
         (tambat ? '<i class="kb-bendera"></i>' : '') + '</div></div>';
     }
     function lukisTambat() {
+      el('gb-tambat').className = 'kp-pelabuhan' + (PAPAN.ada ? ' gb-papan' : '');
       el('gb-tambat').innerHTML = tambatIdx >= 0 ? htmlKapal(tambatIdx, true) :
-        '<div class="kb kb-sasar"><div class="kb-jeti"><i class="kb-besi"></i></div><div class="kb-kapal"><div class="kb-air">Tempat tambat kosong · tekan PANGGIL KAPAL KOSONG</div></div></div>';
+        '<div class="kb kb-sasar"><div class="kb-jeti"><i class="kb-besi"></i>' + (PAPAN.ada ? SVG_PAPAN : '') + '</div><div class="kb-kapal"><div class="kb-air">' +
+        (PAPAN.ada ? 'Tempat tambat kosong · semua kapal dah ada muatan' : 'Tempat tambat kosong · tekan PANGGIL KAPAL KOSONG') + '</div></div></div>';
+      lukisPapanBtn();
     }
     // Pelabuhan: ATAS = tempat tambat (kapal kosong / kapal yang belum belayar). BAWAH = kapal yang sudah ada kontena (untuk edit).
     function lukisBank(lompatTerus) {
@@ -8007,6 +8021,11 @@
       el('gb-laluan').textContent = belayar + '/' + S.sr.length;
       el('gb-bungkus').textContent = jum;
       el('gb-info').textContent = S.sr.length ? '' : 'Tiada kapal lagi (laci Bahasa belum masuk SR).';
+      // Signboard FREE PARKING → kapal kosong sentiasa masuk sendiri ke tempat tambat
+      if (PAPAN.ada && tambatIdx < 0 && !layar) {
+        var kk = kapalKosong();
+        if (kk >= 0) { tambatIdx = kk; lukisTambat(); if (el('screen-gbank').className.indexOf('active') !== -1) kapalMasuk(); }
+      }
       if (lompatTerus) lompatKeLaluan();
     }
     // Kapal kosong pertama (belum ada kontena langsung)
@@ -8101,7 +8120,7 @@
               el('gb-coin').textContent = ok3 ? DP.coin : '-';
               el('gb-cakap').textContent = (DP.upahTunggu || 0) > 0 ? 'Ada upah ' + DP.upahTunggu + ' coin menunggu awak! Tekan AMBIL.' : kaptenAyat;
               tunjukAmbil();
-              lukisBank();
+              papanSewa(function() { lukisBank(); });
             });
           });
         });
@@ -8453,6 +8472,96 @@
       penjaga('gb-watak', 'kapten', 'gembira', 'Kapal kosong dah sampai dan diikat! Ketik besi pengikat untuk bawa ke dermaga.', 'gb-cakap');
     };
     el('btn-gb-ambil').onclick = ambilUpah;
+    // ══ SIGNBOARD FREE PARKING (sewa dari Kapten) ══
+    // Dipasang di jeti tempat tambat → kapal kosong sentiasa ada di atas, tak perlu PANGGIL.
+    // Sewa EKO.PAPAN_SEN sen Ringgit Biru setiap jam (jam pertama dibayar masa ambil). Boleh cabut bila-bila masa.
+    var PAPAN_JAM = 3600000;
+    function refPapan() { return kol('game_stat').doc('pelabuhan'); }
+    function papanMasa(ms) { var m = Math.max(0, Math.floor(ms / 60000)); return (m >= 60 ? Math.floor(m / 60) + 'j ' : '') + (m % 60) + 'm'; }
+    function lukisPapanBtn() {
+      var b = el('btn-gb-papan'), now = Date.now();
+      el('btn-gb-mula').style.display = PAPAN.ada ? 'none' : '';
+      if (PAPAN.ada) b.textContent = 'CABUT SIGNBOARD · dipasang ' + papanMasa(now - PAPAN.at) + ' · sewa ' + rm(PAPAN.jam * EKO.PAPAN_SEN) + ' Biru · jam seterusnya ' + papanMasa(PAPAN.at + PAPAN.jam * PAPAN_JAM - now);
+      else b.textContent = 'SEWA SIGNBOARD FREE PARKING · ' + rm(EKO.PAPAN_SEN) + ' Biru / jam';
+    }
+    // Kira & bayar sewa jam yang dah bermula. Baki tak cukup → Kapten ambil balik signboard.
+    function papanSewa(cb) {
+      if (papanSibuk) { if (cb) cb(); return; }
+      papanSibuk = true;
+      db.runTransaction(function(tx) {
+        return tx.get(refPapan()).then(function(sp) {
+          var p = (sp && sp.exists) ? sp.data() : {};
+          if (!p.papan) return { ada: false };
+          return tx.get(refDompet()).then(function(sd) {
+            var d = (sd && sd.exists) ? sd.data() : {}, now = Date.now(), jam = Math.floor((now - p.papanAt) / PAPAN_JAM) + 1, kena = jam - (p.papanJam || 0);
+            if (kena <= 0) return { ada: true, at: p.papanAt, jam: p.papanJam || 0, bayar: 0 };
+            var perlu = kena * EKO.PAPAN_SEN, bayar = Math.min(perlu, Math.max(0, d.biruSen || 0)), ub = { updatedAt: now };
+            if (bayar > 0) {
+              ub.biruSen = firebase.firestore.FieldValue.increment(-bayar);
+              tx.set(refDompet(), ub, { merge: true });
+              tx.set(kol('dompet_log').doc(), { jenis: 'sewa>papan', ket: 'SEWA SIGNBOARD FREE PARKING ' + kena + ' jam → -' + rm(bayar) + ' Biru', at: now });
+            }
+            if (bayar < perlu) { tx.set(refPapan(), { papan: false, papanAt: 0, papanJam: 0, updatedAt: now }, { merge: true }); return { ada: false, habis: true, bayar: bayar }; }
+            tx.set(refPapan(), { papanJam: jam, updatedAt: now }, { merge: true });
+            return { ada: true, at: p.papanAt, jam: jam, bayar: bayar };
+          });
+        });
+      }).then(function(r) {
+        papanSibuk = false;
+        PAPAN.ada = r.ada; PAPAN.at = r.at || 0; PAPAN.jam = r.jam || 0;
+        if (r.bayar) DP.biruSen -= r.bayar;
+        if (r.habis) penjaga('gb-watak', 'kapten', 'sedih', 'Ringgit Biru awak tak cukup untuk sewa signboard. Saya ambil balik signboard FREE PARKING.', 'gb-cakap');
+        if (el('screen-gbank').className.indexOf('active') !== -1) lukisTambat();
+        if (cb) cb();
+      }).catch(function() { papanSibuk = false; if (cb) cb(); });
+    }
+    function ambilPapan() {
+      if (papanSibuk || layar) return;
+      if (PAPAN.ada) { cabutPapan(); return; }
+      papanSibuk = true;
+      db.runTransaction(function(tx) {
+        return tx.get(refDompet()).then(function(sd) {
+          var d = (sd && sd.exists) ? sd.data() : {}, now = Date.now();
+          if ((d.biruSen || 0) < EKO.PAPAN_SEN) throw new Error('KURANG');
+          tx.set(refDompet(), { biruSen: firebase.firestore.FieldValue.increment(-EKO.PAPAN_SEN), updatedAt: now }, { merge: true });
+          tx.set(kol('dompet_log').doc(), { jenis: 'sewa>papan', ket: 'SEWA SIGNBOARD FREE PARKING (jam pertama) → -' + rm(EKO.PAPAN_SEN) + ' Biru', at: now });
+          tx.set(refPapan(), { papan: true, papanAt: now, papanJam: 1, updatedAt: now }, { merge: true });
+          return now;
+        });
+      }).then(function(now) {
+        papanSibuk = false;
+        PAPAN.ada = true; PAPAN.at = now; PAPAN.jam = 1;
+        DP.biruSen -= EKO.PAPAN_SEN;
+        penjaga('gb-watak', 'kapten', 'gembira', 'Nah, signboard FREE PARKING dah dipasang di jeti! Kapal kosong akan sentiasa menunggu. Sewa ' + rm(EKO.PAPAN_SEN) + ' Biru sejam.', 'gb-cakap');
+        lukisBank(true);
+      }).catch(function(e) {
+        papanSibuk = false;
+        penjaga('gb-watak', 'kapten', 'sedih', e && e.message === 'KURANG' ? 'Sewa signboard ' + rm(EKO.PAPAN_SEN) + ' Ringgit Biru sejam. Ringgit Biru awak tak cukup — tekan + pada Biru di atas.' : 'Gagal: ' + ((e && e.message) || e), 'gb-cakap');
+      });
+    }
+    // Cabut: bayar jam yang dah bermula (jika ada), kemudian signboard dipulangkan kepada Kapten. Tiada bayaran balik.
+    function cabutPapan() {
+      papanSewa(function() {
+        if (!PAPAN.ada) return;
+        papanSibuk = true;
+        var now = Date.now();
+        refPapan().set({ papan: false, papanAt: 0, papanJam: 0, updatedAt: now }, { merge: true }).then(function() {
+          papanSibuk = false;
+          kol('dompet_log').doc().set({ jenis: 'sewa>papan', ket: 'CABUT SIGNBOARD FREE PARKING · dipasang ' + papanMasa(now - PAPAN.at) + ' · jumlah sewa ' + rm(PAPAN.jam * EKO.PAPAN_SEN) + ' Biru', at: now }).catch(function() {});
+          PAPAN.ada = false; PAPAN.at = 0; PAPAN.jam = 0;
+          // Kapal kosong (tiada kontena) di tempat tambat dilepaskan semula
+          if (tambatIdx >= 0 && !bilKontena(tambatIdx)) tambatIdx = -1;
+          penjaga('gb-watak', 'kapten', 'masuk', 'Signboard dah dicabut dan dipulangkan. Tekan PANGGIL KAPAL KOSONG bila perlu kapal.', 'gb-cakap');
+          lukisBank();
+        }).catch(function(e) { papanSibuk = false; el('gb-cakap').textContent = 'Gagal cabut: ' + ((e && e.message) || e); });
+      });
+    }
+    el('btn-gb-papan').onclick = ambilPapan;
+    // Setiap 30 saat di pelabuhan: kemas kini masa signboard, bayar sewa bila masuk jam baru
+    setInterval(function() {
+      if (!PAPAN.ada || el('screen-gbank').className.indexOf('active') === -1) return;
+      if (Date.now() >= PAPAN.at + PAPAN.jam * PAPAN_JAM) papanSewa(); else lukisPapanBtn();
+    }, 30000);
 
     // ══ SENARAI SR GAME — sampai masa (overdue) & belum sampai masa ══
     // Boleh guna untuk SR main game (game_sr) atau SR mini game (cth game_sr_jutawan)
@@ -8992,6 +9101,7 @@
           'Di dermaga → ketik perkataan English dan maksudnya dalam ayat BM (ketik sekali = pilih, ketik lagi = batal, boleh pilih lebih dari satu perkataan) → ketik KOTAK pilihan (bawah kapal) untuk muat. Setiap pasangan = 1 kontena. X pada kontena = keluarkan.',
           'Kontena kelabu = muatan baru. Ketik BESI BULAT (tali kapal) di jeti (kotak pilihan bawah kapal) → tali dilepas, kelasi naik, kapal keluar ke laut, kembali ke pelabuhan, Kapten kira upah ' + EKO.UPAH_POS + ' coin setiap kontena baru → tekan AMBIL untuk masukkan ke dompet.',
           'Upah sengaja sedikit — ganjaran besar datang daripada menghafal dalam game. Kontena dibuang dari kapal yang sudah belayar → upahnya ditolak semula.',
+          'SIGNBOARD FREE PARKING: tekan SEWA SIGNBOARD → Kapten pasang signboard di jeti tempat tambat. Selagi signboard ada, kapal kosong SENTIASA menunggu di atas (tak perlu PANGGIL). Sewa ' + rm(EKO.PAPAN_SEN) + ' Ringgit Biru setiap jam (jam pertama dibayar masa sewa, jam seterusnya dibayar bila jam baru bermula, walaupun app ditutup). Tekan CABUT SIGNBOARD bila-bila masa (walaupun belum cukup sejam) — tiada bayaran balik. Ringgit Biru tak cukup → Kapten ambil balik signboard.',
           'Pelabuhan: ATAS = TEMPAT TAMBAT. Tekan PANGGIL KAPAL KOSONG → kapal kosong masuk dan diikat pada besi. Ketik besi pengikat → tali dibuka, kelasi lompat naik, kapal ke DERMAGA. Kapal yang ada kontena belum belayar kekal di tempat tambat sampai belayar. BAWAH = KAPAL BERMUATAN (scroll untuk edit, ketik untuk ke dermaga).',
           'Perkataan biasa (the, is, a, to...) dikelabukan dan tidak boleh dipilih.',
           'Pasangan yang sama dalam kapal berlainan dikira SATU sahaja dalam game & SR.',
@@ -9125,6 +9235,7 @@
     EKO.DR_PERAK_KATA = 1;                                                        // Duri: 1 perkataan = 1 g perak (1 level 10 perkataan = 10 g)
     EKO.PERAK_COIN = EKO.KATA_COIN / EKO.DR_PERAK_KATA;                           // Kedai Perak: 1 g perak = 10 coin
     EKO.DR_BONUS_BELON = 3;                                                       // Duri: BONUS +3 g perak setiap belon yang tak pecah (3 belon = 19 g)
+    EKO.PAPAN_SEN = 1;                                                            // Pelabuhan: sewa signboard FREE PARKING 1 sen Ringgit Biru sejam
     EKO.BS_GANGSA_KATA = 5;                                                       // Betul/Salah: 1 jawapan betul = 5 g gangsa
     EKO.GANGSA_COIN = EKO.KATA_COIN / EKO.BS_GANGSA_KATA;                         // Bank Coin: 1 g gangsa = 2 coin (1 jawapan betul = 10 coin)
     EKO.BS_BONUS_NYAWA = 15;                                                      // Betul/Salah: BONUS +15 g setiap kesilapan tak dipakai (menang sempurna = 95 g)
