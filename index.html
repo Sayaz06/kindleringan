@@ -5747,6 +5747,19 @@
     .mx-titik button.mx-on .mx-bulat { background: #000; border-color: #000; }
     /* KEDAI ITEM: Merah (harga dunia sebenar) · Biru (reward) · Hijau (kesihatan + kad sticker harian) */
     .gm-tab button { font-size: 0.74rem; padding: 10px 1px; }
+    /* 4 tab: PERATURAN · PELABUHAN · ARKED · KEDAI */
+    .gm-tab button { font-size: 0.66rem; letter-spacing: 0; }
+    /* BUKU PERATURAN PENTING (keselamatan Firebase) */
+    .at-tajuk { margin: 4px 0 2px; font-size: 1.3rem; font-weight: bold; letter-spacing: 2px; text-align: center; }
+    .at-sub { margin: 0 0 10px; font-size: 0.75rem; text-align: center; }
+    .at-kad { display: flex; gap: 10px; margin: 0 0 10px; padding: 10px; border: 3px solid #000; border-radius: 10px; }
+    .at-no { flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; background: #000; color: #fff; font-size: 1.1rem; font-weight: bold; line-height: 34px; text-align: center; }
+    .at-isi { flex: 1 1 auto; min-width: 0; font-size: 0.85rem; line-height: 1.35; }
+    .at-isi b.at-utama { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+    .at-isi .at-kenapa { margin-top: 6px; padding: 6px 8px; border: 2px dashed #000; border-radius: 8px; font-size: 0.78rem; }
+    .at-semak { margin: 4px 0 30px; padding: 10px; border: 2px solid #000; border-radius: 10px; font-size: 0.8rem; line-height: 1.4; }
+    .at-semak > b { display: block; margin-bottom: 4px; letter-spacing: 1px; }
+    .at-semak ul { margin: 0; padding-left: 18px; }
     /* BAR MATA WANG (paling atas): Coin · Ringgit Biru · Ringgit Merah, butang + ke tempat tukar */
     .mw-bar { display: flex; gap: 5px; margin: 0 0 6px; }
     .mw-pil { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 4px; padding: 2px 2px 2px 5px; border: 2px solid #000; border-radius: 14px; background: #fff; }
@@ -6253,6 +6266,36 @@
     <div id="gs-info"></div>
     <div id="gs-senarai" style="padding-bottom:80px;"></div>
     <button id="btn-gs-game" class="gb-terapung">Kembali ke Game</button>
+  </div>
+  <div id="screen-atur" class="screen">
+    <div class="status-bar">BUKU PERATURAN PENTING</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="atur" class="gm-aktif">PERATURAN</button>
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+    </div>
+    <div class="at-tajuk">BUKU PERATURAN PENTING</div>
+    <div class="at-sub">Keselamatan app &amp; Firebase · baca sebelum buat app baru</div>
+    <div class="at-kad"><div class="at-no">1</div><div class="at-isi">
+      <b class="at-utama">Jangan buat app PUBLIC selagi belum bersedia dengan RULES.</b>
+      Pastikan Firestore Rules dah betul dan diuji dulu, baru kongsi app kepada orang ramai.
+      <div class="at-kenapa">Kenapa: bila app public, sesiapa boleh buka kod (View Source) dan nampak alamat Firebase. Yang melindungi data cuma Rules.</div>
+    </div></div>
+    <div class="at-kad"><div class="at-no">2</div><div class="at-isi">
+      <b class="at-utama">Jangan bagi coder lain alamat Firebase app ini, dan jangan bagi akaun Firebase.</b>
+      Nak buat app baru untuk ramai orang? Buat PROJEK FIREBASE BARU yang berasingan untuk app tu.
+      <div class="at-kenapa">Kenapa: dengan alamat Firebase dan rules yang longgar, coder lain boleh baca data awak. Dengan akaun Firebase pula, dia boleh buat apa sahaja: baca semua data, ubah rules, padam projek.</div>
+    </div></div>
+    <div class="at-kad"><div class="at-no">3</div><div class="at-isi">
+      <b class="at-utama">Setiap app: collection di bawah users/{uid} hanya boleh dibaca, ditulis &amp; dilihat oleh UID itu sendiri.</b>
+      Rules: <b>request.auth.uid == userId</b>, bukan sekadar <b>request.auth != null</b>.
+      <div class="at-kenapa">Kenapa: walaupun HTML kita tiada butang daftar email, orang yang tahu alamat Firebase boleh buat HTML sendiri yang ada pendaftaran, daftar email dia, kemudian baca atau ubah Firestore kita. Paling bahaya: dia boleh baca RAHSIA yang kita simpan di Firebase selama ini.</div>
+    </div></div>
+    <div class="at-semak"><b>SEMAKAN BERKALA (Firebase Console)</b><ul>
+      <li>Authentication → Users: kenal semua akaun dalam senarai?</li>
+      <li>Firestore → Rules: tiada <b>if true</b> pada collection yang simpan rahsia (session, token, kata laluan).</li>
+      <li>Firestore → Rules: tiada <b>match /{document=**}</b> yang buka semua data kepada mana-mana akaun.</li>
+    </ul></div>
   </div>
   <div id="screen-mini" class="screen">
     <div class="status-bar">MINI GAME</div>
@@ -9146,6 +9189,7 @@
       else if (k === 'mini') bukaMini();
       else if (k === 'mx') bukaMx();
       else if (k === 'kd') bukaKd();
+      else if (k === 'atur') { showScreen('screen-atur'); try { window.scrollTo(0, 0); } catch (e2) {} }
     });
 
     // ══ BUKU PANDUAN & PERATURAN — semua maklumat cara main dikumpul di sini ══
@@ -10349,6 +10393,12 @@
           b.type = 'button'; b.setAttribute('data-gm-tab', 'kd'); b.textContent = 'KEDAI';
           t[i].appendChild(b);
         }
+        // Tab PERATURAN di depan sekali
+        if (!t[i].querySelector('[data-gm-tab="atur"]')) {
+          b = document.createElement('button');
+          b.type = 'button'; b.setAttribute('data-gm-tab', 'atur'); b.textContent = 'PERATURAN';
+          t[i].insertBefore(b, t[i].firstChild);
+        }
         s = t[i].parentNode;
         if (s.querySelector('.mw-bar')) continue;
         bar = document.createElement('div');
@@ -10430,6 +10480,7 @@
       if (k === 'menu') showScreen('screen-menu');
       else if (k === 'pos') bukaBank(false);
       else if (k === 'kd') bukaKd();
+      else if (k === 'atur') showScreen('screen-atur');
       else bukaMini();
     };
     // ══ BANK COIN: kumpul mata wang arked → tukar jadi coin (pegawai bank berjalan antara kaunter) ══
