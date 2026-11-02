@@ -5612,8 +5612,11 @@
     .bs-pospon i { display: block; width: 12px; height: 15px; border: 2px solid #000; border-radius: 2px; box-shadow: 2px -2px 0 #fff, 2px -2px 0 2px #000; }
     .bs-pospon.bs-ada { background: #000; color: #fff; }
     .bs-pospon.bs-ada i { border-color: #fff; box-shadow: 2px -2px 0 #000, 2px -2px 0 2px #fff; }
-    .bs-terbang { position: absolute; z-index: 50; box-sizing: border-box; border: 3px solid #000; border-radius: 10px; background: #fff; overflow: hidden;
-      font-size: 0.7rem; font-weight: bold; text-align: center; pointer-events: none; }
+    /* Burung merpati pos: duduk di bucu kad (setiap kad, jadi tak bocor jawapan). Pasangan palsu → dia bawa sampul ke SR POSPON */
+    .bs-kad { position: relative; }
+    .bs-burung { position: absolute; right: 8px; top: 6px; width: 38px; height: 31px; }
+    .bs-burung svg, .bs-burung-terbang svg { display: block; width: 100%; height: 100%; }
+    .bs-burung-terbang { position: absolute; z-index: 50; width: 38px; height: 31px; pointer-events: none; }
     #bs-pospon-senarai { display: none; margin: 6px 0; padding: 8px 10px; border: 2px dashed #000; border-radius: 10px; font-size: 0.85rem; }
     #bs-pospon-senarai b { display: block; margin-bottom: 4px; letter-spacing: 1px; }
     #bs-pospon-senarai div { padding: 4px 0; border-top: 1px solid #000; }
@@ -6237,6 +6240,7 @@
     <div class="bs-bar"><i id="bs-masa-isi"></i><span id="bs-masa">00:40</span></div>
     <div class="bs-bar bs-bar-n"><i id="bs-n-isi"></i><span id="bs-n">0/10</span></div>
     <div class="bs-kad" id="bs-kad">
+      <i class="bs-burung" id="bs-burung"></i>
       <div class="bs-hasil" id="bs-hasil"></div>
       <div class="bs-en" id="bs-en"></div>
       <div class="bs-ikon"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 18 Q6 7 18 7 M14 3 L18 7 L14 11 M26 14 Q26 25 14 25 M18 21 L14 25 L18 29" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -7919,28 +7923,36 @@
       else if (bs.i >= bs.soalan.length) bsTamat(true);
       else lukisBs();
     }
-    // SR POSPON: kad kecil terbang dari kad soalan ke pil "SR POSPON (n)" di atas kanan (bingkai pendek, sesuai e-ink)
+    // SR POSPON: burung merpati pos (hitam putih) duduk di bucu setiap kad. Pasangan PALSU → dia kepak sayap,
+    // bawa sampul surat terbang melengkung ke pil "SR POSPON (n)" di atas kanan (bingkai pendek, sesuai e-ink)
+    function svgBurung(f) {
+      var s = '<svg viewBox="0 0 32 26" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M6 15 L1 12 L2 17 Z" fill="#000"/>' +
+        '<path d="M6 15 Q8 9 16 10 Q22 10 24 13 Q22 19 14 19 Q8 19 6 15 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>' +
+        '<circle cx="24" cy="10" r="3.5" fill="#fff" stroke="#000" stroke-width="1.5"/><circle cx="25" cy="9.5" r="0.9" fill="#000"/>' +
+        '<path d="M27.3 10 L30.5 11 L27.3 11.9 Z" fill="#000"/>';
+      if (f === 'duduk') return s + '<path d="M10 13 Q15 10.5 19.5 14 Q14 16.5 10 13 Z" fill="#000"/><path d="M13 19 V23 M17 19 V23" stroke="#000" stroke-width="1.3"/></svg>';
+      s += '<rect x="11.5" y="19" width="9" height="6" fill="#fff" stroke="#000" stroke-width="1.2"/><path d="M11.5 19 L16 22.3 L20.5 19" fill="none" stroke="#000" stroke-width="1"/>';
+      return s + (f === 'atas' ? '<path d="M12 12 Q12.5 2 20 0.8 Q18.5 8 17.5 12 Z" fill="#000"/>' : '<path d="M11 14 Q6 20 3 22 Q11 21 16 15 Z" fill="#000"/>') + '</svg>';
+    }
     function bsPospon(q, siap) {
-      var a = el('bs-kad').getBoundingClientRect(), b = el('bs-pospon').getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
-      var c = document.createElement('div'), lk = [0, 0.3, 0.6, 0.85, 1], i = 0;
+      var br = el('bs-burung'), a = br.getBoundingClientRect(), b = el('bs-pospon').getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
+      var x0 = a.left + sx, y0 = a.top + sy, x1 = b.left + sx - 4, y1 = b.top + sy - 18, n = 8, i = 0, c = document.createElement('i');
       bs.pospon.push(q);
-      c.className = 'bs-terbang';
-      c.textContent = q.p.en + ' / ' + q.bm;
+      c.className = 'bs-burung-terbang';
       document.body.appendChild(c);
+      br.style.visibility = 'hidden';
       (function main() {
-        var t = lk[i], w = a.width + (40 - a.width) * t, h = a.height + (28 - a.height) * t;
-        c.style.left = (a.left + sx + (b.left + b.width - 44 - a.left) * t) + 'px';
-        c.style.top = (a.top + sy + (b.top - 6 - a.top) * t) + 'px';
-        c.style.width = w + 'px'; c.style.height = h + 'px'; c.style.lineHeight = h + 'px';
-        c.style.fontSize = (t < 0.6 ? 0.9 : 0.01) + 'rem';
+        var t = i / n;
+        c.style.left = (x0 + (x1 - x0) * t) + 'px';
+        c.style.top = (y0 + (y1 - y0) * t - Math.sin(t * Math.PI) * 45) + 'px';
+        c.innerHTML = svgBurung(i % 2 ? 'bawah' : 'atas');
         i++;
-        if (i < lk.length) { setTimeout(main, 110); return; }
-        setTimeout(function() {
-          if (c.parentNode) c.parentNode.removeChild(c);
-          el('bs-pospon').className = 'bs-pospon bs-ada';
-          el('bs-pospon').innerHTML = '<i></i>SR POSPON (' + bs.pospon.length + ')';
-          siap();
-        }, 110);
+        if (i <= n) { setTimeout(main, 110); return; }
+        if (c.parentNode) c.parentNode.removeChild(c);
+        el('bs-pospon').className = 'bs-pospon bs-ada';
+        el('bs-pospon').innerHTML = '<i></i>SR POSPON (' + bs.pospon.length + ')';
+        siap();
       })();
     }
     // Tamat: menang → level lulus + gangsa (REWARD jawapan betul + BONUS kesilapan tak dipakai). Kalah → tiada ganjaran.
@@ -9302,7 +9314,7 @@
           'Setiap level: ' + BS_BIL + ' soalan dalam ' + BS_MASA + ' saat. Bar atas = masa, bar bawah = soalan yang sudah dijawab.',
           'Lebih kurang separuh soalan (4 hingga 6, rawak) tunjuk maksud PALSU yang diambil dari perkataan lain dalam bank. Jangan teka ikut kiraan!',
           'Lepas setiap jawapan, kad tunjuk BETUL! atau SALAH! dan maksud sebenar selama 1 saat. Jam berhenti masa ini.',
-          'Pasangan PALSU (betul atau salah jawapan awak) → kad terbang ke SR POSPON di atas kanan: SR POSPON (1), (2)... Bila game tamat, senarai SR POSPON tunjuk dua pasangan sebenar setiap kad (cth nurse = jururawat · berbunyi = sounded).',
+          'Burung merpati pos duduk di bucu setiap kad. Pasangan PALSU (betul atau salah jawapan awak) → burung bawa sampul terbang ke SR POSPON di atas kanan: SR POSPON (1), (2)... Bila game tamat, senarai SR POSPON tunjuk dua pasangan sebenar setiap kad (cth nurse = jururawat · berbunyi = sounded). SR POSPON cuma paparan, tak ubah SR.',
           BS_NYAWA + ' KESILAPAN → kalah. Masa habis sebelum ' + BS_BIL + ' soalan dijawab → kalah. Kalah = tiada ganjaran, ulang level yang sama.',
           'MENANG (semua ' + BS_BIL + ' soalan dijawab, kurang dari ' + BS_NYAWA + ' kesilapan): REWARD ' + EKO.BS_GANGSA_KATA + ' g gangsa setiap jawapan betul + BONUS ' + EKO.BS_BONUS_NYAWA + ' g setiap kesilapan yang tak dipakai → CLAIM. Menang sempurna = ' + (BS_BIL * EKO.BS_GANGSA_KATA + BS_NYAWA * EKO.BS_BONUS_NYAWA) + ' g.',
           'SR BETUL / SALAH: setiap game paling banyak ' + BS_SR_MAKS + ' (separuh) dari SR Betul/Salah yang sudah sampai masa, selebihnya perkataan BARU dari bank. Tiada SR sampai masa → kesemua ' + BS_BIL + ' perkataan baru.',
