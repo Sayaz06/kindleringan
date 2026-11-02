@@ -5614,8 +5614,9 @@
     .bs-pospon.bs-ada i { border-color: #fff; box-shadow: 2px -2px 0 #000, 2px -2px 0 2px #fff; }
     /* Burung merpati pos: duduk di bucu kad (setiap kad, jadi tak bocor jawapan). Pasangan palsu → dia bawa sampul ke SR POSPON */
     .bs-kad { position: relative; }
-    .bs-burung { position: absolute; left: 8px; top: 6px; width: 38px; height: 31px; }
-    .bs-burung svg, .bs-burung-terbang svg { display: block; width: 100%; height: 100%; }
+    .bs-burung { position: absolute; right: 8px; top: 6px; width: 38px; height: 31px; }
+    /* Burung menghadap ke KIRI (arah pil SR POSPON) */
+    .bs-burung svg, .bs-burung-terbang svg { display: block; width: 100%; height: 100%; -webkit-transform: scaleX(-1); transform: scaleX(-1); }
     .bs-burung-terbang { position: absolute; z-index: 50; width: 38px; height: 31px; pointer-events: none; }
     #bs-pospon-senarai { display: none; margin: 6px 0; padding: 8px 10px; border: 2px dashed #000; border-radius: 10px; font-size: 0.85rem; }
     #bs-pospon-senarai b { display: block; margin-bottom: 4px; letter-spacing: 1px; }
@@ -7937,8 +7938,8 @@
     }
     function bsPospon(q, siap) {
       var br = el('bs-burung'), a = br.getBoundingClientRect(), b = el('bs-pospon').getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
-      // Burung duduk di KIRI kad, muka ke kanan → terbang ke kanan, hinggap di sebelah kiri pil (tak tutup tulisan)
-      var x0 = a.left + sx, y0 = a.top + sy, x1 = b.left + sx - 42, y1 = b.top + sy + (b.height - 31) / 2, n = 8, i = 0, c = document.createElement('i');
+      // Burung duduk di KANAN kad, muka ke kiri → terbang ke kiri, hinggap di atas ikon pil (tak tutup tulisan)
+      var x0 = a.left + sx, y0 = a.top + sy, x1 = b.left + sx - 2, y1 = b.top + sy - 27, n = 8, i = 0, c = document.createElement('i');
       bs.pospon.push(q);
       c.className = 'bs-burung-terbang';
       document.body.appendChild(c);
