@@ -6541,7 +6541,7 @@
       <span class="gm-alat-tajuk" style="visibility:hidden;">BOS</span>
       <button type="button" class="gm-kecil" data-panduan="pd-kedai">Panduan</button>
     </div>
-    <div class="hj-atas"><div><small>HADIAH BOS HARI INI</small><b id="hj-masa">-</b></div><div><small>RINGGIT KUNING</small><b id="hj-merah">-</b></div></div>
+    <div class="hj-atas"><div><small>HADIAH BOS HARI INI</small><b id="hj-masa">-</b></div><div><small>RINGGIT MERAH</small><b id="hj-merah">-</b></div></div>
     <div id="kd-hijau"></div>
     <button id="btn-kd-claim" class="btn btn-primary" style="display:none;">CLAIM</button>
     <div style="height:30px;"></div>
@@ -9366,7 +9366,7 @@
           'RUNCIT MALAYSIA: barang ikut harga dunia sebenar, bayar Ringgit Merah. OVERSEA MART: melancong (duit luar negara mahal), bayar Ringgit Biru.',
           'INVESTMENT: barang yang awak tambah = barang PEMBEKAL. Tekan barang → BELI & PAMER (modal Ringgit Merah). Dalam 3 saat pelanggan datang dan beli ' + Math.round(EKO.HJ_JUAL_X * 100) + '% dari harga (untung ' + Math.round((EKO.HJ_JUAL_X - 1) * 100) + '%). Tiada had.',
           'Barang yang dah dijual hari ini ditanda SUDAH DIBELI (2x, 3x...). Barang yang belum = DISYORKAN.',
-          'HADIAH BOS: habiskan SEMUA jenis barang pembekal hari ini (sekurang-kurangnya sekali setiap satu) → bos bagi ' + rm(EKO.HJ_HADIAH_SEN) + ' Ringgit Kuning. Separuh jalan tiada hadiah. Reset setiap 12 malam.',
+          'HADIAH BOS: habiskan SEMUA jenis barang pembekal hari ini (sekurang-kurangnya sekali setiap satu) → bos bagi ' + rm(EKO.HJ_BOS_SEN) + ' Ringgit Merah untuk SETIAP jenis barang (cth 6 jenis = ' + rm(6 * EKO.HJ_BOS_SEN) + '), diberi di akhir. Separuh jalan tiada hadiah. Reset setiap 12 malam.',
           'RINGGIT KUNING: dapat setiap kali beli di Runcit Malaysia, Oversea Mart dan sedekah. Belanja 1.00 = ' + rm(EKO.KUNING_SEN) + ' Kuning. Dikira setiap barang: makin mahal barang, makin kecil peratus (cth 4.00 → ' + rm(kuningDapat(400)) + ', 25.00 → ' + rm(kuningDapat(2500)) + '). Investment tiada Kuning.',
           'PARTY: hadiah kerja keras, bayar Ringgit Kuning sahaja. Beli di Party tiada ganjaran Kuning. Kadar Kuning ditetapkan di BANK PUSAT.',
           'Tekan barang = masuk troli (tekan nama dalam troli untuk kurangkan). BAYAR = tolak dari dompet.',
@@ -10043,9 +10043,10 @@
     }
     // ══ INVESTMENT (kedai hijau): beli barang pembekal → pamer → 3 saat pelanggan datang → jual 150% (untung 50%) ══
     // game_stat/hijau { tarikh, jual{itemId: bil hari ini}, pameran {id, nama, sen, at} | null, hadiahTarikh }
-    // HADIAH BOS: habiskan SEMUA jenis barang pembekal hari ini (sekurang-kurangnya sekali) → 1.00 Ringgit Kuning
+    // HADIAH BOS: habiskan SEMUA jenis barang pembekal hari ini (sekurang-kurangnya sekali) → 0.10 Merah x bilangan jenis
     EKO.HJ_JUAL_X = 1.5;
-    EKO.HJ_HADIAH_SEN = 100;
+    EKO.HJ_BOS_SEN = 10;      // HADIAH BOS: 0.10 Merah setiap jenis barang (6 jenis = 0.60), diberi bila semua habis dijual
+    function hjHadiah(k) { return (k ? k.total : kdSenarai('hijau').length) * EKO.HJ_BOS_SEN; }
     var hjAnim = false;
     function hjHasil(sen) { return Math.floor(sen * EKO.HJ_JUAL_X + 1e-9); }
     function hjJualHari() { var h = KD.hijau || {}; return h.tarikh === kdHari(0) ? (h.jual || {}) : {}; }
@@ -10089,13 +10090,13 @@
     var SVG_BOS = '<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path d="M10 5 H26 V13 Q26 21 18 22 Q10 21 10 13 Z" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
       '<path d="M10 8 H5 Q5 15 10 15 M26 8 H31 Q31 15 26 15" fill="none" stroke="#000" stroke-width="2"/><path d="M18 22 V27 M12 31 H24 V27 H12 Z" fill="#000" stroke="#000" stroke-width="2"/>' +
       '<path d="M18 8 L19.5 11.3 L23 11.6 L20.4 13.9 L21.2 17.3 L18 15.5 L14.8 17.3 L15.6 13.9 L13 11.6 L16.5 11.3 Z" fill="#000"/></svg>';
-    // HADIAH BOS: page dengan cop setiap jenis barang terjual + laluan ke 1.00 Kuning
+    // HADIAH BOS: page dengan cop setiap jenis barang terjual + laluan ke hadiah Merah
     function lukisHijau() {
       var k = hjKira(), h = '', i, it, t = new Date(), esok = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1), min = Math.max(0, Math.floor((esok - t) / 60000));
       var CEK = '<svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M2.2 5.2 L4.2 7.2 L7.8 3.2" fill="none" stroke="#fff" stroke-width="1.6"/></svg>';
       var max = Math.max(1, k.total), pos = function(n) { return 8 + n / max * 80; };
       el('hj-masa').textContent = t.getDate() + '/' + (t.getMonth() + 1) + ' · reset dalam ' + Math.floor(min / 60) + 'j ' + (min % 60) + 'm';
-      el('hj-merah').textContent = rm(DP.kuningSen || 0);
+      el('hj-merah').textContent = rm(DP.merahSen || 0);
       h += '<div class="hj-sek">JENIS BARANG TERJUAL HARI INI · ' + k.n + '/' + k.total + '</div>';
       if (!k.total) h += '<div class="kd-kecil"><b>Belum ada barang pembekal. Masuk INVESTMENT → TAMBAH barang dulu.</b></div>';
       else {
@@ -10111,16 +10112,16 @@
       }
       // Laluan: satu hadiah sahaja di hujung (habis semua). 30% / 50% tiada apa-apa.
       h += '<div class="hj-sek">HADIAH BOS</div><div class="hj-jejak">' +
-        '<div class="hj-hadiah' + (k.penuh ? ' hj-dapat' : '') + '" style="left:' + pos(max) + '%;"><b>' + rm(EKO.HJ_HADIAH_SEN) + '</b><small>KUNING</small></div>' +
+        '<div class="hj-hadiah' + (k.penuh ? ' hj-dapat' : '') + '" style="left:' + pos(max) + '%;"><b>' + rm(hjHadiah(k)) + '</b><small>MERAH</small></div>' +
         '<div class="hj-bar"><i style="width:' + (k.n > 0 ? (pos(Math.min(k.n, max)) - 2) / 96 * 100 : 0) + '%;"></i></div>';
       if (max <= 12) for (i = 1; i < max; i++) h += '<span class="hj-nod' + (k.n >= i ? ' hj-on' : '') + '" style="left:' + pos(i) + '%;"></span>';
       h += '<span class="hj-nod hj-besar' + (k.penuh ? ' hj-on' : '') + '" style="left:' + pos(max) + '%;">' + (k.penuh ? CEK : '') + '</span></div>';
-      h += '<div class="kd-kecil">Bos bagi ' + rm(EKO.HJ_HADIAH_SEN) + ' Ringgit Kuning bila SEMUA jenis barang pembekal habis dijual hari ini. Separuh jalan tiada hadiah.</div>';
+      h += '<div class="kd-kecil">Bos bagi ' + rm(EKO.HJ_BOS_SEN) + ' Ringgit Merah setiap jenis barang (' + k.total + ' jenis = ' + rm(hjHadiah(k)) + ') bila SEMUA jenis barang pembekal habis dijual hari ini. Separuh jalan tiada hadiah.</div>';
       if (k.dah) h += '<div class="kd-kecil"><b>Hadiah hari ini dah diambil. Esok cuba lagi!</b></div>';
       el('kd-hijau').innerHTML = h;
       el('btn-kd-claim').style.display = k.boleh ? '' : 'none';
-      el('btn-kd-claim').textContent = 'CLAIM ' + rm(EKO.HJ_HADIAH_SEN) + ' KUNING';
-      el('btn-kd-hj').innerHTML = SVG_BOS + '<span><b>HADIAH BOS</b><small>Terjual ' + k.n + '/' + k.total + ' jenis hari ini · habis semua = ' + rm(EKO.HJ_HADIAH_SEN) + ' Kuning</small></span>' +
+      el('btn-kd-claim').textContent = 'CLAIM ' + rm(hjHadiah(k)) + ' MERAH';
+      el('btn-kd-hj').innerHTML = SVG_BOS + '<span><b>HADIAH BOS</b><small>Terjual ' + k.n + '/' + k.total + ' jenis hari ini · habis semua = ' + rm(hjHadiah(k)) + ' Merah</small></span>' +
         (k.boleh ? '<i>CLAIM</i>' : k.dah ? '<i>DAH AMBIL</i>' : '<i>BUKA</i>');
     }
     function bukaHj() {
@@ -10517,32 +10518,33 @@
         if (n < fr.length) setTimeout(main, 180);
       })();
     }
-    // CLAIM HADIAH BOS → 1.00 Ringgit Kuning (sekali sehari, bila semua jenis barang pembekal habis dijual)
+    // CLAIM HADIAH BOS → 0.10 Ringgit Merah x bilangan jenis barang (sekali sehari, bila semua jenis barang pembekal habis dijual)
     function claimHijau() {
       if (kdSibuk) return;
       kdSibuk = true;
-      var lama = DP.kuningSen || 0;
+      var lama = DP.merahSen || 0;
       db.runTransaction(function(tx) {
         return tx.get(refHijau()).then(function(sh) {
           KD.hijau = (sh && sh.exists) ? sh.data() : {};
-          var k = hjKira(), d;
+          var k = hjKira(), d, sen;
           if (!k.boleh) return 0;
+          sen = hjHadiah(k);
           d = hjDoc(KD.hijau, { hadiahTarikh: k.hari });
           tx.set(refHijau(), d);
-          tx.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(EKO.HJ_HADIAH_SEN), updatedAt: Date.now() }, { merge: true });
-          tx.set(kol('dompet_log').doc(), { jenis: 'bos>kuning', ket: 'HADIAH BOS (' + k.total + '/' + k.total + ' jenis barang habis dijual) +' + rm(EKO.HJ_HADIAH_SEN) + ' Kuning', at: Date.now() });
+          tx.set(refDompet(), { merahSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
+          tx.set(kol('dompet_log').doc(), { jenis: 'bos>merah', ket: 'HADIAH BOS (' + k.total + '/' + k.total + ' jenis barang habis dijual) +' + rm(sen) + ' Merah', at: Date.now() });
           KD.hijau = d;
-          return EKO.HJ_HADIAH_SEN;
+          return sen;
         });
       }).then(function(c) {
         if (!c) { kdSibuk = false; lukisHijau(); return; }
         el('btn-kd-claim').style.display = 'none';
         try { window.scrollTo(0, 0); } catch (e) {}
         terbangCoin(el('kd-hijau'), el('hj-merah'), function() {
-          DP.kuningSen = lama + c;
+          DP.merahSen = lama + c;
           kdSibuk = false;
           lukisHijau();
-          el('hj-masa').textContent = 'Terima kasih bos! +' + rm(c) + ' Ringgit Kuning';
+          el('hj-masa').textContent = 'Terima kasih bos! +' + rm(c) + ' Ringgit Merah';
           mwLukis();
         });
       }).catch(function(e) { kdSibuk = false; el('hj-masa').textContent = 'Gagal claim: ' + ((e && e.message) || e); });
