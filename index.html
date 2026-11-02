@@ -5750,8 +5750,10 @@
     #gm-panduan .pd-atas { position: sticky; position: -webkit-sticky; top: 0; background: #fff; display: flex; align-items: center; gap: 8px;
       padding: 10px 0 8px; border-bottom: 2px solid #000; margin-bottom: 6px; }
     #gm-panduan .pd-atas b { flex: 1 1 auto; font-size: 1.1rem; letter-spacing: 1px; }
-    #gm-panduan .pd-isi-tab { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+    #gm-panduan .pd-isi-tab { margin: 8px 0 2px; }
+    #gm-panduan .pd-isi-tab button { margin: 0 6px 6px 0; }
     #gm-panduan h3 { font-size: 1.05rem; margin: 16px 0 6px; padding: 4px 8px; background: #000; color: #fff; border-radius: 4px; }
+    #gm-panduan .pd-isi-tab button.pd-on { background: #000; color: #fff; }
     #gm-panduan ul { margin: 0 0 6px; padding-left: 20px; }
     #gm-panduan li { font-size: 0.9rem; line-height: 1.45; margin-bottom: 4px; }
     /* Titik pilih Ringgit Biru (kiri) / Merah (kanan) — macam titik skrol tapi melintang */
@@ -7841,7 +7843,7 @@
           el('btn-bs-baru').style.display = '';
           return;
         }
-        bs = { soalan: bsSoalan(pas, bank), i: 0, salah: 0, betulN: 0, sisa: BS_MASA, kunci: false, tamat: false, lv: BS.lulus + 1, pospon: [] };
+        bs = { soalan: bsSoalan(pas, bank), i: 0, salah: 0, betulN: 0, sisa: BS_MASA, kunci: false, tamat: false, lv: BS.lulus + 1, pospon: [], srN: 0 };
         el('bs-info').textContent = '';
         lukisBs();
         bsJam = setInterval(bsDetik, 1000);
@@ -7861,7 +7863,8 @@
       var q = bs.soalan[bs.i], ok = kataBetul === q.betul;
       bs.kunci = true;
       bs.i++;
-      if (ok) { bs.betulN++; bsSimpanSr(q.p); } else bs.salah++;
+      // Kad PALSU = SR POSPON → tak masuk SR (walaupun dijawab betul). Hanya pasangan BETUL yang dijawab betul masuk SR.
+      if (ok) { bs.betulN++; if (q.betul) { bs.srN++; bsSimpanSr(q.p); } } else bs.salah++;
       el('bs-kad').className = 'bs-kad ' + (ok ? 'bs-ok' : 'bs-ko');
       el('bs-hasil').textContent = ok ? 'BETUL!' : 'SALAH!';
       el('bs-sebenar').textContent = q.betul ? 'Pasangan ini memang betul.' : 'Maksud sebenar: ' + q.p.en + ' = ' + q.p.bm;
@@ -7928,19 +7931,9 @@
       kol('game_stat').doc('betulsalah').set(ubah, { merge: true }).catch(function(e) { el('bs-info').textContent = 'Gagal simpan: ' + (e.message || e); });
       el('bs-butang').style.display = 'none';
       el('bs-tamat').style.display = 'block';
-      // Senarai kad SR POSPON: pasangan sebenar bagi setiap kad palsu dalam pusingan ini
-      if (bs.pospon.length) {
-        var sp = '<b>SR POSPON (' + bs.pospon.length + ') · pasangan sebenar</b>', ip;
-        for (ip = 0; ip < bs.pospon.length; ip++) {
-          var qp = bs.pospon[ip];
-          sp += '<div>(' + (ip + 1) + ') ' + escKapal(qp.p.en) + ' = ' + escKapal(qp.p.bm) + ' · ' + escKapal(qp.bm) + ' = ' + escKapal(qp.palsuEn || '?') + '</div>';
-        }
-        el('bs-pospon-senarai').innerHTML = sp;
-        el('bs-pospon-senarai').style.display = 'block';
-      }
       if (!menang) {
         el('bs-skor').textContent = sebab;
-        el('bs-skor-sub').textContent = 'Tiada ganjaran · cuba Level ' + bs.lv + ' lagi\n' + bs.betulN + ' jawapan betul masuk / naik SR Betul/Salah.';
+        el('bs-skor-sub').textContent = 'Tiada ganjaran · cuba Level ' + bs.lv + ' lagi\n' + bs.srN + ' perkataan masuk / naik SR Betul/Salah (kad SR POSPON tak dikira).';
         el('btn-bs-baru').style.display = '';
         try { el('bs-tamat').scrollIntoView(false); } catch (e) {}
         return;
@@ -9285,12 +9278,12 @@
           'Setiap level: ' + BS_BIL + ' soalan dalam ' + BS_MASA + ' saat. Bar atas = masa, bar bawah = soalan yang sudah dijawab.',
           'Lebih kurang separuh soalan (4 hingga 6, rawak) tunjuk maksud PALSU yang diambil dari perkataan lain dalam bank. Jangan teka ikut kiraan!',
           'Lepas setiap jawapan, kad tunjuk BETUL! atau SALAH! dan maksud sebenar selama 1 saat. Jam berhenti masa ini.',
-          'Burung merpati pos duduk di bucu setiap kad. Pasangan PALSU (betul atau salah jawapan awak) → burung bawa sampul terbang ke SR POSPON di atas kanan: SR POSPON (1), (2)... Bila game tamat, senarai SR POSPON tunjuk dua pasangan sebenar setiap kad (cth nurse = jururawat · berbunyi = sounded). SR POSPON cuma paparan, tak ubah SR.',
+          'Burung merpati pos duduk di bucu setiap kad. Pasangan PALSU (betul atau salah jawapan awak) → burung bawa sampul terbang ke SR POSPON di atas kanan: SR POSPON (1), (2)... Kad SR POSPON TIDAK masuk SR (walaupun awak jawab betul) — perkataan itu akan keluar lagi dalam game lain.',
           BS_NYAWA + ' KESILAPAN → kalah. Masa habis sebelum ' + BS_BIL + ' soalan dijawab → kalah. Kalah = tiada ganjaran, ulang level yang sama.',
           'MENANG (semua ' + BS_BIL + ' soalan dijawab, kurang dari ' + BS_NYAWA + ' kesilapan): REWARD ' + EKO.BS_GANGSA_KATA + ' g gangsa setiap jawapan betul + BONUS ' + EKO.BS_BONUS_NYAWA + ' g setiap kesilapan yang tak dipakai → CLAIM. Menang sempurna = ' + (BS_BIL * EKO.BS_GANGSA_KATA + BS_NYAWA * EKO.BS_BONUS_NYAWA) + ' g.',
           'SR BETUL / SALAH: setiap game paling banyak ' + BS_SR_MAKS + ' (separuh) dari SR Betul/Salah yang sudah sampai masa, selebihnya perkataan BARU dari bank. Tiada SR sampai masa → kesemua ' + BS_BIL + ' perkataan baru.',
           'Perkataan baru habis di bank → tempat kosong diisi SR Betul/Salah lain yang sudah sampai masa. Jumlah masih kurang dari ' + BS_BIL + ' → kedai TUTUP (muat kontena di PELABUHAN).',
-          'Hanya perkataan yang DIJAWAB BETUL masuk SR (perkataan baru → fasa pertama, perkataan SR → naik satu fasa), sama ada menang atau kalah. Jawapan salah → SR tak berubah.',
+          'Hanya pasangan BETUL yang DIJAWAB BETUL masuk SR (perkataan baru → fasa pertama, perkataan SR → naik satu fasa), sama ada menang atau kalah. Jawapan salah atau kad SR POSPON → SR tak berubah. Ganjaran gangsa tetap dikira untuk SEMUA jawapan betul.',
           'Tukar gangsa → coin di BANK COIN (tekan + pada Coin). 1 g = ' + EKO.GANGSA_COIN + ' coin, jadi 1 jawapan betul (' + EKO.BS_GANGSA_KATA + ' g) = ' + EKO.KATA_COIN + ' coin, sama nilai dengan 1 perkataan di game lain.',
           'Butang SR di page Level: senarai SR Betul/Salah. SR ini berasingan daripada SR Padan, Jutawan, Memori dan Duri (selang sama).'
         ]) +
@@ -9339,12 +9332,22 @@
           'Had pulangan sehari = ' + EKO.HJ_HAD_X + '× Ringgit Merah yang awak tukar dari coin hari itu (dari belajar). Upah Pelabuhan tidak dikira dalam had.'
         ]);
     }
+    // Buku panduan BERASINGAN: hanya bahagian game / tempat itu dipapar. Tab di atas untuk tukar bahagian.
+    function pdTunjuk(ke) {
+      var isi = el('gm-panduan-isi').children, tab = document.querySelectorAll('#gm-panduan [data-pd-ke]'), i, on = false;
+      if (!ke || !el(ke)) ke = 'pd-mini';
+      for (i = 0; i < isi.length; i++) {
+        if (isi[i].tagName === 'H3') on = isi[i].id === ke;
+        isi[i].style.display = on ? '' : 'none';
+      }
+      for (i = 0; i < tab.length; i++) tab[i].className = 'gm-kecil' + (tab[i].getAttribute('data-pd-ke') === ke ? ' pd-on' : '');
+      el('gm-panduan').scrollTop = 0;
+    }
     function bukaPanduan(ke) {
       lukisPanduan();
       var p = el('gm-panduan');
       p.style.display = 'block'; p.setAttribute('aria-hidden', 'false');
-      var sasar = ke && el(ke);
-      p.scrollTop = sasar ? Math.max(0, sasar.offsetTop - 60) : 0;
+      pdTunjuk(ke);
     }
     function tutupPanduan() { var p = el('gm-panduan'); p.style.display = 'none'; p.setAttribute('aria-hidden', 'true'); }
     el('btn-pd-tutup').onclick = tutupPanduan;
@@ -9352,7 +9355,7 @@
       var t = e.target;
       if (!t || !t.getAttribute) return;
       if (t.getAttribute('data-panduan')) bukaPanduan(t.getAttribute('data-panduan'));
-      else if (t.getAttribute('data-pd-ke')) { var s = el(t.getAttribute('data-pd-ke')); if (s) el('gm-panduan').scrollTop = Math.max(0, s.offsetTop - 60); }
+      else if (t.getAttribute('data-pd-ke')) pdTunjuk(t.getAttribute('data-pd-ke'));
     });
 
     // ══ Titik Biru / Merah: satu panel dipapar pada satu masa. Tekan titik, atau leret kiri/kanan. ══
