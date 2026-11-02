@@ -5566,6 +5566,8 @@
     .gl-w.gl-biasa { color: #888; font-weight: normal; cursor: default; }
     .gl-w.gl-ada { text-decoration: underline; text-decoration-thickness: 2px; }
     .gl-w.gl-on { background: #000; color: #fff; border-color: #000; }
+    /* Akhiran -nya dipisah: boleh pilih kata dasar sahaja, atau kata dasar + nya */
+    .gl-w.gl-nya { padding-left: 2px; border-left: 1px dashed #000; border-radius: 0 4px 4px 0; }
     #gl-pilihan { border: 2px solid #000; border-radius: 8px; padding: 8px; margin: 6px 0; font-size: 0.95rem; text-align: center; min-height: 1.3em; }
     .gl-pas { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #000; padding: 6px 2px; font-size: 0.95rem; }
     .gl-pas span { flex: 1 1 auto; min-width: 0; word-break: break-word; }
@@ -5575,6 +5577,7 @@
     .kt-kotak { position: relative; flex: 1 1 auto; max-width: 100%; min-height: 32px; box-sizing: border-box; padding: 3px 4px 3px 6px;
       border: 2px solid #000; border-left-width: 4px; border-right-width: 4px; background: #fff; color: #000; word-break: normal; overflow-wrap: normal; }
     .kt-kotak.kt-baru { background: #ccc; }
+    .kt-kotak.kt-lapor { border-style: dashed; border-width: 3px; }
     .kt-kotak b { display: block; font-size: 0.7rem; padding-right: 18px; }
     .kt-kotak .kt-bm { display: block; font-size: 0.7rem; margin-top: 1px; border-top: 1px dashed #000; padding-top: 1px; }
     .kt-kotak .kt-tag { display: inline-block; font-size: 0.55rem; font-weight: bold; border: 1px solid #000; padding: 0 2px; margin-top: 2px; background: #fff; }
@@ -5756,6 +5759,28 @@
     #gm-panduan .pd-isi-tab button.pd-on { background: #000; color: #fff; }
     #gm-panduan ul { margin: 0 0 6px; padding-left: 20px; }
     #gm-panduan li { font-size: 0.9rem; line-height: 1.45; margin-bottom: 4px; }
+    /* REPORT perkataan (semua game): butang kecil di hujung kanan bar status + popup FAHAM */
+    #gp-status, #mm-status, #dr-status, #bs-status, #jws-status { padding-left: 78px; padding-right: 78px; }
+    #btn-lapor { display: none; position: fixed; right: 6px; top: 4px; z-index: 9000; height: 20px; padding: 0 7px; border: 2px solid #000; border-radius: 10px;
+      background: #fff; color: #000; font-family: inherit; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; line-height: 16px; }
+    #btn-lapor.lp-ada { background: #000; color: #fff; }
+    #btn-lapor.lp-sedia { background: #000; color: #fff; outline: 3px dashed #000; outline-offset: 2px; }
+    .lp-hantu { position: fixed; z-index: 9500; pointer-events: none; padding: 3px 8px; border: 2px dashed #000; border-radius: 6px; background: #fff;
+      font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
+    .gp-k, .mm-k, .dr-k, .jw-p, #bs-en, #bs-bm, #jws-soalan { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    #lp-popup { display: none; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 9800; background: #fff; overflow: auto; }
+    #lp-popup .lp-kotak { margin: 24px 12px; padding: 12px; border: 3px solid #000; border-radius: 12px; background: #fff; }
+    #lp-popup h3 { margin: 0 0 8px; padding: 4px 8px; background: #000; color: #fff; border-radius: 4px; font-size: 1rem; letter-spacing: 1px; }
+    #lp-popup ol { margin: 0 0 10px; padding-left: 20px; }
+    #lp-popup li { font-size: 0.88rem; line-height: 1.45; margin-bottom: 5px; }
+    #lp-popup label { display: block; margin: 8px 0 12px; font-size: 0.85rem; }
+    #lp-popup label input { width: 18px; height: 18px; margin: 0 8px 0 0; vertical-align: middle; }
+    /* BENGKEL di Pelabuhan: kapal yang ada perkataan di-report */
+    .bk-tajuk { margin: 12px 0 6px; padding-bottom: 2px; border-bottom: 2px solid #000; font-weight: bold; }
+    .bk-tajuk svg { display: inline-block; width: 74px; height: 34px; vertical-align: middle; margin-right: 8px; }
+    .bk-kapal .kb-badan { background: #fff; color: #000; border: 2px dashed #000; }
+    .bk-kata { margin: -8px 0 12px; font-size: 0.7rem; }
+    #gl-bengkel { display: none; margin: 6px 0 0; padding: 6px 8px; border: 2px dashed #000; border-radius: 8px; font-size: 0.78rem; }
     /* Titik pilih Ringgit Biru (kiri) / Merah (kanan) — macam titik skrol tapi melintang */
     .mx-titik { display: flex; justify-content: center; gap: 14px; margin: 12px 0 4px; }
     .mx-titik button { display: block; background: none; border: 0; padding: 4px 10px; font-family: inherit; font-size: 0.8rem;
@@ -6071,6 +6096,21 @@
       <button type="button" class="gm-kecil" data-pd-ke="pd-duit">Duit &amp; Exchange</button>
     </div>
     <div id="gm-panduan-isi"></div>
+  </div>
+  <button type="button" id="btn-lapor">REPORT</button>
+  <div id="lp-popup">
+    <div class="lp-kotak">
+      <h3>REPORT PERKATAAN</h3>
+      <ol>
+        <li>Jumpa perkataan yang SALAH padanan (salah tagging di dermaga)?</li>
+        <li>TEKAN LAMA perkataan itu (lebih kurang 1 saat) sampai ia terangkat.</li>
+        <li>SERET ke butang REPORT di atas kanan, kemudian lepaskan. Atau lepaskan di mana-mana, kemudian tekan butang REPORT dalam 4 saat.</li>
+        <li>Butang jadi REPORT (1), (2)... Game diteruskan seperti biasa.</li>
+        <li>Lepas game, pergi PELABUHAN → BENGKEL: kapal yang ada perkataan itu menunggu di situ. Ketik kapal, betulkan padanan di dermaga (X kontena salah, muat semula yang betul), kemudian ketik besi untuk belayar → report selesai.</li>
+      </ol>
+      <label><input type="checkbox" id="lp-senyap">Jangan ingatkan saya lagi hari ini</label>
+      <button type="button" id="btn-lp-faham" class="btn btn-primary">FAHAM</button>
+    </div>
   </div>
   <div id="screen-game" class="screen">
     <div class="status-bar" id="gp-status">GAME PADAN</div>
@@ -6628,6 +6668,7 @@
     <div id="gb-dermaga-tajuk"></div>
     <div class="gb-papan-baris"><button type="button" id="btn-gb-papan" class="gm-kecil"></button></div>
     <div id="gb-tambat" class="kp-pelabuhan"></div>
+    <div id="gb-bengkel" class="kp-pelabuhan"></div>
     <div class="kp-tajuk" id="gb-senarai-tajuk">KAPAL BERMUATAN</div>
     <div id="gb-senarai" class="kp-pelabuhan"></div>
     <div style="height:90px;"></div>
@@ -6653,6 +6694,7 @@
       <span class="gl-cakap" id="gl-cakap">Tiada apa-apa perubahan</span>
       <div id="gl-pilihan">—</div>
     </div>
+    <div id="gl-bengkel"></div>
     <div id="gl-info"></div>
     <div id="gl-ayat"></div>
     <div style="height:90px;"></div>
@@ -8141,7 +8183,16 @@
       // Kapal yang ada muatan belum belayar → mesti duduk di tempat tambat sampai belayar
       if (tunggu >= 0) tambatIdx = tunggu;
       else if (tambatIdx >= 0 && (tambatIdx >= S.sr.length || bilKontena(tambatIdx))) tambatIdx = -1;
-      for (i = 0; i < S.sr.length; i++) if (i !== tambatIdx && bilKontena(i)) { h += htmlKapal(i, false); bil++; }
+      // BENGKEL: kapal yang ada perkataan di-report (tak ditunjuk lagi dalam senarai KAPAL BERMUATAN)
+      bkKemas();
+      var hb = '', nb = 0, lp;
+      for (i = 0; i < S.sr.length; i++) {
+        if (i === tambatIdx || !bilKontena(i)) continue;
+        lp = bkKapal(S.sr[i].id);
+        if (lp.length) { hb += '<div class="bk-kapal">' + htmlKapal(i, false) + '<div class="bk-kata">Report: ' + escKapal(lp.join(' · ')) + '</div></div>'; nb++; }
+        else { h += htmlKapal(i, false); bil++; }
+      }
+      el('gb-bengkel').innerHTML = nb ? '<div class="bk-tajuk">' + SVG_BENGKEL + nb + ' kapal perlu dibaiki</div>' + hb : '';
       lukisTambat();
       el('gb-senarai').innerHTML = h || '<div class="kb-air">Belum ada kapal bermuatan.</div>';
       el('gb-senarai-tajuk').textContent = 'KAPAL BERMUATAN (' + bil + ') · scroll untuk edit';
@@ -8259,7 +8310,7 @@
               el('gb-coin').textContent = ok3 ? rm(DP.merahSen) : '-';
               el('gb-cakap').textContent = adaUpah() ? 'Ada upah ' + teksUpah() + ' menunggu awak! Tekan AMBIL.' : kaptenAyat;
               tunjukAmbil();
-              papanSewa(function() { lukisBank(); });
+              papanSewa(function() { bkMuat(true, function() { lukisBank(); }); });
             });
           });
         });
@@ -8300,6 +8351,7 @@
     }
     el('gb-senarai').addEventListener('click', klikKapal);
     el('gb-tambat').addEventListener('click', klikKapal);
+    el('gb-bengkel').addEventListener('click', klikKapal);
     // Kapal di skrin muat: kontena bertimbun atas dek + dermaga (tali diikat pada besi bulat)
     var layar = false;
     function lukisKapalLaci(angkat) {
@@ -8344,8 +8396,8 @@
     // Ketik besi bulat → lepas tali → orang naik kapal → kapal belayar keluar skrin → Kapten bayar di pelabuhan
     function belayar() {
       if (!L || dpSibuk || layar) return;
-      var id = L.id, title = L.title, n = pasanganLaci().length, dib = dibayarLaci(id), baru = n - dib;
-      if (baru <= 0) {
+      var id = L.id, title = L.title, n = pasanganLaci().length, dib = dibayarLaci(id), baru = n - dib, baiki = bkKapal(id).length > 0;
+      if (baru <= 0 && !baiki) {
         el('gl-info').textContent = 'Muat kontena dulu sebelum lepaskan tali.';
         // Orang jeti cakap dalam bubble kenapa dia tak lepaskan tali (hilang sendiri selepas 2.5 saat)
         el('gl-cakap').style.display = 'block';
@@ -8360,13 +8412,17 @@
       el('gl-info').textContent = '';
       b.set(kol('game_bank').doc(id), { dibayar: n, updatedAt: Date.now() }, { merge: true });
       b.set(refDompet(), { upahSen: firebase.firestore.FieldValue.increment(upah), updatedAt: Date.now() }, { merge: true });
-      dpLog(b, 'kapal>belayar', 'Kapal belayar: ' + title + ' · ' + baru + ' kontena · upah ' + rm(upah) + ' Ringgit Merah');
+      dpLog(b, 'kapal>belayar', 'Kapal belayar: ' + title + ' · ' + baru + ' kontena · upah ' + rm(upah) + ' Ringgit Merah' + (baiki ? ' · dibaiki di bengkel' : ''));
+      // Kapal bengkel belayar → report perkataan dalam kapal ini selesai
+      var siapLapor = baiki ? bkSiap(id) : [];
+      if (baiki) b.set(kol('game_stat').doc('bengkel'), { lapor: BK.lapor, updatedAt: Date.now() }, { merge: true });
       // RINGAN: kapal terus belayar — tak tunggu Firebase jawab. Firebase simpan di belakang tabir (gagal → nilai dipulangkan).
       if (S.bank[id]) S.bank[id].dibayar = n;
       DP.upahSen = (DP.upahSen || 0) + upah;
       b.commit().catch(function(e) {
         if (S.bank[id]) S.bank[id].dibayar = dib;
         DP.upahSen = Math.max(0, (DP.upahSen || 0) - upah);
+        for (var u = 0; u < siapLapor.length; u++) if (siapLapor[u].siap) delete siapLapor[u].siap[id];
         tunjukAmbil();
         var m = 'Alamak, kapal "' + title + '" gagal disimpan (' + (e.message || e) + '). Upah dibatalkan. Cuba belayar sekali lagi.';
         if (layar) belayarGagal = m; else { penjaga('gb-watak', 'kapten', 'sedih', m, 'gb-cakap'); if (!L && el('screen-gbank').className.indexOf('active') !== -1) lukisBank(); }
@@ -8380,14 +8436,14 @@
             geserKapal(xs[i]);
             i++;
             if (i < xs.length) setTimeout(main, 250);
-            else setTimeout(function() { el('gl-kelasi').style.display = 'none'; sampaiPelabuhan(title, baru, upah); }, 300);
+            else setTimeout(function() { el('gl-kelasi').style.display = 'none'; sampaiPelabuhan(title, baru, upah, baiki); }, 300);
           })();
         });
       })();
     }
     // Kapal dah keluar skrin → kembali ke pelabuhan, Kapten kira upah
     var belayarGagal = '';
-    function sampaiPelabuhan(title, baru, upah) {
+    function sampaiPelabuhan(title, baru, upah, baiki) {
       L = null; layar = false;
       // Simpan salinan ke Kindle SEKALI sahaja, selepas animasi habis
       S.tangguhSimpan = false; simpanLokal();
@@ -8399,7 +8455,8 @@
       el('gb-coin').textContent = rm(DP.merahSen);
       tunjukAmbil();
       try { window.scrollTo(0, 0); } catch (e) {}
-      penjaga('gb-watak', 'kapten', 'masuk', 'Kapal "' + title + '" dah sampai! ' + baru + ' kontena × ' + rm(EKO.UPAH_POS_SEN) + ' = ' + rm(upah) + ' Ringgit Merah. Tekan AMBIL.', 'gb-cakap');
+      if (baiki && !baru) penjaga('gb-watak', 'kapten', 'gembira', 'Kapal "' + title + '" siap dibaiki di bengkel! Report selesai.', 'gb-cakap');
+      else penjaga('gb-watak', 'kapten', 'masuk', 'Kapal "' + title + '" dah sampai! ' + baru + ' kontena × ' + rm(EKO.UPAH_POS_SEN) + ' = ' + rm(upah) + ' Ringgit Merah.' + (baiki ? ' Report dah dibaiki.' : '') + ' Tekan AMBIL.', 'gb-cakap');
     }
     // Syiling terbang dari tangan Kapten ke kotak Coin (bingkai pendek, sesuai e-ink)
     var coinAnim = false;
@@ -8464,6 +8521,17 @@
     // ══ BANK — padan perkataan dalam satu laci ══
     function token(s) { return String(s || '').match(/[A-Za-z\u00C0-\u024F0-9'\u2019-]+|[^A-Za-z\u00C0-\u024F0-9'\u2019-]+/g) || []; }
     function adalahKata(t) { return /[A-Za-z\u00C0-\u024F0-9]/.test(t); }
+    // Ayat BM: akhiran -nya dipisah jadi 2 token (cth "kemarahannya" → "kemarahan" + "nya"), tiada ruang di antara.
+    // Pilih "kemarahan" sahaja, atau kedua-dua → "kemarahannya". hanya / punya / tanya tidak dipisah.
+    function tokenBm(s) {
+      var t = token(s), o = [], i, w;
+      for (i = 0; i < t.length; i++) {
+        w = t[i];
+        if (adalahKata(w) && w.length >= 6 && /nya$/i.test(w) && !/(hanya|punya|tanya|nyanya)$/i.test(w)) { o.push(w.slice(0, -3)); o.push(w.slice(-3)); }
+        else o.push(w);
+      }
+      return o;
+    }
     // Semua perkataan boleh dipilih (the, is, a, to... dan nombor tidak lagi dikelabukan) supaya senang tagging frasa
     function kataBiasa(t) {
       return false;
@@ -8477,9 +8545,10 @@
       var tok = L.baris[L.pilih.b][sisi], idx = [];
       for (var k in L.pilih[sisi]) idx.push(+k);
       idx.sort(function(a, b) { return a - b; });
-      var w = [];
-      for (var i = 0; i < idx.length; i++) w.push(tok[idx[i]]);
-      return w.join(' ');
+      // Token bersebelahan tanpa ruang (kata dasar + nya) dicantum terus
+      var w = '';
+      for (var i = 0; i < idx.length; i++) w += (i && idx[i] === idx[i - 1] + 1 ? '' : (w ? ' ' : '')) + tok[idx[i]];
+      return w;
     }
     function lukisPilihan() {
       var en = teksPilihan('en'), bm = teksPilihan('bm'), kotak = el('gl-pilihan');
@@ -8505,7 +8574,8 @@
             var biasa = sisi === 'en' && kataBiasa(tok[j]);
             var on = L.pilih.b === i && L.pilih[sisi][j];
             var ada = (sisi === 'en' ? adaEn : adaBm)[tok[j].toLowerCase()];
-            s.className = 'gl-w' + (biasa ? ' gl-biasa' : '') + (ada ? ' gl-ada' : '') + (on ? ' gl-on' : '');
+            var nya = sisi === 'bm' && j > 0 && adalahKata(tok[j - 1]) && /^nya$/i.test(tok[j]);
+            s.className = 'gl-w' + (biasa ? ' gl-biasa' : '') + (ada ? ' gl-ada' : '') + (nya ? ' gl-nya' : '') + (on ? ' gl-on' : '');
             if (!biasa) { s.setAttribute('data-gl-b', i); s.setAttribute('data-gl-s', sisi); s.setAttribute('data-gl-w', j); }
             s.textContent = tok[j];
             baris.appendChild(s);
@@ -8518,13 +8588,20 @@
       var senarai = el('gl-pasangan'), dibK = dibayarLaci(L.id);
       senarai.innerHTML = '';
       var timbun = senarai;
+      var lap = bkKapal(L.id), lapAda = {};
+      for (i = 0; i < lap.length; i++) lapAda[samaKata(lap[i])] = 1;
+      el('gl-bengkel').style.display = lap.length ? 'block' : 'none';
+      el('gl-bengkel').textContent = lap.length ? 'BENGKEL · Report: ' + lap.join(' · ') + '\nBetulkan padanan (X kontena bergaris putus-putus, muat semula yang betul), kemudian ketik besi untuk belayar.' : '';
+      el('gl-bengkel').style.whiteSpace = 'pre-line';
       for (i = 0; i < p.length; i++) {
-        var kt = document.createElement('div'); kt.className = 'kt-kotak' + (i >= dibK ? ' kt-baru' : '');
+        var lp1 = lapAda[samaKata(p[i].en)] || lapAda[samaKata(p[i].bm)];
+        var kt = document.createElement('div'); kt.className = 'kt-kotak' + (i >= dibK ? ' kt-baru' : '') + (lp1 ? ' kt-lapor' : '');
         var ke = document.createElement('b'); ke.textContent = p[i].en;
         var kb = document.createElement('span'); kb.className = 'kt-bm'; kb.textContent = p[i].bm;
         var bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'X'; bt.setAttribute('data-gl-buang', i);
         kt.appendChild(bt); kt.appendChild(ke); kt.appendChild(kb);
         if (i >= dibK) { var tg = document.createElement('span'); tg.className = 'kt-tag'; tg.textContent = 'BARU'; kt.appendChild(tg); }
+        if (lp1) { var tr = document.createElement('span'); tr.className = 'kt-tag'; tr.textContent = 'REPORT'; kt.appendChild(tr); }
         timbun.appendChild(kt);
       }
       if (!p.length) timbun.innerHTML = '<div class="kt-kosong">Dek kosong. Muat kontena pertama!</div>';
@@ -8585,7 +8662,7 @@
           var b = baris[i].trim();
           if (!b) continue;
           var eq = b.indexOf('=');
-          L.baris.push({ en: token(eq === -1 ? b : b.slice(0, eq).trim()), bm: token(eq === -1 ? '' : b.slice(eq + 1).trim()) });
+          L.baris.push({ en: token(eq === -1 ? b : b.slice(0, eq).trim()), bm: tokenBm(eq === -1 ? '' : b.slice(eq + 1).trim()) });
         }
         el('gl-info').textContent = '';
         lukisLaci();
@@ -9272,7 +9349,8 @@
           'Bar kedua = TEMPAT: MENU · PELABUHAN · ARKED (mini game) · KEDAI.',
           'Setiap mini game ialah KEDAI. Kedai perlukan STOK perkataan (SR yang sudah sampai masa + perkataan baru) untuk dibuka.',
           'Stok tak cukup untuk satu pusingan → kedai TUTUP (Padan perlu 6, Jutawan perlu 15). Muat kontena di Pelabuhan untuk buka semula.',
-          'Bila kedai dapat stok semula, pintu besinya naik terbuka.'
+          'Bila kedai dapat stok semula, pintu besinya naik terbuka.',
+          'REPORT (semua game): perkataan salah padanan → tekan lama perkataan itu, seret ke butang REPORT di atas kanan (atau lepas, kemudian tekan REPORT dalam 4 saat). Kapal yang ada perkataan itu masuk BENGKEL di Pelabuhan. Tekan butang REPORT bila-bila masa untuk baca cara ini semula.'
         ]) +
         '<h3 id="pd-padan">PADAN (mini game)</h3>' + I([
           'Tekan perkataan English (kotak hitam), kemudian maksudnya dalam BM (kotak putih). Pasangan betul akan hilang.',
@@ -9334,6 +9412,8 @@
           'SIGNBOARD FREE PARKING: tekan butang kecil P Sewa signboard (atas tempat tambat) → Kapten pasang signboard di jeti tempat tambat. Selagi signboard ada, kapal kosong SENTIASA menunggu di atas (tak perlu PANGGIL). Sewa ' + rm(EKO.PAPAN_SEN) + ' Ringgit Biru setiap jam (jam pertama dibayar masa sewa, jam seterusnya dibayar bila jam baru bermula, walaupun app ditutup). Penjaga parking (orang lidi bertopi) jaga signboard dan beritahu masa & sewa dalam bubble. Nak cabut: tekan penjaga / bubble dia DUA KALI, bila-bila masa (walaupun belum cukup sejam) — tiada bayaran balik. Ringgit Biru tak cukup → Kapten ambil balik signboard.',
           'Pelabuhan: ATAS = TEMPAT TAMBAT. Tekan PANGGIL KAPAL KOSONG → kapal kosong masuk dan diikat pada besi. Ketik besi pengikat → tali dibuka, kelasi lompat naik, kapal ke DERMAGA. Kapal yang ada kontena belum belayar kekal di tempat tambat sampai belayar. BAWAH = KAPAL BERMUATAN (scroll untuk edit, ketik untuk ke dermaga).',
           'Semua perkataan boleh dipilih, termasuk perkataan biasa (the, is, a, to...) dan nombor.',
+          'Akhiran -nya dalam ayat BM dipisah (garis putus-putus): cth kemarahan|nya. Ketik "kemarahan" sahaja untuk kata dasar, atau ketik kedua-dua untuk "kemarahannya". Hanya, punya, tanya tidak dipisah.',
+          'BENGKEL (bawah tempat tambat): kapal yang ada perkataan di-REPORT dari game. Kontena yang di-report bergaris putus-putus dengan tag REPORT. Betulkan padanan, kemudian ketik besi untuk belayar (boleh belayar walaupun tiada kontena baru) → report selesai. Kontena salah dibuang terus → report hilang sendiri.',
           'Pasangan yang sama dalam kapal berlainan dikira SATU sahaja dalam game & SR.',
           'Kontena dibuang → dibuang juga dari SR kedai bila tiba gilirannya.'
         ]) +
@@ -9398,6 +9478,180 @@
       if (t.getAttribute('data-panduan')) bukaPanduan(t.getAttribute('data-panduan'));
       else if (t.getAttribute('data-pd-ke')) pdTunjuk(t.getAttribute('data-pd-ke'));
     });
+
+    // ══ REPORT PERKATAAN (semua game) + BENGKEL (Pelabuhan) ══
+    // Data: users/{uid}/game_stat/bengkel { lapor: [{ t: teks, g: game, at, siap: { drawerId: 1 } }] }
+    // Kapal masuk BENGKEL bila ada pasangan (en / bm) sama dengan teks report & kapal itu belum dibaiki (siap).
+    // Report dibuang sendiri bila tiada lagi kapal yang belum dibaiki memiliki perkataan itu.
+    var BK = { lapor: [], dimuat: false };
+    var SVG_BENGKEL = '<svg viewBox="0 0 74 34" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="72" height="22" rx="3" fill="#000"/>' +
+      '<text x="37" y="16.5" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" letter-spacing="1">BENGKEL</text>' +
+      '<path d="M18 23 V33 M56 23 V33" stroke="#000" stroke-width="2.5"/></svg>';
+    function bkMuat(paksa, cb) {
+      if (!currentUser) { cb(); return; }
+      if (BK.dimuat && !paksa) { cb(); return; }
+      kol('game_stat').doc('bengkel').get().then(function(sd) {
+        BK.lapor = (sd.exists && sd.data().lapor) || []; BK.dimuat = true; lpLabel(); cb();
+      }).catch(function() { cb(); });
+    }
+    function bkSimpan() {
+      if (!currentUser) return;
+      kol('game_stat').doc('bengkel').set({ lapor: BK.lapor, updatedAt: Date.now() }, { merge: true }).catch(function() {});
+    }
+    function bkKapal(id) {
+      var p = (S.bank[id] && S.bank[id].pasangan) || [], hasil = [], i, j, t;
+      for (i = 0; i < BK.lapor.length; i++) {
+        if (BK.lapor[i].siap && BK.lapor[i].siap[id]) continue;
+        t = samaKata(BK.lapor[i].t);
+        for (j = 0; j < p.length; j++) if (samaKata(p[j].en) === t || samaKata(p[j].bm) === t) { hasil.push(BK.lapor[i].t); break; }
+      }
+      return hasil;
+    }
+    // Tanda report kapal ini selesai (dipanggil masa belayar)
+    function bkSiap(id) {
+      var lap = bkKapal(id), ada = {}, ubah = [], i;
+      for (i = 0; i < lap.length; i++) ada[samaKata(lap[i])] = 1;
+      for (i = 0; i < BK.lapor.length; i++) if (ada[samaKata(BK.lapor[i].t)]) { BK.lapor[i].siap = BK.lapor[i].siap || {}; BK.lapor[i].siap[id] = 1; ubah.push(BK.lapor[i]); }
+      return ubah;
+    }
+    // Buang report yang tiada lagi kapal belum dibaiki
+    function bkKemas() {
+      if (!BK.dimuat || !BK.lapor.length) return;
+      var ids = [], baki = [], i, j, kekal, adaBank = false;
+      for (var k in S.bank) { ids.push(k); adaBank = true; }
+      if (!adaBank) return;
+      for (i = 0; i < BK.lapor.length; i++) {
+        kekal = false;
+        for (j = 0; j < ids.length && !kekal; j++) {
+          if (BK.lapor[i].siap && BK.lapor[i].siap[ids[j]]) continue;
+          var p = S.bank[ids[j]].pasangan || [], t = samaKata(BK.lapor[i].t);
+          for (var m = 0; m < p.length; m++) if (samaKata(p[m].en) === t || samaKata(p[m].bm) === t) { kekal = true; break; }
+        }
+        if (kekal) baki.push(BK.lapor[i]);
+      }
+      if (baki.length !== BK.lapor.length) { BK.lapor = baki; bkSimpan(); lpLabel(); }
+    }
+    // ── Tekan lama → seret ke REPORT ──
+    var LP_SKRIN = { 'screen-game': 'Padan', 'screen-mm': 'Memori', 'screen-dr': 'Duri', 'screen-bs': 'Betul/Salah', 'screen-jw-soalan': 'Jutawan' };
+    var LP_LEVEL = { 'screen-gp-level': 'gp', 'screen-mm-level': 'mm', 'screen-dr-level': 'dr', 'screen-bs-level': 'bs', 'screen-jw-level': 'jw' };
+    var LP_KUMP = { 'screen-game': 'gp', 'screen-gp-level': 'gp', 'screen-gp-kaunter': 'gp', 'screen-mm': 'mm', 'screen-mm-level': 'mm', 'screen-mm-kedai': 'mm',
+      'screen-dr': 'dr', 'screen-dr-level': 'dr', 'screen-dr-kedai': 'dr', 'screen-bs': 'bs', 'screen-bs-level': 'bs',
+      'screen-jw-level': 'jw', 'screen-jw-tangga': 'jw', 'screen-jw-soalan': 'jw', 'screen-jw-tamat': 'jw', 'screen-jw-kedai': 'jw' };
+    var LP = { t: null, x: 0, y: 0, el: null, teks: '', aktif: false, hantu: null, sedia: 0, telan: 0, sentuh: 0, skrin: '' };
+    function lpLabel() {
+      var b = el('btn-lapor'), n = BK.lapor.length;
+      if (LP.sedia) return;
+      b.textContent = n ? 'REPORT (' + n + ')' : 'REPORT';
+      b.className = n ? 'lp-ada' : '';
+    }
+    function lpSkrinAktif() { var a = document.querySelector('.screen.active'); return a ? a.id : ''; }
+    function lpCari(t) {
+      while (t && t !== document.body && t.nodeType === 1) {
+        if (t.id === 'bs-en' || t.id === 'bs-bm' || t.id === 'jws-soalan') return t;
+        var c = typeof t.className === 'string' ? ' ' + t.className + ' ' : '';
+        if (/ (gp-k|mm-k|dr-k|jw-p) /.test(c)) return c.indexOf(' dr-batu ') !== -1 ? null : t;
+        t = t.parentNode;
+      }
+      return null;
+    }
+    function lpTeks(e) {
+      var s = (typeof e.className === 'string' && e.className.indexOf('jw-p') !== -1) ? e.getElementsByTagName('span')[0] : e;
+      return String(s ? s.textContent : '').replace(/\s+/g, ' ').trim();
+    }
+    function lpBatal() {
+      if (LP.t) { clearTimeout(LP.t); LP.t = null; }
+      if (LP.hantu && LP.hantu.parentNode) LP.hantu.parentNode.removeChild(LP.hantu);
+      if (LP.el) LP.el.style.outline = '';
+      LP.hantu = null; LP.aktif = false;
+    }
+    function lpReset() { LP.sedia = 0; el('btn-lapor').className = ''; lpLabel(); }
+    function lpMula(x, y, t) {
+      LP.skrin = lpSkrinAktif();
+      if (!LP_SKRIN[LP.skrin]) return;
+      var e = lpCari(t), tk = e ? lpTeks(e) : '';
+      if (!tk || tk === 'BATU' || tk === '· · ·') return;
+      lpBatal();
+      LP.x = x; LP.y = y; LP.el = e; LP.teks = tk;
+      LP.t = setTimeout(lpAngkat, 650);
+    }
+    function lpHantuGerak(x, y) { if (LP.hantu) { LP.hantu.style.left = Math.max(2, x - 30) + 'px'; LP.hantu.style.top = Math.max(2, y - 48) + 'px'; } }
+    function lpAngkat() {
+      LP.t = null; LP.aktif = true; LP.telan = Date.now();
+      LP.hantu = document.createElement('div'); LP.hantu.className = 'lp-hantu'; LP.hantu.textContent = LP.teks;
+      document.body.appendChild(LP.hantu); lpHantuGerak(LP.x, LP.y);
+      LP.el.style.outline = '3px dashed #000';
+      el('btn-lapor').className = 'lp-sedia'; el('btn-lapor').textContent = 'SERET KE SINI';
+      LP.sedia = 0;
+    }
+    function lpGerak(x, y, ev) {
+      if (LP.aktif) { lpHantuGerak(x, y); if (ev && ev.preventDefault) ev.preventDefault(); return; }
+      if (LP.t && (Math.abs(x - LP.x) > 12 || Math.abs(y - LP.y) > 12)) lpBatal();
+    }
+    function lpLepas(x, y) {
+      if (LP.t) { lpBatal(); return; }
+      if (!LP.aktif) return;
+      LP.telan = Date.now();
+      var r = el('btn-lapor').getBoundingClientRect(), kena = x >= r.left - 12 && x <= r.right + 12 && y >= r.top - 12 && y <= r.bottom + 12;
+      lpBatal();
+      if (kena) { lpHantar(); return; }
+      // Tak sampai ke butang → boleh tekan REPORT dalam 4 saat
+      LP.sedia = Date.now();
+      el('btn-lapor').className = 'lp-sedia'; el('btn-lapor').textContent = 'TEKAN UNTUK REPORT';
+      setTimeout(function() { if (LP.sedia && Date.now() - LP.sedia >= 3900) lpReset(); }, 4000);
+    }
+    function lpHantar() {
+      var tk = LP.teks, i, b = el('btn-lapor');
+      LP.sedia = 0;
+      for (i = 0; i < BK.lapor.length; i++) if (samaKata(BK.lapor[i].t) === samaKata(tk)) break;
+      // Dah pernah di-report → buka semula (kapal yang dah dibaiki masuk bengkel lagi)
+      if (i < BK.lapor.length) { delete BK.lapor[i].siap; bkSimpan(); b.className = 'lp-ada'; b.textContent = 'DAH DI-REPORT'; setTimeout(lpLabel, 1200); return; }
+      BK.lapor.push({ t: tk, g: LP_SKRIN[LP.skrin] || '', at: Date.now() });
+      bkSimpan();
+      b.className = 'lp-ada'; b.textContent = '+1 REPORT';
+      setTimeout(lpLabel, 900);
+    }
+    document.addEventListener('touchstart', function(e) { var t = e.touches && e.touches[0]; LP.sentuh = Date.now(); if (t) lpMula(t.clientX, t.clientY, e.target); }, true);
+    document.addEventListener('touchmove', function(e) { var t = e.touches && e.touches[0]; if (t) lpGerak(t.clientX, t.clientY, e); }, { passive: false, capture: true });
+    document.addEventListener('touchend', function(e) { var t = e.changedTouches && e.changedTouches[0]; if (t) lpLepas(t.clientX, t.clientY); else lpBatal(); }, true);
+    document.addEventListener('touchcancel', function() { lpBatal(); }, true);
+    document.addEventListener('mousedown', function(e) { if (Date.now() - LP.sentuh > 800) lpMula(e.clientX, e.clientY, e.target); }, true);
+    document.addEventListener('mousemove', function(e) { if (Date.now() - LP.sentuh > 800) lpGerak(e.clientX, e.clientY, null); }, true);
+    document.addEventListener('mouseup', function(e) { if (Date.now() - LP.sentuh > 800) lpLepas(e.clientX, e.clientY); }, true);
+    document.addEventListener('contextmenu', function(e) { if (LP.t || LP.aktif || (LP_SKRIN[lpSkrinAktif()] && lpCari(e.target))) e.preventDefault(); }, true);
+    // Lepas tekan lama: telan klik supaya game tak anggap sebagai jawapan
+    document.addEventListener('click', function(e) {
+      if (Date.now() - LP.telan < 500 && e.target && e.target.id !== 'btn-lapor') { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+    el('btn-lapor').onclick = function() { if (LP.sedia) lpHantar(); else lpPopup(true); };
+    // ── Popup FAHAM: setiap kali masuk game (kecuali tick "jangan ingatkan hari ini") ──
+    function lpHariIni() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+    function lpSenyap() { try { return localStorage.getItem('lp_senyap') === lpHariIni(); } catch (e) { return false; } }
+    function lpPopup(paksa) {
+      if (!paksa && lpSenyap()) return;
+      el('lp-senyap').checked = lpSenyap();
+      el('lp-popup').style.display = 'block';
+    }
+    el('btn-lp-faham').onclick = function() {
+      try { if (el('lp-senyap').checked) localStorage.setItem('lp_senyap', lpHariIni()); else localStorage.removeItem('lp_senyap'); } catch (e) {}
+      el('lp-popup').style.display = 'none';
+    };
+    var lpDulu = '';
+    var lpSkrinAsal = showScreen;
+    showScreen = function(id) {
+      lpSkrinAsal(id);
+      var b = el('btn-lapor'), sb;
+      lpBatal(); LP.sedia = 0;
+      if (LP_SKRIN[id]) {
+        b.style.display = 'block';
+        sb = document.querySelector('#' + id + ' .status-bar');
+        if (sb) { var r = sb.getBoundingClientRect(); b.style.top = Math.max(0, r.top + (r.height - 20) / 2) + 'px'; }
+        lpLabel();
+      } else b.style.display = 'none';
+      // Masuk game (dari luar game itu) → popup FAHAM + muat report
+      if (LP_LEVEL[id] && LP_KUMP[lpDulu] !== LP_LEVEL[id]) { lpPopup(false); bkMuat(true, function() {}); }
+      if (id !== 'screen-gbank' && id !== 'screen-gbank-laci' && !LP_SKRIN[id] && !LP_LEVEL[id]) el('lp-popup').style.display = 'none';
+      lpDulu = id;
+    };
 
     // ══ Titik Biru / Merah: satu panel dipapar pada satu masa. Tekan titik, atau leret kiri/kanan. ══
     function cariSkrin(e) { while (e && !(e.className && (' ' + e.className + ' ').indexOf(' screen ') !== -1)) e = e.parentNode; return e; }
