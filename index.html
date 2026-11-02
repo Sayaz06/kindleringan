@@ -6011,6 +6011,10 @@
     .kp-ombak svg { display: block; width: 100%; height: 14px; }
     /* Jeti = kotak pilihan perkataan. Besi bulat + tali + kelasi berdiri di atasnya */
     .kp-jeti { position: relative; margin-top: 26px; }
+    /* Bubble orang jeti: tekan besi bila tiada kontena baru */
+    .gl-cakap { display: none; position: absolute; left: 36px; bottom: 100%; margin-bottom: 22px; z-index: 5; padding: 3px 8px; border: 2px solid #000; border-radius: 9px;
+      background: #fff; font-size: 0.72rem; font-weight: bold; white-space: nowrap; pointer-events: none; }
+    .gl-cakap:before { content: ''; position: absolute; left: -9px; bottom: 4px; border: 4px solid transparent; border-right: 6px solid #000; }
     .kp-jeti #gl-pilihan { margin: 0; border-width: 3px; border-radius: 0; }
     .kp-ketik { display: block; font-size: 0.6rem; margin-top: 2px; letter-spacing: 1px; }
     .kp-tambat { position: absolute; left: 0; bottom: 100%; width: 34px; height: 52px; cursor: pointer; z-index: 2; }
@@ -6618,6 +6622,7 @@
     </div>
     <div class="kp-jeti">
       <div class="kp-tambat" id="gl-dermaga"></div>
+      <span class="gl-cakap" id="gl-cakap">Tiada apa-apa perubahan</span>
       <div id="gl-pilihan">—</div>
     </div>
     <div id="gl-info"></div>
@@ -8313,9 +8318,14 @@
       var id = L.id, title = L.title, n = pasanganLaci().length, dib = dibayarLaci(id), baru = n - dib;
       if (baru <= 0) {
         el('gl-info').textContent = 'Muat kontena dulu sebelum lepaskan tali.';
+        // Orang jeti cakap dalam bubble kenapa dia tak lepaskan tali (hilang sendiri selepas 2.5 saat)
+        el('gl-cakap').style.display = 'block';
+        clearTimeout(belayar.tCakap);
+        belayar.tCakap = setTimeout(function() { el('gl-cakap').style.display = 'none'; }, 2500);
         animDermaga(['geleng', 'ikat', 'geleng', 'ikat'], 200, function() { if (L) el('gl-dermaga').innerHTML = svgDermaga('ikat', false); });
         return;
       }
+      el('gl-cakap').style.display = 'none';
       var upah = baru * EKO.UPAH_POS_SEN, b = db.batch();
       layar = true; belayarGagal = '';
       el('gl-info').textContent = '';
