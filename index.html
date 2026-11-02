@@ -8463,9 +8463,9 @@
     // ══ BANK — padan perkataan dalam satu laci ══
     function token(s) { return String(s || '').match(/[A-Za-z\u00C0-\u024F0-9'\u2019-]+|[^A-Za-z\u00C0-\u024F0-9'\u2019-]+/g) || []; }
     function adalahKata(t) { return /[A-Za-z\u00C0-\u024F0-9]/.test(t); }
+    // Semua perkataan boleh dipilih (the, is, a, to... dan nombor tidak lagi dikelabukan) supaya senang tagging frasa
     function kataBiasa(t) {
-      var w = t.toLowerCase();
-      return !!BIASA[w] || /^\d+$/.test(w); // perkataan ada ' (cth nation's) TIDAK ditapis
+      return false;
     }
     function pasanganLaci() {
       var b = S.bank[L.id];
@@ -9332,7 +9332,7 @@
           'Upah sengaja sedikit — ganjaran besar datang daripada menghafal dalam game. Kontena dibuang dari kapal yang sudah belayar → upahnya ditolak semula.',
           'SIGNBOARD FREE PARKING: tekan butang kecil P Sewa signboard (atas tempat tambat) → Kapten pasang signboard di jeti tempat tambat. Selagi signboard ada, kapal kosong SENTIASA menunggu di atas (tak perlu PANGGIL). Sewa ' + rm(EKO.PAPAN_SEN) + ' Ringgit Biru setiap jam (jam pertama dibayar masa sewa, jam seterusnya dibayar bila jam baru bermula, walaupun app ditutup). Penjaga parking (orang lidi bertopi) jaga signboard dan beritahu masa & sewa dalam bubble. Nak cabut: tekan penjaga / bubble dia DUA KALI, bila-bila masa (walaupun belum cukup sejam) — tiada bayaran balik. Ringgit Biru tak cukup → Kapten ambil balik signboard.',
           'Pelabuhan: ATAS = TEMPAT TAMBAT. Tekan PANGGIL KAPAL KOSONG → kapal kosong masuk dan diikat pada besi. Ketik besi pengikat → tali dibuka, kelasi lompat naik, kapal ke DERMAGA. Kapal yang ada kontena belum belayar kekal di tempat tambat sampai belayar. BAWAH = KAPAL BERMUATAN (scroll untuk edit, ketik untuk ke dermaga).',
-          'Perkataan biasa (the, is, a, to...) dikelabukan dan tidak boleh dipilih.',
+          'Semua perkataan boleh dipilih, termasuk perkataan biasa (the, is, a, to...) dan nombor.',
           'Pasangan yang sama dalam kapal berlainan dikira SATU sahaja dalam game & SR.',
           'Kontena dibuang → dibuang juga dari SR kedai bila tiba gilirannya.'
         ]) +
