@@ -5607,9 +5607,10 @@
     .bs-en, .bs-bm { font-size: 1.9rem; font-weight: bold; line-height: 1.15; text-transform: uppercase; word-break: break-word; }
     .bs-en.bs-kecil, .bs-bm.bs-kecil { font-size: 1.35rem; }
     /* SR POSPON: kad pasangan palsu terbang ke atas kanan, senarai pasangan sebenar ditunjuk bila game tamat */
-    .bs-pospon-baris { display: flex; justify-content: flex-end; margin: -4px 0 6px; }
-    .bs-pospon { display: inline-flex; align-items: center; gap: 9px; padding: 3px 10px 3px 8px; border: 2px solid #000; border-radius: 12px; background: #fff; font-size: 0.72rem; font-weight: bold; letter-spacing: 1px; }
-    .bs-pospon i { display: block; width: 12px; height: 15px; border: 2px solid #000; border-radius: 2px; box-shadow: 2px -2px 0 #fff, 2px -2px 0 2px #000; }
+    /* Kindle: pelayar lama tak sokong flex "gap" → guna inline-block + margin (ikon tak bertindih tulisan) */
+    .bs-pospon-baris { text-align: right; margin: -4px 0 6px; }
+    .bs-pospon { display: inline-block; padding: 4px 10px 3px 8px; border: 2px solid #000; border-radius: 12px; background: #fff; font-size: 0.72rem; font-weight: bold; letter-spacing: 1px; line-height: 19px; white-space: nowrap; }
+    .bs-pospon i { display: inline-block; vertical-align: middle; position: relative; top: -1px; width: 12px; height: 15px; margin: 0 11px 0 0; border: 2px solid #000; border-radius: 2px; box-shadow: 2px -2px 0 #fff, 2px -2px 0 2px #000; }
     .bs-pospon.bs-ada { background: #000; color: #fff; }
     .bs-pospon.bs-ada i { border-color: #fff; box-shadow: 2px -2px 0 #000, 2px -2px 0 2px #fff; }
     /* Burung merpati pos: duduk di bucu kad (setiap kad, jadi tak bocor jawapan). Pasangan palsu → dia bawa sampul ke SR POSPON */
