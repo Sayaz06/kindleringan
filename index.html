@@ -5591,7 +5591,7 @@
     .jw-tajuk { font-size: 1.8rem; font-weight: bold; text-align: center; letter-spacing: 2px; margin: 6px 0; }
     .jw-bar { border: 2px solid #000; border-radius: 8px; height: 14px; overflow: hidden; margin: 4px 0; }
     #jwl-bar-isi, #gpl-bar-isi, #mml-bar-isi, #drl-bar-isi, #bsl-bar-isi { height: 100%; width: 0; background: #000; }
-    /* BETUL / SALAH: kad pasangan, jam 40 saat, 3 kesilapan, butang BETUL & SALAH */
+    /* BETUL / SALAH: kad pasangan, jam 30 saat, 3 kesilapan, butang BETUL & SALAH */
     .bs-silap { text-align: center; }
     .bs-silap span { display: flex; gap: 4px; padding: 3px 8px; border: 2px solid #000; border-radius: 14px; }
     .bs-silap span i { display: block; width: 20px; height: 20px; box-sizing: border-box; border: 2px solid #000; border-radius: 50%; }
@@ -6349,7 +6349,7 @@
       <button type="button" id="btn-bs-keluar" class="gm-kecil">Keluar</button>
     </div>
     <div class="bs-pospon-baris"><span class="bs-pospon" id="bs-pospon"><i></i>SR POSPON (0)</span></div>
-    <div class="bs-bar"><i id="bs-masa-isi"></i><span id="bs-masa">00:40</span></div>
+    <div class="bs-bar"><i id="bs-masa-isi"></i><span id="bs-masa">00:30</span></div>
     <div class="bs-bar bs-bar-n"><i id="bs-n-isi"></i><span id="bs-n">0/10</span></div>
     <div class="bs-kad" id="bs-kad">
       <i class="bs-burung" id="bs-burung"></i>
@@ -7636,7 +7636,7 @@
         lukisDr();
         drJam = setInterval(function() {
           if (!dr || dr.tamat || el('screen-dr').className.indexOf('active') === -1) { drHenti(); return; }
-          if (LP_JEDA) return;
+          if (lpJeda()) return;
           dr.detik++;
           if (dr.detik >= DR_DETIK) { dr.detik = 0; drTolak(false); } else lukisDr();
         }, 1000);
@@ -7805,9 +7805,9 @@
     el('btn-drl-sr').onclick = function() { bukaSenaraiGsr(DR_KOL, 'SR DURI', bukaDrLevel); };
     el('btn-mini-dr').onclick = function() { masukKedai('dr', bukaDrLevel); };
     // ══ BETUL / SALAH: kad tunjuk English + maksud BM, pemain tekan BETUL atau SALAH ══
-    // 10 soalan · 40 saat · 3 kesilapan = kalah · jawapan betul terus masuk / naik SR Betul/Salah (menang atau kalah)
+    // 10 soalan · 30 saat · 3 kesilapan = kalah · jawapan betul terus masuk / naik SR Betul/Salah (menang atau kalah)
     // SR sendiri: users/{uid}/game_sr_betulsalah · Stat: users/{uid}/game_stat/betulsalah { main, lulus, gangsa }
-    var BS_KOL = 'game_sr_betulsalah', BS_BIL = 10, BS_SR_MAKS = 5, BS_MASA = 40, BS_NYAWA = 3, BS_JEDA = 1100;
+    var BS_KOL = 'game_sr_betulsalah', BS_BIL = 10, BS_SR_MAKS = 5, BS_MASA = 30, BS_NYAWA = 3, BS_JEDA = 1100;
     var BS = { main: 0, lulus: 0, gangsa: 0, gsr: {} }, bs = null, bsJam = null;
     function bsMuat(cb) {
       muatIndeks(BS_KOL).then(function(g) {
@@ -7971,7 +7971,7 @@
     // Jam: berhenti sekejap masa jawapan ditunjuk
     function bsDetik() {
       if (!bs || bs.tamat || el('screen-bs').className.indexOf('active') === -1) { bsHenti(); return; }
-      if (bs.kunci || LP_JEDA) return;
+      if (bs.kunci || lpJeda()) return;
       bs.sisa--;
       el('bs-masa').textContent = bsMasaTeks(Math.max(0, bs.sisa));
       el('bs-masa-isi').style.width = Math.round(Math.max(0, bs.sisa) / BS_MASA * 100) + '%';
@@ -9440,6 +9440,7 @@
           'Setiap level: ' + BS_BIL + ' soalan dalam ' + BS_MASA + ' saat. Bar atas = masa, bar bawah = soalan yang sudah dijawab.',
           'Lebih kurang separuh soalan (4 hingga 6, rawak) tunjuk maksud PALSU yang diambil dari perkataan lain dalam bank. Jangan teka ikut kiraan!',
           'Lepas setiap jawapan, kad tunjuk BETUL! atau SALAH! dan maksud sebenar selama 1 saat. Jam berhenti masa ini.',
+          'Jam juga berhenti bila awak tak boleh main: burung terbang ke SR POSPON, tekan lama / seret perkataan untuk REPORT, senarai REPORT, popup FAHAM atau buku panduan dibuka.',
           'Burung merpati pos duduk di bucu setiap kad. Pasangan PALSU (betul atau salah jawapan awak) → burung bawa sampul terbang ke SR POSPON di atas kanan: SR POSPON (1), (2)... Kad SR POSPON TIDAK masuk SR (walaupun awak jawab betul) — perkataan itu akan keluar lagi dalam game lain.',
           BS_NYAWA + ' KESILAPAN → kalah. Masa habis sebelum ' + BS_BIL + ' soalan dijawab → kalah. Kalah = tiada ganjaran, ulang level yang sama.',
           'MENANG (semua ' + BS_BIL + ' soalan dijawab, kurang dari ' + BS_NYAWA + ' kesilapan): REWARD ' + EKO.BS_GANGSA_KATA + ' g gangsa setiap jawapan betul + BONUS ' + EKO.BS_BONUS_NYAWA + ' g setiap kesilapan yang tak dipakai → CLAIM. Menang sempurna = ' + (BS_BIL * EKO.BS_GANGSA_KATA + BS_NYAWA * EKO.BS_BONUS_NYAWA) + ' g.',
@@ -9580,6 +9581,11 @@
     // ── Tekan lama → seret ke REPORT ──
     var LP_SKRIN = { 'screen-game': 'Padan', 'screen-mm': 'Memori', 'screen-dr': 'Duri', 'screen-bs': 'Betul/Salah', 'screen-jw-soalan': 'Jutawan', 'screen-jw-tamat': 'Jutawan' };
     var LP_JEDA = false;
+    // Jam game (Betul/Salah, piston Duri) BERHENTI bila pengguna tak boleh main: tekan lama / seret untuk REPORT,
+    // tunggu tekan butang REPORT (4 saat), senarai REPORT, popup FAHAM atau buku panduan dibuka.
+    function lpJeda() {
+      return LP_JEDA || !!LP.t || LP.aktif || !!LP.sedia || el('lp-popup').style.display === 'block' || el('gm-panduan').style.display === 'block';
+    }
     var LP_LEVEL = { 'screen-gp-level': 'gp', 'screen-mm-level': 'mm', 'screen-dr-level': 'dr', 'screen-bs-level': 'bs', 'screen-jw-level': 'jw' };
     var LP_KUMP = { 'screen-game': 'gp', 'screen-gp-level': 'gp', 'screen-gp-kaunter': 'gp', 'screen-mm': 'mm', 'screen-mm-level': 'mm', 'screen-mm-kedai': 'mm',
       'screen-dr': 'dr', 'screen-dr-level': 'dr', 'screen-dr-kedai': 'dr', 'screen-bs': 'bs', 'screen-bs-level': 'bs',
