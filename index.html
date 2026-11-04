@@ -5857,6 +5857,26 @@
     .cx-kaunter svg { width: 46px; height: 60px; margin-bottom: 6px; }
     .cx-orang { position: absolute; left: 0; top: 0; width: 24px; height: 36px; z-index: 3; pointer-events: none; }
     .cx-orang svg { display: block; width: 24px; height: 36px; }
+    /* MESIN CONVEYOR (sewa): bawa beg mata wang terus ke kaunter coin */
+    #cx-mesin { margin: 4px 0 8px; padding: 6px 8px 8px; border: 2px solid #000; border-radius: 10px; }
+    .cxm-tajuk { font-size: 0.72rem; font-weight: bold; letter-spacing: 1px; }
+    .cxm-tajuk span { float: right; font-weight: normal; letter-spacing: 0; }
+    /* Conveyor menegak di lorong antara kaunter mata wang dan kaunter coin (ikut lakaran) */
+    .cx-tali { display: none; position: absolute; z-index: 2; pointer-events: none; }
+    .cx-tali svg { display: block; width: 100%; height: 100%; }
+    .cxm-bawah { overflow: hidden; }
+    .cxm-orang { float: left; width: 24px; height: 36px; margin: 0 6px 0 0; }
+    .cxm-orang svg { display: block; width: 24px; height: 36px; }
+    .cxm-cakap { position: relative; float: left; max-width: 62%; margin: 2px 0 0; padding: 3px 7px; border: 2px solid #000; border-radius: 9px; font-size: 0.66rem; line-height: 1.3; }
+    .cxm-cakap:before { content: ''; position: absolute; left: -9px; top: 8px; border: 4px solid transparent; border-right: 6px solid #000; }
+    #btn-cxm { float: right; margin-top: 4px; }
+    #btn-cxm.cxm-on { background: #000; color: #fff; }
+    .cx-kaunter button { margin-top: 6px; padding: 5px 8px; border: 2px solid #000; border-radius: 6px; background: #000; color: #fff; font-family: inherit; font-size: 0.7rem; font-weight: bold; }
+    .cx-kaunter { position: relative; }
+    /* Tempat COLLECT di ATAS kaunter coin (hujung conveyor) — pegawai bank tak perlu jalan jauh */
+    .cx-atas { position: absolute; left: 0; right: 0; top: 42px; text-align: center; }
+    .cx-tunggu { display: block; margin-top: 4px; font-size: 0.7rem; text-align: center; }
+    .cx-tunggu b { display: block; font-size: 1rem; }
     /* Kaunter tukar dalam setiap game arked dibuang → semua tukaran di BANK COIN */
     #btn-gpl-kaunter, #btn-jwl-kedai, #btn-mml-kedai, #btn-drl-kedai { display: none !important; }
     /* Dalam game: bar tempat & bar mata wang disorok, keluar guna butang ‹ Arked / ‹ Keluar */
@@ -6406,9 +6426,12 @@
         <div class="cx-kiri" id="cx-kiri"></div>
         <div class="cx-kanan"><div class="cx-kaunter" id="cx-kaunter"></div></div>
       </div>
+      <div class="cx-tali" id="cx-tali"></div>
       <div class="cx-orang" id="cx-orang"></div>
       <div class="cx-orang" id="cx-orang2"></div>
+      <div class="cx-orang" id="cx-orang3"></div>
     </div>
+    <div id="cx-mesin"></div>
     <div id="cx-info" class="jw-info"></div>
   </div>
   <div id="screen-gsr" class="screen">
@@ -9535,7 +9558,8 @@
         ]) +
         '<h3 id="pd-duit">DUIT, KEDAI &amp; EXCHANGE</h3>' + I([
           'Unit asas ialah PERKATAAN: 1 perkataan = ' + EKO.KATA_COIN + ' coin. Satu level Jutawan ($1,000,000) = ' + EKO.JW_COIN + ' coin. Upah Pelabuhan = ' + rm(EKO.UPAH_POS_SEN) + ' Ringgit Merah setiap kontena.',
-          'BANK PUSAT (butang di page Exchange, perlu PIN admin): tab KADAR (Ringgit Biru, Merah, Kuning) · PELABUHAN (upah kontena, sewa signboard) · ARKED (BONUS game sahaja; hadiah asas setiap perkataan & kadar Bank Coin tetap, tak boleh diubah) · KEDAI (harga jual Investment, hadiah bos). Satu butang SIMPAN SEMUA. Setiap perubahan direkod dalam Sejarah.',
+          'MESIN CONVEYOR (Bank Coin): sewa ' + rm(EKO.MESIN_SEN) + ' Ringgit Biru sejam (bayar setiap jam bermula). Bila disewa, buka Bank Coin → semua tiket, dollar, emas, perak dan gangsa terus ditukar jadi coin dan menunggu di KAUNTER COIN → tekan COLLECT di kaunter coin sekali sahaja. Tekan HENTIKAN 2 kali untuk pulangkan mesin (tiada bayaran balik) → kembali cara asal (COLLECT satu demi satu). Ringgit Biru tak cukup → mesin dipulangkan sendiri.',
+          'BANK PUSAT (butang di page Exchange, perlu PIN admin): tab KADAR (Ringgit Biru, Merah, Kuning) · PELABUHAN (upah kontena, sewa signboard) · ARKED (BONUS game sahaja; hadiah asas setiap perkataan & kadar Bank Coin tetap, tak boleh diubah) · KEDAI (harga jual Investment, hadiah bos, sewa mesin conveyor). Satu butang SIMPAN SEMUA. Setiap perubahan direkod dalam Sejarah.',
           'Magic Exchange: tukar coin → Ringgit Biru (1.00 = ' + biru + ' coin) atau Ringgit Merah (1.00 = ' + merah + ' coin).',
           'Tekan + pada Biru → page Ringgit Biru. Tekan + pada Merah → page Ringgit Merah. ‹ Kembali → balik ke tempat tadi. Sejarah → senarai tukaran.',
           'Butang bawah panel: tukar terus Ringgit Merah → Biru (di page Biru) atau Biru → Merah (di page Merah). 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah (nilai coin sama, tiada caj).',
@@ -10306,6 +10330,7 @@
       else if (g === 'DURI') t = 'Bonus 1 belon = ' + (e.DR_BONUS_BELON * EKO.PERAK_COIN) + ' coin (hadiah asas tetap: 1 perkataan = ' + (EKO.DR_PERAK_KATA * EKO.PERAK_COIN) + ' coin)';
       else if (g === 'BETUL / SALAH') t = 'Bonus 1 kesilapan = ' + (e.BS_BONUS_NYAWA * EKO.GANGSA_COIN) + ' coin (hadiah asas tetap: 1 jawapan betul = ' + (EKO.BS_GANGSA_KATA * EKO.GANGSA_COIN) + ' coin)';
       else if (g === 'INVESTMENT') t = 'Modal 1.00 → jual ' + rm(e.HJ_JUAL_X) + ' (untung ' + (e.HJ_JUAL_X - 100) + '%) · 6 jenis habis dijual → hadiah bos ' + rm(6 * e.HJ_BOS_SEN);
+      else if (g === 'BANK COIN') t = 'Mesin conveyor tukar semua mata wang game jadi coin bila Bank Coin dibuka';
       return t ? '<div class="bp-hasil">' + t + '</div>' : '';
     }
     function bpTab(t) {
@@ -10539,6 +10564,7 @@
     // HADIAH BOS: habiskan SEMUA jenis barang pembekal hari ini (sekurang-kurangnya sekali) → 0.10 Merah x bilangan jenis
     EKO.HJ_JUAL_X = 1.5;
     EKO.HJ_BOS_SEN = 10;      // HADIAH BOS: 0.10 Merah setiap jenis barang (6 jenis = 0.60), diberi bila semua habis dijual
+    EKO.MESIN_SEN = 1;        // BANK COIN: sewa mesin conveyor 0.01 Ringgit Biru sejam
     // ══ BANK PUSAT: semua harga & ganjaran boleh diubah admin. Disimpan dalam dompet.eko { KUNCI: nilai } ══
     // ARKED: hanya BONUS boleh diubah. Ganjaran asas (hadiah setiap perkataan) & kadar Bank Coin TETAP — dah dikira teliti (1 perkataan = 10 coin).
     // Nak naikkan harga barang → naikkan kadar duit (tab KADAR), bukan hadiah game.
@@ -10550,7 +10576,8 @@
       { k: 'DR_BONUS_BELON', tab: 'arked', grup: 'DURI', nama: 'BONUS setiap belon tak pecah', unit: 'g', min: 0 },
       { k: 'BS_BONUS_NYAWA', tab: 'arked', grup: 'BETUL / SALAH', nama: 'BONUS setiap kesilapan tak dipakai', unit: 'g', min: 0 },
       { k: 'HJ_JUAL_X', tab: 'kedai', grup: 'INVESTMENT', nama: 'Pelanggan beli pada harga', jenis: 'pct', min: 100, step: 5 },
-      { k: 'HJ_BOS_SEN', tab: 'kedai', grup: 'INVESTMENT', nama: 'HADIAH BOS setiap jenis barang', jenis: 'merah', min: 0 }
+      { k: 'HJ_BOS_SEN', tab: 'kedai', grup: 'INVESTMENT', nama: 'HADIAH BOS setiap jenis barang', jenis: 'merah', min: 0 },
+      { k: 'MESIN_SEN', tab: 'kedai', grup: 'BANK COIN', nama: 'Sewa mesin conveyor sejam', jenis: 'biru', min: 0 }
     ];
     var BP_LALAI = {};
     (function() { for (var i = 0; i < BP_EKO.length; i++) BP_LALAI[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]); })();
@@ -11300,8 +11327,10 @@
       el('cx-kaunter').innerHTML = '<svg viewBox="0 0 46 60" xmlns="http://www.w3.org/2000/svg">' +
         '<ellipse cx="23" cy="50" rx="18" ry="6" fill="#fff" stroke="#000" stroke-width="2"/><ellipse cx="23" cy="43" rx="18" ry="6" fill="#fff" stroke="#000" stroke-width="2"/>' +
         '<ellipse cx="23" cy="36" rx="18" ry="6" fill="#fff" stroke="#000" stroke-width="2"/><ellipse cx="23" cy="29" rx="18" ry="6" fill="#fff" stroke="#000" stroke-width="2"/>' +
-        '<circle cx="23" cy="12" r="10" fill="#fff" stroke="#000" stroke-width="2"/><circle cx="23" cy="12" r="5" fill="none" stroke="#000" stroke-width="1.5"/></svg>KAUNTER<br>COIN';
+        '<circle cx="23" cy="12" r="10" fill="#fff" stroke="#000" stroke-width="2"/><circle cx="23" cy="12" r="5" fill="none" stroke="#000" stroke-width="1.5"/></svg>KAUNTER<br>COIN' +
+        (MESIN.tunggu > 0 ? '<div class="cx-atas"><span class="cx-tunggu"><b>' + MESIN.tunggu + '</b>coin menunggu</span><button type="button" data-cx-kutip="1"' + (cxSibuk ? ' disabled' : '') + '>COLLECT</button></div>' : '');
       el('cx-coin').textContent = DP.coin;
+      lukisMesin();
     }
     function bukaCx() {
       if (!currentUser) return;
@@ -11321,6 +11350,8 @@
             el('cx-info').textContent = ok ? 'Tekan COLLECT · pegawai bank akan ambil dan tukarkan jadi coin.' : 'Gagal memuat dompet.';
             lukisCx();
             cxRehat();
+            // Mesin conveyor: bayar sewa jam yang dah bermula, kemudian tukar semua mata wang game terus ke kaunter coin
+            if (ok) mesinSewa(function() { lukisCx(); if (MESIN.ada) mesinTukar(); });
           });
         }).catch(function(e) { el('cx-info').textContent = 'Gagal memuat: ' + (e.message || e); });
     }
@@ -11409,6 +11440,214 @@
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-cx-collect'))) t = t.parentNode;
       if (t && t !== this && !t.disabled) cxCollect(t.getAttribute('data-cx-collect'));
     });
+    // ══ MESIN CONVEYOR (sewa macam signboard Pelabuhan) ══
+    // game_stat/bankcoin { mesin, mesinAt, mesinJam, tunggu } · sewa EKO.MESIN_SEN (Biru) sejam, dibayar setiap jam bermula.
+    // Bila disewa: buka Bank Coin → semua tiket/dollar/emas/perak/gangsa ditukar terus jadi coin, menunggu di KAUNTER COIN.
+    // Pengguna cuma tekan COLLECT di kaunter coin. Tak disewa → kembali cara asal (COLLECT satu demi satu).
+    var MESIN = { ada: false, at: 0, jam: 0, tunggu: 0, gerak: 0, sah: 0 }, mesinSibuk = false;
+    function refMesin() { return kol('game_stat').doc('bankcoin'); }
+    // Conveyor menegak di lorong: cabang mendatar dari setiap kaunter mata wang → tali sawat menegak → masuk kaunter coin
+    function svgMesin(w, h, ys) {
+      var g = '', x0 = w - 26, x1 = w - 6, y, k, o = MESIN.gerak % 36, i, bx;
+      // Tali sawat menegak (rel kiri & kanan + palang penggelek bergerak ke ATAS)
+      g += '<path d="M' + x0 + ' 0 V' + h + ' M' + x1 + ' 0 V' + h + '" stroke="#000" stroke-width="2.5"/>';
+      for (y = 12 - (o % 12); y < h; y += 12) g += '<path d="M' + x0 + ' ' + y + ' H' + x1 + '" stroke="#000" stroke-width="1.5"/>';
+      // Cabang dari setiap kaunter
+      for (i = 0; i < ys.length; i++) {
+        y = ys[i];
+        g += '<path d="M0 ' + (y - 6) + ' H' + x0 + ' M0 ' + (y + 6) + ' H' + x0 + '" stroke="#000" stroke-width="2"/>';
+        for (bx = ((MESIN.gerak / 2) % 12); bx < x0; bx += 12) g += '<path d="M' + bx + ' ' + (y - 6) + ' V' + (y + 6) + '" stroke="#000" stroke-width="1.2"/>';
+      }
+      // Beg di atas tali sawat menegak (naik ke tempat COLLECT di atas kaunter coin)
+      for (k = 0; k < 6; k++) {
+        y = (((k * Math.round(h / 6) - MESIN.gerak) % h) + h) % h;
+        g += '<path d="M' + (x0 + 2) + ' ' + (y + 12) + ' L' + (x0 + 3) + ' ' + (y + 4) + ' Q' + (x0 + 4) + ' ' + (y + 2) + ' ' + (x0 + 7) + ' ' + (y + 2) + ' H' + (x1 - 6) + ' Q' + (x1 - 3) + ' ' + (y + 2) + ' ' + (x1 - 3) + ' ' + (y + 4) + ' L' + (x1 - 2) + ' ' + (y + 12) + ' Z" fill="#fff" stroke="#000" stroke-width="1.3"/>';
+      }
+      // Anak panah masuk kaunter coin di ATAS
+      g += '<path d="M' + (x1 - 2) + ' 0 L' + (x1 + 5) + ' 5 L' + (x1 - 2) + ' 10" fill="#000"/>';
+      return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" xmlns="http://www.w3.org/2000/svg">' + g + '</svg>';
+    }
+    // Lukis conveyor di lorong + penjaga mesin di atas kaunter coin. Tak disewa → lorong kosong (cara asal).
+    function lukisTali() {
+      var t = el('cx-tali'), o3 = el('cx-orang3');
+      if (!MESIN.ada || el('screen-cx').className.indexOf('active') === -1) { t.style.display = 'none'; o3.style.display = 'none'; return; }
+      var p = cxTempat(), kiri = el('cx-kiri').children, rn = p.r(el('cx-kaunter')), rk = p.r(el('cx-kiri')), ys = [], i, top, bot, w, h, rc;
+      if (!kiri.length) return;
+      top = p.r(kiri[0]).t; bot = p.r(kiri[kiri.length - 1]).b;
+      for (i = 0; i < kiri.length; i++) { rc = p.r(kiri[i]); ys.push(Math.round((rc.t + rc.b) / 2 - top)); }
+      w = Math.max(30, Math.round(rn.l - rk.r)); h = Math.max(40, Math.round(bot - top));
+      t.style.left = Math.round(rk.r) + 'px'; t.style.top = Math.round(top) + 'px'; t.style.width = w + 'px'; t.style.height = h + 'px';
+      t.style.display = 'block';
+      t.innerHTML = svgMesin(w, h, ys);
+      o3.style.display = 'block';
+      o3.style.left = Math.round(rn.r - 32) + 'px'; o3.style.top = Math.round(rn.t + 6) + 'px';
+      o3.innerHTML = svgCxOrang('j2', '', true);
+    }
+    function lukisMesin() {
+      var now = Date.now(), c;
+      if (MESIN.ada) c = 'Penjaga mesin: mesin jalan ' + papanMasa(now - MESIN.at) + ' · sewa ' + rm(MESIN.jam * EKO.MESIN_SEN) + ' Biru. Semua beg terus dibawa ke kaunter coin.';
+      else c = 'Penjaga mesin: sewa conveyor ' + rm(EKO.MESIN_SEN) + ' Biru sejam? Semua beg mata wang terus dibawa ke kaunter coin, awak cuma COLLECT.';
+      if (MESIN.sah && now - MESIN.sah < 4000) c = 'Tekan HENTIKAN sekali lagi untuk pulangkan mesin. Tiada bayaran balik.';
+      el('cx-mesin').innerHTML = '<div class="cxm-tajuk">MESIN CONVEYOR <span>' + (MESIN.ada ? 'DISEWA' : 'TAK DISEWA') + '</span></div>' +
+        '<div class="cxm-bawah"><i class="cxm-orang">' + svgCxOrang('j2', '', true) + '</i><span class="cxm-cakap">' + c + '</span>' +
+        '<button type="button" id="btn-cxm" class="gm-kecil' + (MESIN.ada ? ' cxm-on' : '') + '">' + (MESIN.ada ? 'HENTIKAN' : 'SEWA · ' + rm(EKO.MESIN_SEN) + ' Biru/jam') + '</button></div>';
+      lukisTali();
+    }
+    // Bayar sewa jam yang dah bermula (macam papanSewa). Ringgit Biru tak cukup → mesin dipulangkan.
+    function mesinSewa(cb) {
+      if (mesinSibuk) { if (cb) cb(); return; }
+      mesinSibuk = true;
+      db.runTransaction(function(tx) {
+        return tx.get(refMesin()).then(function(sm) {
+          var p = (sm && sm.exists) ? sm.data() : {};
+          if (!p.mesin) return { ada: false, tunggu: p.tunggu || 0 };
+          return tx.get(refDompet()).then(function(sd) {
+            var d = (sd && sd.exists) ? sd.data() : {}, now = Date.now(), jam = Math.floor((now - p.mesinAt) / PAPAN_JAM) + 1, kena = jam - (p.mesinJam || 0);
+            if (kena <= 0) return { ada: true, at: p.mesinAt, jam: p.mesinJam || 0, tunggu: p.tunggu || 0, bayar: 0 };
+            var perlu = kena * EKO.MESIN_SEN, bayar = Math.min(perlu, Math.max(0, d.biruSen || 0));
+            if (bayar > 0) {
+              tx.set(refDompet(), { biruSen: firebase.firestore.FieldValue.increment(-bayar), updatedAt: now }, { merge: true });
+              tx.set(kol('dompet_log').doc(), { jenis: 'sewa>mesin', ket: 'SEWA MESIN CONVEYOR ' + kena + ' jam → -' + rm(bayar) + ' Biru', at: now });
+            }
+            if (bayar < perlu) { tx.set(refMesin(), { mesin: false, mesinAt: 0, mesinJam: 0, updatedAt: now }, { merge: true }); return { ada: false, habis: true, tunggu: p.tunggu || 0, bayar: bayar }; }
+            tx.set(refMesin(), { mesinJam: jam, updatedAt: now }, { merge: true });
+            return { ada: true, at: p.mesinAt, jam: jam, tunggu: p.tunggu || 0, bayar: bayar };
+          });
+        });
+      }).then(function(r) {
+        mesinSibuk = false;
+        MESIN.ada = r.ada; MESIN.at = r.at || 0; MESIN.jam = r.jam || 0; MESIN.tunggu = r.tunggu || 0;
+        if (r.bayar) DP.biruSen -= r.bayar;
+        if (r.habis) el('cx-info').textContent = 'Ringgit Biru tak cukup untuk sewa mesin conveyor. Mesin dipulangkan.';
+        if (cb) cb();
+      }).catch(function() { mesinSibuk = false; if (cb) cb(); });
+    }
+    function mesinMula() {
+      if (mesinSibuk || cxSibuk) return;
+      mesinSibuk = true;
+      db.runTransaction(function(tx) {
+        return tx.get(refDompet()).then(function(sd) {
+          var d = (sd && sd.exists) ? sd.data() : {}, now = Date.now();
+          if ((d.biruSen || 0) < EKO.MESIN_SEN) throw new Error('KURANG');
+          tx.set(refDompet(), { biruSen: firebase.firestore.FieldValue.increment(-EKO.MESIN_SEN), updatedAt: now }, { merge: true });
+          tx.set(kol('dompet_log').doc(), { jenis: 'sewa>mesin', ket: 'SEWA MESIN CONVEYOR (jam pertama) → -' + rm(EKO.MESIN_SEN) + ' Biru', at: now });
+          tx.set(refMesin(), { mesin: true, mesinAt: now, mesinJam: 1, updatedAt: now }, { merge: true });
+          return now;
+        });
+      }).then(function(now) {
+        mesinSibuk = false;
+        MESIN.ada = true; MESIN.at = now; MESIN.jam = 1;
+        DP.biruSen -= EKO.MESIN_SEN;
+        el('cx-info').textContent = 'Mesin conveyor disewa. Semua beg dibawa ke kaunter coin...';
+        lukisCx();
+        mesinTukar();
+      }).catch(function(e) {
+        mesinSibuk = false;
+        el('cx-info').textContent = e && e.message === 'KURANG' ? 'Sewa mesin ' + rm(EKO.MESIN_SEN) + ' Ringgit Biru sejam. Ringgit Biru tak cukup.' : 'Gagal sewa: ' + ((e && e.message) || e);
+      });
+    }
+    function mesinHenti() {
+      mesinSewa(function() {
+        if (!MESIN.ada) { lukisCx(); return; }
+        var now = Date.now(), jum = MESIN.jam * EKO.MESIN_SEN, lama = now - MESIN.at;
+        refMesin().set({ mesin: false, mesinAt: 0, mesinJam: 0, updatedAt: now }, { merge: true }).then(function() {
+          kol('dompet_log').doc().set({ jenis: 'sewa>mesin', ket: 'PULANGKAN MESIN CONVEYOR · disewa ' + papanMasa(lama) + ' · jumlah sewa ' + rm(jum) + ' Biru', at: now }).catch(function() {});
+          MESIN.ada = false; MESIN.at = 0; MESIN.jam = 0; MESIN.sah = 0;
+          el('cx-info').textContent = 'Mesin dipulangkan. Kembali cara asal: tekan COLLECT di setiap kaunter.';
+          lukisCx();
+        }).catch(function(e) { el('cx-info').textContent = 'Gagal: ' + ((e && e.message) || e); });
+      });
+    }
+    // Tukar SEMUA mata wang game → coin menunggu di kaunter coin (baki tak cukup 1 coin kekal di kaunter asal)
+    function mesinTukar() {
+      if (cxSibuk || !MESIN.ada) return;
+      var st = kol('game_stat'), hasil = [];
+      cxSibuk = true;
+      db.runTransaction(function(tx) {
+        var d = {}, i = 0;
+        function baca() {
+          if (i >= CX.length) return tx.get(refMesin());
+          var c = CX[i];
+          return tx.get(st.doc(c.doc)).then(function(s) { d[c.k] = (s && s.exists) ? s.data()[c.f] || 0 : 0; i++; return baca(); });
+        }
+        return baca().then(function(sm) {
+          var jum = 0, now = Date.now(), j, c, ada, dapat, kos, u;
+          hasil = [];
+          for (j = 0; j < CX.length; j++) {
+            c = CX[j]; ada = d[c.k]; dapat = c.coin(ada);
+            if (dapat < 1) continue;
+            kos = c.kos(dapat); u = { updatedAt: now };
+            u[c.f] = firebase.firestore.FieldValue.increment(-kos);
+            tx.set(st.doc(c.doc), u, { merge: true });
+            hasil.push({ c: c, baki: ada - kos, dapat: dapat, kos: kos });
+            jum += dapat;
+          }
+          if (!jum) return 0;
+          tx.set(refMesin(), { tunggu: firebase.firestore.FieldValue.increment(jum), updatedAt: now }, { merge: true });
+          tx.set(kol('dompet_log').doc(), { jenis: 'mesin>coin', ket: 'MESIN CONVEYOR: ' + hasil.map(function(h) { return h.c.fmt(h.kos); }).join(' + ') + ' → ' + jum + ' coin menunggu di kaunter coin', at: now });
+          return jum;
+        });
+      }).then(function(jum) {
+        cxSibuk = false;
+        if (!jum) { lukisCx(); el('cx-info').textContent = 'Mesin conveyor jalan · tiada mata wang cukup untuk 1 coin.' + (MESIN.tunggu ? ' Tekan COLLECT di kaunter coin.' : ''); return; }
+        for (var i = 0; i < hasil.length; i++) hasil[i].c.set(hasil[i].baki);
+        MESIN.tunggu += jum;
+        lukisCx();
+        el('cx-info').textContent = 'Mesin conveyor bawa semua beg ke kaunter coin → ' + jum + ' coin menunggu. Tekan COLLECT di kaunter coin.';
+      }).catch(function(e) { cxSibuk = false; lukisCx(); el('cx-info').textContent = 'Mesin gagal: ' + ((e && e.message) || e); });
+    }
+    // COLLECT di kaunter coin: semua coin menunggu masuk bank
+    function mesinKutip() {
+      if (cxSibuk || dpSibuk || !(MESIN.tunggu > 0)) return;
+      var lama = DP.coin, n = 0;
+      cxSibuk = true;
+      db.runTransaction(function(tx) {
+        return tx.get(refMesin()).then(function(sm) {
+          n = (sm && sm.exists) ? sm.data().tunggu || 0 : 0;
+          if (n < 1) return 0;
+          tx.set(refMesin(), { tunggu: firebase.firestore.FieldValue.increment(-n), updatedAt: Date.now() }, { merge: true });
+          tx.set(refDompet(), { coin: firebase.firestore.FieldValue.increment(n), updatedAt: Date.now() }, { merge: true });
+          tx.set(kol('dompet_log').doc(), { jenis: 'mesin>kutip', ket: 'BANK COIN: COLLECT di kaunter coin → +' + n + ' coin', at: Date.now() });
+          return n;
+        });
+      }).then(function(k) {
+        MESIN.tunggu = 0;
+        if (!k) { cxSibuk = false; lukisCx(); return; }
+        DP.coin = lama + k;
+        // Pegawai bank jalan sikit sahaja: dari kerusi ke tempat COLLECT di atas kaunter coin, bawa coin balik
+        var p = cxTempat(), rn = p.r(el('cx-kaunter')), sx = rn.l + 10, sy = rn.t + 40;
+        el('cx-info').textContent = 'Pegawai bank ambil ' + k + ' coin di atas kaunter coin...';
+        cxJalan(CXO.bank, [
+          { x: p.duduk.x, y: p.duduk.y }, { x: sx, y: p.duduk.y },
+          { x: sx, y: sy, aksi: function() { CXO.bank.bawa = 'coin'; MESIN.tunggu = 0; var a = el('cx-kaunter').querySelector('.cx-atas'); if (a) a.style.display = 'none'; } },
+          { x: sx, y: p.duduk.y }, { x: p.duduk.x, y: p.duduk.y }
+        ], function() {
+          cxRehat();
+          kiraNaik(el('cx-coin'), lama, DP.coin, function() {
+            cxSibuk = false; lukisCx();
+            el('cx-info').textContent = '+' + k + ' coin masuk bank.';
+          });
+        });
+      }).catch(function(e) { cxSibuk = false; lukisCx(); el('cx-info').textContent = 'Gagal collect: ' + ((e && e.message) || e); });
+    }
+    el('cx-kaunter').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-cx-kutip') && !t.disabled) mesinKutip(); });
+    el('cx-mesin').addEventListener('click', function(e) {
+      var t = e.target;
+      if (!t || t.id !== 'btn-cxm' || mesinSibuk) return;
+      if (!MESIN.ada) { mesinMula(); return; }
+      if (MESIN.sah && Date.now() - MESIN.sah < 4000) { mesinHenti(); return; }
+      MESIN.sah = Date.now(); lukisMesin();
+    });
+    // Conveyor sentiasa bergerak bila disewa (bingkai pendek). Setiap 30 saat: bayar sewa bila masuk jam baru.
+    setInterval(function() {
+      if (!MESIN.ada || el('screen-cx').className.indexOf('active') === -1) return;
+      MESIN.gerak += 6;
+      lukisTali();
+    }, 700);
+    setInterval(function() {
+      if (!MESIN.ada || el('screen-cx').className.indexOf('active') === -1) return;
+      if (Date.now() >= MESIN.at + MESIN.jam * PAPAN_JAM) mesinSewa(lukisCx); else lukisMesin();
+    }, 30000);
     el('btn-cx-balik').onclick = function() { el('btn-mx-balik').onclick(); };
   })();
   </script>
