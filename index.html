@@ -8579,7 +8579,9 @@
       var t = token(s), o = [], i, w;
       for (i = 0; i < t.length; i++) {
         w = t[i];
-        if (adalahKata(w) && w.length >= 6 && /nya$/i.test(w) && !/(hanya|punya|tanya|nyanya)$/i.test(w)) { o.push(w.slice(0, -3)); o.push(w.slice(-3)); }
+        // Tak dipisah hanya bila perkataan itu SENDIRI hanya / punya / tanya (atau berimbuhan: bertanya, ditanya...).
+        // cita-citanya, tanyanya, anak-anaknya → tetap dipisah.
+        if (adalahKata(w) && w.length >= 6 && /nya$/i.test(w) && !/^(ber|me|men|mem|di|ter|pe|per|ke|se)?(hanya|punya|tanya|nyanya)$/i.test(w.split('-').pop())) { o.push(w.slice(0, -3)); o.push(w.slice(-3)); }
         else o.push(w);
       }
       return o;
