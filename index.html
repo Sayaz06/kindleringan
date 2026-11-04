@@ -6957,9 +6957,10 @@
       el('gp-tamat').style.display = 'none';
       el('gp-papan').style.display = 'none';
       el('gp-info').textContent = 'Memilih perkataan...';
-      var bank = senaraiBank(), dalamBank = {};
+      var bank = senaraiBank(), dalamBank = {}, sesi = MULA_SESI;
       for (var i = 0; i < bank.length; i++) dalamBank[bank[i].id] = 1;
       kol('game_sr').where('nextDueAt', '<=', Date.now()).orderBy('nextDueAt', 'asc').limit(BIL).get().then(function(snap) {
+        if (sesi !== MULA_SESI) return; // muatan lama → abaikan
         var overdue = [];
         snap.forEach(function(doc) {
           var d = doc.data();
@@ -7006,6 +7007,7 @@
     }
     // Satu pusingan = satu LEVEL (6 pasangan). Lulus = semua dipadankan TANPA salah → dapat Tiket Arked.
     function tamatPusingan() {
+      if (!pus) return;
       var lv = GP.lulus + 1, lulus = pus.cubaanSalah <= EKO.GP_SALAH_MAKS, tiket = pus.pasangan.length * EKO.GP_TIKET_KATA;
       var ubah = { main: firebase.firestore.FieldValue.increment(1), updatedAt: Date.now() };
       GP.main++;
@@ -7031,7 +7033,9 @@
       a.className = 'gp-k gp-siap'; b.className = 'gp-k gp-siap';
       pus.baki--;
       el('gp-info').textContent = p.en + ' = ' + p.bm;
-      if (pus.baki <= 0) setTimeout(tamatPusingan, 700);
+      // Simpan pusingan INI: kalau pusingan lain dah bermula dalam 0.7 saat, jangan tamatkan yang salah
+      var ini = pus;
+      if (pus.baki <= 0) setTimeout(function() { if (pus === ini) tamatPusingan(); }, 700);
     }
     el('gp-papan').addEventListener('click', function(e) {
       var t = e.target;
@@ -7059,6 +7063,7 @@
       if (!currentUser) return;
       muatLokal();
       showScreen('screen-game');
+      var sesi = MULA_SESI;
       bilPusingan = 0;
       el('gp-papan').style.display = 'none';
       el('gp-tamat').style.display = 'none';
@@ -7068,13 +7073,17 @@
           if (!ok) { el('gp-info').textContent = 'Gagal memuat bank: ' + ((e && e.message) || ''); return; }
           muatGsr(false, function(ok2, e2) {
             if (!ok2) { el('gp-info').textContent = 'Gagal memuat SR game: ' + ((e2 && e2.message) || ''); return; }
-            gpMuat(function() { mulaPusingan(); });
+            if (sesi !== MULA_SESI) return;
+            gpMuat(function() { if (sesi === MULA_SESI) mulaPusingan(); });
           });
         });
       });
     }
     // ══ PADAN: LEVEL (12 satu set) + TIKET ARKED · Firebase: users/{uid}/game_stat/padan { main, lulus, tiket } ══
     var GP = { main: 0, lulus: 0, tiket: 0 };
+    // Token sesi game: naik setiap kali tukar skrin / MAIN ditekan. Muatan lama (cth MAIN ditekan 2 kali di Kindle,
+    // atau keluar sebelum habis muat) yang sampai lambat DIABAIKAN — tak tindih game yang sedang dimain / skrin tamat.
+    var MULA_SESI = 0;
     function gpMuat(cb) {
       kol('game_stat').doc('padan').get().then(function(s) {
         var d = (s && s.exists) ? s.data() : {};
@@ -7249,8 +7258,9 @@
       el('mm-langkah').textContent = MM_LANGKAH;
       el('mm-langkah').parentNode.className = 'mm-langkah';
       el('mm-info').textContent = 'Menyusun kad...';
-      var bank = senaraiBank();
+      var bank = senaraiBank(), sesi = MULA_SESI;
       mmOverdue(bank, function(od) {
+        if (sesi !== MULA_SESI) return; // muatan lama (MAIN ditekan 2 kali / dah keluar) → abaikan
         var pas = mmPilih(bank, od), kad = [], i;
         if (pas.length < MM_BIL) {
           el('mm-info').textContent = 'KEDAI MEMORI TUTUP: TIADA STOK.\nPerlu ' + MM_BIL + ' perkataan, ada ' + pas.length + '.\nMuat kontena di tab PELABUHAN.';
@@ -7291,7 +7301,9 @@
       if (mm.kad[a].p === mm.kad[b].p) {
         var p = mm.pas[mm.kad[a].p];
         el('mm-info').textContent = p.en + ' = ' + p.bm;
+        var m1 = mm;
         setTimeout(function() {
+          if (mm !== m1) return;
           mm.kad[a].hilang = mm.kad[b].hilang = true;
           mmKad(a).className = 'mm-k mm-hilang'; mmKad(b).className = 'mm-k mm-hilang';
           mm.buka = []; mm.kunci = false; mm.jumpa++;
@@ -7299,7 +7311,9 @@
           else if (mm.langkah <= 0) mmTamat(false);
         }, 650);
       } else {
+        var m2 = mm;
         setTimeout(function() {
+          if (mm !== m2) return;
           mmTutup(a); mmTutup(b);
           mm.buka = []; mm.kunci = false;
           if (mm.langkah <= 0) mmTamat(false);
@@ -7689,8 +7703,9 @@
       el('dr-belon-n').textContent = DR_BELON;
       el('dr-belon-n').parentNode.className = 'mm-langkah';
       el('dr-info').textContent = 'Menyusun perkataan...';
-      var bank = senaraiBank();
+      var bank = senaraiBank(), sesi = MULA_SESI;
       drOverdue(bank, function(od) {
+        if (sesi !== MULA_SESI) return; // muatan lama → abaikan
         var pas = drPilih(bank, od), kad = [], i;
         if (pas.length < DR_BIL) {
           el('dr-info').textContent = 'KEDAI DURI TUTUP: TIADA STOK.\nPerlu ' + DR_BIL + ' perkataan, ada ' + pas.length + '.\nMuat kontena di tab PELABUHAN.';
@@ -8032,8 +8047,9 @@
       el('bs-en').textContent = ''; el('bs-bm').textContent = ''; el('bs-hasil').textContent = ''; el('bs-sebenar').textContent = '';
       el('bs-gangsa').textContent = BS.gangsa + ' g';
       el('bs-info').textContent = 'Menyusun soalan...';
-      var bank = senaraiBank();
+      var bank = senaraiBank(), sesi = MULA_SESI;
       bsOverdue(bank, function(od) {
+        if (sesi !== MULA_SESI) return; // muatan lama → abaikan
         var pas = bsPilih(bank, od);
         if (pas.length < BS_BIL) {
           el('bs-info').textContent = 'KEDAI BETUL / SALAH TUTUP: TIADA STOK.\nPerlu ' + BS_BIL + ' perkataan, ada ' + pas.length + '.\nMuat kontena di tab PELABUHAN.';
@@ -9833,6 +9849,7 @@
     var lpDulu = '';
     var lpSkrinAsal = showScreen;
     showScreen = function(id) {
+      MULA_SESI++;
       lpSkrinAsal(id);
       var b = el('btn-lapor'), sb;
       lpBatal(); LP.sedia = 0; lpTutupSenarai();
