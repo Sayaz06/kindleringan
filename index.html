@@ -5775,6 +5775,17 @@
     #lp-popup li { font-size: 0.88rem; line-height: 1.45; margin-bottom: 5px; }
     #lp-popup label { display: block; margin: 8px 0 12px; font-size: 0.85rem; }
     #lp-popup label input { width: 18px; height: 18px; margin: 0 8px 0 0; vertical-align: middle; }
+    /* Senarai perkataan game ini (tekan butang REPORT) — boleh report perkataan yang dah hilang dari skrin */
+    #lp-senarai { display: none; position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 9700; background: #fff; overflow: auto; }
+    #lp-senarai .lp-kotak { margin: 12px; padding: 10px; border: 3px solid #000; border-radius: 12px; }
+    #lp-senarai h3 { margin: 0 0 6px; padding: 4px 8px; background: #000; color: #fff; border-radius: 4px; font-size: 1rem; letter-spacing: 1px; }
+    #lp-senarai .lp-nota { font-size: 0.8rem; margin: 0 0 8px; }
+    #lp-isi button { display: block; width: 100%; margin: 0 0 6px; padding: 8px 10px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.95rem; text-align: left; }
+    #lp-isi button i { float: right; font-style: normal; font-size: 0.6rem; font-weight: bold; letter-spacing: 1px; margin-top: 4px; }
+    #lp-isi button.lp-dah { background: #000; color: #fff; }
+    #lp-isi button small { display: block; font-size: 0.7rem; margin-top: 2px; }
+    #lp-senarai .lp-btn button { display: inline-block; width: 48%; margin: 6px 1% 0; }
     /* BENGKEL di Pelabuhan: kapal yang ada perkataan di-report */
     .bk-tajuk { margin: 12px 0 6px; padding-bottom: 2px; border-bottom: 2px solid #000; font-weight: bold; }
     .bk-tajuk svg { display: inline-block; width: 74px; height: 34px; vertical-align: middle; margin-right: 8px; }
@@ -6105,11 +6116,20 @@
         <li>Jumpa perkataan yang SALAH padanan (salah tagging di dermaga)?</li>
         <li>TEKAN LAMA perkataan itu (lebih kurang 1 saat) sampai ia terangkat.</li>
         <li>SERET ke butang REPORT di atas kanan, kemudian lepaskan. Atau lepaskan di mana-mana, kemudian tekan butang REPORT dalam 4 saat.</li>
+        <li>Perkataan dah hilang dari skrin (cth Betul/Salah dah ke soalan seterusnya)? Tekan butang REPORT → senarai perkataan game ini keluar (jam berhenti) → ketik perkataan yang salah.</li>
         <li>Butang jadi REPORT (1), (2)... Game diteruskan seperti biasa.</li>
         <li>Lepas game, pergi PELABUHAN → BENGKEL: kapal yang ada perkataan itu menunggu di situ. Ketik kapal, betulkan padanan di dermaga (X kontena salah, muat semula yang betul), kemudian ketik besi untuk belayar → report selesai.</li>
       </ol>
       <label><input type="checkbox" id="lp-senyap">Jangan ingatkan saya lagi hari ini</label>
       <button type="button" id="btn-lp-faham" class="btn btn-primary">FAHAM</button>
+    </div>
+  </div>
+  <div id="lp-senarai">
+    <div class="lp-kotak">
+      <h3>REPORT PERKATAAN</h3>
+      <div class="lp-nota">Ketik perkataan yang SALAH padanan. Jam game berhenti selagi senarai ini dibuka.</div>
+      <div id="lp-isi"></div>
+      <div class="lp-btn"><button type="button" id="btn-lp-cara" class="btn">Cara report</button><button type="button" id="btn-lp-tutup" class="btn btn-primary">TUTUP</button></div>
     </div>
   </div>
   <div id="screen-game" class="screen">
@@ -7593,6 +7613,7 @@
         lukisDr();
         drJam = setInterval(function() {
           if (!dr || dr.tamat || el('screen-dr').className.indexOf('active') === -1) { drHenti(); return; }
+          if (LP_JEDA) return;
           dr.detik++;
           if (dr.detik >= DR_DETIK) { dr.detik = 0; drTolak(false); } else lukisDr();
         }, 1000);
@@ -7927,7 +7948,7 @@
     // Jam: berhenti sekejap masa jawapan ditunjuk
     function bsDetik() {
       if (!bs || bs.tamat || el('screen-bs').className.indexOf('active') === -1) { bsHenti(); return; }
-      if (bs.kunci) return;
+      if (bs.kunci || LP_JEDA) return;
       bs.sisa--;
       el('bs-masa').textContent = bsMasaTeks(Math.max(0, bs.sisa));
       el('bs-masa-isi').style.width = Math.round(Math.max(0, bs.sisa) / BS_MASA * 100) + '%';
@@ -9350,7 +9371,7 @@
           'Setiap mini game ialah KEDAI. Kedai perlukan STOK perkataan (SR yang sudah sampai masa + perkataan baru) untuk dibuka.',
           'Stok tak cukup untuk satu pusingan → kedai TUTUP (Padan perlu 6, Jutawan perlu 15). Muat kontena di Pelabuhan untuk buka semula.',
           'Bila kedai dapat stok semula, pintu besinya naik terbuka.',
-          'REPORT (semua game): perkataan salah padanan → tekan lama perkataan itu, seret ke butang REPORT di atas kanan (atau lepas, kemudian tekan REPORT dalam 4 saat). Kapal yang ada perkataan itu masuk BENGKEL di Pelabuhan. Tekan butang REPORT bila-bila masa untuk baca cara ini semula.'
+          'REPORT (semua game): perkataan salah padanan → tekan lama perkataan itu, seret ke butang REPORT di atas kanan (atau lepas, kemudian tekan REPORT dalam 4 saat). Perkataan dah hilang dari skrin → tekan butang REPORT: senarai perkataan yang dah dijawab / dipadan keluar (jam berhenti), ketik yang salah. Kapal yang ada perkataan itu masuk BENGKEL di Pelabuhan.'
         ]) +
         '<h3 id="pd-padan">PADAN (mini game)</h3>' + I([
           'Tekan perkataan English (kotak hitam), kemudian maksudnya dalam BM (kotak putih). Pasangan betul akan hilang.',
@@ -9532,7 +9553,8 @@
       if (baki.length !== BK.lapor.length) { BK.lapor = baki; bkSimpan(); lpLabel(); }
     }
     // ── Tekan lama → seret ke REPORT ──
-    var LP_SKRIN = { 'screen-game': 'Padan', 'screen-mm': 'Memori', 'screen-dr': 'Duri', 'screen-bs': 'Betul/Salah', 'screen-jw-soalan': 'Jutawan' };
+    var LP_SKRIN = { 'screen-game': 'Padan', 'screen-mm': 'Memori', 'screen-dr': 'Duri', 'screen-bs': 'Betul/Salah', 'screen-jw-soalan': 'Jutawan', 'screen-jw-tamat': 'Jutawan' };
+    var LP_JEDA = false;
     var LP_LEVEL = { 'screen-gp-level': 'gp', 'screen-mm-level': 'mm', 'screen-dr-level': 'dr', 'screen-bs-level': 'bs', 'screen-jw-level': 'jw' };
     var LP_KUMP = { 'screen-game': 'gp', 'screen-gp-level': 'gp', 'screen-gp-kaunter': 'gp', 'screen-mm': 'mm', 'screen-mm-level': 'mm', 'screen-mm-kedai': 'mm',
       'screen-dr': 'dr', 'screen-dr-level': 'dr', 'screen-dr-kedai': 'dr', 'screen-bs': 'bs', 'screen-bs-level': 'bs',
@@ -9599,17 +9621,73 @@
       el('btn-lapor').className = 'lp-sedia'; el('btn-lapor').textContent = 'TEKAN UNTUK REPORT';
       setTimeout(function() { if (LP.sedia && Date.now() - LP.sedia >= 3900) lpReset(); }, 4000);
     }
-    function lpHantar() {
-      var tk = LP.teks, i, b = el('btn-lapor');
+    function lpCariLapor(tk) {
+      for (var i = 0; i < BK.lapor.length; i++) if (samaKata(BK.lapor[i].t) === samaKata(tk)) return i;
+      return -1;
+    }
+    function lpHantar(tk, bm) {
+      var i, b = el('btn-lapor');
+      if (tk === undefined) tk = LP.teks;
       LP.sedia = 0;
-      for (i = 0; i < BK.lapor.length; i++) if (samaKata(BK.lapor[i].t) === samaKata(tk)) break;
+      i = lpCariLapor(tk);
       // Dah pernah di-report → buka semula (kapal yang dah dibaiki masuk bengkel lagi)
-      if (i < BK.lapor.length) { delete BK.lapor[i].siap; bkSimpan(); b.className = 'lp-ada'; b.textContent = 'DAH DI-REPORT'; setTimeout(lpLabel, 1200); return; }
-      BK.lapor.push({ t: tk, g: LP_SKRIN[LP.skrin] || '', at: Date.now() });
+      if (i >= 0) { delete BK.lapor[i].siap; bkSimpan(); b.className = 'lp-ada'; b.textContent = 'DAH DI-REPORT'; setTimeout(lpLabel, 1200); return; }
+      var r = { t: tk, g: LP_SKRIN[lpSkrinAktif()] || '', at: Date.now() };
+      if (bm) r.b = bm;
+      BK.lapor.push(r);
       bkSimpan();
       b.className = 'lp-ada'; b.textContent = '+1 REPORT';
       setTimeout(lpLabel, 900);
     }
+    // ── Senarai perkataan game ini: hanya yang SUDAH dijawab / dipadan / sedang dipapar (tak bocor jawapan) ──
+    function lpSenarai() {
+      var id = lpSkrinAktif(), a = [], i, n, k, ada = {};
+      function tambah(en, bm, nota) { if (en && bm) a.push({ en: en, bm: bm, nota: nota || '' }); }
+      if (id === 'screen-bs' && bs) {
+        n = Math.min(bs.i + (bs.tamat || bs.kunci ? 0 : 1), bs.soalan.length);
+        for (i = 0; i < n; i++) { k = bs.soalan[i]; tambah(k.p.en, k.bm, k.betul ? '' : (i < bs.i ? 'Pasangan palsu · maksud sebenar: ' + k.p.bm : '')); }
+      } else if ((id === 'screen-jw-soalan' || id === 'screen-jw-tamat') && jw) {
+        n = Math.min(jw.i + (jw.tamat ? 1 : 0), jw.soalan.length);
+        for (i = 0; i < n; i++) tambah(jw.soalan[i].p.en, jw.soalan[i].p.bm);
+      } else if (id === 'screen-game' && pus) {
+        var siap = el('gp-tamat').style.display === 'block', bt = el('gp-kiri').children;
+        for (i = 0; i < bt.length; i++) if (siap || bt[i].className.indexOf('gp-siap') !== -1) { k = pus.pasangan[+bt[i].getAttribute('data-gp-i')]; if (k) tambah(k.en, k.bm); }
+      } else if (id === 'screen-mm' && mm) {
+        for (i = 0; i < mm.kad.length; i++) if ((mm.tamat || mm.kad[i].hilang) && !ada[mm.kad[i].p]) { ada[mm.kad[i].p] = 1; tambah(mm.pas[mm.kad[i].p].en, mm.pas[mm.kad[i].p].bm); }
+      } else if (id === 'screen-dr' && dr) {
+        var masih = {}, c, r;
+        if (!dr.tamat) {
+          for (c = 0; c < 2; c++) for (r = 0; r < dr.kol[c].length; r++) if (!dr.kol[c][r].batu) masih[dr.kol[c][r].p] = 1;
+          for (i = 0; i < dr.giliran.length; i++) if (dr.giliran[i] && !dr.giliran[i].batu) masih[dr.giliran[i].p] = 1;
+        }
+        for (i = 0; i < dr.pas.length; i++) if (!masih[i]) tambah(dr.pas[i].en, dr.pas[i].bm);
+      }
+      return a.reverse();
+    }
+    function lpBukaSenarai() {
+      var a = lpSenarai(), h = '', i;
+      LP.senarai = a;
+      for (i = 0; i < a.length; i++) {
+        var dah = lpCariLapor(a[i].en) >= 0;
+        h += '<button type="button" data-lp-i="' + i + '"' + (dah ? ' class="lp-dah"' : '') + '><i>' + (dah ? 'DAH DI-REPORT' : 'REPORT') + '</i>' +
+          escKapal(a[i].en) + ' = ' + escKapal(a[i].bm) + (a[i].nota ? '<small>' + escKapal(a[i].nota) + '</small>' : '') + '</button>';
+      }
+      el('lp-isi').innerHTML = h || '<div class="lp-nota">Belum ada perkataan yang dijawab / dipadan dalam game ini.</div>';
+      LP_JEDA = true;
+      el('lp-senarai').style.display = 'block';
+    }
+    function lpTutupSenarai() { LP_JEDA = false; el('lp-senarai').style.display = 'none'; }
+    el('lp-isi').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-lp-i'))) t = t.parentNode;
+      if (!t || t === this || !LP.senarai) return;
+      var k = LP.senarai[+t.getAttribute('data-lp-i')];
+      if (!k || lpCariLapor(k.en) >= 0) return;
+      lpHantar(k.en, k.bm);
+      t.className = 'lp-dah'; t.getElementsByTagName('i')[0].textContent = 'DAH DI-REPORT';
+    });
+    el('btn-lp-tutup').onclick = lpTutupSenarai;
+    el('btn-lp-cara').onclick = function() { lpPopup(true); };
     document.addEventListener('touchstart', function(e) { var t = e.touches && e.touches[0]; LP.sentuh = Date.now(); if (t) lpMula(t.clientX, t.clientY, e.target); }, true);
     document.addEventListener('touchmove', function(e) { var t = e.touches && e.touches[0]; if (t) lpGerak(t.clientX, t.clientY, e); }, { passive: false, capture: true });
     document.addEventListener('touchend', function(e) { var t = e.changedTouches && e.changedTouches[0]; if (t) lpLepas(t.clientX, t.clientY); else lpBatal(); }, true);
@@ -9622,7 +9700,7 @@
     document.addEventListener('click', function(e) {
       if (Date.now() - LP.telan < 500 && e.target && e.target.id !== 'btn-lapor') { e.stopPropagation(); e.preventDefault(); }
     }, true);
-    el('btn-lapor').onclick = function() { if (LP.sedia) lpHantar(); else lpPopup(true); };
+    el('btn-lapor').onclick = function() { if (LP.sedia) lpHantar(); else lpBukaSenarai(); };
     // ── Popup FAHAM: setiap kali masuk game (kecuali tick "jangan ingatkan hari ini") ──
     function lpHariIni() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
     function lpSenyap() { try { return localStorage.getItem('lp_senyap') === lpHariIni(); } catch (e) { return false; } }
@@ -9640,7 +9718,7 @@
     showScreen = function(id) {
       lpSkrinAsal(id);
       var b = el('btn-lapor'), sb;
-      lpBatal(); LP.sedia = 0;
+      lpBatal(); LP.sedia = 0; lpTutupSenarai();
       if (LP_SKRIN[id]) {
         b.style.display = 'block';
         sb = document.querySelector('#' + id + ' .status-bar');
