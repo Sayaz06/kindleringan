@@ -5637,6 +5637,15 @@
     /* DURI: piston tolak perkataan ke atas, duri atas timbunan, 3 lapis belon */
     .dr-papan { position: relative; height: 456px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; margin: 4px 0 0; }
     .dr-adegan { position: absolute; left: 0; top: 0; pointer-events: none; }
+    /* Kawasan tekan orang lidi KANAN (tuas piston) → piston naik sekarang */
+    .dr-tuas { position: absolute; width: 60px; height: 58px; padding: 0; border: 0; background: transparent; cursor: pointer; z-index: 3; }
+    /* Page KELAJUAN PISTON (Duri) */
+    #drj-pilih button { display: block; width: 100%; margin: 0 0 6px; padding: 9px 12px; border: 2px solid #000; border-radius: 10px; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.95rem; text-align: left; }
+    #drj-pilih button b { float: right; }
+    #drj-pilih button.drj-on { background: #000; color: #fff; }
+    .drj-nota { margin: 10px 0; padding: 8px 10px; border: 2px dashed #000; border-radius: 10px; font-size: 0.82rem; line-height: 1.45; }
+    .drj-nota b { display: block; margin-bottom: 2px; letter-spacing: 1px; }
     .dr-k { position: absolute; width: 42.5%; height: 38px; padding: 0 4px; border: 2px solid #000; border-radius: 8px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.95rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .dr-k.dr-pilih { background: #000; color: #fff; }
@@ -6275,6 +6284,7 @@
       <button type="button" class="gm-kecil" data-panduan="pd-duri">Panduan</button>
       <button type="button" id="btn-drl-kedai" class="gm-kecil">Kedai Perak</button>
       <button type="button" id="btn-drl-sr" class="gm-kecil">SR</button>
+      <button type="button" id="btn-drl-laju" class="gm-kecil">Kelajuan</button>
     </div>
     <div class="jw-bar"><div id="drl-bar-isi"></div></div>
     <div id="drl-info" class="jw-info"></div>
@@ -6304,6 +6314,17 @@
         </div>
       </div>
     </div>
+  </div>
+  <div id="screen-dr-laju" class="screen">
+    <div class="status-bar">DURI · KELAJUAN PISTON</div>
+    <div class="gm-alat"><button type="button" id="btn-drj-balik" class="gm-kecil">‹ Duri</button></div>
+    <div class="jw-tajuk" style="font-size:1.3rem;">KELAJUAN PISTON</div>
+    <div class="jw-info" id="drj-info">Piston tolak satu baris baru setiap ... saat. Pilih:</div>
+    <div id="drj-pilih"></div>
+    <div class="drj-nota"><b>LAJU</b>+ Satu level cepat habis.<br>− Perkataan kurang melekat dalam ingatan.</div>
+    <div class="drj-nota"><b>PERLAHAN</b>+ Perkataan lebih melekat dalam ingatan.<br>− Lambat naik level, jadi kurang perkataan sehari.</div>
+    <div class="drj-nota"><b>TIP: TAK NAK TUNGGU PISTON?</b>Dah padankan semua dan baris baru belum keluar? Tekan orang lidi KANAN (tuas piston) → piston terus naik.</div>
+    <div style="height:30px;"></div>
   </div>
   <div id="screen-dr-kedai" class="screen">
     <div class="status-bar">KEDAI PERAK</div>
@@ -7398,6 +7419,26 @@
     var DR_KOL = 'game_sr_duri', DR_BIL = 10, DR_SR_MAKS = 5, DR_BELON = 3, DR_RUANG = 5, DR_MULA = 3, DR_DETIK = 6;
     var DR_BARIS = 44, DR_BAWAH = 36, DR_DASAR = 36;  // DR_DASAR = kedudukan asal piston (belon ikut ini), DR_BAWAH = piston sekarang
     var DR = { main: 0, lulus: 0, perak: 0, gsr: {} }, dr = null, drJam = null;
+    // KELAJUAN PISTON (saat setiap tolakan) — pengguna pilih di page Kelajuan, disimpan game_stat/duri { detik }
+    var DR_LAJU = [[3, 'SANGAT LAJU'], [4, 'LAJU'], [5, 'AGAK LAJU'], [6, 'BIASA (asal)'], [8, 'PERLAHAN'], [10, 'SANGAT PERLAHAN']], DR_LAJU_SAH = {};
+    (function() { for (var i = 0; i < DR_LAJU.length; i++) DR_LAJU_SAH[DR_LAJU[i][0]] = 1; })();
+    function lukisDrLaju() {
+      var h = '', i;
+      for (i = 0; i < DR_LAJU.length; i++) h += '<button type="button" data-drj="' + DR_LAJU[i][0] + '"' + (DR_LAJU[i][0] === DR_DETIK ? ' class="drj-on"' : '') + '><b>' + DR_LAJU[i][0] + ' saat</b>' + DR_LAJU[i][1] + '</button>';
+      el('drj-pilih').innerHTML = h;
+      el('drj-info').textContent = 'Sekarang: piston tolak satu baris baru setiap ' + DR_DETIK + ' saat. Pilih kelajuan:';
+    }
+    el('btn-drl-laju').onclick = function() { showScreen('screen-dr-laju'); lukisDrLaju(); };
+    el('btn-drj-balik').onclick = function() { bukaDrLevel(); };
+    el('drj-pilih').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-drj'))) t = t.parentNode;
+      if (!t || t === this) return;
+      DR_DETIK = +t.getAttribute('data-drj');
+      lukisDrLaju();
+      el('drj-info').textContent = 'Disimpan: piston setiap ' + DR_DETIK + ' saat.';
+      kol('game_stat').doc('duri').set({ detik: DR_DETIK, updatedAt: Date.now() }, { merge: true }).catch(function(er) { el('drj-info').textContent = 'Gagal simpan: ' + (er.message || er); });
+    });
     function drMuat(cb) {
       muatIndeks(DR_KOL).then(function(g) {
         DR.gsr = g;
@@ -7405,6 +7446,7 @@
       }).then(function(s) {
         var d = (s && s.exists) ? s.data() : {};
         DR.main = d.main || 0; DR.lulus = d.lulus || 0; DR.perak = d.perak || 0;
+        DR_DETIK = DR_LAJU_SAH[d.detik] ? d.detik : 6;
         cb(true);
       }).catch(function(e) { cb(false, e); });
     }
@@ -7538,7 +7580,8 @@
       s += wayar(tk - 7, Math.round(W / 2) + 12, Fy - 2) +
         '<path d="M' + (tl - 7) + ' ' + (Fy - 3) + ' C' + (tl - 20) + ' ' + (Fy - 3) + ' ' + (xl + gr + 14) + ' ' + gy + ' ' + (xl + gr) + ' ' + gy + '" fill="none" stroke="#000" stroke-width="1.5"/>';
       s += orang(tk - 28, tk, 1, dr.tolakAnim) + orang(tl + 28, tl, -1, dr.tarikAnim);
-      return '<svg class="dr-adegan" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
+      return '<svg class="dr-adegan" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>' +
+        '<button type="button" class="dr-tuas" data-dr-tuas="1" aria-label="Naikkan piston" style="left:' + (tk - 46) + 'px;top:' + (Fy - 54) + 'px;"></button>';
     }
     function svgDuri() {
       var h = '<rect x="0" y="9" width="200" height="5" fill="#000"/>', x;
@@ -7705,6 +7748,11 @@
     }
     el('dr-papan').addEventListener('click', function(e) {
       var t = e.target;
+      // Tekan orang lidi KANAN → piston terus naik (tak perlu tunggu masa)
+      if (t && t.getAttribute && t.getAttribute('data-dr-tuas')) {
+        if (dr && !dr.tamat && !dr.tolakAnim) { dr.detik = 0; el('dr-info').textContent = 'Piston dinaikkan.'; drTolak(false); }
+        return;
+      }
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-dr-k'))) t = t.parentNode;
       if (!t || t === this || !dr || dr.tamat) return;
       var id = +t.getAttribute('data-dr-k'), k = dr.kad[id];
@@ -9432,9 +9480,10 @@
         ]) +
         '<h3 id="pd-duri">DURI (mini game)</h3>' + I([
           'Kotak perkataan (English & BM bercampur) tersusun 2 lajur. Papan DURI sentiasa duduk atas timbunan. Di atas sekali ada 3 lapis BELON.',
-          'PISTON di bawah tolak satu baris baru setiap ' + 6 + ' saat (titik di atas papan = masa). Timbunan naik → duri naik.',
+          'PISTON di bawah tolak satu baris baru setiap ' + DR_DETIK + ' saat (titik di atas papan = masa). Timbunan naik → duri naik. Tukar kelajuan: butang Kelajuan di page Level (laju = cepat habis tapi kurang melekat; perlahan = lebih melekat tapi kurang perkataan sehari).',
+          'Tak nak tunggu piston? Dah padankan semua dan baris baru belum keluar → tekan orang lidi KANAN (tuas piston), piston terus naik.',
           'Tekan perkataan English dan maksud BM yang sepadan → kedua-dua hilang, yang di atas jatuh (graviti), duri turun.',
-          'Salah pilih → penggulung tali di kiri & kanan gulung tali, semua belon turun satu baris (makin dekat dengan duri). Bila semua perkataan dah masuk, piston sendiri naik setiap 6 saat — habiskan cepat!',
+          'Salah pilih → penggulung tali di kiri & kanan gulung tali, semua belon turun satu baris (makin dekat dengan duri). Bila semua perkataan dah masuk, piston sendiri naik setiap ' + DR_DETIK + ' saat — habiskan cepat!',
           'Setiap baris ada 1 English + 1 BM, pasangannya di baris lain. Setiap baris baru melengkapkan pasangan yang dah ada di skrin.',
           'Duri sampai belon → satu lapis belon PECAH. Ketiga-tiga pecah → kalah, tiada ganjaran, SR tak berubah.',
           'Habiskan ' + 10 + ' perkataan → MENANG: REWARD ' + (10 * EKO.DR_PERAK_KATA) + ' g perak + BONUS ' + EKO.DR_BONUS_BELON + ' g setiap belon yang tinggal → CLAIM.',
@@ -9597,7 +9646,7 @@
     }
     var LP_LEVEL = { 'screen-gp-level': 'gp', 'screen-mm-level': 'mm', 'screen-dr-level': 'dr', 'screen-bs-level': 'bs', 'screen-jw-level': 'jw' };
     var LP_KUMP = { 'screen-game': 'gp', 'screen-gp-level': 'gp', 'screen-gp-kaunter': 'gp', 'screen-mm': 'mm', 'screen-mm-level': 'mm', 'screen-mm-kedai': 'mm',
-      'screen-dr': 'dr', 'screen-dr-level': 'dr', 'screen-dr-kedai': 'dr', 'screen-bs': 'bs', 'screen-bs-level': 'bs',
+      'screen-dr': 'dr', 'screen-dr-level': 'dr', 'screen-dr-kedai': 'dr', 'screen-dr-laju': 'dr', 'screen-bs': 'bs', 'screen-bs-level': 'bs',
       'screen-jw-level': 'jw', 'screen-jw-tangga': 'jw', 'screen-jw-soalan': 'jw', 'screen-jw-tamat': 'jw', 'screen-jw-kedai': 'jw' };
     var LP = { t: null, x: 0, y: 0, el: null, teks: '', aktif: false, hantu: null, sedia: 0, telan: 0, sentuh: 0, skrin: '' };
     function lpLabel() {
