@@ -11100,12 +11100,13 @@
           b.type = 'button'; b.setAttribute('data-gm-tab', 'kd'); b.textContent = 'KEDAI';
           t[i].appendChild(b);
         }
-        // Tab PERATURAN di depan sekali
-        if (!t[i].querySelector('[data-gm-tab="atur"]')) {
+        // Tab PERATURAN di hujung kanan: PELABUHAN · ARKED · KEDAI · PERATURAN
+        b = t[i].querySelector('[data-gm-tab="atur"]');
+        if (!b) {
           b = document.createElement('button');
           b.type = 'button'; b.setAttribute('data-gm-tab', 'atur'); b.textContent = 'PERATURAN';
-          t[i].insertBefore(b, t[i].firstChild);
         }
+        t[i].appendChild(b);
         s = t[i].parentNode;
         if (s.querySelector('.mw-bar')) continue;
         bar = document.createElement('div');
