@@ -11479,9 +11479,8 @@
       t.style.left = Math.round(rk.r) + 'px'; t.style.top = Math.round(top) + 'px'; t.style.width = w + 'px'; t.style.height = h + 'px';
       t.style.display = 'block';
       t.innerHTML = svgMesin(w, h, ys);
-      o3.style.display = 'block';
-      o3.style.left = Math.round(rn.r - 32) + 'px'; o3.style.top = Math.round(rn.t + 6) + 'px';
-      o3.innerHTML = svgCxOrang('j2', '', true);
+      // Penjaga mesin cuma ada di kotak sewa bawah (tak perlu orang lidi kaku di atas kaunter coin)
+      o3.style.display = 'none';
     }
     function lukisMesin() {
       var now = Date.now(), c;
