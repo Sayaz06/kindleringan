@@ -5864,6 +5864,22 @@
     .mx-meter-kira { padding-top: 4px; border-top: 2px dashed #000; font-size: 0.75rem; text-align: center; }
     /* Bank Pusat: bahagian kadar Ringgit Kuning */
     .bp-kuning { margin-top: 8px; padding-top: 6px; border-top: 3px solid #000; text-align: center; }
+    /* BANK PUSAT: tab KADAR · PELABUHAN · ARKED · KEDAI (Kindle: tiada flex gap) */
+    .bp-tab { margin: 6px 0 8px; text-align: center; }
+    .bp-tab button { display: inline-block; margin: 0 3px 6px; }
+    .bp-tab button.bp-on { background: #000; color: #fff; }
+    #bp-eko { display: none; border: 3px solid #000; border-radius: 10px; padding: 8px 10px; }
+    .bp-grup { margin: 10px 0 2px; padding: 3px 8px; background: #000; color: #fff; border-radius: 4px; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; }
+    .bp-grup:first-child { margin-top: 0; }
+    .bp-baris { overflow: hidden; padding: 6px 0; border-bottom: 1px dashed #000; }
+    .bp-baris .bp-lbl { float: left; width: 55%; font-size: 0.78rem; line-height: 1.3; }
+    .bp-baris .bp-lbl small { display: block; font-size: 0.62rem; }
+    .bp-baris .bp-nilai { float: right; white-space: nowrap; }
+    .bp-baris .bp-nilai b { display: inline-block; min-width: 56px; text-align: center; font-size: 1rem; vertical-align: middle; }
+    .bp-baris .bp-nilai button { display: inline-block; width: 34px; height: 28px; padding: 0; border: 2px solid #000; border-radius: 6px; background: #fff; vertical-align: middle; }
+    .bp-baris .bp-nilai button svg { display: block; width: 14px; height: 10px; margin: 0 auto; }
+    .bp-baris.bp-ubah b { text-decoration: underline; }
+    .bp-hasil { font-size: 0.68rem; text-align: right; margin: 2px 0 0; }
     .bp-kuning .mx-kata { margin: 4px 0; }
     .bp-kuning .mx-panah button { margin-left: 4px; }
     /* Bar mata wang 4 pil (Coin, Biru, Merah, Kuning): kecilkan ikon, butang + dan nombor supaya muat. Pil Kuning tiada butang + */
@@ -6611,7 +6627,14 @@
     <div class="gm-alat"><button type="button" id="btn-bp-balik" class="gm-kecil">‹ Kembali</button></div>
     <div class="jw-tajuk" style="font-size:1.4rem;">BANK PUSAT</div>
     <div class="adm-nota" id="bp-msg">Tetapkan nilai Ringgit dalam perkataan. ▲▼ = 1 perkataan.</div>
+    <div class="bp-tab" id="bp-tab">
+      <button type="button" class="gm-kecil bp-on" data-bp-tab="kadar">KADAR</button>
+      <button type="button" class="gm-kecil" data-bp-tab="pos">PELABUHAN</button>
+      <button type="button" class="gm-kecil" data-bp-tab="arked">ARKED</button>
+      <button type="button" class="gm-kecil" data-bp-tab="kedai">KEDAI</button>
+    </div>
     <div class="mx-meter mx-ubah" id="bp-meter"></div>
+    <div id="bp-eko"></div>
     <div style="height:30px;"></div>
   </div>
   <div id="screen-jw-level" class="screen">
@@ -8284,6 +8307,7 @@
         DP.merahHariT = d.merahHariT || ''; DP.merahHariSen = d.merahHariSen || 0;
         setKadar(d.kadarBiru, d.kadarMerah);
         setKuning(d.kadarKuning);
+        setEko(d.eko);
         mwLukis();
         if (!kdSibuk && (el('screen-kd').className.indexOf('active') !== -1 || el('screen-hj').className.indexOf('active') !== -1)) kdDompet();
         if (coinAnim) return;
@@ -9452,6 +9476,7 @@
         ]) +
         '<h3 id="pd-duit">DUIT, KEDAI &amp; EXCHANGE</h3>' + I([
           'Unit asas ialah PERKATAAN: 1 perkataan = ' + EKO.KATA_COIN + ' coin. Satu level Jutawan ($1,000,000) = ' + EKO.JW_COIN + ' coin. Upah Pelabuhan = ' + rm(EKO.UPAH_POS_SEN) + ' Ringgit Merah setiap kontena.',
+          'BANK PUSAT (butang di page Exchange, perlu PIN admin): tab KADAR (Ringgit Biru, Merah, Kuning) · PELABUHAN (upah kontena, sewa signboard) · ARKED (BONUS game sahaja; hadiah asas setiap perkataan & kadar Bank Coin tetap, tak boleh diubah) · KEDAI (harga jual Investment, hadiah bos). Satu butang SIMPAN SEMUA. Setiap perubahan direkod dalam Sejarah.',
           'Magic Exchange: tukar coin → Ringgit Biru (1.00 = ' + biru + ' coin) atau Ringgit Merah (1.00 = ' + merah + ' coin).',
           'Tekan + pada Biru → page Ringgit Biru. Tekan + pada Merah → page Ringgit Merah. ‹ Kembali → balik ke tempat tadi. Sejarah → senarai tukaran.',
           'Butang bawah panel: tukar terus Ringgit Merah → Biru (di page Biru) atau Biru → Merah (di page Merah). 1.00 Biru = ' + EKO.MERAH_X.toFixed(2) + ' Merah (nilai coin sama, tiada caj).',
@@ -9832,6 +9857,7 @@
         DP = { coin: d.coin || 0, biruSen: d.biruSen || 0, merahSen: d.merahSen || 0, kuningSen: d.kuningSen || 0, upahTunggu: d.upahTunggu || 0, upahSen: d.upahSen || 0, merahHariT: d.merahHariT || '', merahHariSen: d.merahHariSen || 0 };
         setKadar(d.kadarBiru, d.kadarMerah);
         setKuning(d.kadarKuning);
+        setEko(d.eko);
         cb(true);
       }).catch(function(e) { cb(false, e); });
     }
@@ -10154,7 +10180,7 @@
     }
     // Page Bank Pusat: meter jarum + ▲▼ + SIMPAN (PIN dah disemak masa masuk)
     function lukisBp() {
-      var b = ADM.b, m = ADM.m, kk = ADM.k, cb = b * EKO.KATA_COIN, cm = m * EKO.KATA_COIN, x = cb / cm, beza = b !== EKO.BIRU_KATA || m !== EKO.MERAH_KATA || kk !== EKO.KUNING_SEN;
+      var b = ADM.b, m = ADM.m, kk = ADM.k, cb = b * EKO.KATA_COIN, cm = m * EKO.KATA_COIN, x = cb / cm, beza = bpBeza();
       var cth = [100, 500, 1000, 5000, 10000], ck = '', ci;
       for (ci = 0; ci < cth.length; ci++) ck += (ci ? ' · ' : '') + rm(cth[ci]) + ' → <b>' + rm(kuningDapat(cth[ci], kk)) + '</b>';
       function satu(k, nama, kata, coin) {
@@ -10172,11 +10198,69 @@
         '<button type="button" data-adm="k+">' + svgAnak(true) + '</button><button type="button" data-adm="k-">' + svgAnak(false) + '</button></span></div>' +
         '<div class="mx-meter-kira">CONTOH SETIAP BARANG · ' + ck + '</div></div>' +
         '<div class="adm">' + (m >= b ? '<div class="adm-nota"><b>Perhatian: Merah sama / lebih mahal dari Biru.</b></div>' : '') +
-        '<div class="dp-btn"><button type="button" data-adm="reset">Batal</button><button type="button" data-adm="simpan" class="dp-utama">SIMPAN KADAR</button></div></div>';
+        '<div class="dp-btn"><button type="button" data-adm="reset">Batal</button><button type="button" data-adm="simpan" class="dp-utama">SIMPAN SEMUA</button></div></div>';
+    }
+    // Tab PELABUHAN / ARKED / KEDAI: senarai nilai dengan ▼ ▲
+    function bpFmt(d, v) {
+      if (d.jenis === 'merah' || d.jenis === 'biru') return rm(v);
+      if (d.jenis === 'pct') return v + '%';
+      return String(v);
+    }
+    function bpUnit(d) { return d.jenis === 'merah' ? 'Ringgit Merah' : d.jenis === 'biru' ? 'Ringgit Biru' : d.jenis === 'pct' ? 'dari modal' : d.unit; }
+    function bpNilai(k) { return ADM.e[k]; }
+    function bpBeza() {
+      var b = ADM.b !== EKO.BIRU_KATA || ADM.m !== EKO.MERAH_KATA || ADM.k !== EKO.KUNING_SEN;
+      for (var i = 0; i < BP_EKO.length; i++) if (ADM.e[BP_EKO[i].k] !== bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k])) b = true;
+      return b;
+    }
+    function lukisBpEko() {
+      var h = '', grup = '', i, d, v, ubah;
+      if (ADM.tab === 'arked') h += '<div class="adm-nota" style="text-align:left;border:2px dashed #000;border-radius:8px;padding:6px 8px;margin:0 0 8px;"><b>NOTA:</b> Bank Pusat hanya boleh kawal BONUS game. ' +
+        'Harga hadiah (ganjaran setiap perkataan) dan kadar Bank Coin TIDAK boleh diubah, sebab dah dikira dengan teliti (1 perkataan = ' + EKO.KATA_COIN + ' coin). ' +
+        'Nak naikkan harga barang? Naikkan harga duit di tab KADAR.</div>';
+      for (i = 0; i < BP_EKO.length; i++) {
+        d = BP_EKO[i];
+        if (d.tab !== ADM.tab) continue;
+        if (d.grup !== grup) {
+          if (grup) h += bpHasilGrup(grup);
+          grup = d.grup; h += '<div class="bp-grup">' + grup + '</div>';
+        }
+        v = ADM.e[d.k]; ubah = v !== bpSimpanNilai(d, EKO[d.k]);
+        h += '<div class="bp-baris' + (ubah ? ' bp-ubah' : '') + '"><span class="bp-lbl">' + d.nama + '<small>' + bpUnit(d) + (v !== BP_LALAI[d.k] ? ' · asal ' + bpFmt(d, BP_LALAI[d.k]) : '') + '</small></span>' +
+          '<span class="bp-nilai"><button type="button" data-adm="e-' + d.k + '">' + svgAnak(false) + '</button><b>' + bpFmt(d, v) + '</b>' +
+          '<button type="button" data-adm="e+' + d.k + '">' + svgAnak(true) + '</button></span></div>';
+      }
+      if (grup) h += bpHasilGrup(grup);
+      h += '<div class="adm"><div class="adm-nota">' + (bpBeza() ? '<b>BELUM DISIMPAN</b> · ' : '') + 'Nilai bergaris = diubah. SIMPAN SEMUA simpan semua tab (termasuk KADAR).</div>' +
+        '<div class="dp-btn"><button type="button" data-adm="reset">Batal</button><button type="button" data-adm="simpan" class="dp-utama">SIMPAN SEMUA</button></div></div>';
+      el('bp-eko').innerHTML = h;
+    }
+    // Ringkasan nilai sebenar setiap game (berapa coin satu perkataan)
+    function bpHasilGrup(g) {
+      var e = ADM.e, t = '';
+      if (g === 'MEMORI') t = 'Bonus 1 langkah = ' + (e.MM_BONUS_BAKI * EKO.EMAS_COIN) + ' coin (hadiah asas tetap: 1 perkataan = ' + (EKO.MM_EMAS_KATA * EKO.EMAS_COIN) + ' coin)';
+      else if (g === 'DURI') t = 'Bonus 1 belon = ' + (e.DR_BONUS_BELON * EKO.PERAK_COIN) + ' coin (hadiah asas tetap: 1 perkataan = ' + (EKO.DR_PERAK_KATA * EKO.PERAK_COIN) + ' coin)';
+      else if (g === 'BETUL / SALAH') t = 'Bonus 1 kesilapan = ' + (e.BS_BONUS_NYAWA * EKO.GANGSA_COIN) + ' coin (hadiah asas tetap: 1 jawapan betul = ' + (EKO.BS_GANGSA_KATA * EKO.GANGSA_COIN) + ' coin)';
+      else if (g === 'INVESTMENT') t = 'Modal 1.00 → jual ' + rm(e.HJ_JUAL_X) + ' (untung ' + (e.HJ_JUAL_X - 100) + '%) · 6 jenis habis dijual → hadiah bos ' + rm(6 * e.HJ_BOS_SEN);
+      return t ? '<div class="bp-hasil">' + t + '</div>' : '';
+    }
+    function bpTab(t) {
+      ADM.tab = t;
+      var b = el('bp-tab').children, i;
+      for (i = 0; i < b.length; i++) b[i].className = 'gm-kecil' + (b[i].getAttribute('data-bp-tab') === t ? ' bp-on' : '');
+      el('bp-meter').style.display = t === 'kadar' ? '' : 'none';
+      el('bp-eko').style.display = t === 'kadar' ? 'none' : 'block';
+      if (t === 'kadar') lukisBp(); else lukisBpEko();
+    }
+    el('bp-tab').addEventListener('click', function(e) { var t = e.target; if (t && t.getAttribute && t.getAttribute('data-bp-tab')) bpTab(t.getAttribute('data-bp-tab')); });
+    function bpReset() {
+      ADM.b = EKO.BIRU_KATA; ADM.m = EKO.MERAH_KATA; ADM.k = EKO.KUNING_SEN; ADM.e = {};
+      for (var i = 0; i < BP_EKO.length; i++) ADM.e[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]);
     }
     function bukaBp() {
-      ADM.fasa = ''; ADM.b = EKO.BIRU_KATA; ADM.m = EKO.MERAH_KATA; ADM.k = EKO.KUNING_SEN;
+      ADM.fasa = ''; bpReset(); ADM.tab = 'kadar';
       showScreen('screen-bp');
+      bpTab('kadar');
       el('bp-msg').textContent = 'Tetapkan nilai Ringgit dalam perkataan. ▲▼ = 1 perkataan.';
       lukisBp();
     }
@@ -10207,30 +10291,43 @@
         bukaBp();
       }
     });
-    el('bp-meter').addEventListener('click', function(e) {
-      var a = klikAdm.call(this, e);
+    function bpKlik(e) {
+      var a = klikAdm.call(this, e), d, i;
+      if (a.indexOf('e+') === 0 || a.indexOf('e-') === 0) {
+        for (i = 0; i < BP_EKO.length; i++) if (BP_EKO[i].k === a.slice(2)) d = BP_EKO[i];
+        if (!d) return;
+        ADM.e[d.k] = Math.max(d.min, ADM.e[d.k] + (a.charAt(1) === '+' ? 1 : -1) * (d.step || 1));
+        lukisBpEko(); return;
+      }
       if (a === 'b+') ADM.b++;
       else if (a === 'b-') { if (ADM.b > 1) ADM.b--; }
       else if (a === 'm+') ADM.m++;
       else if (a === 'm-') { if (ADM.m > 1) ADM.m--; }
       else if (a === 'k+') { if (ADM.k < 100) ADM.k++; }
       else if (a === 'k-') { if (ADM.k > 0) ADM.k--; }
-      else if (a === 'reset') { ADM.b = EKO.BIRU_KATA; ADM.m = EKO.MERAH_KATA; ADM.k = EKO.KUNING_SEN; el('bp-msg').textContent = 'Perubahan dibatalkan.'; }
+      else if (a === 'reset') { bpReset(); el('bp-msg').textContent = 'Perubahan dibatalkan.'; bpTab(ADM.tab); return; }
       else if (a === 'simpan') {
-        var lb = EKO.BIRU_KATA, lm = EKO.MERAH_KATA, lk = EKO.KUNING_SEN, nb = ADM.b, nm = ADM.m, nk = ADM.k, bt = db.batch();
-        bt.set(refDompet(), { kadarBiru: nb, kadarMerah: nm, kadarKuning: nk, updatedAt: Date.now() }, { merge: true });
-        dpLog(bt, 'admin>kadar', 'BANK PUSAT: kadar Biru ' + lb + ' → ' + nb + ' perkataan · Merah ' + lm + ' → ' + nm + ' perkataan · Kuning (belanja 1.00) ' + rm(lk) + ' → ' + rm(nk));
+        var lb = EKO.BIRU_KATA, lm = EKO.MERAH_KATA, lk = EKO.KUNING_SEN, nb = ADM.b, nm = ADM.m, nk = ADM.k, bt = db.batch(), eko = {}, ket = [];
+        for (i = 0; i < BP_EKO.length; i++) {
+          d = BP_EKO[i]; eko[d.k] = ADM.e[d.k];
+          if (ADM.e[d.k] !== bpSimpanNilai(d, EKO[d.k])) ket.push(d.grup + ' ' + d.nama + ' ' + bpFmt(d, bpSimpanNilai(d, EKO[d.k])) + ' → ' + bpFmt(d, ADM.e[d.k]));
+        }
+        bt.set(refDompet(), { kadarBiru: nb, kadarMerah: nm, kadarKuning: nk, eko: eko, updatedAt: Date.now() }, { merge: true });
+        dpLog(bt, 'admin>kadar', 'BANK PUSAT: kadar Biru ' + lb + ' → ' + nb + ' perkataan · Merah ' + lm + ' → ' + nm + ' perkataan · Kuning (belanja 1.00) ' + rm(lk) + ' → ' + rm(nk) + (ket.length ? ' · ' + ket.join(' · ') : ''));
         el('bp-msg').textContent = 'Menyimpan...';
         bt.commit().then(function() {
           setKadar(nb, nm);
           setKuning(nk);
-          lukisBp();
-          el('bp-msg').textContent = 'Kadar baru disimpan: 1.00 Biru = ' + EKO.BIRU_KATA + ' perkataan · 1.00 Merah = ' + EKO.MERAH_KATA + ' perkataan · belanja 1.00 = ' + rm(EKO.KUNING_SEN) + ' Kuning.';
+          setEko(eko);
+          bpTab(ADM.tab);
+          el('bp-msg').textContent = 'Disimpan: 1.00 Biru = ' + EKO.BIRU_KATA + ' perkataan · 1.00 Merah = ' + EKO.MERAH_KATA + ' perkataan · belanja 1.00 = ' + rm(EKO.KUNING_SEN) + ' Kuning' + (ket.length ? ' · ' + ket.length + ' nilai lain diubah' : '') + '.';
         }).catch(function(er) { el('bp-msg').textContent = 'Gagal simpan: ' + (er.message || er); });
         return;
       } else return;
       lukisBp();
-    });
+    }
+    el('bp-meter').addEventListener('click', bpKlik);
+    el('bp-eko').addEventListener('click', bpKlik);
     function lukisMx() {
       el('mx-coin').textContent = DP.coin;
       el('mx-biru').textContent = rm(DP.biruSen);
@@ -10378,6 +10475,31 @@
     // HADIAH BOS: habiskan SEMUA jenis barang pembekal hari ini (sekurang-kurangnya sekali) → 0.10 Merah x bilangan jenis
     EKO.HJ_JUAL_X = 1.5;
     EKO.HJ_BOS_SEN = 10;      // HADIAH BOS: 0.10 Merah setiap jenis barang (6 jenis = 0.60), diberi bila semua habis dijual
+    // ══ BANK PUSAT: semua harga & ganjaran boleh diubah admin. Disimpan dalam dompet.eko { KUNCI: nilai } ══
+    // ARKED: hanya BONUS boleh diubah. Ganjaran asas (hadiah setiap perkataan) & kadar Bank Coin TETAP — dah dikira teliti (1 perkataan = 10 coin).
+    // Nak naikkan harga barang → naikkan kadar duit (tab KADAR), bukan hadiah game.
+    // jenis: merah / biru = sen Ringgit · pct = peratus (disimpan 150 → EKO 1.5) · lain = nombor bulat
+    var BP_EKO = [
+      { k: 'UPAH_POS_SEN', tab: 'pos', grup: 'PELABUHAN', nama: 'Upah setiap kontena baru', jenis: 'merah', min: 0 },
+      { k: 'PAPAN_SEN', tab: 'pos', grup: 'PELABUHAN', nama: 'Sewa signboard FREE PARKING sejam', jenis: 'biru', min: 0 },
+      { k: 'MM_BONUS_BAKI', tab: 'arked', grup: 'MEMORI', nama: 'BONUS setiap baki langkah', unit: 'g', min: 0 },
+      { k: 'DR_BONUS_BELON', tab: 'arked', grup: 'DURI', nama: 'BONUS setiap belon tak pecah', unit: 'g', min: 0 },
+      { k: 'BS_BONUS_NYAWA', tab: 'arked', grup: 'BETUL / SALAH', nama: 'BONUS setiap kesilapan tak dipakai', unit: 'g', min: 0 },
+      { k: 'HJ_JUAL_X', tab: 'kedai', grup: 'INVESTMENT', nama: 'Pelanggan beli pada harga', jenis: 'pct', min: 100, step: 5 },
+      { k: 'HJ_BOS_SEN', tab: 'kedai', grup: 'INVESTMENT', nama: 'HADIAH BOS setiap jenis barang', jenis: 'merah', min: 0 }
+    ];
+    var BP_LALAI = {};
+    (function() { for (var i = 0; i < BP_EKO.length; i++) BP_LALAI[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]); })();
+    // Nilai EKO → nilai simpanan (pct 1.5 → 150) dan sebaliknya
+    function bpSimpanNilai(d, v) { return d.jenis === 'pct' ? Math.round(v * 100) : v; }
+    function bpKeEko(d, v) { return d.jenis === 'pct' ? v / 100 : v; }
+    function setEko(e) {
+      e = e || {};
+      for (var i = 0; i < BP_EKO.length; i++) {
+        var d = BP_EKO[i], v = e[d.k];
+        EKO[d.k] = bpKeEko(d, (typeof v === 'number' && v >= d.min) ? v : BP_LALAI[d.k]);
+      }
+    }
     function hjHadiah(k) { return (k ? k.total : kdSenarai('hijau').length) * EKO.HJ_BOS_SEN; }
     var hjAnim = false;
     function hjHasil(sen) { return Math.floor(sen * EKO.HJ_JUAL_X + 1e-9); }
