@@ -7634,12 +7634,16 @@
         el('dr-info').textContent = '';
         el('dr-status').textContent = 'DURI · Level ' + dr.lv + ' · Padan ' + DR_BIL + ' perkataan';
         lukisDr();
-        drJam = setInterval(function() {
+        // Satu jam sahaja (elak piston makin laju bila MAIN ditekan 2 kali)
+        drHenti();
+        var jam = setInterval(function() {
+          if (drJam !== jam) { clearInterval(jam); return; }
           if (!dr || dr.tamat || el('screen-dr').className.indexOf('active') === -1) { drHenti(); return; }
           if (lpJeda()) return;
           dr.detik++;
           if (dr.detik >= DR_DETIK) { dr.detik = 0; drTolak(false); } else lukisDr();
         }, 1000);
+        drJam = jam;
       });
     }
     // Susunan baris: setiap baris 1 English + 1 BM, pasangan TAK PERNAH sebaris (mencabar),
@@ -7965,7 +7969,10 @@
         bs = { soalan: bsSoalan(pas, bank), i: 0, salah: 0, betulN: 0, sisa: BS_MASA, kunci: false, tamat: false, lv: BS.lulus + 1, pospon: [], srN: 0 };
         el('bs-info').textContent = '';
         lukisBs();
-        bsJam = setInterval(bsDetik, 1000);
+        // Satu jam sahaja: hentikan jam lama dulu. Jam yang bukan jam semasa (cth MAIN ditekan 2 kali) berhenti sendiri.
+        bsHenti();
+        var jam = setInterval(function() { if (bsJam !== jam) { clearInterval(jam); return; } bsDetik(); }, 1000);
+        bsJam = jam;
       });
     }
     // Jam: berhenti sekejap masa jawapan ditunjuk
