@@ -7397,7 +7397,7 @@
       MM.emas = lama + emas;
       try { window.scrollTo(0, 0); } catch (e) {}
       terbangCoin(el('mm-tamat'), el('mm-emas'), function() {
-        kiraNaik(el('mm-emas'), lama, MM.emas, function() { el('mm-emas').textContent = MM.emas + ' g'; el('btn-mm-baru').style.display = ''; });
+        kiraNaik(el('mm-emas'), lama, MM.emas, function() { el('mm-emas').textContent = MM.emas + ' g'; setTimeout(bukaMmLevel, 800); }); // lepas claim → terus ke page level
       });
     };
     el('btn-mm-baru').onclick = bukaMmLevel;
@@ -7896,7 +7896,7 @@
       DR.perak = lama + perak;
       try { window.scrollTo(0, 0); } catch (e) {}
       terbangCoin(el('dr-tamat'), el('dr-perak'), function() {
-        kiraNaik(el('dr-perak'), lama, DR.perak, function() { el('dr-perak').textContent = DR.perak + ' g'; el('btn-dr-baru').style.display = ''; });
+        kiraNaik(el('dr-perak'), lama, DR.perak, function() { el('dr-perak').textContent = DR.perak + ' g'; setTimeout(bukaDrLevel, 800); }); // lepas claim → terus ke page level
       });
     };
     el('btn-dr-baru').onclick = bukaDrLevel;
@@ -8191,7 +8191,7 @@
       BS.gangsa = lama + g;
       try { window.scrollTo(0, 0); } catch (e) {}
       terbangCoin(el('bs-tamat'), el('bs-gangsa'), function() {
-        kiraNaik(el('bs-gangsa'), lama, BS.gangsa, function() { el('bs-gangsa').textContent = BS.gangsa + ' g'; el('btn-bs-baru').style.display = ''; });
+        kiraNaik(el('bs-gangsa'), lama, BS.gangsa, function() { el('bs-gangsa').textContent = BS.gangsa + ' g'; setTimeout(bukaBsLevel, 800); }); // lepas claim → terus ke page level
       });
     };
     el('bs-butang').addEventListener('click', function(e) {
