@@ -5883,6 +5883,8 @@
     .cx-tunggu b { display: block; font-size: 1rem; }
     /* Kaunter tukar dalam setiap game arked dibuang → semua tukaran di BANK COIN */
     #btn-gpl-kaunter, #btn-jwl-kedai, #btn-mml-kedai, #btn-drl-kedai { display: none !important; }
+    /* Butang MAIN LEVEL dibuang — ketik kotak level semasa (tertulis MAIN) dalam grid untuk main */
+    #btn-gpl-main, #btn-mml-main, #btn-drl-main, #btn-bsl-main, #btn-jwl-main { display: none !important; }
     /* Dalam game: bar tempat & bar mata wang disorok, keluar guna butang ‹ Arked / ‹ Keluar */
     [data-dlm-game] .gm-tab, [data-dlm-game] .mw-bar, [data-dlm-game] .mn-bar, #screen-mx .mn-bar { display: none !important; }
     /* Butang MENU di baris paling atas (atas bar mata wang), hanya di skrin yang ada bar tempat */
@@ -6203,7 +6205,7 @@
       <div class="gp-skor" id="gp-skor"></div>
       <div id="gp-skor-sub" style="font-size:0.85rem;margin-top:4px;white-space:pre-line;"></div>
     </div>
-    <button id="btn-gp-baru" class="btn btn-primary gm-utama">PUSINGAN BARU</button>
+    <button id="btn-gp-baru" class="btn btn-primary gm-utama" style="display:none;">CLAIM TIKET</button>
   </div>
   <div id="screen-gp-level" class="screen">
     <div class="status-bar" id="gpl-status">PADAN</div>
@@ -7019,6 +7021,10 @@
       kol('game_stat').doc('padan').set(ubah, { merge: true }).catch(function(e) { el('gp-info').textContent = 'Gagal simpan level: ' + (e.message || e); });
       el('gp-papan').style.display = 'none';
       el('gp-tamat').style.display = 'block';
+      // Habis game: CLAIM tiket (lulus) atau KEMBALI KE LEVEL (belum lulus) → terus ke page level
+      pus.tiketBaru = lulus ? tiket : 0;
+      el('btn-gp-baru').textContent = lulus ? 'CLAIM ' + tiket + ' TIKET' : 'KEMBALI KE LEVEL';
+      el('btn-gp-baru').style.display = '';
       el('gp-skor').textContent = lulus ? 'LULUS LEVEL ' + lv + '!' : 'BELUM LULUS';
       el('gp-skor-sub').textContent = (lulus ? '+' + tiket + ' Tiket Arked (= ' + Math.floor(tiket / EKO.TIKET_COIN) + ' coin di Bank Coin)' :
           pus.cubaanSalah + ' cubaan salah. Level ' + lv + ' mesti dipadankan tanpa salah. Cuba lagi!') + '\n' +
@@ -7065,6 +7071,7 @@
       showScreen('screen-game');
       var sesi = MULA_SESI;
       bilPusingan = 0;
+      el('btn-gp-baru').style.display = 'none'; // tiada PUSINGAN BARU semasa main — keluar guna ‹ Keluar
       el('gp-papan').style.display = 'none';
       el('gp-tamat').style.display = 'none';
       el('gp-info').textContent = 'Memuatkan bank perkataan...';
@@ -7106,7 +7113,7 @@
       for (i = 1; i <= 12; i++) {
         n = mula + i;
         if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
-        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-gp-main="1">' + n + '</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-gp-main="1">' + n + '<br>MAIN</button>';
         else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
       }
       el('gpl-grid').innerHTML = h;
@@ -7235,7 +7242,7 @@
       for (i = 1; i <= 12; i++) {
         n = mula + i;
         if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
-        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-mm-main="1">' + n + '</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-mm-main="1">' + n + '<br>MAIN</button>';
         else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
       }
       el('mml-grid').innerHTML = h;
@@ -7536,7 +7543,7 @@
       for (i = 1; i <= 12; i++) {
         n = mula + i;
         if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
-        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-dr-main="1">' + n + '</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-dr-main="1">' + n + '<br>MAIN</button>';
         else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
       }
       el('drl-grid').innerHTML = h;
@@ -7996,7 +8003,7 @@
       for (i = 1; i <= 12; i++) {
         n = mula + i;
         if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
-        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-bs-main="1">' + n + '</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-bs-main="1">' + n + '<br>MAIN</button>';
         else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
       }
       el('bsl-grid').innerHTML = h;
@@ -9199,7 +9206,7 @@
       for (i = 1; i <= 12; i++) {
         n = mula + i;
         if (n < lv) h += '<button type="button" class="jw-l jw-siap">' + n + '<br>LULUS</button>';
-        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-jw-main="1">' + n + '</button>';
+        else if (n === lv) h += '<button type="button" class="jw-l jw-kini" data-jw-main="1">' + n + '<br>MAIN</button>';
         else h += '<button type="button" class="jw-l jw-kunci">KUNCI</button>';
       }
       el('jwl-grid').innerHTML = h;
@@ -9467,7 +9474,16 @@
     };
 
     el('btn-go-game').onclick = bukaMini;
-    el('btn-gp-baru').onclick = function() { if (currentUser) bukaGpLevel(); };
+    el('btn-gp-baru').onclick = function() {
+      if (!currentUser) return;
+      var ke = document.querySelector('#screen-game [data-gc="tiket"]');
+      if (!pus || !pus.tiketBaru || !ke) { bukaGpLevel(); return; }
+      pus.tiketBaru = 0;
+      this.style.display = 'none';
+      try { window.scrollTo(0, 0); } catch (e) {}
+      // Tiket terbang ke kotak TIKET di atas, kemudian terus ke page level
+      terbangCoin(el('gp-tamat'), ke, function() { ke.textContent = GP.tiket; setTimeout(bukaGpLevel, 400); });
+    };
     el('btn-gp-senarai').onclick = function() { bukaSenaraiGsr(); };
     // Tab navigasi game (MENU | PADAN | MINI GAME | EXCHANGE) — sama di setiap skrin utama game
     document.addEventListener('click', function(e) {
