@@ -7023,6 +7023,7 @@
       el('gp-tamat').style.display = 'block';
       // Habis game: CLAIM tiket (lulus) atau KEMBALI KE LEVEL (belum lulus) → terus ke page level
       pus.tiketBaru = lulus ? tiket : 0;
+      GC_TAHAN.tiket = pus.tiketBaru; mwLukis();
       el('btn-gp-baru').textContent = lulus ? 'CLAIM ' + tiket + ' TIKET' : 'KEMBALI KE LEVEL';
       el('btn-gp-baru').style.display = '';
       el('gp-skor').textContent = lulus ? 'LULUS LEVEL ' + lv + '!' : 'BELUM LULUS';
@@ -7091,6 +7092,8 @@
     // Token sesi game: naik setiap kali tukar skrin / MAIN ditekan. Muatan lama (cth MAIN ditekan 2 kali di Kindle,
     // atau keluar sebelum habis muat) yang sampai lambat DIABAIKAN — tak tindih game yang sedang dimain / skrin tamat.
     var MULA_SESI = 0;
+    // Ganjaran yang BELUM di-claim: kotak mata wang game di atas tunjuk nilai LAMA sampai animasi terbang habis
+    var GC_TAHAN = {};
     function gpMuat(cb) {
       kol('game_stat').doc('padan').get().then(function(s) {
         var d = (s && s.exists) ? s.data() : {};
@@ -7100,7 +7103,7 @@
     }
     function bukaGpLevel() {
       if (!currentUser) return;
-      pus = null;
+      pus = null; GC_TAHAN.tiket = 0;
       showScreen('screen-gp-level');
       el('gpl-info').textContent = 'Memuatkan...';
       gpMuat(function(ok, e) {
@@ -9428,7 +9431,19 @@
       }
       jwSimpanStat();
       // Menang → wang dah masuk tabung, terus balik ke page level (tak perlu page keputusan)
-      if (sebab === 'menang') { bukaJwLevel(); return; }
+      if (sebab === 'menang') {
+        // Wang terbang ke kotak DOLLAR di atas page level, baru tabung bertambah
+        var dapat = jw.menang;
+        GC_TAHAN.dolar = dapat;
+        bukaJwLevel();
+        setTimeout(function() {
+          var ke = document.querySelector('#screen-jw-level [data-gc="dolar"]');
+          if (!ke) { GC_TAHAN.dolar = 0; mwLukis(); return; }
+          mwLukis();
+          terbangCoin(el('jwl-info'), ke, function() { GC_TAHAN.dolar = 0; mwLukis(); });
+        }, 700);
+        return;
+      }
       showScreen('screen-jw-tamat');
       if (sebab === 'menang') {
         el('jwm-tajuk').textContent = 'LULUS LEVEL ' + lv;
@@ -9484,7 +9499,7 @@
       this.style.display = 'none';
       try { window.scrollTo(0, 0); } catch (e) {}
       // Tiket terbang ke kotak TIKET di atas, kemudian terus ke page level
-      terbangCoin(el('gp-tamat'), ke, function() { ke.textContent = GP.tiket; setTimeout(bukaGpLevel, 400); });
+      terbangCoin(el('gp-tamat'), ke, function() { GC_TAHAN.tiket = 0; mwLukis(); setTimeout(bukaGpLevel, 700); });
     };
     el('btn-gp-senarai').onclick = function() { bukaSenaraiGsr(); };
     // Tab navigasi game (MENU | PADAN | MINI GAME | EXCHANGE) — sama di setiap skrin utama game
@@ -11188,7 +11203,8 @@
       a = document.querySelectorAll('.screen.active [data-gc]');
       for (i = 0; i < a.length; i++) {
         j = a[i].getAttribute('data-gc');
-        v = j === 'tiket' ? String(GP.tiket) : j === 'dolar' ? duit(JW.dolar) : j === 'emas' ? MM.emas + ' g' : j === 'perak' ? DR.perak + ' g' : BS.gangsa + ' g';
+        var th = GC_TAHAN[j] || 0;
+        v = j === 'tiket' ? String(GP.tiket - th) : j === 'dolar' ? duit(JW.dolar - th) : j === 'emas' ? (MM.emas - th) + ' g' : j === 'perak' ? (DR.perak - th) + ' g' : (BS.gangsa - th) + ' g';
         if (a[i].textContent !== v) a[i].textContent = v;
       }
       // Level game di bawah mata wang (perisai bernombor macam CoC)
