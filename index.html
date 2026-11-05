@@ -9427,6 +9427,8 @@
         kol('game_stat').doc('jutawan').set({ dolar: firebase.firestore.FieldValue.increment(jw.menang) }, { merge: true }).catch(function() {});
       }
       jwSimpanStat();
+      // Menang → wang dah masuk tabung, terus balik ke page level (tak perlu page keputusan)
+      if (sebab === 'menang') { bukaJwLevel(); return; }
       showScreen('screen-jw-tamat');
       if (sebab === 'menang') {
         el('jwm-tajuk').textContent = 'LULUS LEVEL ' + lv;
