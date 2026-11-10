@@ -6770,6 +6770,18 @@
     <div id="coach-senaman" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div style="height:30px;"></div>
   </div>
+  <!-- TAMAN (Taman Sihat) — matahari pagi + cahaya petang -->
+  <div id="screen-taman" class="screen">
+    <div class="status-bar">TAMAN</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-taman-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <span class="gm-alat-tajuk">TAMAN</span>
+      <button type="button" id="btn-taman-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="taman-info" class="jw-info"></div>
+    <div id="taman-isi"></div>
+    <div style="height:30px;"></div>
+  </div>
   <div id="screen-hj" class="screen">
     <div class="status-bar">HADIAH BOS · INVESTMENT</div>
     <div class="gm-alat">
@@ -10008,11 +10020,11 @@
             coachBtnKecil('sebab', t.kunci + '|LAIN', 'LAIN') + coachBtnKecil('batal', t.kunci, 'BATAL');
         } else if (st === 'ABAI') {
           // Denda: buat tugas asal (lewat → markah penuh dibuang) ATAU tugas ganti (separuh)
-          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : coachBtnKecil('siap', t.kunci, 'SIAP (lewat)')) +
+          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : (t.jenis === 'matahari' || t.jenis === 'petang') ? coachNotaTaman : coachBtnKecil('siap', t.kunci, 'SIAP (lewat)')) +
             (COACH_GANTI[t.jenis] ? coachBtnKecil('ganti', t.kunci, 'GANTI: ' + COACH_GANTI[t.jenis]) : '') +
             coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         } else {
-          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : coachBtnKecil('siap', t.kunci, 'SIAP')) + coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
+          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : (t.jenis === 'matahari' || t.jenis === 'petang') ? coachNotaTaman : coachBtnKecil('siap', t.kunci, 'SIAP')) + coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         }
         h += '</div>';
       }
@@ -10492,6 +10504,7 @@
     // Latihan: [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban, 0 = badan), sisi (1 = setiap sisi), kumpulan recovery]
     var COACH_SET = 2, COACH_REP = 10, COACH_SAAT = 20;
     var coachNotaSen = '<div style="font-size:0.78rem;">Buat di GYM (Game → TAMAN SIHAT → GYM) → SELESAI SESI.</div>';
+    var coachNotaTaman = '<div style="font-size:0.78rem;">Buat di TAMAN (Game → TAMAN SIHAT → TAMAN): KELUAR → DAH MASUK.</div>';
     var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
     var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
     var COACH_RUTIN = {
@@ -11305,6 +11318,9 @@
         } else if (aktif && aktif.jenis === 'fokus') {
           b += 'SEKARANG: FOKUS 90 MINIT — ' + (fokus || 'usaha') + ': ' + coachFokusTeks(fokus) + '. Satu kerja sahaja, telefon jauh.';
           go = coachFokusGo(fokus);
+        } else if (aktif && (aktif.jenis === 'matahari' || aktif.jenis === 'petang')) {
+          b += 'SEKARANG: ' + aktif.nama + ' — sekurang-kurangnya ' + COACH_TAMAN_MIN[aktif.jenis] + ' min di luar.';
+          go = ['PERGI KE TAMAN', function() { bukaTaman(); }];
         } else if (aktif) {
           b += 'SEKARANG: ' + aktif.nama + '.';
           go = ['BUKA TUGAS KESIHATAN', function() { coachBukaSek('tugas', true); }];
@@ -12588,6 +12604,7 @@
     EKO.GYM_SEN = 20;         // GYM: sesi senaman penuh = 0.20 Ringgit Kuning (ikut nisbah stesen siap)
     EKO.GYM_FACE_SEN = 2;     // GYM: rutin FACE = 0.02 Kuning
     EKO.GYM_STREAK_SEN = 50;  // GYM: setiap 7 hari berturut = +0.50 Kuning
+    EKO.TAMAN_SEN = 5;        // TAMAN: matahari pagi / cahaya petang tepat masa = 0.05 Kuning setiap satu
     // ══ BANK PUSAT: semua harga & ganjaran boleh diubah admin. Disimpan dalam dompet.eko { KUNCI: nilai } ══
     // ARKED: hanya BONUS boleh diubah. Ganjaran asas (hadiah setiap perkataan) & kadar Bank Coin TETAP — dah dikira teliti (1 perkataan = 10 coin).
     // Nak naikkan harga barang → naikkan kadar duit (tab KADAR), bukan hadiah game.
@@ -12603,7 +12620,8 @@
       { k: 'MESIN_SEN', tab: 'kedai', grup: 'BANK COIN', nama: 'Sewa mesin conveyor sejam', jenis: 'biru', min: 0 },
       { k: 'GYM_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran sesi senaman penuh', jenis: 'kuning', min: 0 },
       { k: 'GYM_FACE_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran rutin FACE', jenis: 'kuning', min: 0 },
-      { k: 'GYM_STREAK_SEN', tab: 'kedai', grup: 'GYM', nama: 'Bonus setiap 7 hari berturut', jenis: 'kuning', min: 0 }
+      { k: 'GYM_STREAK_SEN', tab: 'kedai', grup: 'GYM', nama: 'Bonus setiap 7 hari berturut', jenis: 'kuning', min: 0 },
+      { k: 'TAMAN_SEN', tab: 'kedai', grup: 'TAMAN', nama: 'Ganjaran matahari pagi / cahaya petang', jenis: 'kuning', min: 0 }
     ];
     var BP_LALAI = {};
     (function() { for (var i = 0; i < BP_EKO.length; i++) BP_LALAI[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]); })();
@@ -12743,7 +12761,7 @@
     // aktif: true = sudah dibina · false = AKAN DATANG
     var TS_BANGUNAN = [
       ['gym', 'GYM', 'Senaman + FACE', true],
-      ['taman', 'TAMAN', 'Matahari pagi + cahaya petang', false],
+      ['taman', 'TAMAN', 'Matahari pagi + cahaya petang', true],
       ['telaga', 'TELAGA', 'Air + log kencing', false],
       ['dapur', 'DAPUR', 'Makan + monitor zat', false],
       ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', false]
@@ -12771,6 +12789,9 @@
         if (b[0] === 'gym') {
           try { if (coachDataAkhir && coachHariData.id === coachHariId()) { var sh = coachSenHari(); sub = 'Senaman 5 ptg · ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ''); } } catch (e) {}
         }
+        if (b[0] === 'taman') {
+          try { if (coachHariData.id === coachHariId() && coachHariData.hari.laporanAt) { var tg = coachHariData.hari.tugas || {}; sub = 'Pagi ' + (tg.matahari ? (tg.matahari.s === 'BUAT' ? 'SIAP' : tg.matahari.s) : 'belum') + ' · Petang ' + (tg.petang ? (tg.petang.s === 'BUAT' ? 'SIAP' : tg.petang.s) : 'belum'); } } catch (e) {}
+        }
         h += '<button type="button" class="kd-pd" data-ts="' + b[0] + '"' + (b[3] ? '' : ' style="opacity:0.85;"') + '>' + svgBangunan(b[0], b[1], b[3]) + '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
       }
       el('ts-bangunan').innerHTML = h;
@@ -12788,6 +12809,7 @@
       if (!t || t === this) return;
       var k = t.getAttribute('data-ts');
       if (k === 'gym') { bukaGym(); return; }
+      if (k === 'taman') { bukaTaman(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // ── GYM: page senaman (dipindah dari page COACH) ──
@@ -12804,6 +12826,146 @@
     }
     el('btn-gym-keluar').onclick = function() { bukaTs(); };
     el('btn-gym-coach').onclick = function() { bukaCoach(false); };
+    // ══ TAMAN (Taman Sihat): MATAHARI PAGI + CAHAYA PETANG dalam bentuk permainan ══
+    // Tekan KELUAR KE TAMAN → masa mula disimpan (coach_hari.keluar.{kunci}.mula) → balik, tekan DAH MASUK.
+    // Cukup minit (COACH_TAMAN_MIN) → tugas SIAP (lewat jika selepas masa tamat) + Ringgit Kuning EKO.TAMAN_SEN (tepat masa sahaja).
+    // Tak cukup minit → belum dikira, teruskan di luar. Diabaikan → KELUAR SEKARANG (lewat) / GANTI / TAK DAPAT.
+    var COACH_TAMAN_MIN = { matahari: 10, petang: 10 };
+    var COACH_TAMAN_TIP = {
+      matahari: ['Keluar rumah dalam masa 15 min selepas bangun (atau secepat boleh).', 'Tanpa cermin mata hitam; pandang ke arah langit / kawasan terang — JANGAN tenung matahari.', 'Cerah: 10 min. Mendung: lebih lama (20 min) — cahaya luar tetap lebih terang dari lampu rumah.', 'Boleh sambil berjalan / minum air.'],
+      petang: ['Keluar antara 3:00 – 5:00 petang.', 'Pandang ke arah langit / kawasan terang (jangan tenung matahari).', 'Sekurang-kurangnya 10 min — bantu jam badan bersedia untuk tidur malam nanti.']
+    };
+    var tamanUI = { pesan: '', dapat: '' };
+    function tamanTugas(jenis) {
+      var j = coachJadualKini(), i;
+      if (!j) return null;
+      for (i = 0; i < j.tugas.length; i++) if (j.tugas[i].jenis === jenis) return { t: j.tugas[i], j: j };
+      return null;
+    }
+    function lukisTaman() {
+      var box = el('taman-isi');
+      if (!box) return;
+      var btn = 'padding:7px 9px;margin:3px 4px 3px 0;font-size:0.9rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btnA = btn + 'background:#000;color:#fff;';
+      var h = '', a = ['matahari', 'petang'], i, kini = coachMinitKini(), keluar = coachHariData.hari.keluar || {};
+      if (!coachHariData.hari.laporanAt || !coachJadualKini()) {
+        box.innerHTML = '<div style="font-size:0.95rem;">Isi LAPORAN PAGI di page COACH dulu — masa matahari pagi dikira dari waktu bangun.</div><button type="button" data-tm="coach" style="' + btn + '">KE COACH</button>';
+        return;
+      }
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:4px 0;font-size:0.8rem;"><b>GANJARAN</b>: +' + rm(EKO.TAMAN_SEN || 0) + ' Ringgit Kuning setiap tugas (tepat masa, cukup minit).</div>';
+      for (i = 0; i < a.length; i++) {
+        var jn = a[i], x = tamanTugas(jn);
+        if (!x) continue;
+        var t = x.t, k = t.kunci, st = coachStatusTugas(t, kini), rec = (coachHariData.hari.tugas || {})[k], kl = keluar[k], min = COACH_TAMAN_MIN[jn];
+        var tajuk = jn === 'matahari' ? t.nama.split(' — ')[0] : 'CAHAYA PETANG';
+        var masa = jn === 'petang' ? '3:00 – 5:30 PM' : coachTeksMasa(t.min) + ' – ' + coachTeksMasa(coachTamat(t));
+        h += '<div style="border:' + (st === 'SEKARANG' ? '3px' : '2px') + ' solid #000;border-radius:10px;padding:6px 8px;margin:6px 0;' + (rec && rec.s === 'BUAT' ? 'background:#000;color:#fff;' : '') + '">';
+        h += '<div style="font-weight:bold;font-size:1.05rem;">' + tajuk + '</div><div style="font-size:0.85rem;">Masa: ' + masa + ' · sasaran ' + min + ' min di luar</div>';
+        if (rec) {
+          h += '<div style="font-size:0.9rem;margin-top:3px;"><b>' + (rec.s === 'BUAT' ? 'SIAP' + (rec.lewat ? ' (lewat)' : '') + (rec.minit ? ' · ' + rec.minit + ' min di luar' : '') + (rec.kuning ? ' · +' + rm(rec.kuning) + ' Kuning' : '') :
+            rec.s === 'GANTI' ? 'GANTI: ' + (COACH_GANTI[jn] || '-') : 'TAK DAPAT · ' + (rec.sebab || '-')) + '</b></div>';
+        } else if (st === 'ABAI' && kini >= x.j.tidur) {
+          h += '<div style="font-size:0.85rem;">Sudah masa tidur — tiada denda malam ini.</div>';
+        } else if (kl && kl.mula && !kl.tamat) {
+          var dah = Math.floor((Date.now() - kl.mula) / 60000);
+          h += '<div style="font-size:0.95rem;margin-top:3px;"><b>DI LUAR</b> sejak ' + coachTeksMasa(new Date(kl.mula).getHours() * 60 + new Date(kl.mula).getMinutes()) + ' · ' + dah + ' / ' + min + ' min</div>' +
+            '<button type="button" data-tm="masuk" data-k="' + k + '" style="' + btnA + '">DAH MASUK</button><button type="button" data-tm="semak" style="' + btn + '">SEMAK MASA</button><button type="button" data-tm="batalkeluar" data-k="' + k + '" style="' + btn + '">BATAL</button>';
+        } else if (st === 'AKAN' && jn === 'petang') {
+          h += '<div style="font-size:0.85rem;margin-top:3px;">Belum masa. Datang semula pukul ' + coachTeksMasa(jn === 'petang' ? 15 * 60 : t.min) + '.</div>';
+        } else if (tamanUI.dapat === k) {
+          h += '<div style="font-size:0.85rem;">Sebab tak dapat:</div><button type="button" data-tm="sebab" data-k="' + k + '" data-v="HUJAN" style="' + btn + '">HUJAN</button><button type="button" data-tm="sebab" data-k="' + k + '" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
+            '<button type="button" data-tm="sebab" data-k="' + k + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-tm="batal" style="' + btn + '">BATAL</button>';
+        } else {
+          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — boleh keluar sekarang (lewat, tiada Kuning) atau buat GANTI.</div>';
+          h += '<button type="button" data-tm="keluar" data-k="' + k + '" style="' + btnA + '">' + (st === 'ABAI' ? 'KELUAR SEKARANG (lewat)' : 'KELUAR KE TAMAN') + '</button>' +
+            (st === 'ABAI' && COACH_GANTI[jn] ? '<button type="button" data-tm="ganti" data-k="' + k + '" style="' + btn + '">GANTI: ' + COACH_GANTI[jn] + '</button>' : '') +
+            '<button type="button" data-tm="dapat" data-k="' + k + '" style="' + btn + '">TAK DAPAT</button>';
+        }
+        if (!rec) {
+          var tip = COACH_TAMAN_TIP[jn], tj;
+          h += '<div style="font-size:0.78rem;margin-top:4px;line-height:1.35;"><b>CARA:</b>';
+          for (tj = 0; tj < tip.length; tj++) h += '<br>' + (tj + 1) + '. ' + tip[tj];
+          h += '</div>';
+        }
+        h += '</div>';
+      }
+      box.innerHTML = h;
+    }
+    function bukaTaman() {
+      if (!currentUser) return;
+      showScreen('screen-taman');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('taman-info').textContent = 'Memuatkan...';
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        el('taman-info').textContent = tamanUI.pesan; tamanUI.pesan = '';
+        lukisTaman();
+      }).catch(function(e) { el('taman-info').textContent = 'Gagal memuat TAMAN: ' + ((e && e.message) || e); });
+    }
+    function tamanSimpan(d, lokal, pesan) {
+      coachSimpanHari(d, lokal);
+      el('taman-info').textContent = pesan || '';
+      lukisTaman();
+    }
+    el('taman-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-tm')) t = t.parentNode;
+      if (!t || t === this || !currentUser) return;
+      var tm = t.getAttribute('data-tm'), k = t.getAttribute('data-k') || '', now = Date.now(), d = {}, hr = coachHariData.hari;
+      if (tm === 'coach') { bukaCoach(false); return; }
+      if (tm === 'semak') { lukisTaman(); return; }
+      if (tm === 'dapat') { tamanUI.dapat = k; lukisTaman(); return; }
+      if (tm === 'batal') { tamanUI.dapat = ''; lukisTaman(); return; }
+      if (tm === 'keluar') {
+        d.keluar = {}; d.keluar[k] = { mula: now };
+        tamanSimpan(d, function() { (hr.keluar || (hr.keluar = {}))[k] = { mula: now }; }, 'Selamat keluar! Tekan DAH MASUK bila balik.');
+        return;
+      }
+      if (tm === 'batalkeluar') {
+        d.keluar = {}; d.keluar[k] = { mula: 0 };
+        tamanSimpan(d, function() { (hr.keluar || (hr.keluar = {}))[k] = { mula: 0 }; }, 'Dibatalkan.');
+        return;
+      }
+      if (tm === 'masuk') {
+        var kl = (hr.keluar || {})[k], x = tamanTugas(k), jn = x ? x.t.jenis : k;
+        if (!kl || !kl.mula) return;
+        var minit = Math.floor((now - kl.mula) / 60000), perlu = COACH_TAMAN_MIN[jn] || 10;
+        if (minit < perlu) { el('taman-info').textContent = 'Baru ' + minit + ' min. Perlu ' + perlu + ' min — teruskan di luar, kemudian tekan DAH MASUK semula.'; lukisTaman(); return; }
+        var dm = new Date(kl.mula), mm = dm.getHours() * 60 + dm.getMinutes() + (coachTarikh(dm) === coachHariData.id ? 0 : 1440);
+        var lewat = x ? mm >= coachTamat(x.t) : false; // lewat = mula keluar selepas masa tamat
+        var sen = lewat ? 0 : (EKO.TAMAN_SEN || 0);
+        d.tugas = {}; d.tugas[k] = { s: 'BUAT', at: now, minit: minit, kuning: sen };
+        if (lewat) d.tugas[k].lewat = true;
+        d.keluar = {}; d.keluar[k] = { mula: kl.mula, tamat: now, minit: minit };
+        tamanSimpan(d, function() {
+          (hr.tugas || (hr.tugas = {}))[k] = d.tugas[k];
+          (hr.keluar || (hr.keluar = {}))[k] = d.keluar[k];
+        }, 'SIAP — ' + minit + ' min di luar.' + (lewat ? ' (lewat — tiada Kuning)' : ''));
+        if (sen) coachTamanBayar(sen, (jn === 'matahari' ? 'Matahari pagi' : 'Cahaya petang') + ' ' + minit + ' min');
+        return;
+      }
+      if (tm === 'ganti') {
+        d.tugas = {}; d.tugas[k] = { s: 'GANTI', at: now };
+        tamanSimpan(d, function() { (hr.tugas || (hr.tugas = {}))[k] = d.tugas[k]; }, 'GANTI direkod (separuh markah dibuang).');
+        return;
+      }
+      if (tm === 'sebab') {
+        d.tugas = {}; d.tugas[k] = { s: 'TAK_DAPAT', at: now, sebab: t.getAttribute('data-v') };
+        tamanUI.dapat = '';
+        tamanSimpan(d, function() { (hr.tugas || (hr.tugas = {}))[k] = d.tugas[k]; }, 'Direkod: tak dapat (' + t.getAttribute('data-v') + ').');
+      }
+    };
+    function coachTamanBayar(sen, ket) {
+      var b = db.batch();
+      b.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'taman', ket + ': +' + rm(sen) + ' Kuning');
+      b.commit().then(function() {
+        DP.kuningSen = (DP.kuningSen || 0) + sen;
+        el('taman-info').textContent += ' +' + rm(sen) + ' Ringgit Kuning!';
+      }).catch(function(e) { el('taman-info').textContent += ' Gagal beri ganjaran: ' + ((e && e.message) || e); });
+    }
+    el('btn-taman-keluar').onclick = function() { bukaTs(); };
+    el('btn-taman-coach').onclick = function() { bukaCoach(false); };
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
     function lukisPameran(teks) {
       var p = (KD.hijau || {}).pameran, it = p && kdCari(p.id);
