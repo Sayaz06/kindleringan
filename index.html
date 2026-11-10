@@ -6861,6 +6861,26 @@
     <div id="bilik-isi"></div>
     <div style="height:30px;"></div>
   </div>
+  <!-- GAMBAR LATIHAN: muat naik + potong (bingkai tetap 4:3) — guna di phone / komputer; Kindle papar sahaja -->
+  <div id="screen-gambar" class="screen">
+    <div class="status-bar">GAMBAR LATIHAN</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-gambar-batal" class="gm-kecil">‹ Batal</button>
+      <span class="gm-alat-tajuk" id="gambar-tajuk">GAMBAR</span>
+      <span></span>
+    </div>
+    <div id="gambar-info" class="jw-info"></div>
+    <label class="btn" style="display:block;text-align:center;">PILIH GAMBAR<input type="file" id="gambar-fail" accept="image/*" style="display:none;"></label>
+    <div style="text-align:center;margin:6px 0;"><canvas id="gambar-kanvas" width="320" height="240" style="border:3px solid #000;touch-action:none;max-width:100%;"></canvas></div>
+    <div style="text-align:center;">
+      <button type="button" id="btn-gambar-kecil" class="gm-kecil" style="font-size:1.3rem;padding:2px 14px;">−</button>
+      <input type="range" id="gambar-zum" min="100" max="400" value="100" style="width:55%;vertical-align:middle;">
+      <button type="button" id="btn-gambar-besar" class="gm-kecil" style="font-size:1.3rem;padding:2px 14px;">+</button>
+    </div>
+    <button type="button" id="btn-gambar-putar" class="btn">PUSING 90°</button>
+    <button type="button" id="btn-gambar-simpan" class="btn btn-primary">SIMPAN GAMBAR</button>
+    <div style="height:30px;"></div>
+  </div>
   <div id="screen-hj" class="screen">
     <div class="status-bar">HADIAH BOS · INVESTMENT</div>
     <div class="gm-alat">
@@ -11011,6 +11031,8 @@
       return s + '</svg>';
     }
     function coachLidi(k) {
+      var gg = coachGambarLatihan(k);
+      if (gg) return gg; // gambar sendiri (muat naik) didahulukan
       var t = COACH_LIDI[COACH_LIDI_PETA[k]], x = coachSenLatihan(k);
       if (!t) return '';
       var beban = x && x[3] !== null && x[3] !== 0, kot = '<td style="text-align:center;vertical-align:top;font-size:0.8rem;font-weight:bold;">';
@@ -11221,7 +11243,9 @@
         h += '</div>';
         for (i = 0; i < sen.length; i++) {
           h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:6px 0;"><div style="font-weight:bold;">' + kp[0].charAt(0) + '-' + kp[1] + (i + 1) + ' · ' + sen[i][1] + '</div>' +
-            '<div style="font-size:0.78rem;">' + (sen[i][2] === 'saat' ? 'tahan (saat)' : 'rep') + (sen[i][3] !== null && sen[i][3] !== 0 ? ' · guna beban' : '') + (sen[i][4] ? ' · setiap sisi' : '') + '</div>' + coachLidi(sen[i][0]) + '</div>';
+            '<div style="font-size:0.78rem;">' + (sen[i][2] === 'saat' ? 'tahan (saat)' : 'rep') + (sen[i][3] !== null && sen[i][3] !== 0 ? ' · guna beban' : '') + (sen[i][4] ? ' · setiap sisi' : '') + '</div>' + coachLidi(sen[i][0]) +
+            '<div style="text-align:center;"><button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="a" style="' + btn + '">GAMBAR 1 (MULA)</button><button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="b" style="' + btn + '">GAMBAR 2 (AKHIR)</button>' +
+            (coachGambar[sen[i][0]] ? '<button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="padam" style="' + btn + '">PADAM GAMBAR</button>' : '') + '</div></div>';
         }
         h += '<div style="font-size:0.8rem;">Gambar tak jelas? Beritahu kod (contoh ' + kp[0].charAt(0) + '-' + kp[1] + '3) untuk dibetulkan.</div>';
         box.innerHTML = h;
@@ -11298,6 +11322,13 @@
       if (cs === 'katalog') { coachUIS.katalog = sh.g + ' ' + sh.s; coachLukisSenaman(); return; }
       if (cs === 'katgrup') { coachUIS.katalog = t.getAttribute('data-v'); coachLukisSenaman(); return; }
       if (cs === 'katalogtutup') { coachUIS.katalog = ''; coachLukisSenaman(); return; }
+      if (cs === 'gbr') {
+        var gk = t.getAttribute('data-k'), gv = t.getAttribute('data-v');
+        if (gv !== 'padam') { bukaGambar(gk, gv); return; }
+        if (!confirm('Padam gambar sendiri untuk latihan ini? (orang lidi akan dipapar semula)')) return;
+        kol('coach_gambar').doc(gk).delete().then(function() { delete coachGambar[gk]; coachLukisSenaman(); }).catch(function(e) { alert('Gagal padam: ' + ((e && e.message) || e)); });
+        return;
+      }
       if (cs === 'selesai') coachWK.aktif = false;
       if (cs === 'dapat') { coachUIS.dapat = true; coachLukisSenaman(); return; }
       if (cs === 'dapatbatal') { coachUIS.dapat = false; coachLukisSenaman(); return; }
@@ -13422,6 +13453,110 @@
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // ── GYM: page senaman (dipindah dari page COACH) ──
+    // ══ GAMBAR LATIHAN SENDIRI (muat naik + potong ikut bingkai tetap 4:3, macam app phone) ══
+    // Disimpan: users/{uid}/coach_gambar/{kunci latihan} { a: MULA (dataURL JPEG kelabu 400×300), b: AKHIR, at }.
+    // Ada gambar → ganti orang lidi. Muat naik dari phone / komputer (buka app yang sama, akaun sama); Kindle hanya papar.
+    var COACH_GBR_W = 400, COACH_GBR_H = 300;
+    var coachGambar = {}, coachGambarDimuat = false;
+    var GB = { k: '', sisi: 'a', img: null, zum: 1, ox: 0, oy: 0, putar: 0, seret: null };
+    function coachMuatGambar(cb) {
+      if (coachGambarDimuat) { cb(); return; }
+      kol('coach_gambar').get().then(function(q) {
+        q.forEach(function(d) { coachGambar[d.id] = d.data(); });
+        coachGambarDimuat = true; cb();
+      }).catch(function() { coachGambarDimuat = true; cb(); });
+    }
+    function coachGambarLatihan(k) {
+      var g = coachGambar[k];
+      if (!g || (!g.a && !g.b)) return '';
+      var kot = '<td style="text-align:center;vertical-align:top;font-size:0.8rem;font-weight:bold;">', im = function(d) { return '<img src="' + d + '" width="135" height="101" style="display:block;border:2px solid #000;">'; };
+      if (g.a && g.b) return '<table style="margin:4px auto;border-collapse:collapse;"><tr>' + kot + im(g.a) + '1. MULA</td><td style="vertical-align:middle;font-size:1.4rem;font-weight:bold;padding:0 2px;">›</td>' + kot + im(g.b) + '2. AKHIR</td></tr></table>';
+      return '<table style="margin:4px auto;border-collapse:collapse;"><tr>' + kot + im(g.a || g.b) + (g.a ? '1. MULA' : '2. AKHIR') + '</td></tr></table>';
+    }
+    function bukaGambar(k, sisi) {
+      var x = coachSenLatihan(k);
+      GB = { k: k, sisi: sisi, img: null, zum: 1, ox: 0, oy: 0, putar: 0, seret: null };
+      showScreen('screen-gambar');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('gambar-tajuk').textContent = (x ? x[1] : k) + (sisi === 'a' ? ' · 1 MULA' : ' · 2 AKHIR');
+      el('gambar-info').textContent = 'Tekan PILIH GAMBAR. Lepas itu seret gambar untuk alih, guna − / + untuk zum. Kotak = saiz akhir (sama untuk semua latihan).';
+      el('gambar-zum').value = 100;
+      try { el('gambar-fail').value = ''; } catch (e) {}
+      gbLukis();
+    }
+    function gbLukis(kv, skala) {
+      var c = kv || el('gambar-kanvas'), x = c.getContext('2d'), W = c.width, H = c.height, f = skala || 1;
+      x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+      if (!GB.img) {
+        x.fillStyle = '#000'; x.font = 'bold 16px sans-serif'; x.textAlign = 'center';
+        x.fillText('Belum ada gambar', W / 2, H / 2);
+        return;
+      }
+      var iw = GB.img.width, ih = GB.img.height, tegak = GB.putar % 180 !== 0, bw = tegak ? ih : iw, bh = tegak ? iw : ih;
+      var s0 = Math.max(W / bw, H / bh) * GB.zum;
+      x.save();
+      x.translate(W / 2 + GB.ox * f, H / 2 + GB.oy * f);
+      x.rotate(GB.putar * Math.PI / 180);
+      x.scale(s0, s0);
+      x.drawImage(GB.img, -iw / 2, -ih / 2);
+      x.restore();
+    }
+    function gbXY(e) {
+      var t = e.touches && e.touches.length ? e.touches[0] : e;
+      return [t.clientX, t.clientY];
+    }
+    (function() {
+      var c = el('gambar-kanvas');
+      if (!c) return;
+      function mula(e) { if (!GB.img) return; GB.seret = gbXY(e); if (e.preventDefault) e.preventDefault(); }
+      function gerak(e) {
+        if (!GB.seret) return;
+        var p = gbXY(e), r = c.getBoundingClientRect(), nisbah = c.width / (r.width || c.width);
+        GB.ox += (p[0] - GB.seret[0]) * nisbah; GB.oy += (p[1] - GB.seret[1]) * nisbah; GB.seret = p;
+        gbLukis();
+        if (e.preventDefault) e.preventDefault();
+      }
+      function tamat() { GB.seret = null; }
+      c.addEventListener('mousedown', mula); c.addEventListener('touchstart', mula);
+      document.addEventListener('mousemove', gerak); c.addEventListener('touchmove', gerak);
+      document.addEventListener('mouseup', tamat); c.addEventListener('touchend', tamat);
+    })();
+    el('gambar-fail').onchange = function() {
+      var f = this.files && this.files[0];
+      if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function() {
+        var im = new Image();
+        im.onload = function() { GB.img = im; GB.zum = 1; GB.ox = 0; GB.oy = 0; GB.putar = 0; el('gambar-zum').value = 100; gbLukis(); };
+        im.src = rd.result;
+      };
+      rd.readAsDataURL(f);
+    };
+    el('gambar-zum').oninput = el('gambar-zum').onchange = function() { GB.zum = (parseInt(this.value, 10) || 100) / 100; gbLukis(); };
+    el('btn-gambar-kecil').onclick = function() { GB.zum = Math.max(1, GB.zum - 0.1); el('gambar-zum').value = Math.round(GB.zum * 100); gbLukis(); };
+    el('btn-gambar-besar').onclick = function() { GB.zum = Math.min(4, GB.zum + 0.1); el('gambar-zum').value = Math.round(GB.zum * 100); gbLukis(); };
+    el('btn-gambar-putar').onclick = function() { GB.putar = (GB.putar + 90) % 360; gbLukis(); };
+    el('btn-gambar-batal').onclick = function() { bukaGym(); };
+    el('btn-gambar-simpan').onclick = function() {
+      if (!GB.img || !currentUser) { alert('Pilih gambar dulu.'); return; }
+      var c2 = document.createElement('canvas'), kv = el('gambar-kanvas');
+      c2.width = COACH_GBR_W; c2.height = COACH_GBR_H;
+      gbLukis(c2, COACH_GBR_W / kv.width);
+      // Tukar ke kelabu (skrin e-ink) — fail lebih kecil
+      try {
+        var x2 = c2.getContext('2d'), d = x2.getImageData(0, 0, c2.width, c2.height), p = d.data, i, y;
+        for (i = 0; i < p.length; i += 4) { y = Math.round(p[i] * 0.299 + p[i + 1] * 0.587 + p[i + 2] * 0.114); p[i] = p[i + 1] = p[i + 2] = y; }
+        x2.putImageData(d, 0, 0);
+      } catch (e) {}
+      var data = c2.toDataURL('image/jpeg', 0.7), sim = { at: Date.now() };
+      sim[GB.sisi] = data;
+      el('gambar-info').textContent = 'Menyimpan...';
+      kol('coach_gambar').doc(GB.k).set(sim, { merge: true }).then(function() {
+        var g = coachGambar[GB.k] || (coachGambar[GB.k] = {});
+        g[GB.sisi] = data;
+        bukaGym();
+      }).catch(function(e) { el('gambar-info').textContent = 'Gagal simpan: ' + ((e && e.message) || e); });
+    };
     function bukaGym() {
       if (!currentUser) return;
       showScreen('screen-gym');
@@ -13431,6 +13566,7 @@
         coachDataAkhir = r[0];
         el('gym-info').textContent = '';
         coachLukisSenaman();
+        coachMuatGambar(function() { coachLukisSenaman(); });
       }).catch(function(e) { el('gym-info').textContent = 'Gagal memuat GYM: ' + ((e && e.message) || e); });
     }
     el('btn-gym-keluar').onclick = function() { bukaTs(); };
