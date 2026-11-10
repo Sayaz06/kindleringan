@@ -6238,12 +6238,16 @@
       <div class="lp-btn"><button type="button" id="btn-lp-cara" class="btn">Cara report</button><button type="button" id="btn-lp-tutup" class="btn btn-primary">TUTUP</button></div>
     </div>
   </div>
-  <!-- COACH (Fasa 1) — dipapar bila tekan [ GAME ]: bubble ikut masa + 3 pai (bar + %) → TERUSKAN KE GAME -->
+  <!-- COACH (Fasa 1 + 2a) — dipapar bila tekan [ GAME ]: bubble ikut jadual + laporan pagi + 3 pai (bar + %) → TERUSKAN KE GAME -->
   <div id="screen-coach" class="screen">
     <div class="status-bar" id="coach-status">COACH</div>
     <div id="coach-bubble" style="border:3px solid #000;border-radius:10px;padding:10px;margin:4px 0 6px;font-size:1rem;line-height:1.4;white-space:pre-line;">Memuatkan...</div>
+    <div id="coach-laporan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:0 0 6px;"></div>
     <button id="btn-coach-terus" class="btn btn-primary">TERUSKAN KE GAME</button>
+    <div id="coach-hari" style="font-size:0.85rem;margin:4px 0;white-space:pre-line;"></div>
     <div id="coach-pai"></div>
+    <button id="btn-coach-pening" class="btn">LAPOR PENING (sekarang)</button>
+    <button id="btn-coach-lapor" class="btn">UBAH LAPORAN PAGI</button>
     <button id="btn-coach-kira" class="btn">KIRA SEMULA</button>
     <button id="btn-coach-menu" class="btn">MENU</button>
   </div>
@@ -9633,11 +9637,174 @@
         '<div style="height:12px;border:2px solid #000;background:#fff;"><div style="height:12px;width:' + w + '%;background:#000;"></div></div>' +
         '</div>';
     }
+    // ══════════ COACH — FASA 2a: LAPORAN PAGI + JADUAL BERGERAK ══════════
+    // Laporan pagi (sekali sehari): BANGUN (hari ini) + TIDUR & LAMPU DITUTUP (malam semalam) — setiap satu ada TAK INGAT.
+    // Simpan: users/{uid}/coach_hari/{YYYY-MM-DD} → hari ini { bangun, laporanAt, pening[] } · semalam { tidur, lampu }
+    // Hari coach bermula 4:00 pagi (buka app pukul 1 pagi = masih hari semalam).
+    // Jadual ikut waktu bangun: matahari +15 min (bangun lepas 11:00 → matahari SIANG) · air setiap 2 jam, slot terakhir
+    // 2.5 jam sebelum tidur · FOKUS 90 min +3 jam · cahaya petang 3–5 ptg · senaman 5:00 ptg + FACE ·
+    // malapkan lampu + sigh −1 jam · lampu ditutup = bangun + 16 jam (tempoh jaga — ubah melalui kod / semakan Ahad).
+    var COACH_JAGA_MIN = 16 * 60;
+    var COACH_HAD_MATAHARI_PAGI = 11 * 60;
+    var COACH_TETINGKAP = { air: 30, matahari: 30, fokus: 90, petang: 120, senaman: 60, malap: 30, tidur: 240 };
+    var coachHariData = { id: '', hari: {}, semalam: {} };
+
+    function coachTarikh(d) { return d.getFullYear() + '-' + coachDua(d.getMonth() + 1) + '-' + coachDua(d.getDate()); }
+    function coachHariId() { var d = new Date(); if (d.getHours() < 4) d.setDate(d.getDate() - 1); return coachTarikh(d); }
+    function coachSemalamId(id) {
+      var p = id.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+      d.setDate(d.getDate() - 1);
+      return coachTarikh(d);
+    }
+    function coachKeMinit(s) {
+      if (!s || s === 'TAK_INGAT') return null;
+      var p = String(s).split(':');
+      return (+p[0]) * 60 + (+p[1]);
+    }
+    function coachTeksMasa(min) {
+      if (min === null || min === undefined) return 'tak ingat';
+      min = ((min % 1440) + 1440) % 1440;
+      var h = Math.floor(min / 60), m = min % 60;
+      return ((h % 12) || 12) + ':' + coachDua(m) + (h < 12 ? ' AM' : ' PM');
+    }
+    // Minit sekarang dikira dari tengah malam HARI COACH (lepas tengah malam → +1440)
+    function coachMinitKini() {
+      var d = new Date(), m = d.getHours() * 60 + d.getMinutes();
+      return coachTarikh(d) === coachHariData.id ? m : m + 1440;
+    }
+    function coachJadual(bangun) {
+      var tidur = bangun + COACH_JAGA_MIN, t = [], n = 1, a;
+      function tambah(min, nama, jenis) { t.push({ min: min, nama: nama, jenis: jenis }); }
+      tambah(bangun + 15, bangun >= COACH_HAD_MATAHARI_PAGI ? 'MATAHARI SIANG — keluar ~10 minit' : 'MATAHARI PAGI — keluar ambil cahaya pagi', 'matahari');
+      var akhirAir = tidur - 150;
+      for (a = bangun; a < akhirAir - 30; a += 120) tambah(a, 'AIR — minum 1 gelas (slot ' + (n++) + ')', 'air');
+      tambah(akhirAir, 'AIR TERAKHIR — selepas ini kurangkan minum (slot ' + n + ')', 'air');
+      tambah(bangun + 180, 'FOKUS 90 MINIT — kerja susah, telefon jauh', 'fokus');
+      tambah(15 * 60, 'CAHAYA PETANG — keluar ambil cahaya siang (3–5 ptg)', 'petang');
+      tambah(17 * 60, 'SENAMAN (5:00 ptg) — kemudian rutin FACE', 'senaman');
+      tambah(tidur - 60, 'MALAPKAN LAMPU + PHYSIOLOGICAL SIGH', 'malap');
+      tambah(tidur, 'LAMPU DITUTUP — masa tidur', 'tidur');
+      t.sort(function(x, y) { return x.min - y.min; });
+      return { tugas: t, tidur: tidur };
+    }
     function coachTugasSekarang(fokus) {
-      var d = new Date(), j = d.getHours();
-      if (j === 17) return 'Masa SENAMAN (5:00 ptg) — kemudian rutin FACE.';
-      if (j >= 15 && j < 17) return 'Masa CAHAYA PETANG — keluar ambil cahaya siang sekejap.';
-      return fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
+      var bangun = coachKeMinit(coachHariData.hari.bangun);
+      if (bangun === null && coachHariData.hari.laporanAt) {
+        var la = new Date(coachHariData.hari.laporanAt);
+        bangun = la.getHours() * 60 + la.getMinutes(); // bangun TAK INGAT → anggar dari masa laporan
+      }
+      if (bangun === null) return 'Isi LAPORAN PAGI di bawah dulu — jadual hari ini disusun ikut waktu bangun.';
+      var j = coachJadual(bangun), kini = coachMinitKini(), aktif = null, seterus = null, i, x;
+      for (i = 0; i < j.tugas.length; i++) {
+        x = j.tugas[i];
+        if (x.min <= kini && kini < x.min + (COACH_TETINGKAP[x.jenis] || 30)) aktif = x;
+        if (!seterus && x.min > kini) seterus = x;
+      }
+      var teks;
+      if (aktif) teks = aktif.nama + ' (' + coachTeksMasa(aktif.min) + ')';
+      else teks = fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
+      if (seterus) teks += '\nSeterusnya: ' + seterus.nama + ' — ' + coachTeksMasa(seterus.min);
+      teks += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
+      return teks;
+    }
+
+    // ── Baca laporan hari ini + semalam (2 dokumen) ──
+    function coachMuatHari() {
+      var id = coachHariId(), sid = coachSemalamId(id);
+      return Promise.all([
+        kol('coach_hari').doc(id).get(), kol('coach_hari').doc(sid).get()
+      ]).then(function(r) {
+        coachHariData = {
+          id: id,
+          hari: (r[0] && r[0].exists) ? r[0].data() : {},
+          semalam: (r[1] && r[1].exists) ? r[1].data() : {}
+        };
+      });
+    }
+    function coachLukisHari() {
+      var h = coachHariData.hari, s = coachHariData.semalam, t = [];
+      if (h.laporanAt) {
+        var b = coachKeMinit(h.bangun), tdr = coachKeMinit(s.tidur);
+        t.push('Bangun: ' + coachTeksMasa(b) + ' · Tidur semalam: ' + coachTeksMasa(tdr) + ' · Lampu ditutup: ' + coachTeksMasa(coachKeMinit(s.lampu)));
+        if (b !== null && tdr !== null) {
+          var tempoh = (b + 1440) - (tdr < 12 * 60 ? tdr + 1440 : tdr); // tidur lepas tengah malam = hari ini
+          if (tempoh > 0 && tempoh < 24 * 60) t.push('Tempoh tidur: ' + Math.floor(tempoh / 60) + ' jam ' + (tempoh % 60) + ' min');
+        }
+      }
+      var p = h.pening || [];
+      if (p.length) t.push('Pening hari ini: ' + p.length + ' kali (' + p.join(', ') + ')');
+      el('coach-hari').textContent = t.join('\n');
+    }
+
+    // ── Panel LAPORAN PAGI: 3 soalan, pilih jam / minit / AM-PM, atau TAK INGAT ──
+    var COACH_SOALAN = [
+      { kunci: 'bangun', soalan: 'Pukul berapa awak BANGUN hari ini?' },
+      { kunci: 'tidur', soalan: 'Semalam pukul berapa awak TIDUR?' },
+      { kunci: 'lampu', soalan: 'Semalam pukul berapa LAMPU DITUTUP?' }
+    ];
+    var coachLap = null; // { langkah, jawapan:{}, jam, minit, pm }
+    function coachMulaLaporan() {
+      var d = new Date();
+      coachLap = { langkah: 0, jawapan: {}, jam: (d.getHours() % 12) || 12, minit: Math.floor(d.getMinutes() / 5) * 5, pm: d.getHours() >= 12 };
+      coachLukisLaporan();
+    }
+    function coachButangMasa(nilai, label, pilih, jenis) {
+      return '<td style="padding:2px;"><button type="button" data-cl="' + jenis + '" data-v="' + nilai + '" style="width:100%;padding:8px 0;font-size:0.95rem;font-weight:bold;border:2px solid #000;border-radius:6px;' +
+        (pilih ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + label + '</button></td>';
+    }
+    function coachLukisLaporan() {
+      var box = el('coach-laporan');
+      if (!coachLap) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      var s = COACH_SOALAN[coachLap.langkah], i, h = '';
+      h += '<div style="font-weight:bold;margin-bottom:4px;">LAPORAN PAGI ' + (coachLap.langkah + 1) + '/3</div>';
+      h += '<div style="margin-bottom:6px;">' + s.soalan + '</div>';
+      h += '<div style="font-size:0.8rem;">JAM</div><table style="width:100%;border-collapse:collapse;"><tr>';
+      for (i = 1; i <= 12; i++) { h += coachButangMasa(i, String(i), coachLap.jam === i, 'jam'); if (i === 6) h += '</tr><tr>'; }
+      h += '</tr></table><div style="font-size:0.8rem;margin-top:4px;">MINIT</div><table style="width:100%;border-collapse:collapse;"><tr>';
+      for (i = 0; i < 60; i += 5) { h += coachButangMasa(i, coachDua(i), coachLap.minit === i, 'minit'); if (i === 25) h += '</tr><tr>'; }
+      h += '</tr></table><table style="width:100%;border-collapse:collapse;margin-top:4px;"><tr>' +
+        coachButangMasa(0, 'AM (pagi)', !coachLap.pm, 'pm') + coachButangMasa(1, 'PM (ptg / mlm)', coachLap.pm, 'pm') + '</tr></table>';
+      h += '<div style="text-align:center;font-weight:bold;font-size:1.1rem;margin:6px 0;">' + coachLap.jam + ':' + coachDua(coachLap.minit) + (coachLap.pm ? ' PM' : ' AM') + '</div>';
+      h += '<button type="button" class="btn btn-primary" data-cl="simpan">' + (coachLap.langkah < 2 ? 'SETERUSNYA' : 'SIMPAN LAPORAN') + '</button>';
+      h += '<button type="button" class="btn" data-cl="takingat">TAK INGAT</button>';
+      box.innerHTML = h;
+      box.style.display = 'block';
+    }
+    el('coach-laporan').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-cl')) t = t.parentNode;
+      if (!t || t === this || !coachLap) return;
+      var jenis = t.getAttribute('data-cl'), v = parseInt(t.getAttribute('data-v'), 10);
+      if (jenis === 'jam') coachLap.jam = v;
+      else if (jenis === 'minit') coachLap.minit = v;
+      else if (jenis === 'pm') coachLap.pm = v === 1;
+      else if (jenis === 'simpan' || jenis === 'takingat') {
+        var h24 = (coachLap.jam % 12) + (coachLap.pm ? 12 : 0);
+        coachLap.jawapan[COACH_SOALAN[coachLap.langkah].kunci] = jenis === 'takingat' ? 'TAK_INGAT' : (coachDua(h24) + ':' + coachDua(coachLap.minit));
+        if (coachLap.langkah < 2) {
+          coachLap.langkah++;
+          // Lalai soalan malam: 11:00 PM
+          coachLap.jam = 11; coachLap.minit = 0; coachLap.pm = true;
+        } else {
+          coachSimpanLaporan();
+          return;
+        }
+      }
+      coachLukisLaporan();
+    };
+    function coachSimpanLaporan() {
+      var j = coachLap.jawapan, id = coachHariData.id || coachHariId(), sid = coachSemalamId(id);
+      el('coach-laporan').innerHTML = '<div>Menyimpan laporan...</div>';
+      Promise.all([
+        kol('coach_hari').doc(id).set({ bangun: j.bangun, laporanAt: Date.now() }, { merge: true }),
+        kol('coach_hari').doc(sid).set({ tidur: j.tidur, lampu: j.lampu }, { merge: true })
+      ]).then(function() {
+        coachLap = null;
+        coachLukisLaporan();
+        bukaCoach(false);
+      }).catch(function(e) {
+        el('coach-laporan').innerHTML = '<div>Gagal simpan: ' + ((e && e.message) || e) + '</div>';
+      });
     }
     function coachLukis(data) {
       var musim = COACH_MUSIM[data.musim] ? data.musim : 'CUTI';
@@ -9687,21 +9854,38 @@
 
       var now = new Date(), jam = now.getHours();
       var salam = jam >= 5 && jam < 12 ? 'Selamat pagi.' : (jam < 15 && jam >= 12 ? 'Selamat tengah hari.' : (jam >= 15 && jam < 19 ? 'Selamat petang.' : 'Selamat malam.'));
-      el('coach-bubble').textContent = salam + ' Sekarang pukul ' + coachDua(jam) + ':' + coachDua(now.getMinutes()) + '.\nSekarang: ' + coachTugasSekarang(fokus);
+      el('coach-bubble').textContent = salam + ' Sekarang pukul ' + coachTeksMasa(jam * 60 + now.getMinutes()) + '.\nSekarang: ' + coachTugasSekarang(fokus);
+      coachLukisHari();
     }
     function bukaCoach(paksa) {
       if (!currentUser) return;
       showScreen('screen-coach');
       el('coach-status').textContent = 'COACH · Memuatkan...';
       if (paksa) el('coach-bubble').textContent = 'Mengira semula...';
-      coachMuatData(paksa).then(coachLukis).catch(function(e) {
+      Promise.all([coachMuatData(paksa), coachMuatHari()]).then(function(r) {
+        coachLukis(r[0]);
+        // Laporan pagi belum diisi hari ini → tunjuk panel terus
+        if (!coachHariData.hari.laporanAt && !coachLap) coachMulaLaporan();
+      }).catch(function(e) {
         el('coach-status').textContent = 'COACH';
         el('coach-bubble').textContent = 'Gagal memuat data coach: ' + ((e && e.message) || e) + '\nTekan TERUSKAN KE GAME untuk main seperti biasa.';
       });
     }
     el('btn-coach-terus').onclick = function() { bukaMini(); };
     el('btn-coach-kira').onclick = function() { bukaCoach(true); };
-    el('btn-coach-menu').onclick = function() { showScreen('screen-menu'); };
+    el('btn-coach-menu').onclick = function() { coachLap = null; coachLukisLaporan(); showScreen('screen-menu'); };
+    el('btn-coach-lapor').onclick = function() { coachMulaLaporan(); try { window.scrollTo(0, 0); } catch (e) {} };
+    el('btn-coach-pening').onclick = function() {
+      if (!currentUser) return;
+      var d = new Date(), masa = coachDua(d.getHours()) + ':' + coachDua(d.getMinutes());
+      var id = coachHariData.id || coachHariId();
+      kol('coach_hari').doc(id).set({ pening: firebase.firestore.FieldValue.arrayUnion(masa) }, { merge: true }).then(function() {
+        var p = coachHariData.hari.pening || [];
+        if (p.indexOf(masa) === -1) p.push(masa);
+        coachHariData.hari.pening = p;
+        coachLukisHari();
+      }).catch(function(e) { el('coach-hari').textContent = 'Gagal simpan pening: ' + ((e && e.message) || e); });
+    };
 
     el('btn-go-game').onclick = function() { bukaCoach(false); };
 
