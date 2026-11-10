@@ -10038,9 +10038,11 @@
         '<pattern id="' + id + 'j" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#fff"/><rect width="3" height="6" fill="#000"/></pattern>' +
         '<pattern id="' + id + 't" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#fff"/><circle cx="3" cy="3" r="1.4" fill="#000"/></pattern>' +
         '<pattern id="' + id + 'k" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#fff"/><path d="M0 0 H7 M0 0 V7" stroke="#000" stroke-width="1.6"/></pattern>' +
+        '<pattern id="' + id + 'g" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#fff"/><rect y="0" width="6" height="2.6" fill="#000"/></pattern>' +
         '</defs>';
     }
-    function coachCorakIsi(id, c) { return c === 'h' ? '#000' : (c === 'p' ? '#fff' : 'url(#' + id + c + ')'); }
+    // Setiap bahagian MESTI bercorak (tiada bahagian kosong / putih): h hitam · j jalur senget · t titik · k petak · g garis melintang
+    function coachCorakIsi(id, c) { return c === 'h' ? '#000' : 'url(#' + id + c + ')'; }
     // Peratus bulat yang JUMLAH TEPAT 100 (kaedah baki terbesar)
     function coachPeratus(nilai) {
       var jum = 0, i, out = [], baki = [], tot = 0;
@@ -10055,8 +10057,8 @@
     function coachPie(hirisan, saiz, tengah, kecil) {
       var id = 'cp' + (++coachPieN) + '_', r = 46, cx = 50, cy = 50, jum = 0, i, a0 = -Math.PI / 2, s;
       for (i = 0; i < hirisan.length; i++) jum += hirisan[i].v;
+      if (!jum) return '<div style="display:inline-block;width:' + saiz + 'px;padding:' + Math.round(saiz / 3) + 'px 0;border:2px solid #000;border-radius:8px;font-size:0.8rem;font-weight:bold;text-align:center;">BELUM ADA DATA</div>';
       s = '<svg viewBox="0 0 100 100" width="' + saiz + '" height="' + saiz + '" xmlns="http://www.w3.org/2000/svg">' + coachCorakDefs(id);
-      if (!jum) s += '<circle cx="50" cy="50" r="' + r + '" fill="#fff" stroke="#000" stroke-width="2" stroke-dasharray="4 3"/>';
       for (i = 0; jum && i < hirisan.length; i++) {
         var v = hirisan[i].v, isi = coachCorakIsi(id, hirisan[i].c);
         if (!v) continue;
@@ -10112,11 +10114,11 @@
       if (km && km.st) masuk('Buah + sayur', km.st, km.g + '/' + COACH_SASARAN_BUAH_G + ' g'); else belum.push('Buah + sayur (' + (km ? km.g : 0) + ' g)');
       var nH = kump.HIJAU.length, nK = kump.KUNING.length, nM = kump.MERAH.length, p = coachPeratus([nH, nK, nM]);
       coachSkorKes = { h: hijau, n: dinilai, p: p[0] };
-      var pie = coachPie([{ v: nH, c: 'h' }, { v: nK, c: 'j' }, { v: nM, c: 'p' }], 130, dinilai ? p[0] + '%' : '-');
+      var pie = coachPie([{ v: nH, c: 'h' }, { v: nK, c: 'j' }, { v: nM, c: 't' }], 130, dinilai ? p[0] + '%' : '-');
       var leg = '<div style="font-size:0.85rem;line-height:1.5;">' +
         coachPetak('h') + '<b>SIAP ' + p[0] + '%</b> (' + nH + ')' + (nH ? ': ' + kump.HIJAU.join(', ') : '') + '<br>' +
         coachPetak('j') + '<b>SEPARUH ' + p[1] + '%</b> (' + nK + ')' + (nK ? ': ' + kump.KUNING.join(', ') : '') + '<br>' +
-        coachPetak('p') + '<b>TERLEPAS ' + p[2] + '%</b> (' + nM + ')' + (nM ? ': ' + kump.MERAH.join(', ') : '') + '</div>';
+        coachPetak('t') + '<b>TERLEPAS ' + p[2] + '%</b> (' + nM + ')' + (nM ? ': ' + kump.MERAH.join(', ') : '') + '</div>';
       var isi = '<table style="width:100%;border-collapse:collapse;"><tr><td style="width:135px;vertical-align:middle;text-align:center;">' + pie + '</td><td style="vertical-align:middle;padding-left:6px;">' + leg + '</td></tr></table>' +
         '<div style="font-size:0.8rem;margin-top:3px;">Pai = ' + dinilai + ' tugas yang sudah dinilai (jumlah 100%). Tengah = peratus SIAP.' +
         (belum.length ? '<br>Belum dikira: ' + belum.join(', ') + '.' : '') + (kecuali.length ? '<br>Tak dapat (sebab luar, tidak dikira): ' + kecuali.join(', ') + '.' : '') + '</div>' +
@@ -10293,12 +10295,12 @@
       coachDataAkhir = data;
       h += coachPaiKesihatan();
       // PAI 2 · USAHA: (a) English vs Kuliah — jumlah 100%, sasaran 50:50 · (b) dalam English: 5 bidang — jumlah 100% vs sasaran
-      var CORAK = ['h', 'j', 't', 'k', 'p'], i2, pEK = coachPeratus([jumlahEn, data.kuliah || 0]);
-      var pieEK = coachPie([{ v: jumlahEn, c: 'h' }, { v: data.kuliah || 0, c: 'p' }], 110);
+      var CORAK = ['h', 'j', 't', 'k', 'g'], i2, pEK = coachPeratus([jumlahEn, data.kuliah || 0]);
+      var pieEK = coachPie([{ v: jumlahEn, c: 'h' }, { v: data.kuliah || 0, c: 'j' }], 110);
       var isi2 = '<div style="font-size:0.85rem;font-weight:bold;">(a) ENGLISH vs KULIAH</div>' +
         '<table style="width:100%;border-collapse:collapse;"><tr><td style="width:115px;text-align:center;">' + pieEK + '</td><td style="font-size:0.85rem;line-height:1.6;padding-left:6px;">' +
         coachPetak('h') + '<b>English ' + pEK[0] + '%</b> (sasaran ' + set.englishKuliah[0] + '%) · <b>' + stEn + '</b><br>' +
-        coachPetak('p') + '<b>Kuliah ' + pEK[1] + '%</b> (sasaran ' + set.englishKuliah[1] + '%) · <b>' + stKu + '</b></td></tr></table>';
+        coachPetak('j') + '<b>Kuliah ' + pEK[1] + '%</b> (sasaran ' + set.englishKuliah[1] + '%) · <b>' + stKu + '</b></td></tr></table>';
       var nE = [], cE = [], cS = [], kE = [];
       for (i2 = 0; i2 < COACH_BIDANG.length; i2++) {
         var kb = COACH_BIDANG[i2][0];
@@ -10317,21 +10319,28 @@
         '<div style="font-size:0.8rem;">Bandingkan dua pai: hiris yang sama corak patut sama besar.</div>' +
         '<div style="margin:5px 0;font-size:0.85rem;border-top:1px solid #000;padding-top:4px;"><b>Solat</b> · ' + (solat ? 'purata ' + solat.purata + '/5 (7 hari) · <b>' + solat.st + '</b>' : 'belum direkod') + '</div>';
       h += coachKotakPai('PAI 2 · USAHA · seimbang ' + hijau + '/' + dinilaiU, isi2);
-      // PAI 3 · KESEIMBANGAN: dua donut — skor Kesihatan (% SIAP pai 1) & skor Usaha (% seimbang pai 2). Hitam = skor, putih = baki (jumlah 100%).
-      //   Beza ≤ 10 mata HIJAU · ≤ 20 KUNING · lain MERAH.
+      // PAI 3 · KESEIMBANGAN: setiap bahagian dapat MARKAH /10 ikut seimbang dalam pai sendiri.
+      //   Kesihatan /10 = % SIAP Pai 1 ÷ 10 · Usaha /10 = bahagian HIJAU Pai 2 ÷ 10 (dibundarkan).
+      //   Jumlah dua markah = 100% pai. Seimbang = separuh Kesihatan, separuh Usaha (50:50).
       var pK = coachSkorKes.n ? coachSkorKes.p : null;
       var pU = dinilaiU ? Math.round(hijau * 100 / dinilaiU) : null;
       var p3 = '';
       if (pK === null || pU === null) {
         p3 = '<div style="font-size:0.85rem;">Belum cukup data (isi laporan pagi & buat tugas kesihatan).</div>';
       } else {
-        var beza = Math.abs(pK - pU), st3 = beza <= 10 ? 'HIJAU' : (beza <= 20 ? 'KUNING' : 'MERAH');
-        p3 = '<table style="width:100%;border-collapse:collapse;"><tr>' +
-          '<td style="text-align:center;font-size:0.8rem;font-weight:bold;">KESIHATAN<br>' + coachPie([{ v: pK, c: 'h' }, { v: 100 - pK, c: 'p' }], 105, pK + '%') + '</td>' +
-          '<td style="text-align:center;font-size:0.8rem;font-weight:bold;">USAHA<br>' + coachPie([{ v: pU, c: 'h' }, { v: 100 - pU, c: 'p' }], 105, pU + '%') + '</td></tr></table>' +
-          '<div style="font-size:0.85rem;">' + coachPetak('h') + 'skor ' + coachPetak('p') + 'baki · Beza ' + beza + ' mata · <b>' + st3 + '</b>' +
-          (beza > 10 ? ' · Lebihkan <b>' + (pK < pU ? 'KESIHATAN' : 'USAHA') + '</b>' : ' · SEIMBANG') + '</div>' +
-          '<div style="font-size:0.8rem;">Kesihatan = % SIAP dalam Pai 1. Usaha = bahagian HIJAU dalam Pai 2 (' + hijau + ' daripada ' + dinilaiU + '). Dua donut patut hampir sama penuh.</div>';
+        var mK = Math.round(pK / 10), mU = Math.round(pU / 10), jm = mK + mU;
+        if (!jm) {
+          p3 = '<div style="font-size:0.85rem;">Kesihatan <b>0/10</b> · Usaha <b>0/10</b> — jumlah 0, belum ada pai. Buat tugas kesihatan & usaha dulu.</div>';
+        } else {
+          var pp = coachPeratus([mK, mU]), beza = Math.abs(pp[0] - 50), st3 = beza <= 5 ? 'HIJAU' : (beza <= 15 ? 'KUNING' : 'MERAH');
+          p3 = '<table style="width:100%;border-collapse:collapse;"><tr><td style="width:125px;text-align:center;">' + coachPie([{ v: mK, c: 'h' }, { v: mU, c: 'j' }], 120) + '</td>' +
+            '<td style="font-size:0.85rem;line-height:1.6;padding-left:6px;">' +
+            coachPetak('h') + '<b>Kesihatan ' + mK + '/10</b> → ' + pp[0] + '%<br>' +
+            coachPetak('j') + '<b>Usaha ' + mU + '/10</b> → ' + pp[1] + '%<br>' +
+            'Jumlah ' + jm + ' = 100% · <b>' + st3 + '</b>' +
+            (beza > 5 ? '<br>Lebihkan <b>' + (mK < mU ? 'KESIHATAN' : 'USAHA') + '</b>' : '<br>SEIMBANG (separuh-separuh)') + '</td></tr></table>' +
+            '<div style="font-size:0.8rem;">Markah Kesihatan = % SIAP Pai 1 (' + pK + '%) ÷ 10. Markah Usaha = bahagian HIJAU Pai 2 (' + hijau + ' daripada ' + dinilaiU + ' = ' + pU + '%) ÷ 10. Seimbang = pai separuh hitam, separuh jalur.</div>';
+        }
       }
       h += coachKotakPai('PAI 3 · KESEIMBANGAN', p3);
       el('coach-pai').innerHTML = h;
