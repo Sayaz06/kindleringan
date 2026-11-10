@@ -11210,6 +11210,21 @@
       var btnA = btn + 'background:#000;color:#fff;';
       if (sh.hs.siapAt) coachWK.aktif = false;
       if (coachWK.aktif) { box.innerHTML = coachWKLukis(sh, btn, btnA); try { window.scrollTo(0, 0); } catch (e) {} return; }
+      // KATALOG: semua latihan ikut kumpulan (LOWER / MIDDLE / UPPER × A / B) + gambar orang lidi + kod (contoh L-A3) untuk komen
+      if (coachUIS.katalog) {
+        var kg0 = coachUIS.katalog, kp = kg0.split(' '), sen = COACH_RUTIN[kp[0]][kp[1]], gk2, sk2;
+        h += '<button type="button" data-cs="katalogtutup" style="' + btn + '">‹ KEMBALI KE GYM</button><div style="font-weight:bold;font-size:1.1rem;margin:4px 0;">SEMUA LATIHAN</div><div>';
+        for (gk2 in COACH_RUTIN) for (sk2 in COACH_RUTIN[gk2]) h += '<button type="button" data-cs="katgrup" data-v="' + gk2 + ' ' + sk2 + '" style="' + ((gk2 + ' ' + sk2) === kg0 ? btnA : btn) + '">' + gk2 + ' ' + sk2 + '</button>';
+        h += '</div>';
+        for (i = 0; i < sen.length; i++) {
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:6px 0;"><div style="font-weight:bold;">' + kp[0].charAt(0) + '-' + kp[1] + (i + 1) + ' · ' + sen[i][1] + '</div>' +
+            '<div style="font-size:0.78rem;">' + (sen[i][2] === 'saat' ? 'tahan (saat)' : 'rep') + (sen[i][3] !== null && sen[i][3] !== 0 ? ' · guna beban' : '') + (sen[i][4] ? ' · setiap sisi' : '') + '</div>' + coachLidi(sen[i][0]) + '</div>';
+        }
+        h += '<div style="font-size:0.8rem;">Gambar tak jelas? Beritahu kod (contoh ' + kp[0].charAt(0) + '-' + kp[1] + '3) untuk dibetulkan.</div>';
+        box.innerHTML = h;
+        try { window.scrollTo(0, 0); } catch (e) {}
+        return;
+      }
       if (coachUIS.buka && coachSenLatihan(coachUIS.buka)) {
         box.innerHTML = coachLukisStesen(sh, btn, btnA);
         try { box.scrollIntoView(); } catch (e) {}
@@ -11253,6 +11268,7 @@
           '<b>' + (i + 1) + '. ' + x[1] + '</b><br>' + COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') + (st ? ' · <b>' + st + '</b>' : '') + '</button>';
       }
       h += '</div><div style="font-size:0.75rem;">Tekan nama latihan untuk tutorial / log manual.</div>';
+      h += '<button type="button" data-cs="katalog" style="' + btn + 'margin-top:4px;">SEMUA LATIHAN (ikut kumpulan + gambar)</button>';
       if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">' + (!n && coachSenSemuaRehat(sh) ? 'REHAT OTOT: regangan / jalan ringan 10 min → SELESAI' : 'SELESAI SESI ' + sh.g + ' ' + sh.s) + '</button></div>';
       if (sh.hs.rehat) h += '<div style="font-size:0.8rem;">Hari ini REHAT OTOT (regangan / jalan ringan). Rotasi diteruskan; siri ' + sh.g + ' ' + sh.s + ' diulang lain kali.</div>';
       if (sh.hs.siapAt && !sh.hs.rehat) h += '<div style="font-size:0.8rem;">Tekan stesen untuk lihat "Sesi depan".</div>';
@@ -11276,6 +11292,9 @@
       if (!t || t === this || !currentUser) return;
       var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
       if (cs.indexOf('wk') === 0) { coachWKKlik(cs, t, sh, now); return; }
+      if (cs === 'katalog') { coachUIS.katalog = sh.g + ' ' + sh.s; coachLukisSenaman(); return; }
+      if (cs === 'katgrup') { coachUIS.katalog = t.getAttribute('data-v'); coachLukisSenaman(); return; }
+      if (cs === 'katalogtutup') { coachUIS.katalog = ''; coachLukisSenaman(); return; }
       if (cs === 'selesai') coachWK.aktif = false;
       if (cs === 'dapat') { coachUIS.dapat = true; coachLukisSenaman(); return; }
       if (cs === 'dapatbatal') { coachUIS.dapat = false; coachLukisSenaman(); return; }
