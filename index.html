@@ -10905,6 +10905,116 @@
       farmer: ['Pegang dumbbell di kedua-dua tangan di sisi, berdiri tegak.', 'Genggam kuat, tahan masa ditetapkan.', 'Akhir sesi: pusing pergelangan (tapak ke atas / bawah) perlahan beberapa kali.', 'AWAS: bahu ke bawah & belakang.'],
       leherB: ['Chin tuck: duduk tegak, tarik dagu ke belakang (dagu berlapis), tahan.', 'Prone neck extension: meniarap, angkat kepala sedikit, pandang lantai, tahan.', 'Side-lying neck raise: baring mengiring, angkat kepala sedikit ke arah bahu atas, tahan; tukar sisi.', 'AWAS: gerak kecil & perlahan; henti jika pening / kebas / sakit.']
     };
+    // ══ TUTORIAL ORANG LIDI: 2 gambar (1 MULA → 2 AKHIR, atau TAHAN) untuk setiap latihan — dilukis SVG, hitam-putih, tiada animasi (mesra e-ink) ══
+    // Pose: h kepala · s bahu · p pinggul · k/f/t lutut/buku lali/hujung kaki · k2/f2/t2 kaki kedua · e/w siku/tangan · e2/w2 tangan kedua. Lantai y = 92.
+    // Gambar dipermudahkan ikut JENIS pergerakan (bukan anatomi tepat) — baca langkah tutorial untuk butiran.
+    var COACH_LIDI = {
+      squat: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [52, 70], f: [50, 90], t: [57, 91], e: [56, 34], w: [52, 28] },
+        b: { h: [42, 36], s: [44, 45], p: [32, 62], k: [54, 64], f: [50, 90], t: [57, 91], e: [52, 54], w: [50, 48] } },
+      sumo: { a: { h: [50, 12], s: [50, 22], p: [50, 48], k: [38, 70], f: [32, 90], k2: [62, 70], f2: [68, 90], e: [46, 36], w: [50, 44], e2: [54, 36], w2: [50, 44] },
+        b: { h: [50, 32], s: [50, 42], p: [50, 64], k: [30, 66], f: [32, 90], k2: [70, 66], f2: [68, 90], e: [46, 54], w: [50, 62], e2: [54, 54], w2: [50, 62] } },
+      hinge: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [51, 70], f: [50, 90], t: [57, 91], e: [51, 36], w: [51, 48] },
+        b: { h: [74, 40], s: [66, 43], p: [42, 50], k: [47, 70], f: [46, 90], t: [53, 91], e: [66, 56], w: [66, 68] } },
+      split: { alat: 'bangku', a: { h: [44, 12], s: [44, 22], p: [44, 50], k: [36, 70], f: [34, 90], t: [28, 91], k2: [56, 66], f2: [76, 66], e: [44, 36], w: [44, 48] },
+        b: { h: [44, 30], s: [44, 40], p: [44, 66], k: [28, 68], f: [34, 90], t: [28, 91], k2: [54, 86], f2: [76, 66], e: [44, 54], w: [44, 66] } },
+      bridge: { a: { h: [10, 84], s: [18, 87], p: [44, 87], k: [58, 70], f: [66, 90], t: [72, 91], e: [28, 89], w: [38, 90] },
+        b: { h: [10, 84], s: [18, 85], p: [42, 70], k: [58, 66], f: [66, 90], t: [72, 91], e: [28, 89], w: [38, 90] } },
+      slbridge: { a: { h: [10, 84], s: [18, 87], p: [44, 87], k: [58, 70], f: [66, 90], t: [72, 91], k2: [60, 74], f2: [78, 66], e: [28, 89], w: [38, 90] },
+        b: { h: [10, 84], s: [18, 85], p: [42, 70], k: [58, 66], f: [66, 90], t: [72, 91], k2: [62, 62], f2: [82, 54], e: [28, 89], w: [38, 90] } },
+      kakiKerusi: { alat: 'kerusi', a: { h: [10, 84], s: [18, 87], p: [44, 87], k: [60, 74], f: [76, 66], e: [28, 89], w: [38, 90] },
+        b: { h: [10, 84], s: [18, 85], p: [44, 72], k: [60, 66], f: [76, 66], e: [28, 89], w: [38, 90] } },
+      angkatSisi: { a: { h: [10, 80], s: [18, 84], p: [46, 85], k: [66, 86], f: [86, 87], k2: [66, 89], f2: [86, 90], e: [14, 76], w: [8, 72] },
+        b: { h: [10, 80], s: [18, 84], p: [46, 85], k: [66, 78], f: [84, 70], k2: [66, 89], f2: [86, 90], e: [14, 76], w: [8, 72] } },
+      clamshell: { a: { h: [10, 80], s: [18, 84], p: [44, 85], k: [58, 82], f: [72, 87], k2: [58, 88], f2: [72, 90], e: [14, 76], w: [8, 72] },
+        b: { h: [10, 80], s: [18, 84], p: [44, 85], k: [56, 68], f: [72, 86], k2: [58, 88], f2: [72, 90], e: [14, 76], w: [8, 72] } },
+      calf: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [51, 36], w: [51, 48] },
+        b: { h: [50, 6], s: [50, 16], p: [50, 44], k: [50, 64], f: [50, 84], t: [56, 91], e: [51, 30], w: [51, 42] } },
+      calfDuduk: { alat: 'kerusiSisi', a: { h: [34, 30], s: [34, 40], p: [34, 66], k: [58, 66], f: [58, 90], t: [65, 91], e: [44, 58], w: [56, 62] },
+        b: { h: [34, 28], s: [34, 38], p: [34, 64], k: [58, 60], f: [58, 84], t: [65, 91], e: [44, 54], w: [56, 58] } },
+      jariAtas: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [51, 36], w: [51, 48] },
+        b: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [56, 83], e: [51, 36], w: [51, 48] } },
+      heelWalk: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [44, 70], f: [40, 90], t: [46, 83], k2: [56, 70], f2: [60, 90], t2: [66, 83], e: [44, 36], w: [42, 48], e2: [56, 36], w2: [58, 48] } },
+      wallSit: { alat: 'dinding', a: { h: [24, 30], s: [24, 40], p: [24, 64], k: [48, 64], f: [48, 90], t: [55, 91], e: [30, 52], w: [38, 60] } },
+      sidePlank: { a: { h: [14, 56], s: [20, 62], p: [50, 74], k: [68, 81], f: [86, 88], e: [20, 80], w: [32, 90] } },
+      copenhagen: { alat: 'bangkuRendah', a: { h: [14, 58], s: [20, 64], p: [48, 72], k: [66, 74], f: [84, 76], e: [20, 82], w: [32, 90] } },
+      pushUp: { a: { h: [86, 66], s: [78, 70], p: [50, 77], k: [32, 83], f: [14, 89], e: [78, 80], w: [78, 90] },
+        b: { h: [86, 82], s: [78, 84], p: [50, 86], k: [32, 88], f: [14, 90], e: [68, 80], w: [78, 90] } },
+      pushKerusi: { alat: 'kerusiDepan', a: { h: [80, 46], s: [74, 50], p: [50, 64], k: [32, 77], f: [16, 89], e: [80, 56], w: [84, 64] },
+        b: { h: [82, 56], s: [76, 60], p: [50, 70], k: [32, 80], f: [16, 89], e: [70, 58], w: [84, 64] } },
+      pushTurun: { alat: 'kerusiBelakang', a: { h: [86, 72], s: [78, 74], p: [50, 72], k: [32, 69], f: [14, 66], e: [78, 82], w: [78, 90] },
+        b: { h: [86, 84], s: [78, 84], p: [50, 78], k: [32, 72], f: [14, 66], e: [68, 80], w: [78, 90] } },
+      tekanBaring: { a: { h: [10, 84], s: [18, 87], p: [44, 87], k: [58, 72], f: [66, 90], t: [72, 91], e: [20, 72], w: [20, 58] },
+        b: { h: [10, 84], s: [18, 87], p: [44, 87], k: [58, 72], f: [66, 90], t: [72, 91], e: [26, 88], w: [20, 74] } },
+      pullover: { a: { h: [14, 84], s: [22, 87], p: [48, 87], k: [62, 72], f: [70, 90], t: [76, 91], e: [12, 82], w: [2, 80] },
+        b: { h: [14, 84], s: [22, 87], p: [48, 87], k: [62, 72], f: [70, 90], t: [76, 91], e: [22, 72], w: [22, 58] } },
+      row: { alat: 'bangku', a: { h: [70, 40], s: [62, 44], p: [36, 48], k: [38, 70], f: [38, 90], t: [44, 91], e: [68, 52], w: [70, 60], e2: [60, 58], w2: [60, 70] },
+        b: { h: [70, 40], s: [62, 44], p: [36, 48], k: [38, 70], f: [38, 90], t: [44, 91], e: [68, 52], w: [70, 60], e2: [50, 38], w2: [56, 50] } },
+      revFly: { a: { h: [72, 40], s: [64, 43], p: [40, 50], k: [45, 70], f: [44, 90], t: [51, 91], e: [64, 56], w: [64, 68] },
+        b: { h: [72, 40], s: [64, 43], p: [40, 50], k: [45, 70], f: [44, 90], t: [51, 91], e: [58, 34], w: [52, 28] } },
+      deadBug: { a: { h: [10, 84], s: [18, 87], p: [44, 87], k: [44, 68], f: [62, 68], e: [18, 74], w: [18, 60] },
+        b: { h: [10, 84], s: [18, 87], p: [44, 87], k: [44, 68], f: [62, 68], k2: [62, 84], f2: [84, 86], e: [18, 74], w: [18, 60], e2: [8, 80], w2: [0, 76] } },
+      birdDog: { a: { h: [80, 50], s: [72, 54], p: [44, 56], k: [44, 90], f: [26, 90], e: [72, 72], w: [72, 90] },
+        b: { h: [80, 50], s: [72, 54], p: [44, 56], k: [44, 90], f: [26, 90], k2: [26, 56], f2: [8, 56], e: [72, 72], w: [72, 90], e2: [86, 52], w2: [98, 50] } },
+      hollow: { a: { h: [22, 76], s: [28, 80], p: [50, 86], k: [68, 82], f: [86, 76], e: [16, 74], w: [6, 70] } },
+      revCrunch: { a: { h: [10, 84], s: [18, 87], p: [44, 87], k: [44, 68], f: [62, 68], e: [26, 89], w: [36, 90] },
+        b: { h: [10, 84], s: [18, 87], p: [44, 80], k: [42, 58], f: [56, 54], e: [26, 89], w: [36, 90] } },
+      russian: { a: { h: [28, 52], s: [32, 60], p: [42, 86], k: [60, 68], f: [76, 80], e: [44, 66], w: [54, 70] },
+        b: { h: [28, 52], s: [32, 60], p: [42, 86], k: [60, 68], f: [76, 80], e: [36, 74], w: [30, 86] } },
+      berdiriPegang: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [51, 36], w: [51, 48] } },
+      shrug: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [51, 36], w: [51, 48] },
+        b: { h: [50, 10], s: [50, 17], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [51, 32], w: [51, 44] } },
+      sideBend: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [44, 70], f: [42, 90], k2: [56, 70], f2: [58, 90], e: [42, 36], w: [40, 48], e2: [58, 36], w2: [60, 48] },
+        b: { h: [62, 16], s: [58, 25], p: [50, 50], k: [44, 70], f: [42, 90], k2: [56, 70], f2: [58, 90], e: [48, 40], w: [42, 50], e2: [66, 38], w2: [70, 50] } },
+      superman: { a: { h: [86, 84], s: [78, 87], p: [50, 87], k: [32, 88], f: [12, 89], e: [88, 89], w: [98, 89] },
+        b: { h: [88, 76], s: [78, 80], p: [50, 87], k: [32, 83], f: [12, 77], e: [90, 74], w: [100, 68] } },
+      plank: { a: { h: [84, 72], s: [76, 76], p: [50, 80], k: [32, 84], f: [12, 89], e: [76, 89], w: [88, 90] } },
+      tekanAtas: { alat: 'kerusiSisi', a: { h: [40, 30], s: [40, 40], p: [40, 66], k: [62, 66], f: [62, 90], t: [69, 91], e: [48, 46], w: [46, 36] },
+        b: { h: [40, 30], s: [40, 40], p: [40, 66], k: [62, 66], f: [62, 90], t: [69, 91], e: [44, 26], w: [42, 12] } },
+      lateral: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [45, 70], f: [44, 90], k2: [55, 70], f2: [56, 90], e: [42, 34], w: [40, 46], e2: [58, 34], w2: [60, 46] },
+        b: { h: [50, 12], s: [50, 22], p: [50, 50], k: [45, 70], f: [44, 90], k2: [55, 70], f2: [56, 90], e: [36, 23], w: [24, 22], e2: [64, 23], w2: [76, 22] } },
+      curl: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [51, 36], w: [51, 48] },
+        b: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [51, 36], w: [58, 26] } },
+      triAtas: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [54, 6], w: [44, 14] },
+        b: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [52, 6], w: [52, -6] } },
+      pergelangan: { alat: 'kerusiSisi', a: { h: [36, 30], s: [36, 40], p: [36, 66], k: [60, 66], f: [60, 90], t: [67, 91], e: [46, 60], w: [64, 62] },
+        b: { h: [36, 30], s: [36, 40], p: [36, 66], k: [60, 66], f: [60, 90], t: [67, 91], e: [46, 60], w: [64, 54] } },
+      leher: { a: { h: [50, 12], s: [50, 22], p: [50, 50], k: [50, 70], f: [50, 90], t: [57, 91], e: [62, 24], w: [56, 12] } },
+      putarLuar: { a: { h: [10, 80], s: [18, 84], p: [46, 85], k: [66, 86], f: [86, 87], e: [28, 84], w: [30, 92] },
+        b: { h: [10, 80], s: [18, 84], p: [46, 85], k: [66, 86], f: [86, 87], e: [28, 84], w: [30, 72] } },
+      ytHold: { a: { h: [86, 84], s: [78, 87], p: [50, 87], k: [32, 88], f: [12, 89], e: [88, 82], w: [98, 76] } }
+    };
+    var COACH_LIDI_PETA = {
+      gobletSquat: 'squat', rdl: 'hinge', hipThrust: 'bridge', bridgeBantal: 'bridge', abduksi: 'angkatSisi', calfBerdiri: 'calf', toeRaise: 'jariAtas', wallSit: 'wallSit',
+      bulgarian: 'split', hamBridge: 'kakiKerusi', slBridge: 'slbridge', sumoSquat: 'sumo', copenhagen: 'copenhagen', clamshell: 'clamshell', calfDuduk: 'calfDuduk', heelWalk: 'heelWalk', bridgeHold: 'bridge',
+      pushUp: 'pushUp', floorPress: 'tekanBaring', row: 'row', deadBug: 'deadBug', sidePlank: 'sidePlank', sideBend: 'sideBend', birdDog: 'birdDog', hollow: 'hollow',
+      inclinePush: 'pushKerusi', pullover: 'pullover', rowTahan: 'row', revCrunch: 'revCrunch', russian: 'russian', suitcase: 'berdiriPegang', superman: 'superman', plank: 'plank',
+      ohp: 'tekanAtas', lateral: 'lateral', revFly: 'revFly', curl: 'curl', ohTri: 'triAtas', shrug: 'shrug', wrist: 'pergelangan', leherIso: 'leher',
+      declinePush: 'pushTurun', scaption: 'lateral', ytHold: 'ytHold', extRot: 'putarLuar', hammer: 'curl', slTri: 'triAtas', farmer: 'berdiriPegang', leherB: 'leher'
+    };
+    function coachLidiSvg(pose, alat, beban) {
+      function g(a, b) { return a && b ? '<path d="M' + a[0] + ' ' + a[1] + ' L' + b[0] + ' ' + b[1] + '" stroke="#000" stroke-width="3.2" stroke-linecap="round"/>' : ''; }
+      function db(w) { return w ? '<rect x="' + (w[0] - 5) + '" y="' + (w[1] - 2.5) + '" width="10" height="5" rx="1.5" fill="#000"/>' : ''; }
+      var P = pose, s = '<svg viewBox="-4 -10 108 106" width="135" height="132" xmlns="http://www.w3.org/2000/svg"><path d="M-4 92 H104" stroke="#000" stroke-width="1.5"/>';
+      if (alat === 'bangku') s += '<rect x="66" y="62" width="30" height="6" fill="#fff" stroke="#000" stroke-width="2"/><path d="M70 68 V92 M92 68 V92" stroke="#000" stroke-width="2"/>';
+      if (alat === 'bangkuRendah') s += '<rect x="72" y="78" width="28" height="5" fill="#fff" stroke="#000" stroke-width="2"/><path d="M76 83 V92 M96 83 V92" stroke="#000" stroke-width="2"/>';
+      if (alat === 'kerusi') s += '<rect x="70" y="66" width="22" height="5" fill="#fff" stroke="#000" stroke-width="2"/><path d="M74 71 V92 M88 71 V92" stroke="#000" stroke-width="2"/>';
+      if (alat === 'kerusiSisi') s += '<rect x="20" y="66" width="26" height="5" fill="#fff" stroke="#000" stroke-width="2"/><path d="M23 71 V92 M43 71 V92 M22 66 V40" stroke="#000" stroke-width="2"/>';
+      if (alat === 'kerusiDepan') s += '<rect x="78" y="64" width="20" height="5" fill="#fff" stroke="#000" stroke-width="2"/><path d="M82 69 V92 M94 69 V92" stroke="#000" stroke-width="2"/>';
+      if (alat === 'kerusiBelakang') s += '<rect x="2" y="66" width="20" height="5" fill="#fff" stroke="#000" stroke-width="2"/><path d="M5 71 V92 M19 71 V92" stroke="#000" stroke-width="2"/>';
+      if (alat === 'dinding') s += '<path d="M17 -8 V92" stroke="#000" stroke-width="3"/>';
+      s += g(P.s, P.p) + g(P.p, P.k) + g(P.k, P.f) + g(P.f, P.t) + g(P.p, P.k2) + g(P.k2, P.f2) + g(P.f2, P.t2) + g(P.s, P.e) + g(P.e, P.w) + g(P.s, P.e2) + g(P.e2, P.w2) + g(P.h, P.s);
+      s += '<circle cx="' + P.h[0] + '" cy="' + P.h[1] + '" r="6" fill="#fff" stroke="#000" stroke-width="3"/>';
+      if (beban) s += db(P.w) + db(P.w2);
+      return s + '</svg>';
+    }
+    function coachLidi(k) {
+      var t = COACH_LIDI[COACH_LIDI_PETA[k]], x = coachSenLatihan(k);
+      if (!t) return '';
+      var beban = x && x[3] !== null && x[3] !== 0, kot = '<td style="text-align:center;vertical-align:top;font-size:0.8rem;font-weight:bold;">';
+      if (!t.b) return '<table style="margin:4px auto;border-collapse:collapse;"><tr>' + kot + coachLidiSvg(t.a, t.alat, beban) + '<br>TAHAN</td></tr></table>';
+      return '<table style="margin:4px auto;border-collapse:collapse;"><tr>' + kot + coachLidiSvg(t.a, t.alat, beban) + '<br>1. MULA</td>' +
+        '<td style="vertical-align:middle;font-size:1.4rem;font-weight:bold;padding:0 2px;">›</td>' + kot + coachLidiSvg(t.b, t.alat, beban) + '<br>2. AKHIR</td></tr></table>';
+    }
     function coachLukisStesen(sh, btn, btnA) {
       var k = coachUIS.buka, x = coachSenLatihan(k), lat = sh.hs.latihan || {}, r = lat[k], tgt = coachSenTarget(k, x), kgMula = tgt.kg, h = '', j, b;
       var rehat = !r && !sh.hs.siapAt ? coachLatihanRehat(x, sh) : '';
@@ -10913,7 +11023,7 @@
       h += '<div style="font-weight:bold;font-size:1.1rem;margin:4px 0 2px;">' + x[1] + '</div>';
       h += '<div style="font-size:0.85rem;">Sasaran: ' + COACH_SET + ' × ' + tgt.u + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') +
         (kgMula !== null && kgMula !== undefined ? ' · ' + coachTeksBeban(kgMula) : '') + (tgt.tahan ? ' · <b>TAHAN</b>' : '') + ' · rehat 60–90 saat antara set</div>';
-      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:5px 0;font-size:0.85rem;line-height:1.4;"><b>TUTORIAL</b>';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:5px 0;font-size:0.85rem;line-height:1.4;"><b>TUTORIAL</b>' + coachLidi(k);
       for (j = 0; j < tut.length; j++) h += '<div style="margin-top:3px;">' + (tut[j].indexOf('AWAS') === 0 ? '<b>' + tut[j] + '</b>' : (j + 1) + '. ' + tut[j]) + '</div>';
       h += '</div>';
       if (r) h += '<div style="font-size:0.82rem;">DILOG: ' + (r.kg !== null && r.kg !== undefined ? coachTeksBeban(r.kg) + ' · ' : '') + r.rep.join(' / ') + (x[2] === 'saat' ? ' saat' : ' rep') + ' · <b>' + r.rasa + '</b>' +
@@ -10936,12 +11046,170 @@
       }
       return h;
     }
+    // ══ GYM: MOD SENAMAN (gaya app workout) — MULA SENAMAN → set → REHAT (kiraan) → set → … → RASA → latihan seterusnya → TAMAT ══
+    // Satu skrin satu set: nama, "Set n / N", bulatan besar (beban + rep + SIAP), − / + ubah rep sebenar. REHAT: bulatan kiraan detik (dikemas kini
+    // setiap 5 saat — mesra e-ink) + STOP. Lepas set akhir: RASA (RINGAN / OK / BERAT / SAKIT) → log disimpan (sama seperti log stesen) → progresi.
+    var COACH_REHAT_SAAT = 60;
+    var coachWK = { aktif: false, senarai: [], i: 0, set: 0, rep: 0, kg: null, reps: [], fasa: 'set', hingga: 0, lepas: '', tut: false };
+    var coachWKTimer = null;
+    function coachWKMula(sh) {
+      var lat = sh.hs.latihan || {}, s = [], i;
+      for (i = 0; i < sh.senarai.length; i++) if (!lat[sh.senarai[i][0]] && !coachLatihanRehat(sh.senarai[i], sh)) s.push(sh.senarai[i][0]);
+      if (!s.length) { alert('Tiada latihan tinggal untuk dibuat hari ini.'); return; }
+      coachWK = { aktif: true, senarai: s, i: 0, set: 0, rep: 0, kg: null, reps: [], fasa: 'set', hingga: 0, lepas: '', tut: false, mula: Date.now() };
+      coachWKSiapLatihan();
+      if (!coachWKTimer) coachWKTimer = setInterval(function() {
+        if (!coachWK.aktif || coachWK.fasa !== 'rehat') return;
+        var a = document.querySelector('.screen.active');
+        if (!a || a.id !== 'screen-gym') return;
+        if (Date.now() >= coachWK.hingga) coachWK.fasa = coachWK.lepas;
+        coachLukisSenaman();
+      }, 5000);
+    }
+    function coachWKSiapLatihan() {
+      var k = coachWK.senarai[coachWK.i], x = coachSenLatihan(k), tgt = coachSenTarget(k, x);
+      coachWK.set = 0; coachWK.reps = []; coachWK.rep = tgt.u; coachWK.kg = x[3] === null ? null : tgt.kg; coachWK.tut = false;
+    }
+    function coachWKRehat(lepas) { coachWK.fasa = 'rehat'; coachWK.lepas = lepas; coachWK.hingga = Date.now() + COACH_REHAT_SAAT * 1000; }
+    function coachWKBulatan(isi, pecahan) {
+      // Bulatan besar; pecahan (0–1) = baki masa rehat dilukis sebagai hirisan hitam nipis di tepi
+      var s = '<svg viewBox="0 0 200 200" width="230" height="230" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="94" fill="#fff" stroke="#000" stroke-width="4"/>';
+      if (pecahan !== undefined && pecahan > 0) {
+        if (pecahan >= 1) s += '<circle cx="100" cy="100" r="94" fill="#000"/>';
+        else {
+          var a = -Math.PI / 2 + pecahan * 2 * Math.PI, bs = pecahan > 0.5 ? 1 : 0;
+          s += '<path d="M100 100 L100 6 A94 94 0 ' + bs + ' 1 ' + (100 + 94 * Math.cos(a)).toFixed(1) + ' ' + (100 + 94 * Math.sin(a)).toFixed(1) + ' Z" fill="#000"/>';
+        }
+        s += '<circle cx="100" cy="100" r="74" fill="#fff" stroke="#000" stroke-width="2"/>';
+      }
+      return s + isi + '</svg>';
+    }
+    function coachWKLukis(sh, btn, btnA) {
+      var W = coachWK, k = W.senarai[W.i], x = coachSenLatihan(k), saat = x[2] === 'saat', h = '', i, uTeks = saat ? 'saat' : 'rep';
+      var bb = 'display:block;width:100%;padding:10px;margin:6px 0;font-size:1.1rem;font-weight:bold;border:3px solid #000;border-radius:10px;background:#fff;color:#000;';
+      h += '<div style="overflow:hidden;"><button type="button" data-cs="wkkeluar" style="' + btn + 'float:left;">‹ KELUAR</button>' +
+        '<div style="text-align:right;font-size:0.85rem;font-weight:bold;padding-top:6px;">SENAMAN · ' + sh.g + ' ' + sh.s + '</div></div>';
+      // Deretan latihan (nombor) — semasa bergaris tebal, siap hitam
+      var deret = '<div style="text-align:center;margin-top:8px;">';
+      for (i = 0; i < W.senarai.length; i++) {
+        var dah = i < W.i || (i === W.i && W.fasa === 'tamat');
+        deret += '<span style="display:inline-block;min-width:22px;margin:2px;padding:2px 4px;border:' + (i === W.i ? '3px' : '2px') + ' solid #000;border-radius:5px;font-size:0.8rem;font-weight:bold;' +
+          (dah ? 'background:#000;color:#fff;' : '') + (i === W.i && W.fasa !== 'tamat' ? 'text-decoration:underline;' : '') + '">' + (i + 1) + '</span>';
+      }
+      deret += '</div>';
+      if (W.fasa === 'tamat') {
+        var lat = sh.hs.latihan || {};
+        // Ringkasan ala app: masa · jumlah beban diangkat (kg × rep) · bar kumpulan otot (ikut bilangan set)
+        var minit = Math.max(1, Math.round((Date.now() - (W.mula || Date.now())) / 60000)), vol = 0, otot = {}, jumSet = 0, gk, q;
+        for (i = 0; i < W.senarai.length; i++) {
+          var rr = lat[W.senarai[i]], xv = coachSenLatihan(W.senarai[i]);
+          if (!rr) continue;
+          var sumRep = 0; for (q = 0; q < rr.rep.length; q++) sumRep += rr.rep[q];
+          if (rr.kg && xv[2] !== 'saat') vol += rr.kg * sumRep;
+          var gs = xv[5].split(',');
+          for (q = 0; q < gs.length; q++) otot[gs[q]] = (otot[gs[q]] || 0) + rr.rep.length / gs.length;
+          jumSet += rr.rep.length;
+        }
+        h += '<div style="text-align:center;font-size:1.5rem;font-weight:bold;margin:12px 0 2px;">SESI SIAP!</div>' +
+          '<table style="width:100%;border-collapse:collapse;text-align:center;margin:4px 0;"><tr><td><b style="font-size:1.2rem;">' + minit + ' min</b><br><small>masa</small></td>' +
+          '<td><b style="font-size:1.2rem;">' + Math.round(vol) + ' kg</b><br><small>jumlah diangkat</small></td><td><b style="font-size:1.2rem;">' + jumSet + '</b><br><small>set</small></td></tr></table>';
+        h += '<table style="margin:4px auto;border-collapse:collapse;font-size:0.85rem;">';
+        for (gk in otot) if (otot.hasOwnProperty(gk) && COACH_RECOVERY[gk]) {
+          var pc = Math.round(otot[gk] * 100 / (jumSet || 1));
+          h += '<tr><td style="text-align:right;padding:1px 4px;">' + COACH_RECOVERY[gk][0] + '</td><td style="padding:1px 4px;font-weight:bold;">' + pc + '%</td>' +
+            '<td style="padding:1px 4px;"><span style="display:inline-block;height:10px;width:' + Math.max(2, Math.round(pc * 1.2)) + 'px;background:#000;"></span></td></tr>';
+        }
+        h += '</table><div style="font-size:0.85rem;line-height:1.5;border-top:1px solid #000;padding-top:3px;">';
+        for (i = 0; i < W.senarai.length; i++) {
+          var r = lat[W.senarai[i]], xx = coachSenLatihan(W.senarai[i]);
+          if (r) h += '<b>' + xx[1] + '</b> · ' + (r.kg !== null && r.kg !== undefined ? coachTeksBeban(r.kg) + ' · ' : '') + r.rep.join(' / ') + (xx[2] === 'saat' ? ' saat' : ' rep') + ' · ' + r.rasa + '<br>';
+        }
+        h += '</div><button type="button" data-cs="selesai" style="' + bb + 'background:#000;color:#fff;">SELESAI SESI · AMBIL RINGGIT KUNING</button>' +
+          '<div style="font-size:0.8rem;text-align:center;">Lepas ini terus buat rutin FACE ' + sh.f + '.</div>';
+        return h + deret;
+      }
+      h += '<div style="text-align:center;font-size:1.3rem;font-weight:bold;margin-top:8px;">' + x[1] + '</div>';
+      if (W.fasa === 'rehat') {
+        var baki = Math.max(0, W.hingga - Date.now()), bakiS = Math.ceil(baki / 5000) * 5;
+        h += '<div style="text-align:center;font-size:1.1rem;margin:4px 0;">REHAT</div>';
+        h += '<div style="text-align:center;"><button type="button" data-cs="wkstop" style="background:none;border:0;padding:0;">' + coachWKBulatan(
+          '<text x="100" y="118" font-size="56" text-anchor="middle" fill="#000">' + bakiS + '</text><text x="100" y="150" font-size="18" font-weight="bold" text-anchor="middle" fill="#000">STOP</text>', baki / (COACH_REHAT_SAAT * 1000)) + '</button></div>';
+        var nk = W.lepas === 'rasa' ? '' : (W.set > 0 ? 'Set ' + (W.set + 1) + ' / ' + COACH_SET : x[1]);
+        h += '<div style="text-align:center;font-size:0.85rem;margin-top:4px;">Seterusnya: <b>' + nk + '</b></div>';
+        return h + deret;
+      }
+      if (W.fasa === 'rasa') {
+        h += '<div style="text-align:center;font-size:1rem;margin:6px 0;">Siap ' + COACH_SET + ' set: ' + W.reps.join(' / ') + ' ' + uTeks + '.<br><b>Rasa macam mana?</b></div>' +
+          '<button type="button" data-cs="wkrasa" data-v="RINGAN" style="' + bb + '">RINGAN<br><small>boleh buat 3+ ' + uTeks + ' lagi</small></button>' +
+          '<button type="button" data-cs="wkrasa" data-v="OK" style="' + bb + '">OK<br><small>boleh 1–2 ' + uTeks + ' lagi</small></button>' +
+          '<button type="button" data-cs="wkrasa" data-v="BERAT" style="' + bb + '">BERAT<br><small>susah nak habiskan</small></button>' +
+          '<button type="button" data-cs="wkrasa" data-v="SAKIT" style="' + bb + '">SAKIT<br><small>sakit tajam / sendi (bukan lenguh)</small></button>';
+        return h + deret;
+      }
+      // Skrin SET
+      h += '<div style="text-align:center;font-size:0.95rem;">Set ' + (W.set + 1) + ' / ' + COACH_SET + '</div>' +
+        '<div style="text-align:center;font-size:1rem;">' + (saat ? 'Tahan ' + coachSenTarget(k, x).u + ' saat' : 'Buat ' + coachSenTarget(k, x).u + ' rep') + (x[4] ? ' setiap sisi' : '') + '</div>';
+      var kgT = W.kg !== null && W.kg !== undefined ? coachTeksBeban(W.kg) : '';
+      h += coachLidi(k);
+      h += '<div style="text-align:center;margin-top:2px;"><button type="button" data-cs="wkdone" style="background:none;border:0;padding:0;">' + coachWKBulatan(
+        (kgT ? '<text x="100" y="58" font-size="20" text-anchor="middle" fill="#000">' + kgT + '</text>' : '') +
+        '<text x="100" y="128" font-size="72" text-anchor="middle" fill="#000">' + W.rep + '</text><text x="100" y="162" font-size="20" font-weight="bold" text-anchor="middle" fill="#000">SIAP</text>') + '</button></div>';
+      h += '<table style="width:100%;border-collapse:collapse;"><tr><td style="text-align:left;"><button type="button" data-cs="wkkurang" style="' + btn + 'font-size:1.4rem;padding:4px 18px;">−</button></td>' +
+        '<td style="text-align:center;font-size:0.75rem;">' + uTeks + ' sebenar</td><td style="text-align:right;"><button type="button" data-cs="wktambah" style="' + btn + 'font-size:1.4rem;padding:4px 18px;">+</button></td></tr></table>';
+      if (x[3] !== null && x[3] !== 6) h += '<div style="text-align:center;font-size:0.8rem;">Beban: <button type="button" data-cs="wkkg" data-v="-1" style="' + btn + '">−</button>' + kgT + ' <button type="button" data-cs="wkkg" data-v="1" style="' + btn + '">+</button></div>';
+      h += '<div style="text-align:center;"><button type="button" data-cs="wktut" style="' + btn + '">' + (W.tut ? 'SOROK TUTORIAL' : 'TUTORIAL (lupa cara?)') + '</button></div>';
+      if (W.tut) {
+        var tut = COACH_TUTORIAL[k] || ['Tutorial belum ada.'];
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:4px 0;font-size:0.85rem;line-height:1.4;">';
+        for (i = 0; i < tut.length; i++) h += '<div style="margin-top:2px;">' + (tut[i].indexOf('AWAS') === 0 ? '<b>' + tut[i] + '</b>' : (i + 1) + '. ' + tut[i]) + '</div>';
+        h += '</div>';
+      }
+      var nx = W.set < COACH_SET - 1 ? 'Set ' + (W.set + 2) : (W.i < W.senarai.length - 1 ? coachSenLatihan(W.senarai[W.i + 1])[1] : 'TAMAT SENAMAN');
+      h += '<div style="text-align:center;font-size:0.85rem;margin-top:6px;">Seterusnya: <b>' + nx + '</b></div>';
+      return h + deret;
+    }
+    function coachWKKlik(cs, t, sh, now) {
+      var W = coachWK, k = W.senarai[W.i], x = k ? coachSenLatihan(k) : null, saat = x && x[2] === 'saat';
+      if (cs === 'wkmula') { coachWKMula(sh); coachLukisSenaman(); return; }
+      if (cs === 'wkkeluar') { W.aktif = false; coachLukisSenaman(); return; }
+      if (cs === 'wktut') { W.tut = !W.tut; coachLukisSenaman(); return; }
+      if (cs === 'wkkurang') { W.rep = Math.max(0, W.rep - (saat ? 5 : 1)); coachLukisSenaman(); return; }
+      if (cs === 'wktambah') { W.rep = Math.min(300, W.rep + (saat ? 5 : 1)); coachLukisSenaman(); return; }
+      if (cs === 'wkkg') {
+        var tg = coachTangga(x), p = tg.indexOf(W.kg), arah = parseInt(t.getAttribute('data-v'), 10);
+        if (p === -1) p = 0;
+        W.kg = tg[Math.max(0, Math.min(tg.length - 1, p + arah))];
+        coachLukisSenaman(); return;
+      }
+      if (cs === 'wkstop') { W.fasa = W.lepas; coachLukisSenaman(); return; }
+      if (cs === 'wkdone') {
+        W.reps.push(W.rep);
+        if (W.reps.length < COACH_SET) { W.set++; W.rep = coachSenTarget(k, x).u; coachWKRehat('set'); }
+        else W.fasa = 'rasa';
+        coachLukisSenaman(); return;
+      }
+      if (cs === 'wkrasa') {
+        var tgt = coachSenTarget(k, x), rek = { kg: x[3] === null ? null : W.kg, rep: W.reps.slice(0), rasa: t.getAttribute('data-v'), at: now, sasaran: tgt.u };
+        var d = { senaman: { hari: sh.g, siri: sh.s, latihan: {} } };
+        d.senaman.latihan[k] = rek;
+        if (W.i < W.senarai.length - 1) { W.i++; coachWKSiapLatihan(); coachWKRehat('set'); W.fasa = 'rehat'; }
+        else W.fasa = 'tamat';
+        coachSimpanHari(d, function() {
+          var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
+          hs.hari = sh.g; hs.siri = sh.s; (hs.latihan || (hs.latihan = {}))[k] = rek;
+        });
+        if (rek.rasa === 'SAKIT') alert('SAKIT direkod untuk ' + x[1] + '. Latihan ini TAHAN (tiada naik beban) sampai awak lapor OK. Sakit berlarutan → jumpa doktor.');
+        coachLukisSenaman();
+      }
+    }
     function coachLukisSenaman() {
       var box = el('coach-senaman');
       if (!box) return;
       var sh = coachSenHari(), lat = sh.hs.latihan || {}, h = '', i, n = 0;
       var btn = 'padding:6px 8px;margin:2px 4px 2px 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
       var btnA = btn + 'background:#000;color:#fff;';
+      if (sh.hs.siapAt) coachWK.aktif = false;
+      if (coachWK.aktif) { box.innerHTML = coachWKLukis(sh, btn, btnA); try { window.scrollTo(0, 0); } catch (e) {} return; }
       if (coachUIS.buka && coachSenLatihan(coachUIS.buka)) {
         box.innerHTML = coachLukisStesen(sh, btn, btnA);
         try { box.scrollIntoView(); } catch (e) {}
@@ -10970,17 +11238,21 @@
         }
       }
       if (!sh.hs.siapAt) h += coachLukisOtot(sh, btn);
-      h += '<div style="font-size:0.8rem;margin:4px 0;">Tekan STESEN untuk tutorial &amp; log.</div><div style="text-align:center;font-size:0;">';
+      // Senarai latihan (gaya app workout): satu baris setiap latihan → tekan untuk tutorial / log manual. MULA SENAMAN = mod set + rehat.
+      if (!sh.hs.siapAt) h += '<button type="button" data-cs="wkmula" style="display:block;width:100%;padding:12px;margin:6px 0;font-size:1.2rem;font-weight:bold;border:3px solid #000;border-radius:10px;background:#000;color:#fff;">' +
+        (n ? 'SAMBUNG SENAMAN' : 'MULA SENAMAN') + '</button>';
+      h += '<div style="border:2px solid #000;border-radius:8px;margin:4px 0;">';
       for (i = 0; i < sh.senarai.length; i++) {
         var x = sh.senarai[i], k = x[0], r = lat[k], tgt = coachSenTarget(k, x);
         var uPapar = r && r.sasaran ? r.sasaran : tgt.u, kgPapar = r ? r.kg : tgt.kg;
         var rehat = !r && !sh.hs.siapAt ? coachLatihanRehat(x, sh) : '';
-        var st = r ? 'SIAP · ' + r.rasa : (rehat ? 'REHAT' : (sh.hs.siapAt ? 'tidak dibuat' : (tgt.tahan ? 'TAHAN' : 'BELUM')));
-        h += '<button type="button" data-cs="buka" data-k="' + k + '" style="display:inline-block;vertical-align:top;width:48%;min-height:84px;margin:0 1% 8px;padding:5px 6px;border:' + (rehat ? '2px dashed' : '2px solid') + ' #000;border-radius:8px;' +
-          'background:' + (r ? '#000' : '#fff') + ';color:' + (r ? '#fff' : '#000') + ';font-family:inherit;font-size:0.8rem;text-align:left;line-height:1.3;">' +
-          '<b>STESEN ' + (i + 1) + '</b><br>' + x[1] + '<br>' + COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' s' : '') + (x[4] ? '/sisi' : '') + (kgPapar !== null && kgPapar !== undefined ? ' · ' + coachTeksBeban(kgPapar) : '') + '<br><b>' + st + '</b></button>';
+        var st = r ? 'SIAP · ' + r.rasa : (rehat ? 'REHAT' : (sh.hs.siapAt ? 'tidak dibuat' : (tgt.tahan ? 'TAHAN' : '')));
+        h += '<button type="button" data-cs="buka" data-k="' + k + '" style="display:block;width:100%;margin:0;padding:7px 8px;border:0;' + (i ? 'border-top:1px solid #000;' : '') +
+          'background:' + (r ? '#000' : '#fff') + ';color:' + (r ? '#fff' : '#000') + ';font-family:inherit;font-size:0.9rem;text-align:left;line-height:1.3;">' +
+          '<span style="float:right;font-weight:bold;font-size:1rem;">' + (kgPapar !== null && kgPapar !== undefined ? coachTeksBeban(kgPapar) : '') + '</span>' +
+          '<b>' + (i + 1) + '. ' + x[1] + '</b><br>' + COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') + (st ? ' · <b>' + st + '</b>' : '') + '</button>';
       }
-      h += '</div>';
+      h += '</div><div style="font-size:0.75rem;">Tekan nama latihan untuk tutorial / log manual.</div>';
       if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">' + (!n && coachSenSemuaRehat(sh) ? 'REHAT OTOT: regangan / jalan ringan 10 min → SELESAI' : 'SELESAI SESI ' + sh.g + ' ' + sh.s) + '</button></div>';
       if (sh.hs.rehat) h += '<div style="font-size:0.8rem;">Hari ini REHAT OTOT (regangan / jalan ringan). Rotasi diteruskan; siri ' + sh.g + ' ' + sh.s + ' diulang lain kali.</div>';
       if (sh.hs.siapAt && !sh.hs.rehat) h += '<div style="font-size:0.8rem;">Tekan stesen untuk lihat "Sesi depan".</div>';
@@ -11003,6 +11275,8 @@
       while (t && t !== this && !t.getAttribute('data-cs')) t = t.parentNode;
       if (!t || t === this || !currentUser) return;
       var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
+      if (cs.indexOf('wk') === 0) { coachWKKlik(cs, t, sh, now); return; }
+      if (cs === 'selesai') coachWK.aktif = false;
       if (cs === 'dapat') { coachUIS.dapat = true; coachLukisSenaman(); return; }
       if (cs === 'dapatbatal') { coachUIS.dapat = false; coachLukisSenaman(); return; }
       if (cs === 'ganti' || cs === 'sebab') {
