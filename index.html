@@ -9753,8 +9753,10 @@
       }
       var p = h.pening || [];
       if (p.length) t.push('Pening hari ini: ' + p.length + ' kali (' + p.join(', ') + ')');
+      if (h.skrinLewat && h.skrinLewat.minit) t.push('Skrin lewat malam ini: ~' + h.skrinLewat.minit + ' min (selepas masa malapkan lampu).');
       if (new Date().getDay() === 0) t.push('HARI AHAD: semakan mingguan — tekan RUMUSAN MINGGU, salin ke chat AI.');
       el('coach-hari').textContent = t.join('\n');
+      coachSkrinSimpanTidur();
     }
 
     // ── Panel LAPORAN PAGI: 3 soalan, pilih jam / minit / AM-PM, atau TAK INGAT ──
@@ -10179,9 +10181,13 @@
       arginina: ['Arginina', 'g'], histidina: ['Histidina', 'g'], alanina: ['Alanina', 'g'], asidAspartik: ['Asid aspartik', 'g'],
       asidGlutamik: ['Asid glutamik', 'g'], glisina: ['Glisina', 'g'], prolina: ['Prolina', 'g'], serina: ['Serina', 'g'], kafein: ['Kafein', 'mg']
     };
+    // FASA 6: LOG MAKANAN PENUH — setiap makanan: nama, jenis, unit {nama, g}, sumber, contoh, zat per 100 g.
+    // jenis: 'buah' | 'sayur' (dikira dalam sasaran 400 g Pai 1) · 'protein' | 'karbo' | 'lain' (dikira dalam zat sahaja).
+    // contoh: true = makanan CONTOH sementara (user akan beri senarai sebenar — AI ganti melalui codebox).
+    var COACH_JENIS_MAKAN = [['buah', 'BUAH'], ['sayur', 'SAYUR'], ['protein', 'PROTEIN'], ['karbo', 'KARBOHIDRAT'], ['lain', 'LAIN-LAIN']];
     var COACH_MAKANAN = {
       pisang: {
-        nama: 'Pisang', jenis: 'buah', biji: 118, // 1 biji sederhana = 118 g (USDA "1 medium")
+        nama: 'Pisang', jenis: 'buah', unit: { nama: 'biji', g: 118 }, // 1 biji sederhana = 118 g (USDA "1 medium")
         sumber: 'USDA FoodData Central — Bananas, raw (SR Legacy, FDC ID 173944)',
         zat: {
           kcal: 89, air: 74.91, protein: 1.09, lemak: 0.33, karbo: 22.84, serat: 2.6, gula: 12.23, sukrosa: 2.39, glukosa: 4.98,
@@ -10193,47 +10199,83 @@
           sistina: 0.009, fenilalanina: 0.049, tirosina: 0.009, valina: 0.047, arginina: 0.049, histidina: 0.077, alanina: 0.04,
           asidAspartik: 0.124, asidGlutamik: 0.152, glisina: 0.038, prolina: 0.028, serina: 0.04, kafein: 0
         }
+      },
+      bayam: {
+        nama: 'Bayam (CONTOH)', jenis: 'sayur', unit: { nama: 'cawan mentah', g: 30 }, contoh: true, // 1 cawan mentah = 30 g (USDA)
+        sumber: 'USDA FoodData Central — Spinach, raw (SR Legacy, FDC ID 168462)',
+        zat: {
+          kcal: 23, air: 91.4, protein: 2.86, lemak: 0.39, karbo: 3.63, serat: 2.2, gula: 0.42, kalsium: 99, besi: 2.71, magnesium: 79,
+          fosforus: 49, kalium: 558, natrium: 79, zink: 0.53, kuprum: 0.13, mangan: 0.9, selenium: 1, vitC: 28.1, tiamin: 0.078,
+          riboflavin: 0.19, niasin: 0.72, pantotenik: 0.065, vitB6: 0.2, folat: 194, kolin: 19.3, betaina: 103, vitB12: 0, vitA: 469,
+          betaKaroten: 5626, alfaKaroten: 0, luteinZea: 12198, vitE: 2.03, vitD: 0, vitK: 483, lemakTepu: 0.063, lemakMono: 0.01,
+          lemakPoli: 0.17, lemakTrans: 0, kolesterol: 0
+        }
+      },
+      telur: {
+        nama: 'Telur (CONTOH)', jenis: 'protein', unit: { nama: 'biji besar', g: 50 }, contoh: true, // 1 biji besar = 50 g (USDA "1 large")
+        sumber: 'USDA FoodData Central — Egg, whole, raw, fresh (SR Legacy, FDC ID 171287)',
+        zat: {
+          kcal: 143, air: 76.2, protein: 12.6, lemak: 9.51, karbo: 0.72, serat: 0, gula: 0.37, kalsium: 56, besi: 1.75, magnesium: 12,
+          fosforus: 198, kalium: 138, natrium: 142, zink: 1.29, kuprum: 0.072, mangan: 0.028, selenium: 30.7, fluorida: 1.1, vitC: 0,
+          tiamin: 0.04, riboflavin: 0.46, niasin: 0.075, pantotenik: 1.53, vitB6: 0.17, folat: 47, kolin: 294, betaina: 0.3, vitB12: 0.89,
+          vitA: 160, betaKaroten: 0, luteinZea: 503, vitE: 1.05, vitD: 2, vitK: 0.3, lemakTepu: 3.13, lemakMono: 3.66, lemakPoli: 1.91,
+          lemakTrans: 0.038, kolesterol: 372
+        }
       }
     };
     var coachUIM = { pilih: '' };
+    function coachBuahSayur(id) { var mk = COACH_MAKANAN[id]; return !!mk && (mk.jenis === 'buah' || mk.jenis === 'sayur'); }
+    // g = buah + sayur sahaja (sasaran 400 g Pai 1) · gSemua = semua makanan · zat = semua makanan
     function coachMakanHari() {
-      var m = coachHariData.hari.makan || [], g = 0, zat = {}, per = {}, i, k;
+      var m = coachHariData.hari.makan || [], g = 0, gSemua = 0, zat = {}, per = {}, i, k;
       for (i = 0; i < m.length; i++) {
         var mk = COACH_MAKANAN[m[i].id];
         if (!mk) continue;
-        g += m[i].g;
+        gSemua += m[i].g;
+        if (coachBuahSayur(m[i].id)) g += m[i].g;
         per[m[i].id] = (per[m[i].id] || 0) + m[i].g;
         for (k in mk.zat) if (mk.zat.hasOwnProperty(k)) zat[k] = (zat[k] || 0) + mk.zat[k] * m[i].g / 100;
       }
-      return { g: g, zat: zat, per: per };
+      return { g: g, gSemua: gSemua, zat: zat, per: per };
     }
     function coachBulat(n) { return n >= 100 ? Math.round(n) : (n >= 10 ? Math.round(n * 10) / 10 : Math.round(n * 100) / 100); }
     function coachLukisMakan() {
       var box = el('coach-makan');
       if (!box) return;
-      var mh = coachMakanHari(), h = '', k;
-      h += '<div style="font-weight:bold;margin-bottom:4px;">MAKAN BUAH / SAYUR (KEDAI)</div>';
+      var mh = coachMakanHari(), h = '', k, i;
+      h += '<div style="font-weight:bold;margin-bottom:4px;">MAKAN (KEDAI)</div>';
       var senarai = [];
       for (k in mh.per) if (mh.per.hasOwnProperty(k)) senarai.push(COACH_MAKANAN[k].nama.toLowerCase() + ' ' + mh.per[k] + ' g');
-      h += '<div style="font-size:0.9rem;">Hari ini: <b>' + mh.g + ' g</b> / sasaran ' + COACH_SASARAN_BUAH_G + ' g' + (senarai.length ? ' (' + senarai.join(', ') + ')' : '') + '</div>';
-      if (mh.g) {
+      h += '<div style="font-size:0.9rem;">Buah + sayur hari ini: <b>' + mh.g + ' g</b> / sasaran ' + COACH_SASARAN_BUAH_G + ' g' + (mh.gSemua > mh.g ? ' · semua makanan ' + mh.gSemua + ' g' : '') + '</div>';
+      if (senarai.length) h += '<div style="font-size:0.8rem;">Dilog: ' + senarai.join(', ') + '</div>';
+      if (mh.gSemua) {
         var z = mh.zat;
-        h += '<div style="font-size:0.8rem;">Tenaga ' + coachBulat(z.kcal || 0) + ' kcal · Gula ' + coachBulat(z.gula || 0) + ' g · Serat ' + coachBulat(z.serat || 0) +
-          ' g · Kalium ' + coachBulat(z.kalium || 0) + ' mg · Vit C ' + coachBulat(z.vitC || 0) + ' mg · Vit B6 ' + coachBulat(z.vitB6 || 0) + ' mg</div>';
+        h += '<div style="font-size:0.8rem;">Tenaga ' + coachBulat(z.kcal || 0) + ' kcal · Protein ' + coachBulat(z.protein || 0) + ' g · Serat ' + coachBulat(z.serat || 0) +
+          ' g · Kalium ' + coachBulat(z.kalium || 0) + ' mg · Natrium ' + coachBulat(z.natrium || 0) + ' mg · Vit C ' + coachBulat(z.vitC || 0) + ' mg</div>';
       }
       var btn = 'padding:6px 8px;margin:2px 4px 2px 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
       if (coachUIM.pilih) {
-        var mk = COACH_MAKANAN[coachUIM.pilih];
-        h += '<div style="margin-top:4px;font-weight:bold;">' + mk.nama + '</div>' +
-          '<button type="button" data-cm="g" data-v="' + Math.round(mk.biji / 2) + '" style="' + btn + '">½ biji (' + Math.round(mk.biji / 2) + ' g)</button>' +
-          '<button type="button" data-cm="g" data-v="' + mk.biji + '" style="' + btn + '">1 biji (' + mk.biji + ' g)</button>' +
-          '<div style="margin:4px 0;">atau berat: <input type="text" inputmode="numeric" id="coach-g-input" style="width:80px;font-size:1rem;padding:4px;border:2px solid #000;"> g ' +
+        var mk = COACH_MAKANAN[coachUIM.pilih], u = mk.unit, pil = [0.5, 1, 2];
+        h += '<div style="margin-top:4px;font-weight:bold;">' + mk.nama + '</div><div>';
+        for (i = 0; i < pil.length; i++) {
+          var gg = Math.round(u.g * pil[i]);
+          h += '<button type="button" data-cm="g" data-v="' + gg + '" style="' + btn + '">' + (pil[i] === 0.5 ? '½' : pil[i]) + ' ' + u.nama + ' (' + gg + ' g)</button>';
+        }
+        h += '</div><div style="margin:4px 0;">atau berat: <input type="text" inputmode="numeric" id="coach-g-input" style="width:80px;font-size:1rem;padding:4px;border:2px solid #000;"> g ' +
           '<button type="button" data-cm="gin" style="' + btn + '">SIMPAN</button><button type="button" data-cm="batal" style="' + btn + '">BATAL</button></div>' +
-          '<div style="font-size:0.7rem;">Timbang MENTAH. Sumber zat: ' + mk.sumber + '</div>';
+          '<div style="font-size:0.7rem;">Timbang MENTAH. Sumber zat: ' + mk.sumber + (mk.contoh ? ' · makanan CONTOH (sementara)' : '') + '</div>';
       } else {
-        h += '<div style="margin-top:4px;">';
-        for (k in COACH_MAKANAN) if (COACH_MAKANAN.hasOwnProperty(k)) h += '<button type="button" data-cm="pilih" data-v="' + k + '" style="' + btn + '">+ ' + COACH_MAKANAN[k].nama + (coachKurangkan(k) ? ' · KURANGKAN HARI INI' : '') + '</button>';
-        h += '</div>';
+        for (i = 0; i < COACH_JENIS_MAKAN.length; i++) {
+          var jn = COACH_JENIS_MAKAN[i], b = '';
+          for (k in COACH_MAKANAN) if (COACH_MAKANAN.hasOwnProperty(k) && COACH_MAKANAN[k].jenis === jn[0])
+            b += '<button type="button" data-cm="pilih" data-v="' + k + '" style="' + btn + '">+ ' + COACH_MAKANAN[k].nama + (coachKurangkan(k) ? ' · KURANGKAN HARI INI' : '') + '</button>';
+          if (b) h += '<div style="margin-top:3px;font-size:0.8rem;"><b>' + jn[1] + '</b>' + (jn[0] === 'buah' || jn[0] === 'sayur' ? ' (dikira 400 g)' : '') + '</div><div>' + b + '</div>';
+        }
+        var mm = coachHariData.hari.makan || [];
+        if (mm.length) {
+          var akhir = mm[mm.length - 1], mka = COACH_MAKANAN[akhir.id];
+          h += '<div style="margin-top:3px;"><button type="button" data-cm="buang" style="' + btn + '">PADAM ENTRI TERAKHIR (' + (mka ? mka.nama : akhir.id) + ' ' + akhir.g + ' g)</button></div>';
+        }
       }
       box.innerHTML = h;
     }
@@ -10244,6 +10286,13 @@
       var cm = t.getAttribute('data-cm'), g = 0;
       if (cm === 'pilih') { coachUIM.pilih = t.getAttribute('data-v'); coachLukisMakan(); return; }
       if (cm === 'batal') { coachUIM.pilih = ''; coachLukisMakan(); return; }
+      if (cm === 'buang') {
+        var mm = coachHariData.hari.makan || [];
+        if (!mm.length) return;
+        var akhir = mm[mm.length - 1];
+        coachSimpanHari({ makan: firebase.firestore.FieldValue.arrayRemove(akhir) }, function() { mm.pop(); });
+        return;
+      }
       if (cm === 'g') g = parseInt(t.getAttribute('data-v'), 10);
       if (cm === 'gin') {
         var inp = document.getElementById('coach-g-input');
@@ -10725,7 +10774,7 @@
       for (i = 0; i < m.length; i++) {
         var mk = COACH_MAKANAN[m[i].id];
         if (!mk) continue;
-        g += m[i].g;
+        if (coachBuahSayur(m[i].id)) g += m[i].g;
         for (k in mk.zat) if (mk.zat.hasOwnProperty(k)) z[k] = (z[k] || 0) + mk.zat[k] * m[i].g / 100;
       }
       return { g: g, zat: z };
@@ -10807,14 +10856,14 @@
       }
       // 5. MAKAN & ZAT
       L.push('');
-      L.push('5. MAKAN BUAH / SAYUR (sasaran ' + COACH_SASARAN_BUAH_G + ' g/hari) & ZAT UTAMA (dari makanan yang dilog sahaja)');
+      L.push('5. MAKAN (buah + sayur sasaran ' + COACH_SASARAN_BUAH_G + ' g/hari) & ZAT UTAMA (dari makanan yang dilog sahaja; senarai makanan: ' + (function() { var a = [], q; for (q in COACH_MAKANAN) if (COACH_MAKANAN.hasOwnProperty(q)) a.push(COACH_MAKANAN[q].nama); return a.join(', '); })() + ')');
       var dri = p && p.umur ? coachDRI(p) : null, kcS = p && p.umur ? coachTenaga(p) : 0, zJ = {}, hMakan = 0;
       for (i = 0; i < 7; i++) {
         var zh = coachZatHariLain(M[hariA[i]] || {});
         if (!(M[hariA[i]] || {}).laporanAt && !zh.g) continue;
         hMakan++;
         for (k in zh.zat) if (zh.zat.hasOwnProperty(k)) zJ[k] = (zJ[k] || 0) + zh.zat[k];
-        L.push('- ' + coachHariPendek(hariA[i]) + ': ' + zh.g + ' g · ' + coachBulat(zh.zat.kcal || 0) + ' kcal · serat ' + coachBulat(zh.zat.serat || 0) + ' g · kalium ' + coachBulat(zh.zat.kalium || 0) + ' mg · natrium ' + coachBulat(zh.zat.natrium || 0) + ' mg');
+        L.push('- ' + coachHariPendek(hariA[i]) + ': buah+sayur ' + zh.g + ' g · protein ' + coachBulat(zh.zat.protein || 0) + ' g · ' + coachBulat(zh.zat.kcal || 0) + ' kcal · serat ' + coachBulat(zh.zat.serat || 0) + ' g · kalium ' + coachBulat(zh.zat.kalium || 0) + ' mg · natrium ' + coachBulat(zh.zat.natrium || 0) + ' mg');
       }
       if (hMakan && dri) {
         var zU = ['protein', 'serat', 'kalium', 'magnesium', 'vitC', 'vitB6', 'folat', 'kalsium', 'besi', 'natrium'], zA = ['Tenaga ' + Math.round((zJ.kcal || 0) / hMakan) + '/' + kcS + ' kcal'];
@@ -10871,9 +10920,16 @@
       L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Kuliah ' + (dA.kuliah || 0) + ' · Reasoning ' + (dA.reasoning || 0) + ' · Presenting ' + (dA.presenting || 0) + ' · Vocab level ' + (dA.vocab || 1) + (dA.vocabGame ? ' (' + dA.vocabGame + ')' : ''));
       var pai = el('coach-pai') ? el('coach-pai').innerHTML.replace(/<\/div>/g, ' | ').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').replace(/(\s*\|\s*)+/g, ' | ').trim() : '';
       if (pai) L.push('Pai hari ini: ' + pai);
-      // 8. SKRIN LEWAT
+      // 8. SKRIN LEWAT (anggaran dari sentuhan selepas masa malapkan lampu)
       L.push('');
-      L.push('8. SKRIN LEWAT MALAM: belum dirakam (ciri belum dibina).');
+      var skA = [], skJ = 0, skN = 0;
+      for (i = 0; i < 7; i++) {
+        var sl = (M[hariA[i]] || {}).skrinLewat;
+        if (!sl || !(sl.minit || sl.tegurAt)) continue;
+        skN++; skJ += sl.minit || 0;
+        skA.push(coachHariPendek(hariA[i]) + ' ~' + (sl.minit || 0) + ' min' + (sl.akhirAt ? ' (akhir ' + coachTeksMasa(new Date(sl.akhirAt).getHours() * 60 + new Date(sl.akhirAt).getMinutes()) + ')' : '') + (sl.pilihan ? ' · ditegur → ' + sl.pilihan : ''));
+      }
+      L.push('8. SKRIN LEWAT MALAM (selepas masa malapkan lampu; malam hari itu): ' + (skN ? skN + ' malam, jumlah ~' + skJ + ' min — ' + skA.join(' · ') : 'tiada') + '. Kaitkan dengan tidur / tidur berlebihan / pening.');
       // 9. BUKU KEPUTUSAN
       L.push('');
       var bk = COACH_BUKU[dA.musim || 'CUTI'] || [];
@@ -10913,6 +10969,69 @@
       }
     };
     el('btn-coach-rumusan').onclick = function() { coachLukisRumusan(); };
+    // ══════════ COACH — SKRIN LEWAT MALAM (dikesan automatik, SAH 9 Nov) ══════════
+    // "Lewat" = dari 1 jam sebelum sasaran tidur (masa malapkan lampu) sehingga hari coach tamat (4:00 pagi).
+    // App kesan sendiri dari sentuhan / ketikan di mana-mana skrin (game, laci, dll) — user tak perlu report.
+    // Anggaran minit: jarak antara dua sentuhan ≤ 5 min dijumlah; sentuhan terasing = 1 min.
+    // Rekod: coach_hari/{id}.skrinLewat { minit (increment), mulaAt, akhirAt, tegurAt, pilihan } · TIADA markah, TIDAK dikunci.
+    // Tegur SEKALI semalam (lembut). Sasaran tidur disimpan localStorage 'coach_tidur_{uid}' setiap kali page COACH dilukis.
+    var COACH_SKRIN_JURANG_MS = 5 * 60 * 1000;
+    var coachSkrin = { lastAt: 0, pending: 0, id: '' };
+    function coachSkrinKunci(n) { return 'coach_' + n + '_' + (currentUser ? currentUser.uid : ''); }
+    function coachSkrinSimpanTidur() {
+      var j = coachJadualKini();
+      if (!j || !currentUser) return;
+      try { localStorage.setItem(coachSkrinKunci('tidur'), JSON.stringify({ id: coachHariData.id, tidur: j.tidur })); } catch (e) {}
+    }
+    function coachSkrinLewatKini() {
+      if (!currentUser) return null;
+      var s = null;
+      try { s = JSON.parse(localStorage.getItem(coachSkrinKunci('tidur')) || 'null'); } catch (e) {}
+      if (!s || s.id !== coachHariId()) return null;
+      var d = new Date(), m = d.getHours() * 60 + d.getMinutes();
+      if (coachTarikh(d) !== s.id) m += 1440;
+      return m >= s.tidur - 60 ? s : null;
+    }
+    function coachSkrinTegur(s) {
+      var k = coachSkrinKunci('tegur'), sudah = '';
+      try { sudah = localStorage.getItem(k) || ''; } catch (e) {}
+      if (sudah === s.id || document.getElementById('coach-tegur')) return;
+      try { localStorage.setItem(k, s.id); } catch (e) {}
+      var box = document.createElement('div'), btn = 'padding:8px 10px;margin:4px 6px 0 0;font-size:1rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      box.id = 'coach-tegur';
+      box.style.cssText = 'position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#fff;color:#000;border:3px solid #000;border-radius:10px;padding:10px;font-size:1rem;line-height:1.4;';
+      box.innerHTML = '<b>COACH:</b> Dah masa malapkan lampu (sasaran tidur ' + coachTeksMasa(s.tidur) + '). Sambung esok?<br>' +
+        '<button type="button" data-tg="BERHENTI" style="' + btn + '">OK, BERHENTI</button><button type="button" data-tg="TERUSKAN" style="' + btn + '">TERUSKAN SEKEJAP</button>';
+      box.onclick = function(e) {
+        var p = e.target && e.target.getAttribute && e.target.getAttribute('data-tg');
+        if (!p) return;
+        if (box.parentNode) box.parentNode.removeChild(box);
+        if (coachHariData.id === s.id) { var sl0 = coachHariData.hari.skrinLewat || (coachHariData.hari.skrinLewat = {}); sl0.tegurAt = Date.now(); sl0.pilihan = p; }
+        kol('coach_hari').doc(s.id).set({ skrinLewat: { tegurAt: Date.now(), pilihan: p } }, { merge: true }).catch(function() {});
+      };
+      document.body.appendChild(box);
+      kol('coach_hari').doc(s.id).set({ skrinLewat: { mulaAt: Date.now() } }, { merge: true }).catch(function() {});
+    }
+    function coachSkrinSentuh() {
+      var s = coachSkrinLewatKini();
+      if (!s) { coachSkrin.lastAt = 0; return; }
+      var t = Date.now();
+      if (coachSkrin.id !== s.id) coachSkrin = { lastAt: 0, pending: 0, id: s.id };
+      coachSkrin.pending += coachSkrin.lastAt && t - coachSkrin.lastAt <= COACH_SKRIN_JURANG_MS ? t - coachSkrin.lastAt : 60000;
+      coachSkrin.lastAt = t;
+      coachSkrinTegur(s);
+      if (coachSkrin.pending >= 60000) {
+        var m = Math.floor(coachSkrin.pending / 60000);
+        coachSkrin.pending -= m * 60000;
+        if (coachHariData.id === s.id) {
+          var sl = coachHariData.hari.skrinLewat || (coachHariData.hari.skrinLewat = {});
+          sl.minit = (sl.minit || 0) + m; sl.akhirAt = t;
+        }
+        kol('coach_hari').doc(s.id).set({ skrinLewat: { minit: firebase.firestore.FieldValue.increment(m), akhirAt: t } }, { merge: true }).catch(function() {});
+      }
+    }
+    document.addEventListener('click', function() { try { coachSkrinSentuh(); } catch (e) {} }, true);
+    document.addEventListener('keydown', function() { try { coachSkrinSentuh(); } catch (e) {} }, true);
     // ══════════ COACH — FASA 2d: LISTENING + SOLAT → PAI 2 PENUH + PAI 3 ══════════
     // Listening: user report minit → users/{uid}/coach/stok.listening (stok terkumpul, increment) + coach_hari/{id}.listening (hari ini).
     // Solat: bilangan hari ini 0–5 → coach_hari/{id}.solat. Status ikut PURATA 7 hari coach (hari yang direkod sahaja):
