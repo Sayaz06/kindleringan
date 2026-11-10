@@ -478,6 +478,9 @@
     <!-- Ulang SR Bahasa tanpa had (atas → bawah, pusing semula) — TIADA kesan pada jadual SR -->
     <button id="btn-go-sr-bebas" class="btn">SR Bebas (Bahasa)</button>
     <button id="btn-go-fakta" class="btn">Laci Fakta</button>
+    <!-- REASONING / PRESENTING — salinan Laci Fakta (koleksi reasoning_* / presenting_* dari app phone) -->
+    <button id="btn-go-reasoning" class="btn">Laci Reasoning</button>
+    <button id="btn-go-presenting" class="btn">Laci Presenting</button>
     <!-- QURAN — sesi Quran (kemajuan kindle_quran/current), pusing 10 ayat setiap sesi -->
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
     <!-- GAME — Pelabuhan (bank perkataan) + mini game (Padan, Jutawan) + Exchange -->
@@ -784,6 +787,21 @@
     var allTopics = [];
     var activePerkataan = null;
     var activeTopic = null;
+    // ── JENIS LACI FAKTA: 'fakta' (asal) / 'reasoning' / 'presenting' — enjin Fakta yang SAMA, koleksi berbeza ──
+    var faktaJenis = 'fakta';
+    var FAKTA_JENIS = {
+      fakta:      { label: 'FAKTA',      pre: '' },
+      reasoning:  { label: 'REASONING',  pre: 'reasoning_' },
+      presenting: { label: 'PRESENTING', pre: 'presenting_' }
+    };
+    // Nama koleksi ikut jenis: 'topics' / 'drawer' / 'fakta_sr_queue' → reasoning_topics / reasoning_drawer / reasoning_sr_queue
+    function kolF(n) {
+      var j = FAKTA_JENIS[faktaJenis] || FAKTA_JENIS.fakta;
+      if (!j.pre) return n;
+      if (n === 'fakta_sr_queue') return j.pre + 'sr_queue';
+      if (n === 'topics' || n === 'drawer') return j.pre + n;
+      return n;
+    }
     var srModeAktif = false;
     var srLaciSemasa = null;
         var srQueue = [];
@@ -841,6 +859,10 @@
     }
     function setText(id, t) {
       var el = document.getElementById(id);
+      // Laci Reasoning / Presenting guna enjin Fakta → tukar label "FAKTA" kepada nama jenis
+      if (el && t && faktaJenis !== 'fakta' && (id === 'play-status' || id === 'play-mode' || id === 'sf-status')) {
+        t = String(t).replace(/FAKTA/g, (FAKTA_JENIS[faktaJenis] || FAKTA_JENIS.fakta).label);
+      }
       if (el) el.textContent = t || '';
     }
     function getSRInterval(fasaIndex) {
@@ -1116,7 +1138,7 @@
     function muatAktifRingan() {
       var uid = currentUser.uid;
       function aktifGet(col, had) {
-        var q = db.collection('users').doc(uid).collection(col).where('isActive', '==', true);
+        var q = db.collection('users').doc(uid).collection(col === 'topics' ? kolF('topics') : col).where('isActive', '==', true);
         if (had) q = q.limit(had);
         return q.get({ source: 'server' }).catch(function() { return q.get(); });
       }
@@ -1617,7 +1639,7 @@
       var drawer, srColl;
       if (modeName === 'fakta') {
         drawer = allDrawers.filter(function(d) { return d.id === drawerId; })[0];
-        srColl = 'fakta_sr_queue';
+        srColl = kolF('fakta_sr_queue');
       } else {
         drawer = allBahasaDrawers.filter(function(d) { return d.id === drawerId; })[0];
         srColl = 'bahasa_sr_queue';
@@ -1693,7 +1715,7 @@
     }
 
     function selesaiSRUlangan(srDocId, modeName) {
-      var srColl = modeName === 'fakta' ? 'fakta_sr_queue' : 'bahasa_sr_queue';
+      var srColl = modeName === 'fakta' ? kolF('fakta_sr_queue') : 'bahasa_sr_queue';
       var docId = srDocId || '';
       var ref = db.collection('users').doc(currentUser.uid).collection(srColl).doc(docId);
       return ref.get().then(function(snap) {
@@ -1723,7 +1745,7 @@
         // 📍 Baris semasa untuk phone (lencana hijau) — ID baris yang sedang dipapar (bukan semasa SR)
         var kSem = cards[newIndex];
         if (!srModeAktif && kSem && kSem.fid) upd.kindleFid = kSem.fid;
-        db.collection('users').doc(currentUser.uid).collection('topics').doc(activeTopic.id)
+        db.collection('users').doc(currentUser.uid).collection(kolF('topics')).doc(activeTopic.id)
           .update(upd).catch(function() {});
         activeTopic.lastIndex = newIndex;
       }
@@ -1736,7 +1758,7 @@
           .update({ lastDrawerId: drawerId || null }).catch(function() {});
         activePerkataan.lastDrawerId = drawerId || null;
       } else if (mode === 'fakta' && activeTopic) {
-        db.collection('users').doc(currentUser.uid).collection('topics').doc(activeTopic.id)
+        db.collection('users').doc(currentUser.uid).collection(kolF('topics')).doc(activeTopic.id)
           .update({
             lastDrawerId: drawerId || null,
             lastItemIndex: (itemIndex !== undefined && itemIndex !== null) ? itemIndex : null
@@ -1753,7 +1775,7 @@
           .update({ lastDrawerId: null }).catch(function() {});
         activePerkataan.lastDrawerId = null;
       } else if (mode === 'fakta' && activeTopic) {
-        db.collection('users').doc(currentUser.uid).collection('topics').doc(activeTopic.id)
+        db.collection('users').doc(currentUser.uid).collection(kolF('topics')).doc(activeTopic.id)
           .update({ lastDrawerId: null, lastItemIndex: null }).catch(function() {});
         activeTopic.lastDrawerId = null;
         activeTopic.lastItemIndex = null;
@@ -1864,7 +1886,7 @@
       }
       var uid = currentUser.uid;
       var topicId = activeTopic.id;
-      db.collection('users').doc(uid).collection('drawer')
+      db.collection('users').doc(uid).collection(kolF('drawer'))
         .where('topicId', '==', topicId).get()
         .then(function(snap) {
           allDrawers = allDrawers.filter(function(d) { return d.topicId !== topicId; });
@@ -1894,6 +1916,7 @@
 
     function prefetchDrawer(drawerId, colName) {
       if (!currentUser || !drawerId) return;
+      if (colName === 'drawer') colName = kolF('drawer'); // Reasoning / Presenting
       db.collection('users').doc(currentUser.uid).collection(colName).doc(drawerId)
         .get().then(function(snap) {
           if (snap.exists) {
@@ -1919,7 +1942,7 @@
 
     function loadSRIntoCards(srData, modeName, cb) {
       var drawerId = srData.drawerId || srData.id;
-      var colName = modeName === 'bahasa' ? 'bahasa_drawers' : 'drawer';
+      var colName = modeName === 'bahasa' ? 'bahasa_drawers' : kolF('drawer');
       delete _prefetchCache[drawerId]; // buang cache lama, paksa fetch semula
       db.collection('users').doc(currentUser.uid).collection(colName).doc(drawerId)
         .get().then(function(snap) {
@@ -2098,7 +2121,7 @@
       loadCollections(function() {
         // ── JQ DULU sebelum SR (hanya kalau jqAktif) ──
         function _terusKeSR() {
-          loadSROverdue('fakta_sr_queue').then(function(overdue) {
+          loadSROverdue(kolF('fakta_sr_queue')).then(function(overdue) {
           // Ambil SATU SR sahaja — simpan baki dalam srQueue untuk check selepas laci biasa
           srQueue = overdue;
           if (srQueue.length) {
@@ -2987,7 +3010,7 @@
       var isSR = c.isSR || srModeAktif;
       var nextIdx = findNextDrawerStart(cardIndex);
       var isLast = nextIdx >= cards.length;
-      var srCol = mode === 'fakta' ? 'fakta_sr_queue' : 'bahasa_sr_queue';
+      var srCol = mode === 'fakta' ? kolF('fakta_sr_queue') : 'bahasa_sr_queue';
 
       // isTamat fakta: SR sudah didaftar per-baris; jangan daftar semula whole-laci
       var srId = (srLaciSemasa && (srLaciSemasa.srDocId || srLaciSemasa.id)) || drawerId;
@@ -4023,12 +4046,23 @@
       if (e.key === 'Enter') cubaLoginPin();
     };
     document.getElementById('btn-logout').onclick = function() { auth.signOut(); };
-    document.getElementById('btn-go-bahasa').onclick = function() { srBebas = false; startBahasa(); };
+    document.getElementById('btn-go-bahasa').onclick = function() { faktaJenis = 'fakta'; srBebas = false; startBahasa(); };
     document.getElementById('btn-go-fakta').onclick = function() {
       // SOALAN FAKTA ON → mod soalan (tiada SR, tiada fasa) · OFF → Laci Fakta biasa
+      faktaJenis = 'fakta';
       if (sfOn()) { bukaSoalanFakta(); return; }
       srBebas = false; startFakta();
     };
+    // REASONING / PRESENTING — enjin Fakta yang sama (kad, SR, soalan), koleksi ikut jenis
+    function bukaLaciJenis(j) {
+      faktaJenis = j;
+      if (sfOn()) { bukaSoalanFakta(); return; }
+      srBebas = false; startFakta();
+    }
+    var _btnReasoning = document.getElementById('btn-go-reasoning');
+    if (_btnReasoning) _btnReasoning.onclick = function() { bukaLaciJenis('reasoning'); };
+    var _btnPresenting = document.getElementById('btn-go-presenting');
+    if (_btnPresenting) _btnPresenting.onclick = function() { bukaLaciJenis('presenting'); };
 
     // ══════════════════════════════════════════
     // SOALAN FAKTA — setiap baris fakta boleh ada medan soalan + jawapan (diisi di app phone)
@@ -4069,7 +4103,7 @@
           setText('sf-soalan', 'Tiada topik aktif.\nTick SATU topik di phone.');
           return;
         }
-        db.collection('users').doc(currentUser.uid).collection('drawer')
+        db.collection('users').doc(currentUser.uid).collection(kolF('drawer'))
           .where('topicId', '==', topik.id).get()
           .then(function(snap) {
             var ds = [];
