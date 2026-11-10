@@ -10047,25 +10047,34 @@
       return out;
     }
     // hirisan: [{ v: nilai, n: 'Nama' }] → bulatan besar, setiap hirisan bertulis "Nama / xx%"
-    function coachPie(hirisan, tajuk) {
-      var W = 360, H = 240, cx = 180, cy = 120, r = 86, jum = 0, i, a0 = -Math.PI / 2, s = '', luar = [], nilai = [];
+    // hirisan: [{ v, n: nama, t: teks baris 2 (pilihan — lalai peratus) }]
+    // opt.min: hirisan kosong / kecil tetap dilukis sekurang-kurangnya sebahagian kecil (contoh 0.05) · opt.luar: semua label di luar bulatan + garis
+    function coachPie(hirisan, tajuk, opt) {
+      opt = opt || {};
+      var W = 360, H = 240, cx = 180, cy = 120, r = 86, jum = 0, i, a0 = -Math.PI / 2, s = '', luar = [], nilai = [], vis = [], jumV = 0;
       for (i = 0; i < hirisan.length; i++) { jum += hirisan[i].v; nilai.push(hirisan[i].v); }
       var pc = coachPeratus(nilai);
       var kepala = tajuk ? '<div style="font-weight:bold;font-size:0.9rem;text-align:center;margin-top:6px;">' + tajuk + '</div>' : '';
       if (!jum) return kepala + '<div style="margin:6px auto;width:200px;padding:30px 0;border:2px solid #000;border-radius:8px;font-weight:bold;text-align:center;">BELUM ADA DATA</div>';
+      for (i = 0; i < hirisan.length; i++) { vis.push(opt.min ? Math.max(hirisan[i].v, jum * opt.min) : hirisan[i].v); jumV += vis[i]; }
       function teks(x, y, nama, p, anchor, sz) {
         return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" font-size="' + sz + '" font-weight="bold" text-anchor="' + anchor + '" fill="#000">' + nama + '</text>' +
-          '<text x="' + x.toFixed(1) + '" y="' + (y + sz + 1).toFixed(1) + '" font-size="' + sz + '" text-anchor="' + anchor + '" fill="#000">' + p + '%</text>';
+          '<text x="' + x.toFixed(1) + '" y="' + (y + sz + 1).toFixed(1) + '" font-size="' + sz + '" text-anchor="' + anchor + '" fill="#000">' + p + '</text>';
       }
       for (i = 0; i < hirisan.length; i++) {
-        var v = hirisan[i].v;
+        var v = vis[i];
         if (!v) continue;
-        if (v >= jum) { s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="3"/>' + teks(cx, cy - 4, hirisan[i].n, pc[i], 'middle', 15); break; }
-        var a1 = a0 + v / jum * 2 * Math.PI, besar = a1 - a0 > Math.PI ? 1 : 0, am = (a0 + a1) / 2;
+        if (v >= jumV) {
+          s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="3"/>';
+          if (opt.luar) luar.push({ am: -Math.PI / 4, n: hirisan[i].n, p: hirisan[i].t || pc[i] + '%', kanan: true, y: cy - (r + 18) * Math.SQRT1_2 });
+          else s += teks(cx, cy - 4, hirisan[i].n, hirisan[i].t || pc[i] + '%', 'middle', 15);
+          break;
+        }
+        var a1 = a0 + v / jumV * 2 * Math.PI, besar = a1 - a0 > Math.PI ? 1 : 0, am = (a0 + a1) / 2;
         s += '<path d="M' + cx + ' ' + cy + ' L' + (cx + r * Math.cos(a0)).toFixed(2) + ' ' + (cy + r * Math.sin(a0)).toFixed(2) + ' A' + r + ' ' + r + ' 0 ' + besar + ' 1 ' +
           (cx + r * Math.cos(a1)).toFixed(2) + ' ' + (cy + r * Math.sin(a1)).toFixed(2) + ' Z" fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>';
-        if (v / jum >= 0.2) s += teks(cx + r * 0.58 * Math.cos(am), cy + r * 0.58 * Math.sin(am) - 4, hirisan[i].n, pc[i], 'middle', 13);
-        else luar.push({ am: am, n: hirisan[i].n, p: pc[i], kanan: Math.cos(am) >= 0, y: cy + (r + 18) * Math.sin(am) });
+        if (!opt.luar && v / jumV >= 0.2) s += teks(cx + r * 0.58 * Math.cos(am), cy + r * 0.58 * Math.sin(am) - 4, hirisan[i].n, hirisan[i].t || pc[i] + '%', 'middle', 13);
+        else luar.push({ am: am, n: hirisan[i].n, p: hirisan[i].t || pc[i] + '%', kanan: Math.cos(am) >= 0, y: cy + (r + 18) * Math.sin(am) });
         a0 = a1;
       }
       // Label hirisan kecil di luar bulatan — dijarakkan supaya tidak bertindih
@@ -10334,8 +10343,8 @@
           p3 = '<div style="font-size:0.85rem;">Kesihatan <b>0/10</b> · Usaha <b>0/10</b> — jumlah 0, belum ada pai. Buat tugas kesihatan & usaha dulu.</div>';
         } else {
           var pp = coachPeratus([mK, mU]), beza = Math.abs(pp[0] - 50), st3 = beza <= 5 ? 'HIJAU' : (beza <= 15 ? 'KUNING' : 'MERAH');
-          p3 = coachPie([{ v: mK, n: 'Kesihatan' }, { v: mU, n: 'Usaha' }]) +
-            '<div style="font-size:0.85rem;line-height:1.5;"><b>Kesihatan ' + mK + '/10</b> → ' + pp[0] + '%<br><b>Usaha ' + mU + '/10</b> → ' + pp[1] + '%<br>' +
+          p3 = coachPie([{ v: mK, n: 'Kesihatan', t: mK + '/10' }, { v: mU, n: 'Usaha', t: mU + '/10' }], '', { min: 0.05, luar: true }) +
+            '<div style="font-size:0.85rem;line-height:1.5;"><b>Kesihatan ' + mK + '/10</b> · <b>Usaha ' + mU + '/10</b><br>' +
             'Jumlah ' + jm + ' = 100% · <b>' + st3 + '</b>' + (beza > 5 ? ' · Lebihkan <b>' + (mK < mU ? 'KESIHATAN' : 'USAHA') + '</b>' : ' · SEIMBANG (separuh-separuh)') + '</div>' +
             '<div style="font-size:0.8rem;">Markah Kesihatan = % SIAP Pai 1 (' + pK + '%) ÷ 10. Markah Usaha = bahagian HIJAU Pai 2 (' + hijau + ' daripada ' + dinilaiU + ' = ' + pU + '%) ÷ 10.</div>';
         }
