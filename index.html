@@ -6251,8 +6251,6 @@
     <div id="coach-sek-makan" style="display:none;"><div id="coach-makan" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
     <button type="button" class="btn coach-sek-btn" data-sek="zat">PROFIL &amp; MONITOR ZAT</button>
     <div id="coach-sek-zat" style="display:none;"><div id="coach-zat" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
-    <button type="button" class="btn coach-sek-btn" data-sek="senaman">SENAMAN</button>
-    <div id="coach-sek-senaman" style="display:none;"><div id="coach-senaman" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
     <button type="button" class="btn coach-sek-btn" data-sek="usaha">USAHA HARI INI</button>
     <div id="coach-sek-usaha" style="display:none;"><div id="coach-usaha" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
     <button type="button" class="btn coach-sek-btn" data-sek="pai">PAI &amp; LAPORAN HARI INI</button>
@@ -6747,6 +6745,18 @@
     <div id="kd-troli" class="kd-troli" style="display:none;"></div>
     <div id="kd-grid" class="kd-grid"></div>
     </div>
+  </div>
+  <!-- GYM (Pekan Kedai) — senaman dipindah dari page COACH (10 Nov). Akan dijadikan permainan berperingkat. -->
+  <div id="screen-gym" class="screen">
+    <div class="status-bar" id="gym-status">GYM</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-gym-keluar" class="gm-kecil">‹ Pekan</button>
+      <span class="gm-alat-tajuk">GYM</span>
+      <button type="button" id="btn-gym-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="gym-info" class="jw-info"></div>
+    <div id="coach-senaman" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
   </div>
   <div id="screen-hj" class="screen">
     <div class="status-bar">HADIAH BOS · INVESTMENT</div>
@@ -10469,7 +10479,7 @@
     // Minggu pertama: 2 set × 10 rep · isometrik 20 saat · rehat 60–90 saat · panaskan badan 3–5 min. Beban mula 5 kg (bentuk dulu).
     // Latihan: [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban, 0 = badan), sisi (1 = setiap sisi), kumpulan recovery]
     var COACH_SET = 2, COACH_REP = 10, COACH_SAAT = 20;
-    var coachNotaSen = '<div style="font-size:0.78rem;">Log di kotak SENAMAN di bawah → SELESAI SESI.</div>';
+    var coachNotaSen = '<div style="font-size:0.78rem;">Buat di GYM (Game → Kedai → GYM) → SELESAI SESI.</div>';
     var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
     var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
     var COACH_RUTIN = {
@@ -11129,8 +11139,8 @@
           b += 'SEKARANG: minum 1 gelas air kosong (slot ' + aktif.kunci.replace('air', '') + ').';
           go = ['LOG AIR (ml)', function() { coachBukaSek('tugas', true); coachUI.ml = aktif.kunci; coachUI.dapat = ''; coachLukisTugas(); }];
         } else if (aktif && aktif.jenis === 'senaman') {
-          b += 'SEKARANG: senaman ' + coachSenHari().g + ' ' + coachSenHari().s + ', kemudian rutin FACE.';
-          go = ['BUKA SENAMAN', function() { coachBukaSek('senaman', true); }];
+          b += 'SEKARANG: senaman ' + coachSenHari().g + ' ' + coachSenHari().s + ' di GYM, kemudian rutin FACE.';
+          go = ['PERGI KE GYM', function() { bukaGym(); }];
         } else if (aktif && aktif.jenis === 'fokus') {
           b += 'SEKARANG: FOKUS 90 MINIT — ' + (fokus || 'usaha') + ': ' + coachFokusTeks(fokus) + '. Satu kerja sahaja, telefon jauh.';
           go = coachFokusGo(fokus);
@@ -12525,7 +12535,7 @@
       if (KD.copBaru && KD.copBaru.length) { copSticker(KD.copBaru); KD.copBaru = null; }
     }
     // ── PEKAN KEDAI: 4 pondok berpapan iklan ──
-    var KD_PAPAN = { merah: ['RUNCIT', 'MALAYSIA'], biru: ['OVERSEA', 'MART'], hijau: ['INVESTMENT'], kuning: ['PARTY'] };
+    var KD_PAPAN = { merah: ['RUNCIT', 'MALAYSIA'], biru: ['OVERSEA', 'MART'], hijau: ['INVESTMENT'], kuning: ['PARTY'], gym: ['GYM'] };
     var KD_PD_SUB = { merah: 'Bayar Merah', biru: 'Bayar Biru', hijau: 'Modal Merah · untung 50%', kuning: 'Bayar Kuning' };
     function svgPondok(k) {
       var s = '<svg viewBox="0 0 120 132" xmlns="http://www.w3.org/2000/svg">', p = KD_PAPAN[k], i, x;
@@ -12549,6 +12559,7 @@
       if (k === 'biru') s += '<path d="M44 86 L76 80 Q80 80 79 83 L48 91 Z" fill="#000"/><path d="M58 84 L52 76 H56 L66 82 M58 88 L56 95 H59 L64 87" fill="#000" stroke="#000" stroke-width="1"/>';
       if (k === 'hijau') s += '<path d="M46 94 V76 M46 94 H76" stroke="#000" stroke-width="2"/><path d="M48 90 L56 85 L62 88 L72 78" fill="none" stroke="#000" stroke-width="2.5"/><path d="M67 77 H73 V83" fill="none" stroke="#000" stroke-width="2.5"/>';
       if (k === 'kuning') s += '<rect x="48" y="85" width="24" height="10" fill="#fff" stroke="#000" stroke-width="2"/><rect x="52" y="79" width="16" height="6" fill="#000"/><path d="M60 79 V74" stroke="#000" stroke-width="1.5"/><path d="M60 73 Q58 71 60 69 Q62 71 60 73 Z" fill="#000"/>';
+      if (k === 'gym') s += '<path d="M46 84 H74" stroke="#000" stroke-width="3"/><rect x="40" y="76" width="6" height="16" fill="#000"/><rect x="74" y="76" width="6" height="16" fill="#000"/><rect x="34" y="80" width="6" height="8" fill="#000"/><rect x="80" y="80" width="6" height="8" fill="#000"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
     }
@@ -12558,8 +12569,31 @@
         k = a[i];
         h += '<button type="button" class="kd-pd" data-kd-pilih="' + k + '">' + svgPondok(k) + '<small>' + KD_PD_SUB[k] + ' · ' + kdSenarai(k).length + ' barang</small></button>';
       }
+      // Pondok ke-5: GYM (senaman coach) — bukan kedai barang, buka page GYM sendiri
+      var sub = 'Senaman 5:00 ptg';
+      try { if (coachDataAkhir && coachHariData.id === coachHariId()) { var sh = coachSenHari(); sub += ' · ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ''); } } catch (e) {}
+      h += '<button type="button" class="kd-pd" data-kd-gym="1">' + svgPondok('gym') + '<small>' + sub + '</small></button>';
       el('kd-pondok').innerHTML = h;
     }
+    // ── GYM: page senaman (dipindah dari page COACH) ──
+    function bukaGym() {
+      if (!currentUser) return;
+      showScreen('screen-gym');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('gym-info').textContent = 'Memuatkan...';
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        el('gym-info').textContent = '';
+        coachLukisSenaman();
+      }).catch(function(e) { el('gym-info').textContent = 'Gagal memuat GYM: ' + ((e && e.message) || e); });
+    }
+    el('kd-pondok').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-kd-gym'))) t = t.parentNode;
+      if (t && t !== this) bukaGym();
+    });
+    el('btn-gym-keluar').onclick = function() { bukaKd(); };
+    el('btn-gym-coach').onclick = function() { bukaCoach(false); };
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
     function lukisPameran(teks) {
       var p = (KD.hijau || {}).pameran, it = p && kdCari(p.id);
@@ -12709,7 +12743,7 @@
     function bukaKd() {
       if (!currentUser) return;
       var a = document.querySelector('.screen.active'), g = a && a.querySelector('.gm-tab .gm-aktif');
-      if (a && a.id !== 'screen-kd' && a.id !== 'screen-hj' && a.id !== 'screen-mx' && a.id !== 'screen-cx') KD.dari = g ? g.getAttribute('data-gm-tab') : 'mini';
+      if (a && a.id !== 'screen-kd' && a.id !== 'screen-hj' && a.id !== 'screen-mx' && a.id !== 'screen-cx' && a.id !== 'screen-gym') KD.dari = g ? g.getAttribute('data-gm-tab') : 'mini';
       if (!hjAnim) { KD.kedai = ''; KD.pilih = null; KD.ubah = false; }
       showScreen('screen-kd');
       try { window.scrollTo(0, 0); } catch (e) {}
