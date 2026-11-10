@@ -6244,7 +6244,9 @@
   <!-- COACH (Fasa 1 + 2a) — dipapar bila tekan [ GAME ]: bubble ikut jadual + laporan pagi + 3 pai (bar + %) → TERUSKAN KE GAME -->
   <div id="screen-coach" class="screen">
     <div class="status-bar" id="coach-status">COACH</div>
-    <div id="coach-bubble" style="border:3px solid #000;border-radius:10px;padding:10px;margin:4px 0 6px;font-size:1.05rem;line-height:1.45;white-space:pre-line;">Memuatkan...</div>
+    <!-- COACH bercakap: watak + bubble (gaya penjaga pelabuhan) + butang jawapan -->
+    <div class="pj-kotak"><div class="pj-watak" id="coach-watak"></div><div class="pj-cakap" id="coach-bubble">Memuatkan...</div></div>
+    <div id="coach-jawab"></div>
     <button id="btn-coach-go" class="btn btn-primary" style="display:none;">GO</button>
     <div id="coach-laporan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:0 0 6px;"></div>
     <!-- Page COACH = bubble + GO + 3 PAI sahaja. Tugas → TAMAN SIHAT · Usaha → tab USAHA · Laporan & lain-lain → PROFIL -->
@@ -6740,7 +6742,7 @@
     </div>
     <div class="jw-info" id="ts-info">Buat tugas kesihatan di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).</div>
     <div id="ts-bangunan" class="kd-pondok"></div>
-    <div id="coach-tugas" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:8px 0 4px;"></div>
+    <div id="coach-tugas" style="display:none;"></div>
   </div>
   <!-- KAWASAN USAHA (tab USAHA, sebelah TAMAN SIHAT) — SURAU + PAWAGAM -->
   <div id="screen-us" class="screen">
@@ -10945,6 +10947,17 @@
       h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:4px 0;font-size:0.8rem;"><b>GANJARAN</b> (Ringgit Kuning — belanja di PARTY): sesi penuh ' + rm(EKO.GYM_SEN || 0) +
         ' · FACE ' + rm(EKO.GYM_FACE_SEN || 0) + ' · setiap 7 hari berturut +' + rm(EKO.GYM_STREAK_SEN || 0) + '<br><b>STREAK: ' + coachGymStreakKini() + ' hari</b> · jumlah sesi ' + (coachSenNyata().jumlahSesi || 0) +
         (sh.hs.siapAt ? ' · hari ini +' + rm((sh.hs.ganjaran || 0) + (sh.hs.ganjaranFace || 0)) : '') + '<div style="margin-top:2px;">' + lcH + '</div></div>';
+      var tS = tamanTugas('senaman');
+      if (tS) {
+        var recS = (coachHariData.hari.tugas || {})[tS.t.kunci], stS = coachStatusTugas(tS.t, coachMinitKini());
+        if (!recS && stS === 'ABAI' && coachMinitKini() < tS.j.tidur) {
+          h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;font-size:0.85rem;"><b>SENAMAN TERLEPAS</b> — masih boleh buat sekarang (stesen di bawah → SELESAI SESI), atau:<br>' +
+            (coachUIS.dapat ? 'Sebab tak dapat: <button type="button" data-cs="sebab" data-k="' + tS.t.kunci + '" data-v="SAKIT" style="' + btn + '">SAKIT</button><button type="button" data-cs="sebab" data-k="' + tS.t.kunci + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-cs="dapatbatal" style="' + btn + '">BATAL</button>' :
+              '<button type="button" data-cs="ganti" data-k="' + tS.t.kunci + '" style="' + btn + '">GANTI: ' + COACH_GANTI.senaman + '</button><button type="button" data-cs="dapat" style="' + btn + '">TAK DAPAT</button>') + '</div>';
+        } else if (recS && recS.s !== 'BUAT') {
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 7px;margin:4px 0;font-size:0.85rem;">Senaman hari ini: <b>' + (recS.s === 'GANTI' ? 'GANTI — ' + COACH_GANTI.senaman : 'TAK DAPAT · ' + (recS.sebab || '-')) + '</b></div>';
+        }
+      }
       if (!sh.hs.siapAt) h += coachLukisOtot(sh, btn);
       h += '<div style="font-size:0.8rem;margin:4px 0;">Tekan STESEN untuk tutorial &amp; log.</div><div style="text-align:center;font-size:0;">';
       for (i = 0; i < sh.senarai.length; i++) {
@@ -10979,6 +10992,16 @@
       while (t && t !== this && !t.getAttribute('data-cs')) t = t.parentNode;
       if (!t || t === this || !currentUser) return;
       var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
+      if (cs === 'dapat') { coachUIS.dapat = true; coachLukisSenaman(); return; }
+      if (cs === 'dapatbatal') { coachUIS.dapat = false; coachLukisSenaman(); return; }
+      if (cs === 'ganti' || cs === 'sebab') {
+        var kS = t.getAttribute('data-k'), dS = { tugas: {} };
+        dS.tugas[kS] = cs === 'ganti' ? { s: 'GANTI', at: now } : { s: 'TAK_DAPAT', at: now, sebab: t.getAttribute('data-v') };
+        coachUIS.dapat = false;
+        coachSimpanHari(dS, function() { (coachHariData.hari.tugas || (coachHariData.hari.tugas = {}))[kS] = dS.tugas[kS]; });
+        coachLukisSenaman();
+        return;
+      }
       if (cs === 'buka') { coachUIS = { buka: t.getAttribute('data-k'), kg: null }; coachLukisSenaman(); return; }
       if (cs === 'tutup') { coachUIS = { buka: '', kg: null }; coachLukisSenaman(); return; }
       if (cs === 'ototbuka') { coachUISOtot = !coachUISOtot; coachLukisSenaman(); return; }
@@ -11455,13 +11478,35 @@
         Fakta: 'ulang kaji di Laci Fakta'
       }[f] || 'teruskan usaha';
     }
+    // ══ COACH BERCAKAP (watak + dialog, gaya penjaga pelabuhan) ══
+    // Coach cakap satu babak demi satu babak. Butang jawapan = terus ke tempat tugas. SETERUSNYA → babak berikut.
+    var coachBabak = [], coachBabakI = 0;
+    function coachLukisBabak() {
+      var b = coachBabak[coachBabakI], box = el('coach-jawab'), h = '', i;
+      if (!b || !box) return;
+      penjaga('coach-watak', 'coach', b.aksi || 'diam', b.c, 'coach-bubble');
+      for (i = 0; b.b && i < b.b.length; i++) h += '<button type="button" class="btn' + (i === 0 ? ' btn-primary' : '') + '" data-cj="' + i + '">' + b.b[i][0] + '</button>';
+      if (coachBabakI < coachBabak.length - 1) h += '<button type="button" class="btn" data-cj="lagi">' + (b.b && b.b.length ? 'NANTI · SETERUSNYA ›' : 'SETERUSNYA ›') + '</button>';
+      else if (coachBabak.length > 1) h += '<button type="button" class="btn" data-cj="ulang">‹ DENGAR SEMULA</button>';
+      box.innerHTML = h;
+    }
+    el('coach-jawab').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-cj')) t = t.parentNode;
+      if (!t || t === this) return;
+      var v = t.getAttribute('data-cj');
+      if (v === 'lagi') { coachBabakI++; coachLukisBabak(); return; }
+      if (v === 'ulang') { coachBabakI = 0; coachLukisBabak(); return; }
+      var b = coachBabak[coachBabakI];
+      if (b && b.b && b.b[+v]) b.b[+v][1]();
+    };
     function coachLukisBubble(fokus, salam, kunciTeks) {
-      var now = new Date(), b = coachKunciMesej ? coachKunciMesej + '\n' : '', go = null, kk = coachKiraKesihatan();
-      b += salam + ' Sekarang pukul ' + coachTeksMasa(now.getHours() * 60 + now.getMinutes()) + '.\n\n';
-      var j = coachJadualKini();
+      var now = new Date(), kk = coachKiraKesihatan(), j = coachJadualKini(), B = [], jamTeks = coachTeksMasa(now.getHours() * 60 + now.getMinutes());
+      function babak(c, aksi, butang) { B.push({ c: c, aksi: aksi, b: butang || [] }); }
+      var goF = coachFokusGo(fokus);
+      if (coachKunciMesej) babak(coachKunciMesej, 'marah');
       if (!coachHariData.hari.laporanAt || !j) {
-        b += 'SEKARANG: isi LAPORAN PAGI (bangun, tidur, lampu). Jadual hari ini disusun ikut waktu bangun.';
-        go = ['ISI LAPORAN PAGI', function() { coachMulaLaporan(); }];
+        babak(salam + ' Dah ' + jamTeks + ' ni.\nSebelum mula, bagitahu saya dulu: pukul berapa awak bangun tadi, dan pukul berapa tidur semalam?', 'masuk', [['ISI LAPORAN PAGI', function() { coachMulaLaporan(); }]]);
       } else {
         var kini = coachMinitKini(), dah = coachHariData.hari.tugas || {}, aktif = null, seterus = null, abai = [], i, x;
         for (i = 0; i < j.tugas.length; i++) {
@@ -11471,46 +11516,46 @@
           else if (x.min <= kini && kini < x.min + (COACH_TETINGKAP[x.jenis] || 30)) { if (!aktif || x.jenis !== 'fokus') aktif = x; }
           if (!seterus && x.min > kini) seterus = x;
         }
+        babak(salam + ' Sekarang pukul ' + jamTeks + '.', 'masuk');
         if (kk.kunci && !kk.lepasTidur) {
-          b += kunciTeks.split('\n')[0] + '\nSEKARANG: buka kunci — buat tugas yang DIABAIKAN (SIAP lewat) atau GANTI.';
-          go = ['KE SENARAI TUGAS (TAMAN SIHAT)', function() { bukaJadual(); }];
+          babak('Hah, laci saya KUNCI dulu!\nBanyak sangat tugas terlepas hari ni — markah ' + kk.markah + ', had saya ' + COACH_HAD_KUNCI + '.\nPergi Taman Sihat, cari bangunan yang ada tanda TERLEPAS. Siapkan lewat pun tak apa, atau buat GANTI.', 'marah',
+            [['JOM KE TAMAN SIHAT', function() { bukaTs(); }]]);
         } else if (kini >= j.tidur) {
-          b += kunciTeks + 'SEKARANG: masa tidur. Tutup lampu dan rehat.';
-          if (!dah.tidur) go = ['BILIK TIDUR (tekan LAMPU DITUTUP)', function() { bukaBilik(); }];
+          babak('Dah lewat ni. Masa tidur dah sampai.\nTutup lampu, rehat. Esok kita sambung, ok?', 'diam', dah.tidur ? [] : [['KE BILIK TIDUR (LAMPU DITUTUP)', function() { bukaBilik(); }]]);
         } else if (aktif && aktif.jenis === 'air') {
-          b += 'SEKARANG: minum 1 gelas air kosong (slot ' + aktif.kunci.replace('air', '') + ').';
-          go = ['KE MAKMAL HIDRASI (log ml)', function() { bukaMakmal(aktif.kunci); }];
+          babak('Haus tak? Dah sampai masa minum — segelas air kosong (slot ' + aktif.kunci.replace('air', '') + ').\nLepas minum, log kat Makmal ya.', 'masuk', [['JOM KE MAKMAL HIDRASI', function() { bukaMakmal(aktif.kunci); }]]);
         } else if (aktif && aktif.jenis === 'senaman') {
-          b += 'SEKARANG: senaman ' + coachSenHari().g + ' ' + coachSenHari().s + ' di GYM, kemudian rutin FACE.';
-          go = ['PERGI KE GYM', function() { bukaGym(); }];
+          babak('Pukul 5 dah! Masa senaman.\nHari ni ' + coachSenHari().g + ' ' + coachSenHari().s + '. Lepas habis stesen, jangan lupa FACE.', 'gembira', [['JOM KE GYM', function() { bukaGym(); }]]);
         } else if (aktif && aktif.jenis === 'fokus') {
-          b += 'SEKARANG: FOKUS 90 MINIT — ' + (fokus || 'usaha') + ': ' + coachFokusTeks(fokus) + '. Satu kerja sahaja. Telefon jauh — app Kindle boleh guna (tidak dikunci).';
-          go = coachFokusGo(fokus);
+          babak('Masa FOKUS 90 minit.\nHari ni buat ' + (fokus || 'usaha') + ' — ' + coachFokusTeks(fokus) + '.\nSatu kerja je. Telefon jauhkan; Kindle ni boleh guna.', 'diam', goF ? [goF] : []);
         } else if (aktif && (aktif.jenis === 'matahari' || aktif.jenis === 'petang')) {
-          b += 'SEKARANG: ' + aktif.nama + ' — sekurang-kurangnya ' + COACH_TAMAN_MIN[aktif.jenis] + ' min di luar.';
-          go = ['PERGI KE TAMAN', function() { bukaTaman(); }];
+          babak((aktif.jenis === 'matahari' ? 'Pagi-pagi ni, keluar kejap ambil cahaya matahari.' : 'Petang ni, keluar ambil cahaya kejap.') + '\nSekurang-kurangnya ' + COACH_TAMAN_MIN[aktif.jenis] + ' minit kat luar. Tekan KELUAR masa pergi, DAH MASUK masa balik.', 'masuk',
+            [['JOM KE TAMAN', function() { bukaTaman(); }]]);
         } else if (aktif && (aktif.jenis === 'malap' || aktif.jenis === 'sigh')) {
-          b += 'SEKARANG: malapkan lampu + physiological sigh ' + COACH_SIGH_BIL + ' pusingan. Telefon jauh; app Kindle boleh guna (cahaya rendah).';
-          go = ['KE BILIK TIDUR', function() { bukaBilik(); }];
-        } else if (aktif) {
-          b += 'SEKARANG: ' + aktif.nama + '.';
-          go = ['KE SENARAI TUGAS (TAMAN SIHAT)', function() { bukaJadual(); }];
+          babak('Dah dekat masa tidur.\nMalapkan lampu dulu, lepas tu tarik nafas — sigh ' + COACH_SIGH_BIL + ' kali.\nTelefon jauhkan. Kindle boleh, cahaya rendah.', 'diam', [['KE BILIK TIDUR', function() { bukaBilik(); }]]);
         } else {
-          b += 'SEKARANG: tiada tugas kesihatan. Usaha: ' + (fokus || 'teruskan') + ' — ' + coachFokusTeks(fokus) + '.';
-          go = coachFokusGo(fokus);
+          babak('Tak ada tugas kesihatan sekarang. Bagus!\nJom belajar: ' + (fokus || 'teruskan') + ' — ' + coachFokusTeks(fokus) + '.', 'gembira', goF ? [goF] : []);
         }
         if (abai.length && !kk.kunci) {
-          var na = []; for (i = 0; i < abai.length; i++) na.push(abai[i].jenis === 'air' ? 'AIR slot ' + abai[i].kunci.replace('air', '') : abai[i].nama.split(' — ')[0]);
-          b += '\nTertunggak: ' + na.join(', ') + ' (boleh SIAP lewat / GANTI di senarai tugas TAMAN SIHAT).';
+          var na = []; for (i = 0; i < abai.length; i++) na.push(abai[i].jenis === 'air' ? 'air slot ' + abai[i].kunci.replace('air', '') : abai[i].nama.split(' — ')[0].toLowerCase());
+          babak('Oh ya... tadi ada yang terlepas: ' + na.join(', ') + '.\nMasih boleh buat lewat. Bangunan yang ada tanda TERLEPAS kat Taman Sihat tu.', 'sedih', [['KE TAMAN SIHAT', function() { bukaTs(); }]]);
         }
-        if (seterus) b += '\nSeterusnya: ' + seterus.nama.split(' — ')[0] + ' — ' + coachTeksMasa(seterus.min);
-        b += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
+        var mb = coachHariData.hari.minitBelajar || {}, mBa = (mb.bahasa || 0) + (coachHariData.hari.listening || 0), mFa = mb.fakta || 0;
+        if (kini < j.tidur) {
+          var tUsaha = 'Belajar hari ni: Bahasa ' + mBa + ' min, Fakta ' + mFa + ' min.';
+          if (mBa + mFa === 0) tUsaha += '\nBelum mula lagi. Sikit pun jadi!';
+          else if (mFa < mBa) tUsaha += '\nFakta ketinggalan ' + (mBa - mFa) + ' min. Seimbangkan sikit.';
+          else if (mBa < mFa) tUsaha += '\nBahasa ketinggalan ' + (mFa - mBa) + ' min. Seimbangkan sikit.';
+          else tUsaha += '\nSeimbang. Cantik!';
+          babak(tUsaha, mBa + mFa && Math.abs(mBa - mFa) <= 10 ? 'gembira' : 'diam',
+            mFa < mBa ? [['BUKA LACI FAKTA', function() { el('btn-go-fakta').click(); }]] : (mBa < mFa ? [['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }]] : []));
+        }
+        babak((seterus ? 'Lepas ni: ' + seterus.nama.split(' — ')[0].toLowerCase() + ', pukul ' + coachTeksMasa(seterus.min) + '.\n' : '') + 'Sasaran tidur malam ni: ' + coachTeksMasa(j.tidur) + '.\nItu je dari saya. Pai awak ada kat bawah.', 'masuk');
       }
-      el('coach-bubble').textContent = b;
+      coachBabak = B; coachBabakI = 0;
+      coachLukisBabak();
       var g = el('btn-coach-go');
-      coachGoFn = go ? go[1] : null;
-      g.textContent = go ? 'GO → ' + go[0] : 'GO';
-      g.style.display = go ? 'block' : 'none';
+      coachGoFn = null; g.style.display = 'none';
       coachLabelSek();
     }
     el('btn-coach-go').onclick = function() { if (coachGoFn) coachGoFn(); };
@@ -12219,6 +12264,9 @@
         '<path d="M20 24 Q22 8 40 8 Q58 8 60 24 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><rect x="18" y="22" width="44" height="5" fill="#000"/><text x="40" y="20" font-size="7" text-anchor="middle" fill="#000" font-weight="bold">PERAK</text>' :
         topi === 'emas' ?
         '<rect x="24" y="7" width="32" height="17" rx="3" fill="#000"/><rect x="20" y="22" width="40" height="4" fill="#000"/><text x="40" y="19" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">EMAS</text>' :
+        topi === 'coach' ?
+        '<path d="M21 25 Q22 6 40 6 Q58 6 59 25 Z" fill="#000"/><rect x="56" y="21" width="17" height="5" rx="2.5" fill="#000"/><text x="40" y="20" font-size="7.5" text-anchor="middle" font-weight="bold" fill="#fff">COACH</text>' +
+        '<path d="M52 66 Q60 70 64 64" fill="none" stroke="#000" stroke-width="1.5"/><rect x="62" y="60" width="10" height="6" rx="2" fill="#000"/>' :
         topi === 'tiket' ?
         '<path d="M22 24 Q40 6 58 24 Z" fill="#000"/><rect x="52" y="21" width="16" height="4" rx="2" fill="#000"/>' +
         '<rect x="29" y="11" width="22" height="9" fill="#fff" stroke="#000" stroke-width="1.2"/><text x="40" y="18" font-size="6" text-anchor="middle" font-weight="bold" fill="#000">TIKET</text>' :
@@ -12983,6 +13031,26 @@
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
     }
+    // Tanda atas bangunan: "n TERLEPAS" (hitam) · "SEKARANG" · "SIAP" — ganti senarai tugas panjang
+    var TS_JENIS = { gym: ['senaman'], taman: ['matahari', 'petang'], makmal: ['air'], tidur: ['malap', 'sigh', 'tidur'] };
+    function tsTanda(k) {
+      if (coachHariData.id !== coachHariId() || !coachHariData.hari.laporanAt) return '';
+      var j = coachJadualKini(), kini = coachMinitKini(), tg = coachHariData.hari.tugas || {}, abai = 0, skrg = false, jum = 0, siap = 0, i, x, st;
+      if (!j) return '';
+      if (k === 'nutrisi') { var km = coachKiraKesihatan().kat.makan; return km && km.st === 'MERAH' ? 'TERLEPAS' : (km && km.st === 'HIJAU' ? 'SIAP' : ''); }
+      var js = TS_JENIS[k];
+      if (!js) return '';
+      for (i = 0; i < j.tugas.length; i++) {
+        x = j.tugas[i];
+        if (js.indexOf(x.jenis) === -1) continue;
+        jum++;
+        if (tg[x.kunci]) { siap++; continue; }
+        st = coachStatusTugas(x, kini);
+        if (x.jenis !== 'tidur' && st === 'ABAI' && kini < j.tidur) abai++;
+        else if (st === 'SEKARANG' || (x.jenis === 'tidur' && kini >= x.min - 60)) skrg = true;
+      }
+      return abai ? abai + ' TERLEPAS' : (skrg ? 'SEKARANG' : (jum && siap === jum ? 'SIAP' : ''));
+    }
     function lukisTs() {
       var h = '', i, b, sub;
       for (i = 0; i < TS_BANGUNAN.length; i++) {
@@ -13002,7 +13070,11 @@
         if (b[0] === 'makmal') {
           try { if (coachHariData.id === coachHariId()) { var mn = coachHariData.hari.minum || [], mlT = 0, q; for (q = 0; q < mn.length; q++) mlT += mn[q].ml || 0; sub = 'Air ' + mlT + ' ml · kencing ' + (coachHariData.hari.kencing || []).length + ' kali'; } } catch (e) {}
         }
-        h += '<button type="button" class="kd-pd" data-ts="' + b[0] + '"' + (b[3] ? '' : ' style="opacity:0.85;"') + '>' + svgBangunan(b[0], b[1], b[3]) + '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
+        var tanda = '';
+        try { tanda = tsTanda(b[0]); } catch (e) {}
+        h += '<button type="button" class="kd-pd" data-ts="' + b[0] + '"' + (b[3] ? '' : ' style="opacity:0.85;"') + '>' +
+          (tanda ? '<span style="display:block;margin:0 auto 2px;padding:2px 4px;border:2px solid #000;border-radius:5px;font-weight:bold;font-size:0.75rem;' + (tanda.indexOf('TERLEPAS') !== -1 ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + tanda + '</span>' : '') +
+          svgBangunan(b[0], b[1], b[3]) + '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
       }
       el('ts-bangunan').innerHTML = h;
     }
@@ -13018,7 +13090,7 @@
         coachLukisTugas();
         if (coachHariData.hari.laporanAt) {
           var kk = coachKiraKesihatan();
-          el('ts-info').textContent = 'Buat tugas di setiap bangunan → Ringgit Kuning. Markah diabaikan ' + kk.markah + '/' + COACH_HAD_KUNCI + (kk.kunci ? ' · LACI DIKUNCI (lihat senarai tugas di bawah)' : '');
+          el('ts-info').textContent = 'Buat tugas di setiap bangunan → Ringgit Kuning. Markah diabaikan ' + kk.markah + '/' + COACH_HAD_KUNCI + (kk.kunci ? ' · LACI DIKUNCI (siapkan bangunan bertanda TERLEPAS)' : '');
         }
         if (typeof selepas === 'function') selepas();
       }).catch(function() {});
@@ -13228,7 +13300,10 @@
             h += '<div>Berapa ml? <button type="button" data-mk="ml" data-k="' + k + '" data-v="250" style="' + btn + '">250</button><button type="button" data-mk="ml" data-k="' + k + '" data-v="350" style="' + btn + '">350</button>' +
               '<button type="button" data-mk="ml" data-k="' + k + '" data-v="500" style="' + btn + '">500</button><br>atau: <input type="text" inputmode="numeric" id="makmal-ml" style="width:70px;font-size:1rem;padding:3px;border:2px solid #000;"> ml ' +
               '<button type="button" data-mk="mlin" data-k="' + k + '" style="' + btnA + '">SIMPAN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
-          } else h += '<div><button type="button" data-mk="minum" data-k="' + k + '" style="' + (st === 'SEKARANG' ? btnA : btn) + '">' + (st === 'ABAI' ? 'MINUM SEKARANG (lewat)' : 'MINUM') + '</button></div>';
+          } else if (makmalUI.dapat === k) {
+            h += '<div>Sebab tak dapat: <button type="button" data-mk="sebab" data-k="' + k + '" data-v="SAKIT" style="' + btn + '">SAKIT</button><button type="button" data-mk="sebab" data-k="' + k + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
+          } else h += '<div><button type="button" data-mk="minum" data-k="' + k + '" style="' + (st === 'SEKARANG' ? btnA : btn) + '">' + (st === 'ABAI' ? 'MINUM SEKARANG (lewat)' : 'MINUM') + '</button>' +
+            (st === 'ABAI' ? '<button type="button" data-mk="dapat" data-k="' + k + '" style="' + btn + '">TAK DAPAT</button>' : '') + '</div>';
         }
         h += '</div>';
       }
@@ -13298,8 +13373,17 @@
       if (!t || t === this || !currentUser) return;
       var mk = t.getAttribute('data-mk'), k = t.getAttribute('data-k') || '';
       if (mk === 'coach') { bukaCoach(false); return; }
-      if (mk === 'minum') { makmalUI.ml = k; lukisMakmal(); return; }
-      if (mk === 'batal') { makmalUI.ml = ''; lukisMakmal(); return; }
+      if (mk === 'minum') { makmalUI.ml = k; makmalUI.dapat = ''; lukisMakmal(); return; }
+      if (mk === 'batal') { makmalUI.ml = ''; makmalUI.dapat = ''; lukisMakmal(); return; }
+      if (mk === 'dapat') { makmalUI.dapat = k; makmalUI.ml = ''; lukisMakmal(); return; }
+      if (mk === 'sebab') {
+        var dK = { tugas: {} };
+        dK.tugas[k] = { s: 'TAK_DAPAT', at: Date.now(), sebab: t.getAttribute('data-v') };
+        makmalUI.dapat = '';
+        coachSimpanHari(dK, function() { (coachHariData.hari.tugas || (coachHariData.hari.tugas = {}))[k] = dK.tugas[k]; });
+        lukisMakmal();
+        return;
+      }
       if (mk === 'ml') { makmalSimpanMl(k, parseInt(t.getAttribute('data-v'), 10)); return; }
       if (mk === 'mlin') {
         var inp = document.getElementById('makmal-ml'), n = parseInt(((inp && inp.value) || '').replace(/[^0-9]/g, ''), 10);
@@ -13620,9 +13704,7 @@
     el('btn-us-surau-coach').onclick = function() { bukaCoach(false); };
     el('btn-us-pawagam-coach').onclick = function() { bukaCoach(false); };
     // ── Senarai TUGAS KESIHATAN (dipindah ke TAMAN SIHAT) ──
-    function bukaJadual() {
-      bukaTs(function() { var b = el('coach-tugas'); if (b) { try { b.scrollIntoView(); } catch (e) {} } });
-    }
+    function bukaJadual() { bukaTs(); }
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
     function lukisPameran(teks) {
       var p = (KD.hijau || {}).pameran, it = p && kdCari(p.id);
