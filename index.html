@@ -10707,34 +10707,11 @@
     var coachNotaBilik = '<div style="font-size:0.78rem;">Buat di BILIK TIDUR (Game → USAHA → BILIK TIDUR).</div>';
     var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
     var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
+    // SENARAI SENAMAN DIKOSONGKAN — senaman baru akan dimasukkan semula. Struktur kumpulan (LOWER / MIDDLE / UPPER × A / B) dikekalkan.
     var COACH_RUTIN = {
-      LOWER: {
-        A: [['gobletSquat', 'Goblet squat', 'rep', 5, 0, 'C,A'], ['rdl', 'Romanian deadlift (RDL)', 'rep', 5, 0, 'B,A'], ['hipThrust', 'Hip thrust', 'rep', 5, 0, 'A'],
-          ['bridgeBantal', 'Glute bridge picit bantal', 'rep', null, 0, 'A,D'], ['abduksi', 'Side-lying hip abduction', 'rep', null, 1, 'A'],
-          ['calfBerdiri', 'Standing calf raise', 'rep', 0, 0, 'E'], ['toeRaise', 'Toe raise', 'rep', null, 0, 'F'], ['wallSit', 'Wall sit hold', 'saat', null, 0, 'C']],
-        B: [['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A'], ['hamBridge', 'Hamstring bridge hold (kaki atas kerusi)', 'saat', null, 0, 'B'],
-          ['slBridge', 'Single-leg glute bridge', 'rep', null, 1, 'A'], ['sumoSquat', 'Sumo squat', 'rep', 5, 0, 'D,C'], ['copenhagen', 'Copenhagen plank', 'saat', null, 1, 'D'],
-          ['clamshell', 'Clamshell', 'rep', null, 1, 'A'], ['calfDuduk', 'Seated calf raise', 'rep', 5, 0, 'E'], ['heelWalk', 'Heel walk', 'saat', null, 0, 'F'],
-          ['bridgeHold', 'Glute bridge hold', 'saat', null, 0, 'A']]
-      },
-      MIDDLE: {
-        A: [['pushUp', 'Push-up (lutut jika perlu)', 'rep', null, 0, 'G'], ['floorPress', 'DB floor press', 'rep', 5, 0, 'G'], ['row', 'One-arm DB row', 'rep', 5, 1, 'H'],
-          ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['sidePlank', 'Side plank', 'saat', null, 1, 'J'], ['sideBend', 'DB side bend', 'rep', 5, 1, 'J,I'],
-          ['birdDog', 'Bird dog hold', 'saat', null, 1, 'I'], ['hollow', 'Hollow body hold', 'saat', null, 0, 'J']],
-        B: [['inclinePush', 'Incline push-up (tangan atas kerusi)', 'rep', null, 0, 'G'], ['pullover', 'DB pullover (lantai)', 'rep', 5, 0, 'H,G'],
-          ['rowTahan', 'One-arm DB row (tahan 3 saat di atas)', 'rep', 5, 1, 'H'], ['revCrunch', 'Reverse crunch', 'rep', null, 0, 'J'],
-          ['russian', 'Russian twist (KB 6 kg)', 'rep', 6, 0, 'J'], ['suitcase', 'Suitcase carry', 'saat', 5, 1, 'J,N'], ['superman', 'Superman hold', 'saat', null, 0, 'I'],
-          ['plank', 'Plank', 'saat', null, 0, 'J']]
-      },
-      UPPER: {
-        A: [['ohp', 'DB overhead press (duduk)', 'rep', 5, 0, 'K'], ['lateral', 'Lateral raise', 'rep', 2.5, 0, 'K'], ['revFly', 'Bent-over reverse fly', 'rep', 2.5, 0, 'L'],
-          ['curl', 'DB curl', 'rep', 5, 0, 'M'], ['ohTri', 'DB overhead triceps extension', 'rep', 5, 0, 'M'], ['shrug', 'DB shrug', 'rep', 5, 0, 'L'],
-          ['wrist', 'Wrist curl + reverse wrist curl', 'rep', 2.5, 0, 'N'], ['leherIso', 'Leher: isometrik 4 arah (tangan)', 'saat', null, 0, 'O']],
-        B: [['declinePush', 'Push-up kaki atas kerusi (dada atas)', 'rep', null, 0, 'G,K'], ['scaption', 'Scaption raise (ringan)', 'rep', 2.5, 0, 'K'],
-          ['ytHold', 'Prone Y-T hold', 'saat', null, 0, 'L'], ['extRot', 'Side-lying external rotation', 'rep', 2.5, 1, 'K'],
-          ['hammer', 'Hammer / Zottman curl', 'rep', 5, 0, 'M'], ['slTri', 'Single-arm overhead triceps extension', 'rep', 2.5, 1, 'M'],
-          ['farmer', "Farmer's hold + pronasi / supinasi DB", 'saat', 5, 0, 'N'], ['leherB', 'Leher: chin tuck hold + prone neck extension + side-lying neck raise', 'saat', null, 0, 'O']]
-      }
+      LOWER: { A: [], B: [] },
+      MIDDLE: { A: [], B: [] },
+      UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
       A: 'Eyebrow raise hold + lawan jari · alternate eyebrow raise · eye squeeze hold · lower eyelid raise · nasal flare hold · frown hold (3 kali sahaja) · tarik kulit kepala ke belakang · latihan telinga depan cermin',
@@ -11281,7 +11258,8 @@
       }
       if (!sh.hs.siapAt) h += coachLukisOtot(sh, btn);
       // Senarai latihan (gaya app workout): satu baris setiap latihan → tekan untuk tutorial / log manual. MULA SENAMAN = mod set + rehat.
-      if (!sh.hs.siapAt) h += '<button type="button" data-cs="wkmula" style="display:block;width:100%;padding:12px;margin:6px 0;font-size:1.2rem;font-weight:bold;border:3px solid #000;border-radius:10px;background:#000;color:#fff;">' +
+      if (!sh.senarai.length) h += '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;font-size:0.9rem;"><b>SENARAI SENAMAN KOSONG</b><br>Senaman baru akan dimasukkan tidak lama lagi. Buat dulu jalan ringan / regangan 10 min, kemudian tekan SELESAI di bawah.</div>';
+      else if (!sh.hs.siapAt) h += '<button type="button" data-cs="wkmula" style="display:block;width:100%;padding:12px;margin:6px 0;font-size:1.2rem;font-weight:bold;border:3px solid #000;border-radius:10px;background:#000;color:#fff;">' +
         (n ? 'SAMBUNG SENAMAN' : 'MULA SENAMAN') + '</button>';
       h += '<div style="border:2px solid #000;border-radius:8px;margin:4px 0;">';
       for (i = 0; i < sh.senarai.length; i++) {
