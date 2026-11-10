@@ -6247,6 +6247,8 @@
     <div id="coach-hari" style="font-size:0.85rem;margin:4px 0;white-space:pre-line;"></div>
     <div id="coach-tugas" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div id="coach-makan" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div id="coach-zat" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div id="coach-senaman" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div id="coach-usaha" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div id="coach-pai"></div>
     <button id="btn-coach-pening" class="btn">LAPOR PENING (sekarang)</button>
@@ -9610,20 +9612,24 @@
       if (!paksa) {
         try {
           var c = JSON.parse(localStorage.getItem(coachCacheKunci()) || 'null');
-          if (c && c.at && Date.now() - c.at < COACH_SEGAR_MS) return Promise.resolve(c);
+          if (c && c.at && c.hasOwnProperty('profil') && c.hasOwnProperty('senaman') && Date.now() - c.at < COACH_SEGAR_MS) return Promise.resolve(c);
         } catch (e) {}
       }
       return Promise.all([
         coachKira('bahasa_sr_queue'), coachKira('fakta_sr_queue'),
         coachKira('reasoning_sr_queue'), coachKira('presenting_sr_queue'), coachVocab(),
         kol('coach').doc('tetapan').get().catch(function() { return null; }),
-        kol('coach').doc('stok').get().catch(function() { return null; })
+        kol('coach').doc('stok').get().catch(function() { return null; }),
+        kol('coach').doc('profil').get().catch(function() { return null; }),
+        kol('coach').doc('senaman').get().catch(function() { return null; })
       ]).then(function(r) {
         var t = (r[5] && r[5].exists) ? r[5].data() : {};
         var stok = (r[6] && r[6].exists) ? r[6].data() : {};
         var data = {
           at: Date.now(), ayat: r[0], kuliah: r[1], reasoning: r[2], presenting: r[3],
-          vocab: r[4].level, vocabGame: r[4].game, musim: t.musim || 'CUTI', listening: stok.listening || 0
+          vocab: r[4].level, vocabGame: r[4].game, musim: t.musim || 'CUTI', listening: stok.listening || 0,
+          profil: (r[7] && r[7].exists) ? r[7].data() : null,
+          senaman: (r[8] && r[8].exists) ? r[8].data() : {}
         };
         try { localStorage.setItem(coachCacheKunci(), JSON.stringify(data)); } catch (e) {}
         return data;
@@ -9962,11 +9968,11 @@
             coachBtnKecil('sebab', t.kunci + '|LAIN', 'LAIN') + coachBtnKecil('batal', t.kunci, 'BATAL');
         } else if (st === 'ABAI') {
           // Denda: buat tugas asal (lewat → markah penuh dibuang) ATAU tugas ganti (separuh)
-          h += '<div>' + coachBtnKecil('siap', t.kunci, 'SIAP (lewat)') +
+          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : coachBtnKecil('siap', t.kunci, 'SIAP (lewat)')) +
             (COACH_GANTI[t.jenis] ? coachBtnKecil('ganti', t.kunci, 'GANTI: ' + COACH_GANTI[t.jenis]) : '') +
             coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         } else {
-          h += '<div>' + coachBtnKecil('siap', t.kunci, 'SIAP') + coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
+          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : coachBtnKecil('siap', t.kunci, 'SIAP')) + coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         }
         h += '</div>';
       }
@@ -10130,6 +10136,8 @@
       coachLukisHari();
       coachLukisTugas();
       coachLukisMakan();
+      coachLukisZat();
+      coachLukisSenaman();
       coachLukisUsaha();
     }
     function bukaCoach(paksa) {
@@ -10221,7 +10229,7 @@
           '<div style="font-size:0.7rem;">Timbang MENTAH. Sumber zat: ' + mk.sumber + '</div>';
       } else {
         h += '<div style="margin-top:4px;">';
-        for (k in COACH_MAKANAN) if (COACH_MAKANAN.hasOwnProperty(k)) h += '<button type="button" data-cm="pilih" data-v="' + k + '" style="' + btn + '">+ ' + COACH_MAKANAN[k].nama + '</button>';
+        for (k in COACH_MAKANAN) if (COACH_MAKANAN.hasOwnProperty(k)) h += '<button type="button" data-cm="pilih" data-v="' + k + '" style="' + btn + '">+ ' + COACH_MAKANAN[k].nama + (coachKurangkan(k) ? ' · KURANGKAN HARI INI' : '') + '</button>';
         h += '</div>';
       }
       box.innerHTML = h;
@@ -10246,6 +10254,315 @@
         var hr = coachHariData.hari;
         (hr.makan || (hr.makan = [])).push(rekod);
       });
+    };
+    // ══════════ COACH — FASA 3b: PROFIL + MONITOR ZAT (ikut nama zat) ══════════
+    // Profil: users/{uid}/coach/profil { jantina 'L'/'P', umur, berat, tinggi, beratAt } · berat juga disimpan ke coach_hari/{id}.berat (sejarah).
+    // Timbang berat: AHAD pagi. Sasaran = DRI rasmi dewasa (National Academies, jadual ringkasan Dietary Reference Intakes, NAP 25353).
+    // Status: jumlah > had → LEBIH · jumlah ≥ sasaran → CUKUP · zat TIADA had → CUKUP sahaja (tiada LEBIH).
+    // Had natrium = CDRR 2300 mg. Had magnesium / niasin / folat / vit E / vit A rasmi hanya untuk suplemen / makanan fortifikasi / retinol → tiada LEBIH dari buah / sayur.
+    // "Tinggi dalam" = 100 g makanan beri ≥ 20% sasaran. Tenaga = Mifflin-St Jeor × 1.375 (ANDAIAN aktiviti ringan).
+    // Gula: rujukan WHO gula bebas < 10% tenaga — gula dalam buah / sayur BUKAN gula bebas → INFO sahaja.
+    var COACH_AKTIVITI = 1.375;
+    function coachDRI(p) {
+      var L = p.jantina === 'L', u = p.umur, d = {};
+      function s(k, sas, had, nota) { d[k] = { s: sas, h: had || 0, n: nota || '' }; }
+      s('karbo', 130); s('protein', Math.round(0.8 * p.berat * 10) / 10, 0, '0.8 g/kg');
+      s('serat', L ? (u <= 50 ? 38 : 30) : (u <= 50 ? 25 : 21));
+      s('kalsium', (L ? u > 70 : u > 50) ? 1200 : 1000, u <= 50 ? 2500 : 2000);
+      s('besi', !L && u <= 50 ? 18 : 8, 45);
+      s('magnesium', L ? (u <= 30 ? 400 : 420) : (u <= 30 ? 310 : 320), 0, 'had 350 mg hanya suplemen');
+      s('fosforus', 700, u > 70 ? 3000 : 4000);
+      s('kalium', L ? 3400 : 2600); s('natrium', 1500, 2300, 'had = CDRR');
+      s('zink', L ? 11 : 8, 40); s('kuprum', 0.9, 10); s('mangan', L ? 2.3 : 1.8, 11);
+      s('selenium', 55, 400); s('fluorida', L ? 4000 : 3000, 10000);
+      s('vitC', L ? 90 : 75, 2000); s('tiamin', L ? 1.2 : 1.1); s('riboflavin', L ? 1.3 : 1.1);
+      s('niasin', L ? 16 : 14, 0, 'had 35 mg hanya suplemen / fortifikasi'); s('pantotenik', 5);
+      s('vitB6', u <= 50 ? 1.3 : (L ? 1.7 : 1.5), 100);
+      s('folat', 400, 0, 'had 1000 µg hanya suplemen / fortifikasi');
+      s('kolin', L ? 550 : 425, 3500); s('vitB12', 2.4);
+      s('vitA', L ? 900 : 700, 0, 'had 3000 µg hanya retinol (bukan karotenoid buah / sayur)');
+      s('vitE', 15, 0, 'had 1000 mg hanya suplemen'); s('vitD', u > 70 ? 20 : 15, 100); s('vitK', L ? 120 : 90);
+      return d;
+    }
+    function coachTenaga(p) {
+      var bmr = 10 * p.berat + 6.25 * p.tinggi - 5 * p.umur + (p.jantina === 'L' ? 5 : -161);
+      return Math.round(bmr * COACH_AKTIVITI);
+    }
+    function coachProfil() { var p = coachDataAkhir && coachDataAkhir.profil; return p && p.umur && p.berat && p.tinggi && p.jantina ? p : null; }
+    function coachZatStatus() {
+      var p = coachProfil(), z = coachMakanHari().zat, out = { baris: [], lebih: {} };
+      if (!p) return out;
+      var d = coachDRI(p), k;
+      var kc = coachTenaga(p), jk = z.kcal || 0;
+      out.baris.push({ k: 'kcal', j: jk, s: kc, h: kc, st: jk > kc ? 'LEBIH' : (jk >= kc ? 'CUKUP' : Math.round(jk / kc * 100) + '%'), n: 'Mifflin-St Jeor × ' + COACH_AKTIVITI + ' (andaian)' });
+      if (jk > kc) out.lebih.kcal = kc;
+      for (k in d) if (d.hasOwnProperty(k)) {
+        var j = z[k] || 0, r = d[k], st;
+        if (r.h && j > r.h) { st = 'LEBIH'; out.lebih[k] = r.s; }
+        else st = j >= r.s ? 'CUKUP' : Math.round(j / r.s * 100) + '%';
+        out.baris.push({ k: k, j: j, s: r.s, h: r.h, st: st, n: r.n });
+      }
+      var hg = Math.round(kc * 0.1 / 4);
+      out.baris.push({ k: 'gula', j: z.gula || 0, s: 0, h: hg, st: 'INFO', n: 'rujukan WHO gula bebas < ' + hg + ' g · gula buah bukan gula bebas' });
+      return out;
+    }
+    function coachTinggiDalam(k, sas) {
+      var r = [], m;
+      for (m in COACH_MAKANAN) if (COACH_MAKANAN.hasOwnProperty(m) && sas > 0 && (COACH_MAKANAN[m].zat[k] || 0) >= sas * 0.2) r.push(COACH_MAKANAN[m].nama);
+      return r;
+    }
+    function coachKurangkan(idMakanan) {
+      var st = coachZatStatus(), k, mk = COACH_MAKANAN[idMakanan];
+      for (k in st.lebih) if (st.lebih.hasOwnProperty(k) && (mk.zat[k] || 0) >= st.lebih[k] * 0.2) return true;
+      return false;
+    }
+    var coachUIZ = { ubah: false, monitor: false, jantina: '' };
+    function coachLukisZat() {
+      var box = el('coach-zat');
+      if (!box) return;
+      var p = coachProfil(), pr = (coachDataAkhir && coachDataAkhir.profil) || {}, h = '', i;
+      var btn = 'padding:6px 8px;margin:2px 4px 2px 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btnA = btn + 'background:#000;color:#fff;';
+      h += '<div style="font-weight:bold;margin-bottom:4px;">PROFIL & MONITOR ZAT</div>';
+      if (coachUIZ.ubah || !p) {
+        var jt = coachUIZ.jantina || pr.jantina || '';
+        if (!p && !coachUIZ.ubah) h += '<div style="font-size:0.85rem;">Isi profil dulu supaya coach boleh kira sasaran zat anda.</div>';
+        var inp = function(id, lbl, v, unit) { return '<div style="margin:3px 0;">' + lbl + ': <input type="text" inputmode="numeric" id="' + id + '" value="' + (v || '') + '" style="width:70px;font-size:1rem;padding:4px;border:2px solid #000;"> ' + unit + '</div>'; };
+        h += '<div style="margin:3px 0;">Jantina: <button type="button" data-cz="jt" data-v="L" style="' + (jt === 'L' ? btnA : btn) + '">LELAKI</button><button type="button" data-cz="jt" data-v="P" style="' + (jt === 'P' ? btnA : btn) + '">PEREMPUAN</button></div>' +
+          inp('coach-p-umur', 'Umur', pr.umur, 'tahun (19 – 100)') + inp('coach-p-berat', 'Berat', pr.berat, 'kg (timbang AHAD pagi)') + inp('coach-p-tinggi', 'Tinggi', pr.tinggi, 'cm') +
+          '<button type="button" data-cz="simpan" style="' + btn + '">SIMPAN PROFIL</button>' + (p ? '<button type="button" data-cz="batal" style="' + btn + '">BATAL</button>' : '');
+        box.innerHTML = h;
+        return;
+      }
+      var ahad = new Date().getDay() === 0, lama = !pr.beratAt || (Date.now() - new Date(pr.beratAt + 'T04:00:00').getTime()) > 7 * 864e5;
+      h += '<div style="font-size:0.85rem;">' + (p.jantina === 'L' ? 'Lelaki' : 'Perempuan') + ' · ' + p.umur + ' thn · ' + p.berat + ' kg · ' + p.tinggi + ' cm' + (pr.beratAt ? ' · timbang ' + pr.beratAt : '') + '</div>';
+      if ((ahad && pr.beratAt !== coachHariId()) || lama) h += '<div style="font-weight:bold;">' + (ahad ? 'HARI AHAD: timbang berat pagi ini.' : 'Berat sudah lebih 7 hari — timbang pada Ahad pagi.') + '</div>';
+      h += '<button type="button" data-cz="ubah" style="' + btn + '">' + ((ahad && pr.beratAt !== coachHariId()) || lama ? 'TIMBANG / UBAH' : 'UBAH PROFIL') + '</button>' +
+        '<button type="button" data-cz="mon" style="' + btn + '">' + (coachUIZ.monitor ? 'TUTUP MONITOR' : 'LIHAT MONITOR') + '</button>';
+      var st = coachZatStatus(), nl = 0;
+      for (i = 0; i < st.baris.length; i++) if (st.baris[i].st === 'LEBIH') nl++;
+      h += '<div style="font-size:0.85rem;margin-top:2px;">' + (nl ? '<b>' + nl + ' zat LEBIH had hari ini</b> — lihat monitor.' : 'Tiada zat melebihi had hari ini.') + '</div>';
+      if (coachUIZ.monitor) {
+        h += '<div style="font-size:0.7rem;margin:3px 0;">Jumlah dari makanan yang dilog sahaja · sasaran / had ikut DRI dewasa (National Academies). Bukan nasihat perubatan.</div>';
+        for (i = 0; i < st.baris.length; i++) {
+          var b = st.baris[i], inf = COACH_ZAT_INFO[b.k], td = b.s ? coachTinggiDalam(b.k, b.s) : [];
+          h += '<div style="border-top:1px solid #000;padding:3px 0;font-size:0.85rem;"><b>' + inf[0] + '</b> · ' + coachBulat(b.j) + (b.s ? ' / ' + coachBulat(b.s) : '') + ' ' + inf[1] +
+            ' · had ' + (b.h ? coachBulat(b.h) + ' ' + inf[1] : '—') + ' · <b>' + b.st + '</b>' +
+            '<div style="font-size:0.75rem;">Tinggi dalam: ' + (td.length ? td.join(', ') : '—') + (b.n ? ' · ' + b.n : '') + '</div></div>';
+        }
+      }
+      box.innerHTML = h;
+    }
+    function coachNombor(id, min, max) {
+      var e = document.getElementById(id), n = parseFloat(((e && e.value) || '').replace(',', '.').replace(/[^0-9.]/g, ''));
+      return n >= min && n <= max ? Math.round(n * 10) / 10 : 0;
+    }
+    el('coach-zat').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-cz')) t = t.parentNode;
+      if (!t || t === this || !currentUser) return;
+      var cz = t.getAttribute('data-cz');
+      if (cz === 'jt') { coachSimpanInputZat(); coachUIZ.jantina = t.getAttribute('data-v'); coachLukisZat(); coachIsiSemulaZat(); return; }
+      if (cz === 'ubah') { coachUIZ.ubah = true; coachUIZ.jantina = ''; coachLukisZat(); return; }
+      if (cz === 'batal') { coachUIZ.ubah = false; coachLukisZat(); return; }
+      if (cz === 'mon') { coachUIZ.monitor = !coachUIZ.monitor; coachLukisZat(); return; }
+      if (cz !== 'simpan') return;
+      var pr = (coachDataAkhir && coachDataAkhir.profil) || {};
+      var jt = coachUIZ.jantina || pr.jantina, umur = coachNombor('coach-p-umur', 19, 100), berat = coachNombor('coach-p-berat', 25, 300), tinggi = coachNombor('coach-p-tinggi', 100, 250);
+      if (!jt) { alert('Pilih jantina.'); return; }
+      if (!umur) { alert('Umur 19 – 100 tahun (jadual DRI dewasa).'); return; }
+      if (!berat) { alert('Berat 25 – 300 kg.'); return; }
+      if (!tinggi) { alert('Tinggi 100 – 250 cm.'); return; }
+      var baru = { jantina: jt, umur: Math.round(umur), berat: berat, tinggi: tinggi, beratAt: berat !== pr.berat ? coachHariId() : (pr.beratAt || coachHariId()), updatedAt: Date.now() };
+      var tukarBerat = berat !== pr.berat;
+      coachUIZ.ubah = false; coachUIZ.jantina = '';
+      if (coachDataAkhir) {
+        coachDataAkhir.profil = baru;
+        try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er) {}
+      }
+      kol('coach').doc('profil').set(baru, { merge: true }).catch(function(er) { alert('Gagal simpan profil: ' + ((er && er.message) || er)); });
+      if (tukarBerat) coachSimpanHari({ berat: berat }, function() { coachHariData.hari.berat = berat; });
+      else coachLukisSemula();
+    };
+    var coachSimpananZat = {};
+    function coachSimpanInputZat() {
+      var a = ['coach-p-umur', 'coach-p-berat', 'coach-p-tinggi'], i, e;
+      for (i = 0; i < a.length; i++) { e = document.getElementById(a[i]); if (e) coachSimpananZat[a[i]] = e.value; }
+    }
+    function coachIsiSemulaZat() {
+      for (var id in coachSimpananZat) if (coachSimpananZat.hasOwnProperty(id)) { var e = document.getElementById(id); if (e) e.value = coachSimpananZat[id]; }
+      coachSimpananZat = {};
+    }
+    // ══════════ COACH — FASA 4a: RUTIN SENAMAN (LOWER → MIDDLE → UPPER) + FACE A/B + LOG ══════════
+    // Rotasi SETIAP HARI L → M → U; setiap kumpulan berselang A/B. Rotasi maju HANYA bila SELESAI SESI (terlepas → esok sambung hari sama).
+    // Keadaan: users/{uid}/coach/senaman { seterus, siri{LOWER,MIDDLE,UPPER}, face, akhir{kunci:{kg,rep[],rasa,at}} }
+    // Log hari ini: coach_hari/{id}.senaman { hari, siri, latihan{kunci:{kg,rep[],rasa,at}}, siapAt, face, faceAt }
+    // Minggu pertama: 2 set × 10 rep · isometrik 20 saat · rehat 60–90 saat · panaskan badan 3–5 min. Beban mula 5 kg (bentuk dulu).
+    // Latihan: [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban, 0 = badan), sisi (1 = setiap sisi), kumpulan recovery]
+    var COACH_SET = 2, COACH_REP = 10, COACH_SAAT = 20;
+    var coachNotaSen = '<div style="font-size:0.78rem;">Log di kotak SENAMAN di bawah → SELESAI SESI.</div>';
+    var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
+    var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
+    var COACH_RUTIN = {
+      LOWER: {
+        A: [['gobletSquat', 'Goblet squat', 'rep', 5, 0, 'C,A'], ['rdl', 'Romanian deadlift (RDL)', 'rep', 5, 0, 'B,A'], ['hipThrust', 'Hip thrust', 'rep', 5, 0, 'A'],
+          ['bridgeBantal', 'Glute bridge picit bantal', 'rep', null, 0, 'A,D'], ['abduksi', 'Side-lying hip abduction', 'rep', null, 1, 'A'],
+          ['calfBerdiri', 'Standing calf raise', 'rep', 0, 0, 'E'], ['toeRaise', 'Toe raise', 'rep', null, 0, 'F'], ['wallSit', 'Wall sit hold', 'saat', null, 0, 'C']],
+        B: [['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A'], ['hamBridge', 'Hamstring bridge hold (kaki atas kerusi)', 'saat', null, 0, 'B'],
+          ['slBridge', 'Single-leg glute bridge', 'rep', null, 1, 'A'], ['sumoSquat', 'Sumo squat', 'rep', 5, 0, 'D,C'], ['copenhagen', 'Copenhagen plank', 'saat', null, 1, 'D'],
+          ['clamshell', 'Clamshell', 'rep', null, 1, 'A'], ['calfDuduk', 'Seated calf raise', 'rep', 5, 0, 'E'], ['heelWalk', 'Heel walk', 'saat', null, 0, 'F'],
+          ['bridgeHold', 'Glute bridge hold', 'saat', null, 0, 'A']]
+      },
+      MIDDLE: {
+        A: [['pushUp', 'Push-up (lutut jika perlu)', 'rep', null, 0, 'G'], ['floorPress', 'DB floor press', 'rep', 5, 0, 'G'], ['row', 'One-arm DB row', 'rep', 5, 1, 'H'],
+          ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['sidePlank', 'Side plank', 'saat', null, 1, 'J'], ['sideBend', 'DB side bend', 'rep', 5, 1, 'J,I'],
+          ['birdDog', 'Bird dog hold', 'saat', null, 1, 'I'], ['hollow', 'Hollow body hold', 'saat', null, 0, 'J']],
+        B: [['inclinePush', 'Incline push-up (tangan atas kerusi)', 'rep', null, 0, 'G'], ['pullover', 'DB pullover (lantai)', 'rep', 5, 0, 'H,G'],
+          ['rowTahan', 'One-arm DB row (tahan 3 saat di atas)', 'rep', 5, 1, 'H'], ['revCrunch', 'Reverse crunch', 'rep', null, 0, 'J'],
+          ['russian', 'Russian twist (KB 6 kg)', 'rep', 6, 0, 'J'], ['suitcase', 'Suitcase carry', 'saat', 5, 1, 'J,N'], ['superman', 'Superman hold', 'saat', null, 0, 'I'],
+          ['plank', 'Plank', 'saat', null, 0, 'J']]
+      },
+      UPPER: {
+        A: [['ohp', 'DB overhead press (duduk)', 'rep', 5, 0, 'K'], ['lateral', 'Lateral raise', 'rep', 2.5, 0, 'K'], ['revFly', 'Bent-over reverse fly', 'rep', 2.5, 0, 'L'],
+          ['curl', 'DB curl', 'rep', 5, 0, 'M'], ['ohTri', 'DB overhead triceps extension', 'rep', 5, 0, 'M'], ['shrug', 'DB shrug', 'rep', 5, 0, 'L'],
+          ['wrist', 'Wrist curl + reverse wrist curl', 'rep', 2.5, 0, 'N'], ['leherIso', 'Leher: isometrik 4 arah (tangan)', 'saat', null, 0, 'O']],
+        B: [['declinePush', 'Push-up kaki atas kerusi (dada atas)', 'rep', null, 0, 'G,K'], ['scaption', 'Scaption raise (ringan)', 'rep', 2.5, 0, 'K'],
+          ['ytHold', 'Prone Y-T hold', 'saat', null, 0, 'L'], ['extRot', 'Side-lying external rotation', 'rep', 2.5, 1, 'K'],
+          ['hammer', 'Hammer / Zottman curl', 'rep', 5, 0, 'M'], ['slTri', 'Single-arm overhead triceps extension', 'rep', 2.5, 1, 'M'],
+          ['farmer', "Farmer's hold + pronasi / supinasi DB", 'saat', 5, 0, 'N'], ['leherB', 'Leher: chin tuck hold + prone neck extension + side-lying neck raise', 'saat', null, 0, 'O']]
+      }
+    };
+    var COACH_FACE = {
+      A: 'Eyebrow raise hold + lawan jari · alternate eyebrow raise · eye squeeze hold · lower eyelid raise · nasal flare hold · frown hold (3 kali sahaja) · tarik kulit kepala ke belakang · latihan telinga depan cermin',
+      B: 'Smile hold + lawan jari · unilateral smile · lip press + kiss hold + "O" hold · cheek suck-in · tiup pipi + tekan tangan · upper lip raise · tarik sudut mulut ke bawah + bibir bawah · mentalis pout · tongue press ke lelangit · jaw clench RINGAN'
+    };
+    var coachUIS = { buka: '', kg: null };
+    function coachSenNyata() { return (coachDataAkhir && coachDataAkhir.senaman) || {}; }
+    function coachSenHari() {
+      var st = coachSenNyata(), hs = coachHariData.hari.senaman || {};
+      var g = hs.hari || st.seterus || 'LOWER', s = hs.siri || (st.siri && st.siri[g]) || 'A';
+      return { g: g, s: s, f: hs.face || st.face || 'A', hs: hs, senarai: COACH_RUTIN[g][s] };
+    }
+    function coachSenLatihan(k) {
+      var g, s, i;
+      for (g in COACH_RUTIN) for (s in COACH_RUTIN[g]) for (i = 0; i < COACH_RUTIN[g][s].length; i++) if (COACH_RUTIN[g][s][i][0] === k) return COACH_RUTIN[g][s][i];
+      return null;
+    }
+    function coachTeksBeban(kg) { return kg === 0 ? 'badan' : (kg === 6 ? 'KB 6 kg' : kg + ' kg'); }
+    function coachLukisSenaman() {
+      var box = el('coach-senaman');
+      if (!box) return;
+      var sh = coachSenHari(), lat = sh.hs.latihan || {}, akhir = coachSenNyata().akhir || {}, h = '', i, n = 0;
+      var btn = 'padding:6px 8px;margin:2px 4px 2px 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btnA = btn + 'background:#000;color:#fff;';
+      for (i = 0; i < sh.senarai.length; i++) if (lat[sh.senarai[i][0]]) n++;
+      h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' dilog') + '</div>';
+      h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
+      for (i = 0; i < sh.senarai.length; i++) {
+        var x = sh.senarai[i], k = x[0], r = lat[k], sasaran = COACH_SET + ' × ' + (x[2] === 'saat' ? COACH_SAAT + ' saat' : COACH_REP) + (x[4] ? ' setiap sisi' : '');
+        var kgMula = akhir[k] && akhir[k].kg !== undefined && akhir[k].kg !== null ? akhir[k].kg : x[3];
+        h += '<div style="border-top:1px solid #000;padding:3px 0;font-size:0.85rem;"><b>' + (i + 1) + '. ' + x[1] + '</b> · ' + sasaran + (x[3] !== null ? ' · ' + coachTeksBeban(kgMula) : '');
+        if (r) h += '<div style="font-size:0.78rem;">DILOG: ' + (r.kg !== null && r.kg !== undefined ? coachTeksBeban(r.kg) + ' · ' : '') + r.rep.join(' / ') + (x[2] === 'saat' ? ' saat' : ' rep') + ' · <b>' + r.rasa + '</b>' +
+          (r.rasa === 'SAKIT' ? '<br><b>Henti latihan ini. Jangan naik beban sampai lapor OK. Sakit berlarutan → jumpa doktor.</b>' : '') + '</div>';
+        if (coachUIS.buka === k) {
+          var kg = coachUIS.kg !== null ? coachUIS.kg : kgMula, b, j;
+          if (x[3] !== null) {
+            b = '<div>';
+            for (j = 0; j < COACH_BEBAN.length; j++) b += '<button type="button" data-cs="kg" data-v="' + COACH_BEBAN[j] + '" style="' + (COACH_BEBAN[j] === kg ? btnA : btn) + '">' + (COACH_BEBAN[j] === 0 ? 'BADAN' : (COACH_BEBAN[j] === 6 ? 'KB 6' : COACH_BEBAN[j])) + '</button>';
+            h += b + '</div>';
+          }
+          h += '<div>';
+          for (j = 0; j < COACH_SET; j++) h += 'Set ' + (j + 1) + ': <input type="text" inputmode="numeric" id="coach-set-' + j + '" value="' + (r && r.rep[j] !== undefined ? r.rep[j] : (x[2] === 'saat' ? COACH_SAAT : COACH_REP)) + '" style="width:44px;font-size:1rem;padding:3px;border:2px solid #000;"> ';
+          h += (x[2] === 'saat' ? 'saat' : 'rep') + '</div><div style="font-size:0.78rem;">Rasa (tekan untuk SIMPAN):</div>' +
+            '<button type="button" data-cs="rasa" data-v="RINGAN" style="' + btn + '">RINGAN</button><button type="button" data-cs="rasa" data-v="OK" style="' + btn + '">OK</button>' +
+            '<button type="button" data-cs="rasa" data-v="BERAT" style="' + btn + '">BERAT</button><button type="button" data-cs="rasa" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
+            '<button type="button" data-cs="tutup" style="' + btn + '">BATAL</button>';
+        } else if (!sh.hs.siapAt || r) {
+          h += '<div><button type="button" data-cs="buka" data-k="' + k + '" style="' + btn + '">' + (r ? 'UBAH' : 'LOG') + '</button></div>';
+        }
+        h += '</div>';
+      }
+      if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">SELESAI SESI ' + sh.g + ' ' + sh.s + '</button></div>';
+      h += '<div style="border-top:2px solid #000;margin-top:4px;padding-top:3px;font-size:0.85rem;"><b>RUTIN FACE ' + sh.f + '</b> (5–7 min, terus selepas senaman)' + (sh.hs.face ? ' · <b>SIAP</b>' : '') +
+        '<div style="font-size:0.78rem;">' + COACH_FACE[sh.f] + '</div>' +
+        (sh.hs.face ? '' : '<button type="button" data-cs="face" style="' + btn + '">FACE ' + sh.f + ' SIAP</button>') + '</div>';
+      box.innerHTML = h;
+    }
+    function coachSimpanSenNyata(baru) {
+      var st = coachSenNyata(), k;
+      for (k in baru) if (baru.hasOwnProperty(k)) st[k] = baru[k];
+      if (coachDataAkhir) {
+        coachDataAkhir.senaman = st;
+        try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er) {}
+      }
+      kol('coach').doc('senaman').set(baru, { merge: true }).catch(function(er) { alert('Gagal simpan rutin: ' + ((er && er.message) || er)); });
+    }
+    el('coach-senaman').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-cs')) t = t.parentNode;
+      if (!t || t === this || !currentUser) return;
+      var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
+      if (cs === 'buka') { coachUIS = { buka: t.getAttribute('data-k'), kg: null }; coachLukisSenaman(); return; }
+      if (cs === 'tutup') { coachUIS = { buka: '', kg: null }; coachLukisSenaman(); return; }
+      if (cs === 'kg') {
+        var simpan = [];
+        for (j = 0; j < COACH_SET; j++) { var ie = document.getElementById('coach-set-' + j); simpan.push(ie ? ie.value : ''); }
+        coachUIS.kg = parseFloat(t.getAttribute('data-v'));
+        coachLukisSenaman();
+        for (j = 0; j < COACH_SET; j++) { var ie2 = document.getElementById('coach-set-' + j); if (ie2) ie2.value = simpan[j]; }
+        return;
+      }
+      if (cs === 'rasa') {
+        var k = coachUIS.buka, x = coachSenLatihan(k), rep = [];
+        if (!x) return;
+        for (j = 0; j < COACH_SET; j++) {
+          var inp = document.getElementById('coach-set-' + j), n = parseInt(((inp && inp.value) || '').replace(/[^0-9]/g, ''), 10);
+          if (!(n >= 0 && n <= 300)) { alert('Isi set ' + (j + 1) + ' (0 – 300).'); return; }
+          rep.push(n);
+        }
+        var akhir = coachSenNyata().akhir || {}, kgMula = akhir[k] && akhir[k].kg !== undefined && akhir[k].kg !== null ? akhir[k].kg : x[3];
+        var rek = { kg: x[3] === null ? null : (coachUIS.kg !== null ? coachUIS.kg : kgMula), rep: rep, rasa: t.getAttribute('data-v'), at: now };
+        d = { senaman: { hari: sh.g, siri: sh.s, latihan: {} } };
+        d.senaman.latihan[k] = rek;
+        coachUIS = { buka: '', kg: null };
+        coachSimpanHari(d, function() {
+          var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
+          hs.hari = sh.g; hs.siri = sh.s; (hs.latihan || (hs.latihan = {}))[k] = rek;
+        });
+        return;
+      }
+      if (cs === 'selesai') {
+        var lat = sh.hs.latihan || {}, ada = 0, kk;
+        for (kk in lat) if (lat.hasOwnProperty(kk)) ada++;
+        if (!ada) { alert('Log sekurang-kurangnya satu latihan dulu.'); return; }
+        d = { senaman: { hari: sh.g, siri: sh.s, siapAt: now } };
+        var tg = coachHariData.hari.tugas || {};
+        if (!tg.senaman) {
+          d.tugas = { senaman: { s: 'BUAT', at: now } };
+          var jS = coachJadualKini(), kiniS = coachMinitKini(), iS;
+          for (iS = 0; jS && iS < jS.tugas.length; iS++) if (jS.tugas[iS].kunci === 'senaman' && kiniS >= coachTamat(jS.tugas[iS])) d.tugas.senaman.lewat = true;
+        }
+        var nyata = coachSenNyata(), siri = {}, g2, akhirBaru = {};
+        for (g2 in (nyata.siri || {})) if (nyata.siri.hasOwnProperty(g2)) siri[g2] = nyata.siri[g2];
+        siri[sh.g] = sh.s === 'A' ? 'B' : 'A';
+        for (g2 in (nyata.akhir || {})) if (nyata.akhir.hasOwnProperty(g2)) akhirBaru[g2] = nyata.akhir[g2];
+        for (kk in lat) if (lat.hasOwnProperty(kk)) akhirBaru[kk] = lat[kk];
+        coachSimpanSenNyata({ seterus: COACH_KITAR[(COACH_KITAR.indexOf(sh.g) + 1) % 3], siri: siri, akhir: akhirBaru });
+        coachSimpanHari(d, function() {
+          var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
+          hs.hari = sh.g; hs.siri = sh.s; hs.siapAt = now;
+          if (d.tugas) (coachHariData.hari.tugas || (coachHariData.hari.tugas = {})).senaman = d.tugas.senaman;
+        });
+        return;
+      }
+      if (cs === 'face') {
+        d = { senaman: { hari: sh.g, siri: sh.s, face: sh.f, faceAt: now } };
+        coachSimpanSenNyata({ face: sh.f === 'A' ? 'B' : 'A' });
+        coachSimpanHari(d, function() {
+          var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
+          hs.hari = sh.g; hs.siri = sh.s; hs.face = sh.f; hs.faceAt = now;
+        });
+      }
     };
     // ══════════ COACH — FASA 2d: LISTENING + SOLAT → PAI 2 PENUH + PAI 3 ══════════
     // Listening: user report minit → users/{uid}/coach/stok.listening (stok terkumpul, increment) + coach_hari/{id}.listening (hari ini).
