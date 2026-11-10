@@ -1870,13 +1870,17 @@
       return true; // async, guna cb
     }
 
+    // Mesej bila topik aktif tiada kad (tiada topik / tiada baris berisi) — dipapar oleh renderCard (bukan "Tiada kad")
+    var faktaMesejKosong = '';
     function rebuildFaktaCards(cb) {
+      faktaMesejKosong = '';
       activeTopic = null;
       for (var i = 0; i < allTopics.length; i++) {
         if (allTopics[i].isActive) { activeTopic = allTopics[i]; break; }
       }
       if (!activeTopic) {
         cards = []; cardIndex = 0;
+        faktaMesejKosong = 'Tiada topik aktif.\nTick SATU topik di phone.';
         setText('main-text', 'Tiada topik aktif.\nTick SATU topik di phone.');
         setText('play-mode', 'FAKTA');
         setText('play-status', 'Tiada topik aktif');
@@ -1899,6 +1903,23 @@
             var d = activeDrawers[j];
             var has = (d.items && d.items.length) || (d.notes || '').trim();
             if (has) cards = cards.concat(cardsFromFaktaDrawer(d, false));
+          }
+          // Topik ada laci tetapi TIADA baris berisi (kotak ayat kosong) → jangan terus ke "TAMAT SEMUA"
+          var adaBaris = false;
+          for (var kb = 0; kb < cards.length; kb++) {
+            if (!cards[kb].isTamat) { adaBaris = true; break; }
+          }
+          if (!adaBaris) {
+            cards = []; cardIndex = 0;
+            srModeAktif = false;
+            srLaciSemasa = null;
+            faktaMesejKosong = 'Topik "' + (activeTopic.name || '') + '" belum ada baris berisi.\nIsi KOTAK AYAT dalam laci di phone (bukan kotak Soalan sahaja), kemudian buka semula.';
+            setText('play-status', 'FAKTA · ' + (activeTopic.name || '') + ' · tiada baris');
+            setText('play-mode', 'FAKTA');
+            setText('play-progress', ''); setText('play-meta', '');
+            setCardImage('');
+            cb && cb(false);
+            return;
           }
           cardIndex = cariCardIndexDariLastDrawer();
           srModeAktif = false;
@@ -2342,7 +2363,7 @@
         else counterBox.classList.remove('last-perkataan');
       }
       if (!cards.length) {
-        setText('main-text', 'Tiada kad');
+        setText('main-text', (mode === 'fakta' && faktaMesejKosong) ? faktaMesejKosong : 'Tiada kad');
         mainEl.className = 'big-text';
         setCardImage('');
         return;
@@ -6217,6 +6238,15 @@
       <div class="lp-btn"><button type="button" id="btn-lp-cara" class="btn">Cara report</button><button type="button" id="btn-lp-tutup" class="btn btn-primary">TUTUP</button></div>
     </div>
   </div>
+  <!-- COACH (Fasa 1) — dipapar bila tekan [ GAME ]: bubble ikut masa + 3 pai (bar + %) → TERUSKAN KE GAME -->
+  <div id="screen-coach" class="screen">
+    <div class="status-bar" id="coach-status">COACH</div>
+    <div id="coach-bubble" style="border:3px solid #000;border-radius:10px;padding:10px;margin:4px 0 6px;font-size:1rem;line-height:1.4;white-space:pre-line;">Memuatkan...</div>
+    <button id="btn-coach-terus" class="btn btn-primary">TERUSKAN KE GAME</button>
+    <div id="coach-pai"></div>
+    <button id="btn-coach-kira" class="btn">KIRA SEMULA</button>
+    <button id="btn-coach-menu" class="btn">MENU</button>
+  </div>
   <div id="screen-game" class="screen">
     <div class="status-bar" id="gp-status">GAME PADAN</div>
     <div class="gm-tab">
@@ -9524,7 +9554,157 @@
       jw.guna5050 = true; this.disabled = true;
     };
 
-    el('btn-go-game').onclick = bukaMini;
+    // ══════════ COACH — FASA 1 (page sebelum GAME) ══════════
+    // Tekan [ GAME ] → page COACH: bubble ikut masa + 3 pai (bar + %) → TERUSKAN KE GAME.
+    // Nilai sasaran ikut MUSIM (COACH_MUSIM) — diubah melalui KOD sahaja (semakan Ahad). Musim aktif: users/{uid}/coach/tetapan { musim }.
+    // Data USAHA (stok terkumpul): Ayat = bahasa_sr_queue · Kuliah = fakta_sr_queue · Reasoning = reasoning_sr_queue ·
+    // Presenting = presenting_sr_queue · Vocab = LEVEL TERENDAH antara 5 game. Listening, Solat & pai Kesihatan = POSPON (Fasa 2).
+    var COACH_MUSIM = {
+      CUTI: {
+        english: { listening: 40, ayat: 25, vocab: 15, reasoning: 12, presenting: 8 },
+        englishKuliah: [50, 50]
+      }
+    };
+    var COACH_BIDANG = [
+      ['listening', 'Listening'], ['ayat', 'Ayat'], ['vocab', 'Vocab'], ['reasoning', 'Reasoning'], ['presenting', 'Presenting']
+    ];
+    var COACH_POSPON = { listening: 1 }; // belum ada sumber data
+    var COACH_GAME = [['padan', 'Padan'], ['jutawan', 'Jutawan'], ['memori', 'Memori'], ['duri', 'Duri'], ['betulsalah', 'Betul/Salah']];
+    var COACH_SEGAR_MS = 15 * 60 * 1000;
+    var coachMusim = 'CUTI';
+
+    function coachStatus(beza) {
+      beza = Math.abs(beza);
+      return beza <= 5 ? 'HIJAU' : (beza <= 10 ? 'KUNING' : 'MERAH');
+    }
+    function coachDua(n) { return (n < 10 ? '0' : '') + n; }
+    function coachKira(col) {
+      var q = kol(col);
+      if (typeof q.count === 'function') {
+        return q.count().get().then(function(s) { return (s.data() && s.data().count) || 0; });
+      }
+      return q.get().then(function(s) { return s.size; });
+    }
+    function coachVocab() {
+      var janji = [];
+      for (var i = 0; i < COACH_GAME.length; i++) janji.push(kol('game_stat').doc(COACH_GAME[i][0]).get());
+      return Promise.all(janji).then(function(res) {
+        var min = null, nama = '';
+        for (var k = 0; k < res.length; k++) {
+          var d = (res[k] && res[k].exists) ? res[k].data() : {};
+          var lv = (d.lulus || 0) + 1;
+          if (min === null || lv < min) { min = lv; nama = COACH_GAME[k][1]; }
+        }
+        return { level: min || 1, game: nama };
+      });
+    }
+    function coachCacheKunci() { return 'coach_kiraan_' + currentUser.uid; }
+    function coachMuatData(paksa) {
+      if (!paksa) {
+        try {
+          var c = JSON.parse(localStorage.getItem(coachCacheKunci()) || 'null');
+          if (c && c.at && Date.now() - c.at < COACH_SEGAR_MS) return Promise.resolve(c);
+        } catch (e) {}
+      }
+      return Promise.all([
+        coachKira('bahasa_sr_queue'), coachKira('fakta_sr_queue'),
+        coachKira('reasoning_sr_queue'), coachKira('presenting_sr_queue'), coachVocab(),
+        kol('coach').doc('tetapan').get().catch(function() { return null; })
+      ]).then(function(r) {
+        var t = (r[5] && r[5].exists) ? r[5].data() : {};
+        var data = {
+          at: Date.now(), ayat: r[0], kuliah: r[1], reasoning: r[2], presenting: r[3],
+          vocab: r[4].level, vocabGame: r[4].game, musim: t.musim || 'CUTI'
+        };
+        try { localStorage.setItem(coachCacheKunci(), JSON.stringify(data)); } catch (e) {}
+        return data;
+      });
+    }
+
+    function coachBar(label, unit, pct, sasaran, pospon) {
+      if (pospon) {
+        return '<div style="margin:5px 0;font-size:0.85rem;"><b>' + label + '</b> · POSPON</div>';
+      }
+      var beza = pct - sasaran;
+      var w = Math.max(0, Math.min(100, pct));
+      return '<div style="margin:5px 0;">' +
+        '<div style="font-size:0.85rem;"><b>' + label + '</b> ' + pct + '% / sasaran ' + sasaran + '% · <b>' + coachStatus(beza) + '</b>' +
+        (unit !== null ? ' <span style="font-size:0.75rem;">(' + unit + ')</span>' : '') + '</div>' +
+        '<div style="height:12px;border:2px solid #000;background:#fff;"><div style="height:12px;width:' + w + '%;background:#000;"></div></div>' +
+        '</div>';
+    }
+    function coachTugasSekarang(fokus) {
+      var d = new Date(), j = d.getHours();
+      if (j === 17) return 'Masa SENAMAN (5:00 ptg) — kemudian rutin FACE.';
+      if (j >= 15 && j < 17) return 'Masa CAHAYA PETANG — keluar ambil cahaya siang sekejap.';
+      return fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
+    }
+    function coachLukis(data) {
+      var musim = COACH_MUSIM[data.musim] ? data.musim : 'CUTI';
+      coachMusim = musim;
+      var set = COACH_MUSIM[musim];
+      var unit = { ayat: data.ayat, vocab: data.vocab, reasoning: data.reasoning, presenting: data.presenting };
+      var jumlahEn = 0, i, k;
+      for (i = 0; i < COACH_BIDANG.length; i++) {
+        k = COACH_BIDANG[i][0];
+        if (!COACH_POSPON[k]) jumlahEn += (unit[k] || 0);
+      }
+      // English: peratus stok terkumpul (bidang POSPON tidak dikira) · sasaran KEKAL asal
+      var htmlEn = '', fokus = '', fokusBeza = 0;
+      for (i = 0; i < COACH_BIDANG.length; i++) {
+        k = COACH_BIDANG[i][0];
+        var pos = !!COACH_POSPON[k];
+        var pct = (!pos && jumlahEn) ? Math.round((unit[k] || 0) * 100 / jumlahEn) : 0;
+        var label = COACH_BIDANG[i][1] + (k === 'vocab' && data.vocabGame ? ' (level terendah: ' + data.vocabGame + ')' : '');
+        htmlEn += coachBar(label, pos ? null : (unit[k] || 0), pct, set.english[k], pos);
+        if (!pos && set.english[k] - pct > fokusBeza) { fokusBeza = set.english[k] - pct; fokus = COACH_BIDANG[i][1]; }
+      }
+      // USAHA: English vs Kuliah
+      var jumlahU = jumlahEn + (data.kuliah || 0);
+      var pctEn = jumlahU ? Math.round(jumlahEn * 100 / jumlahU) : 0;
+      var pctKu = jumlahU ? 100 - pctEn : 0;
+      var stEn = coachStatus(pctEn - set.englishKuliah[0]), stKu = coachStatus(pctKu - set.englishKuliah[1]);
+      var hijau = (stEn === 'HIJAU' ? 1 : 0) + (stKu === 'HIJAU' ? 1 : 0);
+
+      var masa = new Date(data.at);
+      el('coach-status').textContent = 'COACH · MUSIM ' + musim + ' · dikira ' + coachDua(masa.getHours()) + ':' + coachDua(masa.getMinutes());
+
+      var h = '';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;">' +
+        '<div style="font-weight:bold;">PAI 1 · KESIHATAN</div>' +
+        '<div style="font-size:0.85rem;">POSPON — dibina dalam Coach Fasa 2 (laporan harian, air, tidur, matahari...).</div></div>';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;">' +
+        '<div style="font-weight:bold;">PAI 2 · USAHA · seimbang ' + hijau + '/2</div>' +
+        coachBar('English', jumlahEn, pctEn, set.englishKuliah[0], false) +
+        coachBar('Kuliah', data.kuliah || 0, pctKu, set.englishKuliah[1], false) +
+        coachBar('Solat', null, 0, 0, true) +
+        '<div style="border-top:1px solid #000;margin-top:6px;padding-top:4px;font-weight:bold;">ENGLISH' +
+        (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG') + '</div>' + htmlEn + '</div>';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;">' +
+        '<div style="font-weight:bold;">PAI 3 · KESEIMBANGAN</div>' +
+        '<div style="font-size:0.85rem;">POSPON — perlukan pai Kesihatan (Fasa 2).</div></div>';
+      el('coach-pai').innerHTML = h;
+
+      var now = new Date(), jam = now.getHours();
+      var salam = jam >= 5 && jam < 12 ? 'Selamat pagi.' : (jam < 15 && jam >= 12 ? 'Selamat tengah hari.' : (jam >= 15 && jam < 19 ? 'Selamat petang.' : 'Selamat malam.'));
+      el('coach-bubble').textContent = salam + ' Sekarang pukul ' + coachDua(jam) + ':' + coachDua(now.getMinutes()) + '.\nSekarang: ' + coachTugasSekarang(fokus);
+    }
+    function bukaCoach(paksa) {
+      if (!currentUser) return;
+      showScreen('screen-coach');
+      el('coach-status').textContent = 'COACH · Memuatkan...';
+      if (paksa) el('coach-bubble').textContent = 'Mengira semula...';
+      coachMuatData(paksa).then(coachLukis).catch(function(e) {
+        el('coach-status').textContent = 'COACH';
+        el('coach-bubble').textContent = 'Gagal memuat data coach: ' + ((e && e.message) || e) + '\nTekan TERUSKAN KE GAME untuk main seperti biasa.';
+      });
+    }
+    el('btn-coach-terus').onclick = function() { bukaMini(); };
+    el('btn-coach-kira').onclick = function() { bukaCoach(true); };
+    el('btn-coach-menu').onclick = function() { showScreen('screen-menu'); };
+
+    el('btn-go-game').onclick = function() { bukaCoach(false); };
+
     el('btn-gp-baru').onclick = function() {
       if (!currentUser) return;
       var ke = document.querySelector('#screen-game [data-gc="tiket"]');
