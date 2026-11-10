@@ -6241,21 +6241,34 @@
   <!-- COACH (Fasa 1 + 2a) — dipapar bila tekan [ GAME ]: bubble ikut jadual + laporan pagi + 3 pai (bar + %) → TERUSKAN KE GAME -->
   <div id="screen-coach" class="screen">
     <div class="status-bar" id="coach-status">COACH</div>
-    <div id="coach-bubble" style="border:3px solid #000;border-radius:10px;padding:10px;margin:4px 0 6px;font-size:1rem;line-height:1.4;white-space:pre-line;">Memuatkan...</div>
+    <div id="coach-bubble" style="border:3px solid #000;border-radius:10px;padding:10px;margin:4px 0 6px;font-size:1.05rem;line-height:1.45;white-space:pre-line;">Memuatkan...</div>
+    <button id="btn-coach-go" class="btn btn-primary" style="display:none;">GO</button>
     <div id="coach-laporan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:0 0 6px;"></div>
-    <button id="btn-coach-terus" class="btn btn-primary">TERUSKAN KE GAME</button>
-    <div id="coach-hari" style="font-size:0.85rem;margin:4px 0;white-space:pre-line;"></div>
-    <div id="coach-tugas" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
-    <div id="coach-makan" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
-    <div id="coach-zat" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
-    <div id="coach-senaman" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
-    <div id="coach-usaha" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
-    <div id="coach-pai"></div>
-    <button id="btn-coach-pening" class="btn">LAPOR PENING (sekarang)</button>
-    <button id="btn-coach-lapor" class="btn">UBAH LAPORAN PAGI</button>
-    <button id="btn-coach-rumusan" class="btn">RUMUSAN MINGGU (untuk AI)</button>
-    <div id="coach-rumusan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:4px 0;"></div>
-    <button id="btn-coach-kira" class="btn">KIRA SEMULA</button>
+    <!-- Bahagian lain disorok dalam butang tajuk (tekan untuk buka / tutup — satu terbuka pada satu masa) -->
+    <button type="button" class="btn coach-sek-btn" data-sek="tugas">TUGAS KESIHATAN</button>
+    <div id="coach-sek-tugas" style="display:none;"><div id="coach-tugas" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
+    <button type="button" class="btn coach-sek-btn" data-sek="makan">MAKAN (KEDAI)</button>
+    <div id="coach-sek-makan" style="display:none;"><div id="coach-makan" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
+    <button type="button" class="btn coach-sek-btn" data-sek="zat">PROFIL &amp; MONITOR ZAT</button>
+    <div id="coach-sek-zat" style="display:none;"><div id="coach-zat" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
+    <button type="button" class="btn coach-sek-btn" data-sek="senaman">SENAMAN</button>
+    <div id="coach-sek-senaman" style="display:none;"><div id="coach-senaman" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
+    <button type="button" class="btn coach-sek-btn" data-sek="usaha">USAHA HARI INI</button>
+    <div id="coach-sek-usaha" style="display:none;"><div id="coach-usaha" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
+    <button type="button" class="btn coach-sek-btn" data-sek="pai">PAI &amp; LAPORAN HARI INI</button>
+    <div id="coach-sek-pai" style="display:none;">
+      <div id="coach-hari" style="font-size:0.85rem;margin:4px 0;white-space:pre-line;"></div>
+      <div id="coach-pai"></div>
+    </div>
+    <button type="button" class="btn coach-sek-btn" data-sek="lain">LAIN-LAIN (pening, laporan pagi, rumusan)</button>
+    <div id="coach-sek-lain" style="display:none;">
+      <button id="btn-coach-pening" class="btn">LAPOR PENING (sekarang)</button>
+      <button id="btn-coach-lapor" class="btn">UBAH LAPORAN PAGI</button>
+      <button id="btn-coach-rumusan" class="btn">RUMUSAN MINGGU (untuk AI)</button>
+      <div id="coach-rumusan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:4px 0;"></div>
+      <button id="btn-coach-kira" class="btn">KIRA SEMULA</button>
+    </div>
+    <button id="btn-coach-terus" class="btn">TERUSKAN KE GAME</button>
     <button id="btn-coach-menu" class="btn">MENU</button>
   </div>
   <div id="screen-game" class="screen">
@@ -10137,17 +10150,21 @@
           (kk.lepasTidur ? 'Sudah masa tidur — kunci kekal sampai esok. Rehat.\n' : 'Buka kunci: tanda SIAP (lewat) atau GANTI pada tugas DIABAIKAN di bawah.\n');
       }
       if (coachKunciMesej && !kk.kunci && coachHariData.hari.laporanAt) coachKunciMesej = ''; // mesej hilang bila kunci dibuka
-      el('coach-bubble').textContent = (coachKunciMesej ? coachKunciMesej + '\n' : '') + kunciTeks + salam + ' Sekarang pukul ' + coachTeksMasa(jam * 60 + now.getMinutes()) + '.\nSekarang: ' + coachTugasSekarang(fokus);
+      // Fokus usaha: Kuliah jika Kuliah di bawah sasaran (tidak HIJAU), jika tidak bidang English paling jauh di bawah sasaran
+      var fokusUtama = (stKu !== 'HIJAU' && pctKu < set.englishKuliah[1]) ? 'Kuliah' : fokus;
       coachLukisHari();
       coachLukisTugas();
       coachLukisMakan();
       coachLukisZat();
       coachLukisSenaman();
       coachLukisUsaha();
+      coachLukisBubble(fokusUtama, salam, kunciTeks);
     }
     function bukaCoach(paksa) {
       if (!currentUser) return;
       showScreen('screen-coach');
+      coachBukaSek('', true);
+      el('btn-coach-go').style.display = 'none';
       el('coach-status').textContent = 'COACH · Memuatkan...';
       if (paksa) el('coach-bubble').textContent = 'Mengira semula...';
       Promise.all([coachMuatData(paksa), coachMuatHari()]).then(function(r) {
@@ -11032,6 +11049,117 @@
     }
     document.addEventListener('click', function() { try { coachSkrinSentuh(); } catch (e) {} }, true);
     document.addEventListener('keydown', function() { try { coachSkrinSentuh(); } catch (e) {} }, true);
+    // ══════════ COACH — REKA SEMULA PAGE (10 Nov): COACH SAHAJA + BUTANG GO ══════════
+    // Page pertama = bubble coach (apa patut buat SEKARANG) + butang GO ke tindakan itu.
+    // Semua bahagian lain disorok dalam butang tajuk (satu terbuka pada satu masa).
+    // FOKUS 90 MINIT = buat SATU bidang usaha yang paling jauh di bawah sasaran (Kuliah jika Kuliah bawah sasaran,
+    //   jika tidak bidang English yang paling jauh) — satu kerja sahaja, telefon jauh.
+    var coachSekBuka = '';
+    function coachBukaSek(n, paksa) {
+      var a = ['tugas', 'makan', 'zat', 'senaman', 'usaha', 'pai', 'lain'], i;
+      coachSekBuka = (!paksa && coachSekBuka === n) ? '' : n;
+      for (i = 0; i < a.length; i++) {
+        var d = el('coach-sek-' + a[i]);
+        if (d) d.style.display = coachSekBuka === a[i] ? 'block' : 'none';
+      }
+      coachLabelSek();
+      var b = document.querySelector('.coach-sek-btn[data-sek="' + n + '"]');
+      if (coachSekBuka && b) { try { b.scrollIntoView(); } catch (e) {} }
+    }
+    function coachLabelSek() {
+      var lbl = { tugas: 'TUGAS KESIHATAN', makan: 'MAKAN (KEDAI)', zat: 'PROFIL & MONITOR ZAT', senaman: 'SENAMAN', usaha: 'USAHA HARI INI', pai: 'PAI & LAPORAN HARI INI', lain: 'LAIN-LAIN (pening, laporan pagi, rumusan)' };
+      try {
+        var kk = coachKiraKesihatan();
+        if (coachHariData.hari.laporanAt) lbl.tugas += ' · markah diabaikan ' + kk.markah + '/' + COACH_HAD_KUNCI + (kk.kunci ? ' · DIKUNCI' : '');
+        lbl.makan += ' · ' + coachMakanHari().g + '/' + COACH_SASARAN_BUAH_G + ' g';
+        var sh = coachSenHari();
+        lbl.senaman += ' · ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : '');
+        if (typeof coachHariData.hari.solat === 'number') lbl.usaha += ' · solat ' + coachHariData.hari.solat + '/5';
+      } catch (e) {}
+      var bs = document.querySelectorAll('.coach-sek-btn'), i;
+      for (i = 0; i < bs.length; i++) {
+        var n = bs[i].getAttribute('data-sek');
+        bs[i].textContent = (coachSekBuka === n ? '[ TUTUP ] ' : '') + (lbl[n] || n);
+      }
+    }
+    var coachGoFn = null;
+    function coachFokusGo(f) {
+      var m = {
+        Listening: ['BUKA USAHA → + LISTENING', function() { coachBukaSek('usaha', true); }],
+        Ayat: ['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }],
+        Vocab: ['MAIN GAME VOCAB', function() { bukaMini(); }],
+        Reasoning: ['BUKA LACI REASONING', function() { el('btn-go-reasoning').click(); }],
+        Presenting: ['BUKA LACI PRESENTING', function() { el('btn-go-presenting').click(); }],
+        Kuliah: ['BUKA LACI FAKTA (KULIAH)', function() { el('btn-go-fakta').click(); }]
+      };
+      return m[f] || null;
+    }
+    function coachFokusTeks(f) {
+      return {
+        Listening: 'tonton video English, kemudian report minit (+ LISTENING)',
+        Ayat: 'ulang kaji ayat di Laci Bahasa',
+        Vocab: 'main game vocab (level terendah)',
+        Reasoning: 'ulang kaji Laci Reasoning',
+        Presenting: 'ulang kaji Laci Presenting',
+        Kuliah: 'ulang kaji nota kuliah di Laci Fakta'
+      }[f] || 'teruskan usaha';
+    }
+    function coachLukisBubble(fokus, salam, kunciTeks) {
+      var now = new Date(), b = coachKunciMesej ? coachKunciMesej + '\n' : '', go = null, kk = coachKiraKesihatan();
+      b += salam + ' Sekarang pukul ' + coachTeksMasa(now.getHours() * 60 + now.getMinutes()) + '.\n\n';
+      var j = coachJadualKini();
+      if (!coachHariData.hari.laporanAt || !j) {
+        b += 'SEKARANG: isi LAPORAN PAGI (bangun, tidur, lampu). Jadual hari ini disusun ikut waktu bangun.';
+        go = ['ISI LAPORAN PAGI', function() { coachMulaLaporan(); }];
+      } else {
+        var kini = coachMinitKini(), dah = coachHariData.hari.tugas || {}, aktif = null, seterus = null, abai = [], i, x;
+        for (i = 0; i < j.tugas.length; i++) {
+          x = j.tugas[i];
+          if (dah[x.kunci] || x.jenis === 'tidur') continue;
+          if (x.jenis !== 'fokus' && kini >= coachTamat(x) && kini < j.tidur) abai.push(x);
+          else if (x.min <= kini && kini < x.min + (COACH_TETINGKAP[x.jenis] || 30)) { if (!aktif || x.jenis !== 'fokus') aktif = x; }
+          if (!seterus && x.min > kini) seterus = x;
+        }
+        if (kk.kunci && !kk.lepasTidur) {
+          b += kunciTeks.split('\n')[0] + '\nSEKARANG: buka kunci — buat tugas yang DIABAIKAN (SIAP lewat) atau GANTI.';
+          go = ['BUKA TUGAS KESIHATAN', function() { coachBukaSek('tugas', true); }];
+        } else if (kini >= j.tidur) {
+          b += kunciTeks + 'SEKARANG: masa tidur. Tutup lampu dan rehat.';
+        } else if (aktif && aktif.jenis === 'air') {
+          b += 'SEKARANG: minum 1 gelas air kosong (slot ' + aktif.kunci.replace('air', '') + ').';
+          go = ['LOG AIR (ml)', function() { coachBukaSek('tugas', true); coachUI.ml = aktif.kunci; coachUI.dapat = ''; coachLukisTugas(); }];
+        } else if (aktif && aktif.jenis === 'senaman') {
+          b += 'SEKARANG: senaman ' + coachSenHari().g + ' ' + coachSenHari().s + ', kemudian rutin FACE.';
+          go = ['BUKA SENAMAN', function() { coachBukaSek('senaman', true); }];
+        } else if (aktif && aktif.jenis === 'fokus') {
+          b += 'SEKARANG: FOKUS 90 MINIT — ' + (fokus || 'usaha') + ': ' + coachFokusTeks(fokus) + '. Satu kerja sahaja, telefon jauh.';
+          go = coachFokusGo(fokus);
+        } else if (aktif) {
+          b += 'SEKARANG: ' + aktif.nama + '.';
+          go = ['BUKA TUGAS KESIHATAN', function() { coachBukaSek('tugas', true); }];
+        } else {
+          b += 'SEKARANG: tiada tugas kesihatan. Usaha: ' + (fokus || 'teruskan') + ' — ' + coachFokusTeks(fokus) + '.';
+          go = coachFokusGo(fokus);
+        }
+        if (abai.length && !kk.kunci) {
+          var na = []; for (i = 0; i < abai.length; i++) na.push(abai[i].jenis === 'air' ? 'AIR slot ' + abai[i].kunci.replace('air', '') : abai[i].nama.split(' — ')[0]);
+          b += '\nTertunggak: ' + na.join(', ') + ' (boleh SIAP lewat / GANTI dalam TUGAS KESIHATAN).';
+        }
+        if (seterus) b += '\nSeterusnya: ' + seterus.nama.split(' — ')[0] + ' — ' + coachTeksMasa(seterus.min);
+        b += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
+      }
+      el('coach-bubble').textContent = b;
+      var g = el('btn-coach-go');
+      coachGoFn = go ? go[1] : null;
+      g.textContent = go ? 'GO → ' + go[0] : 'GO';
+      g.style.display = go ? 'block' : 'none';
+      coachLabelSek();
+    }
+    el('btn-coach-go').onclick = function() { if (coachGoFn) coachGoFn(); };
+    (function() {
+      var bs = document.querySelectorAll('.coach-sek-btn'), i;
+      for (i = 0; i < bs.length; i++) bs[i].onclick = function() { coachBukaSek(this.getAttribute('data-sek')); };
+    })();
     // ══════════ COACH — FASA 2d: LISTENING + SOLAT → PAI 2 PENUH + PAI 3 ══════════
     // Listening: user report minit → users/{uid}/coach/stok.listening (stok terkumpul, increment) + coach_hari/{id}.listening (hari ini).
     // Solat: bilangan hari ini 0–5 → coach_hari/{id}.solat. Status ikut PURATA 7 hari coach (hari yang direkod sahaja):
