@@ -6247,24 +6247,8 @@
     <div id="coach-bubble" style="border:3px solid #000;border-radius:10px;padding:10px;margin:4px 0 6px;font-size:1.05rem;line-height:1.45;white-space:pre-line;">Memuatkan...</div>
     <button id="btn-coach-go" class="btn btn-primary" style="display:none;">GO</button>
     <div id="coach-laporan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:0 0 6px;"></div>
-    <!-- Bahagian lain disorok dalam butang tajuk (tekan untuk buka / tutup — satu terbuka pada satu masa) -->
-    <button type="button" class="btn coach-sek-btn" data-sek="tugas">TUGAS KESIHATAN</button>
-    <div id="coach-sek-tugas" style="display:none;"><div id="coach-tugas" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
-    <button type="button" class="btn coach-sek-btn" data-sek="usaha">USAHA HARI INI</button>
-    <div id="coach-sek-usaha" style="display:none;"><div id="coach-usaha" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
-    <button type="button" class="btn coach-sek-btn" data-sek="pai">PAI &amp; LAPORAN HARI INI</button>
-    <div id="coach-sek-pai" style="display:none;">
-      <div id="coach-hari" style="font-size:0.85rem;margin:4px 0;white-space:pre-line;"></div>
-      <div id="coach-pai"></div>
-    </div>
-    <button type="button" class="btn coach-sek-btn" data-sek="lain">LAIN-LAIN (pening, laporan pagi, rumusan)</button>
-    <div id="coach-sek-lain" style="display:none;">
-      <button id="btn-coach-pening" class="btn">LAPOR PENING (sekarang)</button>
-      <button id="btn-coach-lapor" class="btn">UBAH LAPORAN PAGI</button>
-      <button id="btn-coach-rumusan" class="btn">RUMUSAN MINGGU (untuk AI)</button>
-      <div id="coach-rumusan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:4px 0;"></div>
-      <button id="btn-coach-kira" class="btn">KIRA SEMULA</button>
-    </div>
+    <!-- Page COACH = bubble + GO + 3 PAI sahaja. Tugas → TAMAN SIHAT · Usaha → tab USAHA · Laporan & lain-lain → PROFIL -->
+    <div id="coach-pai"></div>
     <button id="btn-coach-terus" class="btn">TERUSKAN KE GAME</button>
     <button id="btn-coach-menu" class="btn">MENU</button>
   </div>
@@ -6756,6 +6740,42 @@
     </div>
     <div class="jw-info" id="ts-info">Buat tugas kesihatan di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).</div>
     <div id="ts-bangunan" class="kd-pondok"></div>
+    <div id="coach-tugas" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:8px 0 4px;"></div>
+  </div>
+  <!-- KAWASAN USAHA (tab USAHA, sebelah TAMAN SIHAT) — SURAU + PAWAGAM -->
+  <div id="screen-us" class="screen">
+    <div class="status-bar">KAWASAN USAHA</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+      <button type="button" data-gm-tab="kd">KEDAI</button>
+      <button type="button" data-gm-tab="ts">TAMAN SIHAT</button>
+      <button type="button" data-gm-tab="us" class="gm-aktif">USAHA</button>
+    </div>
+    <div class="jw-info" id="us-info"></div>
+    <div id="us-bangunan" class="kd-pondok"></div>
+  </div>
+  <div id="screen-surau" class="screen">
+    <div class="status-bar">SURAU</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-us-surau-keluar" class="gm-kecil">‹ Usaha</button>
+      <span class="gm-alat-tajuk">SURAU</span>
+      <button type="button" id="btn-us-surau-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="surau-info" class="jw-info"></div>
+    <div id="surau-isi"></div>
+    <div style="height:30px;"></div>
+  </div>
+  <div id="screen-pawagam" class="screen">
+    <div class="status-bar">PAWAGAM</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-us-pawagam-keluar" class="gm-kecil">‹ Usaha</button>
+      <span class="gm-alat-tajuk">PAWAGAM</span>
+      <button type="button" id="btn-us-pawagam-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="pawagam-info" class="jw-info"></div>
+    <div id="coach-usaha" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
   </div>
   <!-- GYM (Taman Sihat) — senaman dipindah dari page COACH (10 Nov). -->
   <div id="screen-gym" class="screen">
@@ -6814,6 +6834,14 @@
       <button type="button" id="btn-profil-coach" class="gm-kecil">Coach</button>
     </div>
     <div id="profil-ringkas"></div>
+    <div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:4px 0;"><b>LAPORAN HARI INI</b>
+      <div id="coach-hari" style="font-size:0.85rem;margin:4px 0;white-space:pre-line;"></div>
+      <button id="btn-coach-pening" class="btn">LAPOR PENING (sekarang)</button>
+      <button id="btn-coach-lapor" class="btn">UBAH LAPORAN PAGI</button>
+      <button id="btn-coach-rumusan" class="btn">RUMUSAN MINGGU (untuk AI)</button>
+      <div id="coach-rumusan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:4px 0;"></div>
+      <button id="btn-coach-kira" class="btn">KIRA SEMULA (COACH)</button>
+    </div>
     <div id="coach-zat" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div style="height:30px;"></div>
   </div>
@@ -10233,7 +10261,7 @@
       var kk = coachKiraKesihatan(), kunciTeks = '';
       if (kk.kunci) {
         kunciTeks = 'LACI DIKUNCI — markah diabaikan ' + kk.markah + ' (had ' + COACH_HAD_KUNCI + ').\n' +
-          (kk.lepasTidur ? 'Sudah masa tidur — kunci kekal sampai esok. Rehat.\n' : 'Buka kunci: tanda SIAP (lewat) atau GANTI pada tugas DIABAIKAN di bawah.\n');
+          (kk.lepasTidur ? 'Sudah masa tidur — kunci kekal sampai esok. Rehat.\n' : 'Buka kunci: tanda SIAP (lewat) atau GANTI pada tugas DIABAIKAN (senarai tugas di TAMAN SIHAT).\n');
       }
       if (coachKunciMesej && !kk.kunci && coachHariData.hari.laporanAt) coachKunciMesej = ''; // mesej hilang bila kunci dibuka
       // Fokus usaha: Kuliah jika Kuliah di bawah sasaran (tidak HIJAU), jika tidak bidang English paling jauh di bawah sasaran
@@ -11323,7 +11351,7 @@
     var coachGoFn = null;
     function coachFokusGo(f) {
       var m = {
-        Listening: ['BUKA USAHA → + LISTENING', function() { coachBukaSek('usaha', true); }],
+        Listening: ['KE PAWAGAM → + LISTENING', function() { bukaPawagam(); }],
         Ayat: ['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }],
         Vocab: ['MAIN GAME VOCAB', function() { bukaMini(); }],
         Reasoning: ['BUKA LACI REASONING', function() { el('btn-go-reasoning').click(); }],
@@ -11360,7 +11388,7 @@
         }
         if (kk.kunci && !kk.lepasTidur) {
           b += kunciTeks.split('\n')[0] + '\nSEKARANG: buka kunci — buat tugas yang DIABAIKAN (SIAP lewat) atau GANTI.';
-          go = ['BUKA TUGAS KESIHATAN', function() { coachBukaSek('tugas', true); }];
+          go = ['KE SENARAI TUGAS (TAMAN SIHAT)', function() { bukaJadual(); }];
         } else if (kini >= j.tidur) {
           b += kunciTeks + 'SEKARANG: masa tidur. Tutup lampu dan rehat.';
           if (!dah.tidur) go = ['BILIK TIDUR (tekan LAMPU DITUTUP)', function() { bukaBilik(); }];
@@ -11381,14 +11409,14 @@
           go = ['KE BILIK TIDUR', function() { bukaBilik(); }];
         } else if (aktif) {
           b += 'SEKARANG: ' + aktif.nama + '.';
-          go = ['BUKA TUGAS KESIHATAN', function() { coachBukaSek('tugas', true); }];
+          go = ['KE SENARAI TUGAS (TAMAN SIHAT)', function() { bukaJadual(); }];
         } else {
           b += 'SEKARANG: tiada tugas kesihatan. Usaha: ' + (fokus || 'teruskan') + ' — ' + coachFokusTeks(fokus) + '.';
           go = coachFokusGo(fokus);
         }
         if (abai.length && !kk.kunci) {
           var na = []; for (i = 0; i < abai.length; i++) na.push(abai[i].jenis === 'air' ? 'AIR slot ' + abai[i].kunci.replace('air', '') : abai[i].nama.split(' — ')[0]);
-          b += '\nTertunggak: ' + na.join(', ') + ' (boleh SIAP lewat / GANTI dalam TUGAS KESIHATAN).';
+          b += '\nTertunggak: ' + na.join(', ') + ' (boleh SIAP lewat / GANTI di senarai tugas TAMAN SIHAT).';
         }
         if (seterus) b += '\nSeterusnya: ' + seterus.nama.split(' — ')[0] + ' — ' + coachTeksMasa(seterus.min);
         b += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
@@ -11424,17 +11452,9 @@
     function coachLukisUsaha() {
       var box = el('coach-usaha');
       if (!box) return;
-      var hr = coachHariData.hari || {}, h = '', i;
-      var sol = typeof hr.solat === 'number' ? hr.solat : -1;
-      h += '<div style="font-weight:bold;margin-bottom:4px;">USAHA HARI INI</div>';
-      h += '<div style="font-size:0.9rem;">Solat hari ini (bilangan waktu):</div><table style="width:100%;border-collapse:collapse;"><tr>';
-      for (i = 0; i <= 5; i++) {
-        h += '<td style="padding:2px;"><button type="button" data-cu="solat" data-v="' + i + '" style="width:100%;padding:8px 0;font-size:1rem;font-weight:bold;border:2px solid #000;border-radius:6px;' +
-          (sol === i ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + i + '</button></td>';
-      }
-      h += '</tr></table>';
-      var sm = coachSolatMinggu();
-      if (sm) h += '<div style="font-size:0.8rem;">Purata 7 hari: ' + sm.purata + ' / 5 (' + sm.hari + ' hari direkod)</div>';
+      var hr = coachHariData.hari || {}, h = '';
+      h += '<div style="font-weight:bold;margin-bottom:4px;">LISTENING ENGLISH</div>';
+      h += '<div style="font-size:0.8rem;">Kuning hari ini: ' + rm((hr.pawagamUnit || 0) * (EKO.PAWAGAM_SEN || 0)) + ' (' + ((hr.pawagamUnit || 0) * 10) + ' / ' + (PAWAGAM_HAD_UNIT * 10) + ' min dibayar)</div>';
       var lsHari = hr.listening || 0, lsJumlah = (coachDataAkhir && coachDataAkhir.listening) || 0;
       h += '<div style="font-size:0.9rem;margin-top:6px;">Listening hari ini: <b>' + lsHari + ' min</b> · jumlah terkumpul: ' + lsJumlah + ' min</div>';
       if (coachUIU.listening) {
@@ -11475,6 +11495,7 @@
           try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er2) {}
         }
         coachLukisSemula();
+        pawagamBayar();
         Promise.all([
           kol('coach_hari').doc(id).set({ listening: inc }, { merge: true }),
           kol('coach').doc('stok').set({ listening: inc, updatedAt: Date.now() }, { merge: true })
@@ -11515,7 +11536,7 @@
       };
     });
     el('btn-coach-menu').onclick = function() { coachLap = null; coachLukisLaporan(); showScreen('screen-menu'); };
-    el('btn-coach-lapor').onclick = function() { coachMulaLaporan(); try { window.scrollTo(0, 0); } catch (e) {} };
+    el('btn-coach-lapor').onclick = function() { bukaCoach(false); coachMulaLaporan(); try { window.scrollTo(0, 0); } catch (e) {} };
     el('btn-coach-pening').onclick = function() {
       if (!currentUser) return;
       var d = new Date(), masa = coachDua(d.getHours()) + ':' + coachDua(d.getMinutes());
@@ -11554,6 +11575,7 @@
       else if (k === 'mx') bukaMx();
       else if (k === 'kd') bukaKd();
       else if (k === 'ts') bukaTs();
+      else if (k === 'us') bukaUs();
       else if (k === 'atur') { showScreen('screen-atur'); try { window.scrollTo(0, 0); } catch (e2) {} }
     });
 
@@ -12666,6 +12688,8 @@
     EKO.MAKMAL_SEN = 1;       // MAKMAL HIDRASI: setiap slot air tepat masa = 0.01 Kuning
     EKO.NUTRISI_SEN = 5;      // PUSAT NUTRISI: capai sasaran buah + sayur hari ini = 0.05 Kuning
     EKO.TIDUR_SEN = 5;        // BILIK TIDUR: malap lampu / sigh / lampu ditutup tepat masa = 0.05 Kuning setiap satu
+    EKO.SURAU_SEN = 2;        // SURAU: setiap waktu solat ditanda = 0.02 Kuning
+    EKO.PAWAGAM_SEN = 2;      // PAWAGAM: setiap 10 min listening = 0.02 Kuning (had 120 min sehari)
     // ══ BANK PUSAT: semua harga & ganjaran boleh diubah admin. Disimpan dalam dompet.eko { KUNCI: nilai } ══
     // ARKED: hanya BONUS boleh diubah. Ganjaran asas (hadiah setiap perkataan) & kadar Bank Coin TETAP — dah dikira teliti (1 perkataan = 10 coin).
     // Nak naikkan harga barang → naikkan kadar duit (tab KADAR), bukan hadiah game.
@@ -12685,7 +12709,9 @@
       { k: 'TAMAN_SEN', tab: 'kedai', grup: 'TAMAN', nama: 'Ganjaran matahari pagi / cahaya petang', jenis: 'kuning', min: 0 },
       { k: 'MAKMAL_SEN', tab: 'kedai', grup: 'MAKMAL HIDRASI', nama: 'Ganjaran setiap slot air tepat masa', jenis: 'kuning', min: 0 },
       { k: 'NUTRISI_SEN', tab: 'kedai', grup: 'PUSAT NUTRISI', nama: 'Ganjaran capai sasaran buah + sayur', jenis: 'kuning', min: 0 },
-      { k: 'TIDUR_SEN', tab: 'kedai', grup: 'BILIK TIDUR', nama: 'Ganjaran malap lampu / sigh / lampu ditutup tepat masa', jenis: 'kuning', min: 0 }
+      { k: 'TIDUR_SEN', tab: 'kedai', grup: 'BILIK TIDUR', nama: 'Ganjaran malap lampu / sigh / lampu ditutup tepat masa', jenis: 'kuning', min: 0 },
+      { k: 'SURAU_SEN', tab: 'kedai', grup: 'SURAU', nama: 'Ganjaran setiap waktu solat', jenis: 'kuning', min: 0 },
+      { k: 'PAWAGAM_SEN', tab: 'kedai', grup: 'PAWAGAM', nama: 'Ganjaran setiap 10 min listening', jenis: 'kuning', min: 0 }
     ];
     var BP_LALAI = {};
     (function() { for (var i = 0; i < BP_EKO.length; i++) BP_LALAI[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]); })();
@@ -12843,6 +12869,8 @@
       if (k === 'makmal') s += '<path d="M56 25 H64 M57 25 V33 L48 47 Q47 49 49.5 49 H70.5 Q73 49 72 47 L63 33 V25" fill="#fff" stroke="#000" stroke-width="2"/><path d="M51.5 42 H68.5 L71 46.5 Q71.5 48 70 48 H50 Q48.5 48 49 46.5 Z" fill="#000"/>';
       if (k === 'nutrisi') s += '<path d="M47 36 H73 Q73 48 60 48 Q47 48 47 36 Z" fill="#000"/><path d="M55 33 Q53 29 55 26 M61 33 Q59 29 61 26 M67 33 Q65 29 67 26" fill="none" stroke="#000" stroke-width="1.5"/>';
       if (k === 'tidur') s += '<path d="M64 28 A10 10 0 1 0 66 46 A8 8 0 1 1 64 28 Z" fill="#000"/>';
+      if (k === 'surau') s += '<path d="M47 47 Q47 31 60 29 Q73 31 73 47 Z" fill="#000"/><path d="M60 29 V22" stroke="#000" stroke-width="2"/><circle cx="60" cy="20" r="2.2" fill="#000"/>';
+      if (k === 'pawagam') s += '<rect x="45" y="28" width="30" height="19" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M56 32 L66 37.5 L56 43 Z" fill="#000"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
     }
@@ -12869,12 +12897,22 @@
       }
       el('ts-bangunan').innerHTML = h;
     }
-    function bukaTs() {
+    function bukaTs(selepas) {
       if (!currentUser) return;
       showScreen('screen-ts');
       try { window.scrollTo(0, 0); } catch (e) {}
       el('ts-info').textContent = 'Buat tugas kesihatan di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).';
       lukisTs();
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        lukisTs();
+        coachLukisTugas();
+        if (coachHariData.hari.laporanAt) {
+          var kk = coachKiraKesihatan();
+          el('ts-info').textContent = 'Buat tugas di setiap bangunan → Ringgit Kuning. Markah diabaikan ' + kk.markah + '/' + COACH_HAD_KUNCI + (kk.kunci ? ' · LACI DIKUNCI (lihat senarai tugas di bawah)' : '');
+        }
+        if (typeof selepas === 'function') selepas();
+      }).catch(function() {});
     }
     el('ts-bangunan').addEventListener('click', function(e) {
       var t = e.target;
@@ -13208,6 +13246,7 @@
       Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
         coachDataAkhir = r[0];
         lukisProfilRingkas();
+        coachLukisHari();
         coachLukisZat();
       }).catch(function(e) { el('profil-ringkas').textContent = 'Gagal memuat profil: ' + ((e && e.message) || e); });
     }
@@ -13225,6 +13264,7 @@
       var p = profilDari;
       if (p === 'screen-ts') bukaTs(); else if (p === 'screen-gym') bukaGym(); else if (p === 'screen-taman') bukaTaman(); else if (p === 'screen-makmal') bukaMakmal(); else if (p === 'screen-nutrisi') bukaNutrisi();
       else if (p === 'screen-bilik') bukaBilik();
+      else if (p === 'screen-us') bukaUs(); else if (p === 'screen-surau') bukaSurau(); else if (p === 'screen-pawagam') bukaPawagam();
       else if (p === 'screen-kd') bukaKd();
     };
     el('btn-profil-coach').onclick = function() { bukaCoach(false); };
@@ -13355,6 +13395,125 @@
     };
     el('btn-bilik-keluar').onclick = function() { bukaTs(); };
     el('btn-bilik-coach').onclick = function() { bukaCoach(false); };
+    // ══ KAWASAN USAHA (tab USAHA, sebelah TAMAN SIHAT): SURAU (solat 5 waktu) + PAWAGAM (listening English) ══
+    // SURAU: tanda setiap waktu → coach_hari.solatW.{waktu} { s:1, kuning } + coach_hari.solat = bilangan (Pai 2 kekal guna .solat).
+    //   Tanda pertama kali → EKO.SURAU_SEN Kuning; batal tanda → Kuning waktu itu ditarik balik.
+    // PAWAGAM: log minit video English (#coach-usaha, sama dengan + LISTENING dulu). Setiap 10 min → EKO.PAWAGAM_SEN Kuning
+    //   (had 120 min sehari; coach_hari.pawagamUnit = bilangan unit 10 min sudah dibayar).
+    var US_BANGUNAN = [
+      ['surau', 'SURAU', 'Solat 5 waktu', true],
+      ['pawagam', 'PAWAGAM', 'Listening English (video)', true]
+    ];
+    var US_WAKTU = [['subuh', 'SUBUH'], ['zohor', 'ZOHOR'], ['asar', 'ASAR'], ['maghrib', 'MAGHRIB'], ['isyak', 'ISYAK']];
+    var PAWAGAM_HAD_UNIT = 12;
+    function usBayar(sen, jenis, ket, infoId) {
+      if (!sen) return;
+      var b = db.batch();
+      b.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, jenis, ket + ': ' + (sen > 0 ? '+' : '') + rm(sen) + ' Kuning');
+      b.commit().then(function() {
+        DP.kuningSen = (DP.kuningSen || 0) + sen;
+        var inf = el(infoId);
+        if (inf && sen > 0) inf.textContent += ' +' + rm(sen) + ' Ringgit Kuning!';
+      }).catch(function() {});
+    }
+    function lukisUs() {
+      var h = '', i, b, sub, hr = coachHariData.id === coachHariId() ? coachHariData.hari : {};
+      for (i = 0; i < US_BANGUNAN.length; i++) {
+        b = US_BANGUNAN[i]; sub = b[2];
+        if (b[0] === 'surau' && coachHariData.id === coachHariId()) sub = 'Solat hari ini ' + (typeof hr.solat === 'number' ? hr.solat : 0) + '/5';
+        if (b[0] === 'pawagam' && coachHariData.id === coachHariId()) sub = 'Listening hari ini ' + (hr.listening || 0) + ' min';
+        h += '<button type="button" class="kd-pd" data-us="' + b[0] + '">' + svgBangunan(b[0], b[1], b[3]) + '<small>' + sub + '</small></button>';
+      }
+      el('us-bangunan').innerHTML = h;
+    }
+    function usMuat(screen, info, fn) {
+      if (!currentUser) return;
+      showScreen(screen);
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el(info).textContent = 'Memuatkan...';
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        el(info).textContent = '';
+        fn();
+      }).catch(function(e) { el(info).textContent = 'Gagal memuat: ' + ((e && e.message) || e); });
+    }
+    function bukaUs() {
+      usMuat('screen-us', 'us-info', function() {
+        el('us-info').textContent = 'Usaha harian: solat + listening English → dapat Ringgit Kuning.';
+        lukisUs();
+      });
+    }
+    el('us-bangunan').addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-us'))) t = t.parentNode;
+      if (!t || t === this) return;
+      var k = t.getAttribute('data-us');
+      if (k === 'surau') bukaSurau();
+      if (k === 'pawagam') bukaPawagam();
+    });
+    // ── SURAU ──
+    function lukisSurau() {
+      var box = el('surau-isi');
+      if (!box) return;
+      var hr = coachHariData.hari, w = hr.solatW || {}, h = '', i, n = 0;
+      for (i = 0; i < US_WAKTU.length; i++) if (w[US_WAKTU[i][0]] && w[US_WAKTU[i][0]].s) n++;
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:4px 0;font-size:0.8rem;"><b>GANJARAN</b>: +' + rm(EKO.SURAU_SEN || 0) + ' Ringgit Kuning setiap waktu. Tekan nama waktu selepas solat.</div>';
+      h += '<div style="font-size:1.2rem;font-weight:bold;text-align:center;margin:6px 0;">SOLAT HARI INI: ' + n + ' / 5</div>';
+      if (!hr.solatW && typeof hr.solat === 'number' && hr.solat) h += '<div style="font-size:0.8rem;text-align:center;">(Rekod lama hari ini: ' + hr.solat + '/5 — tekan waktu untuk rekod semula.)</div>';
+      for (i = 0; i < US_WAKTU.length; i++) {
+        var on = w[US_WAKTU[i][0]] && w[US_WAKTU[i][0]].s;
+        h += '<button type="button" data-su="' + US_WAKTU[i][0] + '" style="display:block;width:100%;padding:12px 8px;margin:5px 0;font-size:1.1rem;font-weight:bold;border:2px solid #000;border-radius:8px;' +
+          (on ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + US_WAKTU[i][1] + (on ? ' · SUDAH' : '') + '</button>';
+      }
+      var sm = coachSolatMinggu();
+      if (sm) h += '<div style="font-size:0.8rem;">Purata 7 hari: ' + sm.purata + ' / 5 (' + sm.hari + ' hari direkod) · <b>' + sm.st + '</b></div>';
+      h += '<div style="font-size:0.75rem;margin-top:4px;">Tersilap tekan? Tekan sekali lagi untuk batal (Kuning waktu itu ditarik balik).</div>';
+      box.innerHTML = h;
+    }
+    function bukaSurau() { usMuat('screen-surau', 'surau-info', lukisSurau); }
+    el('surau-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-su')) t = t.parentNode;
+      if (!t || t === this || !currentUser) return;
+      var k = t.getAttribute('data-su'), hr = coachHariData.hari, w = hr.solatW || {}, lama = w[k], i, n = 0, d = { solatW: {} }, sen, nama = k.toUpperCase();
+      if (lama && lama.s) { d.solatW[k] = { s: 0, kuning: 0 }; sen = -(lama.kuning || 0); }
+      else { sen = EKO.SURAU_SEN || 0; d.solatW[k] = { s: 1, kuning: sen, at: Date.now() }; }
+      var w2 = {}; for (var p in w) if (w.hasOwnProperty(p)) w2[p] = w[p];
+      w2[k] = d.solatW[k];
+      for (i = 0; i < US_WAKTU.length; i++) if (w2[US_WAKTU[i][0]] && w2[US_WAKTU[i][0]].s) n++;
+      d.solat = n;
+      coachSimpanHari(d, function() {
+        hr.solatW = w2; hr.solat = n;
+        if (coachHariData.minggu) coachHariData.minggu[coachHariData.id] = hr;
+      });
+      el('surau-info').textContent = d.solatW[k].s ? nama + ' direkod.' : nama + ' dibatalkan.';
+      lukisSurau();
+      usBayar(sen, 'surau', 'Solat ' + nama + (sen < 0 ? ' (batal)' : ''), 'surau-info');
+    };
+    // ── PAWAGAM (listening) — guna #coach-usaha (coachLukisUsaha) ──
+    function bukaPawagam() {
+      usMuat('screen-pawagam', 'pawagam-info', function() {
+        el('pawagam-info').textContent = 'Tonton video English, kemudian tekan + LISTENING dan masukkan minit. Setiap 10 min = +' + rm(EKO.PAWAGAM_SEN || 0) + ' Ringgit Kuning (had ' + (PAWAGAM_HAD_UNIT * 10) + ' min sehari).';
+        coachLukisUsaha();
+      });
+    }
+    function pawagamBayar() {
+      var hr = coachHariData.hari, dah = hr.pawagamUnit || 0, unit = Math.min(PAWAGAM_HAD_UNIT, Math.floor((hr.listening || 0) / 10)), baru = unit - dah;
+      if (baru <= 0) return;
+      coachSimpanHari({ pawagamUnit: unit }, function() { hr.pawagamUnit = unit; });
+      var inf = el('pawagam-info');
+      if (inf) inf.textContent = 'Listening ' + (hr.listening || 0) + ' min hari ini.';
+      usBayar(baru * (EKO.PAWAGAM_SEN || 0), 'pawagam', 'Listening ' + (baru * 10) + ' min', 'pawagam-info');
+    }
+    el('btn-us-surau-keluar').onclick = function() { bukaUs(); };
+    el('btn-us-pawagam-keluar').onclick = function() { bukaUs(); };
+    el('btn-us-surau-coach').onclick = function() { bukaCoach(false); };
+    el('btn-us-pawagam-coach').onclick = function() { bukaCoach(false); };
+    // ── Senarai TUGAS KESIHATAN (dipindah ke TAMAN SIHAT) ──
+    function bukaJadual() {
+      bukaTs(function() { var b = el('coach-tugas'); if (b) { try { b.scrollIntoView(); } catch (e) {} } });
+    }
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
     function lukisPameran(teks) {
       var p = (KD.hijau || {}).pameran, it = p && kdCari(p.id);
@@ -13824,6 +13983,12 @@
         if (!t[i].querySelector('[data-gm-tab="ts"]')) {
           b = document.createElement('button');
           b.type = 'button'; b.setAttribute('data-gm-tab', 'ts'); b.textContent = 'TAMAN SIHAT';
+          t[i].appendChild(b);
+        }
+        // Tab USAHA (selepas TAMAN SIHAT): SURAU + PAWAGAM
+        if (!t[i].querySelector('[data-gm-tab="us"]')) {
+          b = document.createElement('button');
+          b.type = 'button'; b.setAttribute('data-gm-tab', 'us'); b.textContent = 'USAHA';
           t[i].appendChild(b);
         }
         // Tab PERATURAN di hujung kanan: PELABUHAN · ARKED · KEDAI · PERATURAN
