@@ -10502,6 +10502,55 @@
       p.nota = nota; p.at = rek.at;
       return p;
     }
+    // ── FASA 4c: RECOVERY OTOT (kumpulan A–P) ──
+    // coach/senaman.otot{G: hariId terakhir dilatih} (dikemas kini bila SELESAI SESI) · coach/senaman.sakit{G: hariId mula sakit | null}
+    // Rehat (hari) ditetapkan AI melalui kod (semakan Ahad). Awal: 2 hari setiap kumpulan; J (core) & P (muka) tiada rehat khas.
+    // Status hari ini: SAKIT (jangan latih sampai DAH OK) · KERAS (lapor hari ini → rehat, buat regangan / jalan ringan) ·
+    //   BELUM PULIH (dilatih ≤ rehat hari lepas → disembunyi, kecuali lapor DAH PULIH — intensiti sama, bukan naik) · SEDIA.
+    // Laporan direkod: coach_hari/{id}.senaman.otot{G:{lapor, hari, at}} untuk rumusan Ahad. Semua latihan direhatkan → REHAT OTOT (regangan 10 min), rotasi diteruskan.
+    var COACH_RECOVERY = {
+      A: ['Glute / pinggul', 2], B: ['Hamstring', 2], C: ['Quads', 2], D: ['Adductor & hip flexor', 2], E: ['Betis belakang', 2], F: ['Betis depan', 2],
+      G: ['Dada', 2], H: ['Belakang atas / lats', 2], I: ['Pinggang belakang', 2], J: ['Core', 0], K: ['Bahu', 2], L: ['Belakang atas (trap, rhomboid)', 2],
+      M: ['Lengan atas', 2], N: ['Lengan bawah & tangan', 2], O: ['Leher', 2], P: ['Muka', 0]
+    };
+    function coachBezaHari(a, b) {
+      var p = a.split('-'), q = b.split('-');
+      return Math.round((new Date(+q[0], +q[1] - 1, +q[2]) - new Date(+p[0], +p[1] - 1, +p[2])) / 864e5);
+    }
+    function coachOtotStatus(g, sh) {
+      var nyata = coachSenNyata(), hari = coachHariData.id || coachHariId(), lap = ((sh.hs.otot || {})[g] || {}).lapor, sk = (nyata.sakit || {})[g];
+      var akhir = (nyata.otot || {})[g], rehat = COACH_RECOVERY[g][1], beza = akhir ? coachBezaHari(akhir, hari) : null;
+      if (sk) return { st: 'SAKIT', beza: beza, sejak: coachBezaHari(sk, hari) };
+      if (lap === 'KERAS') return { st: 'KERAS', beza: beza };
+      if (rehat && akhir && akhir !== hari && beza <= rehat && lap !== 'PULIH') return { st: 'BELUM', beza: beza, rehat: rehat };
+      return { st: 'SEDIA', beza: beza, pulih: lap === 'PULIH' };
+    }
+    function coachLatihanRehat(x, sh) {
+      var gs = x[5].split(','), i, st;
+      for (i = 0; i < gs.length; i++) { st = coachOtotStatus(gs[i], sh).st; if (st !== 'SEDIA') return gs[i] + ' ' + (st === 'BELUM' ? 'BELUM PULIH' : st); }
+      return '';
+    }
+    function coachSenSemuaRehat(sh) {
+      var lat = sh.hs.latihan || {}, i;
+      for (i = 0; i < sh.senarai.length; i++) if (!lat[sh.senarai[i][0]] && !coachLatihanRehat(sh.senarai[i], sh)) return false;
+      return true;
+    }
+    function coachLukisOtot(sh, btn) {
+      var gs = [], i, j, h = '<div style="border:1px solid #000;padding:3px 5px;margin:3px 0;font-size:0.82rem;"><b>SEMAK OTOT HARI INI</b> (lapor sebelum mula)';
+      for (i = 0; i < sh.senarai.length; i++) { var a = sh.senarai[i][5].split(','); for (j = 0; j < a.length; j++) if (gs.indexOf(a[j]) === -1) gs.push(a[j]); }
+      gs.sort();
+      for (i = 0; i < gs.length; i++) {
+        var g = gs[i], o = coachOtotStatus(g, sh), nm = g + '. ' + COACH_RECOVERY[g][0], lalu = o.beza === null ? 'belum pernah dilatih' : (o.beza === 0 ? 'dilatih hari ini' : 'dilatih ' + o.beza + ' hari lepas');
+        var bk = function(v, t) { return '<button type="button" data-cs="otot" data-k="' + g + '" data-v="' + v + '" style="' + btn + '">' + t + '</button>'; };
+        h += '<div style="border-top:1px solid #000;padding:2px 0;">' + nm + ' · ' + lalu + ' · <b>';
+        if (o.st === 'SAKIT') h += 'SAKIT</b> (' + o.sejak + ' hari) — jangan latih.' + (o.sejak >= 7 ? ' <b>Sudah seminggu — jumpa doktor.</b>' : ' Berlarutan → jumpa doktor.') + '<br>' + bk('OKSAKIT', 'DAH OK');
+        else if (o.st === 'KERAS') h += 'KERAS</b> — rehat hari ini; buat regangan / jalan ringan.<br>' + bk('BATAL', 'BATAL') + bk('SAKIT', 'SAKIT');
+        else if (o.st === 'BELUM') h += 'BELUM PULIH</b> (perlu rehat ' + o.rehat + ' hari)<br>' + bk('PULIH', 'DAH PULIH') + bk('SAKIT', 'SAKIT');
+        else h += 'SEDIA</b>' + (o.pulih ? ' (pulih awal — intensiti sama, bukan naik)' : '') + '<br>' + bk('KERAS', 'MASIH KERAS') + bk('SAKIT', 'SAKIT');
+        h += '</div>';
+      }
+      return h + '</div>';
+    }
     function coachLukisSenaman() {
       var box = el('coach-senaman');
       if (!box) return;
@@ -10511,6 +10560,7 @@
       for (i = 0; i < sh.senarai.length; i++) if (lat[sh.senarai[i][0]]) n++;
       h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' dilog') + '</div>';
       h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
+      if (!sh.hs.siapAt) h += coachLukisOtot(sh, btn);
       for (i = 0; i < sh.senarai.length; i++) {
         var x = sh.senarai[i], k = x[0], r = lat[k], tgt = coachSenTarget(k, x), kgMula = tgt.kg;
         var uPapar = r && r.sasaran && sh.hs.siapAt ? r.sasaran : tgt.u, kgPapar = r && sh.hs.siapAt ? r.kg : kgMula;
@@ -10532,12 +10582,15 @@
             '<button type="button" data-cs="rasa" data-v="RINGAN" style="' + btn + '">RINGAN</button><button type="button" data-cs="rasa" data-v="OK" style="' + btn + '">OK</button>' +
             '<button type="button" data-cs="rasa" data-v="BERAT" style="' + btn + '">BERAT</button><button type="button" data-cs="rasa" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
             '<button type="button" data-cs="tutup" style="' + btn + '">BATAL</button>';
+        } else if (!r && !sh.hs.siapAt && coachLatihanRehat(x, sh)) {
+          h += '<div style="font-size:0.78rem;"><b>REHAT</b> — otot ' + coachLatihanRehat(x, sh) + '</div>';
         } else if (!sh.hs.siapAt || r) {
           h += '<div><button type="button" data-cs="buka" data-k="' + k + '" style="' + btn + '">' + (r ? 'UBAH' : 'LOG') + '</button></div>';
         }
         h += '</div>';
       }
-      if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">SELESAI SESI ' + sh.g + ' ' + sh.s + '</button></div>';
+      if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">' + (!n && coachSenSemuaRehat(sh) ? 'REHAT OTOT: regangan / jalan ringan 10 min → SELESAI' : 'SELESAI SESI ' + sh.g + ' ' + sh.s) + '</button></div>';
+      if (sh.hs.rehat) h += '<div style="font-size:0.8rem;">Hari ini REHAT OTOT (regangan / jalan ringan). Rotasi diteruskan; siri ' + sh.g + ' ' + sh.s + ' diulang lain kali.</div>';
       h += '<div style="border-top:2px solid #000;margin-top:4px;padding-top:3px;font-size:0.85rem;"><b>RUTIN FACE ' + sh.f + '</b> (5–7 min, terus selepas senaman)' + (sh.hs.face ? ' · <b>SIAP</b>' : '') +
         '<div style="font-size:0.78rem;">' + COACH_FACE[sh.f] + '</div>' +
         (sh.hs.face ? '' : '<button type="button" data-cs="face" style="' + btn + '">FACE ' + sh.f + ' SIAP</button>') + '</div>';
@@ -10559,6 +10612,22 @@
       var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
       if (cs === 'buka') { coachUIS = { buka: t.getAttribute('data-k'), kg: null }; coachLukisSenaman(); return; }
       if (cs === 'tutup') { coachUIS = { buka: '', kg: null }; coachLukisSenaman(); return; }
+      if (cs === 'otot') {
+        var og = t.getAttribute('data-k'), ov = t.getAttribute('data-v'), ob = coachOtotStatus(og, sh).beza, lapor = { lapor: ov === 'BATAL' ? 'OK' : ov, hari: ob, at: now };
+        if (ov === 'SAKIT' || ov === 'OKSAKIT') {
+          var skB = {}, sk0 = coachSenNyata().sakit || {}, sx;
+          for (sx in sk0) if (sk0.hasOwnProperty(sx)) skB[sx] = sk0[sx];
+          skB[og] = ov === 'SAKIT' ? (coachHariData.id || coachHariId()) : null;
+          coachSimpanSenNyata({ sakit: skB });
+        }
+        d = { senaman: { hari: sh.g, siri: sh.s, otot: {} } };
+        d.senaman.otot[og] = lapor;
+        coachSimpanHari(d, function() {
+          var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
+          hs.hari = sh.g; hs.siri = sh.s; (hs.otot || (hs.otot = {}))[og] = lapor;
+        });
+        return;
+      }
       if (cs === 'kg') {
         var simpan = [];
         for (j = 0; j < COACH_SET; j++) { var ie = document.getElementById('coach-set-' + j); simpan.push(ie ? ie.value : ''); }
@@ -10589,26 +10658,32 @@
       if (cs === 'selesai') {
         var lat = sh.hs.latihan || {}, ada = 0, kk;
         for (kk in lat) if (lat.hasOwnProperty(kk)) ada++;
-        if (!ada) { alert('Log sekurang-kurangnya satu latihan dulu.'); return; }
+        var rehatOtot = !ada && coachSenSemuaRehat(sh);
+        if (!ada && !rehatOtot) { alert('Log sekurang-kurangnya satu latihan dulu.'); return; }
         d = { senaman: { hari: sh.g, siri: sh.s, siapAt: now } };
+        if (rehatOtot) d.senaman.rehat = true;
         var tg = coachHariData.hari.tugas || {};
         if (!tg.senaman) {
           d.tugas = { senaman: { s: 'BUAT', at: now } };
+          if (rehatOtot) d.tugas.senaman.ganti = 'REHAT_OTOT'; // rehat diarah coach (otot keras / sakit / belum pulih) → tiada denda
           var jS = coachJadualKini(), kiniS = coachMinitKini(), iS;
           for (iS = 0; jS && iS < jS.tugas.length; iS++) if (jS.tugas[iS].kunci === 'senaman' && kiniS >= coachTamat(jS.tugas[iS])) d.tugas.senaman.lewat = true;
         }
-        var nyata = coachSenNyata(), siri = {}, g2, akhirBaru = {};
+        var nyata = coachSenNyata(), siri = {}, g2, akhirBaru = {}, ototBaru = {}, hariOt = coachHariData.id || coachHariId();
         for (g2 in (nyata.siri || {})) if (nyata.siri.hasOwnProperty(g2)) siri[g2] = nyata.siri[g2];
-        siri[sh.g] = sh.s === 'A' ? 'B' : 'A';
+        if (!rehatOtot) siri[sh.g] = sh.s === 'A' ? 'B' : 'A';
+        for (g2 in (nyata.otot || {})) if (nyata.otot.hasOwnProperty(g2)) ototBaru[g2] = nyata.otot[g2];
+        for (kk in lat) if (lat.hasOwnProperty(kk) && coachSenLatihan(kk)) { var gsL = coachSenLatihan(kk)[5].split(','); for (iS = 0; iS < gsL.length; iS++) ototBaru[gsL[iS]] = hariOt; }
         for (g2 in (nyata.akhir || {})) if (nyata.akhir.hasOwnProperty(g2)) akhirBaru[g2] = nyata.akhir[g2];
         for (kk in lat) if (lat.hasOwnProperty(kk)) akhirBaru[kk] = lat[kk];
         var progBaru = {}, xs;
         for (g2 in (nyata.prog || {})) if (nyata.prog.hasOwnProperty(g2)) progBaru[g2] = nyata.prog[g2];
         for (kk in lat) if (lat.hasOwnProperty(kk) && (xs = coachSenLatihan(kk))) progBaru[kk] = coachSenProg(xs, coachSenTarget(kk, xs), lat[kk]);
-        coachSimpanSenNyata({ seterus: COACH_KITAR[(COACH_KITAR.indexOf(sh.g) + 1) % 3], siri: siri, akhir: akhirBaru, prog: progBaru });
+        coachSimpanSenNyata({ seterus: COACH_KITAR[(COACH_KITAR.indexOf(sh.g) + 1) % 3], siri: siri, akhir: akhirBaru, prog: progBaru, otot: ototBaru });
         coachSimpanHari(d, function() {
           var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
           hs.hari = sh.g; hs.siri = sh.s; hs.siapAt = now;
+          if (rehatOtot) hs.rehat = true;
           if (d.tugas) (coachHariData.hari.tugas || (coachHariData.hari.tugas = {})).senaman = d.tugas.senaman;
         });
         return;
