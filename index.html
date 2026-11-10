@@ -9820,6 +9820,16 @@
     var COACH_HAD_KUNCI = 4;
     var coachDataAkhir = null;
     var coachUI = { ml: '', dapat: '', minum: false, kencing: false };
+    // ── FASA 2c: KUNCI HEALTH FIRST + TUGAS GANTI ──
+    // Markah diabaikan > 4 → SEMUA LACI dikunci (Bahasa, SR Bebas, Fakta, Reasoning, Presenting). Game & lain-lain tidak.
+    // Buka kunci: buat tugas asal (walaupun lewat = markah PENUH dibuang) ATAU tugas GANTI (markah SEPARUH dibuang, rekod 'GANTI').
+    // Selepas masa LAMPU DITUTUP → tiada denda; kunci kekal sampai hari coach baru (4:00 pagi) — kiraan bermula semula.
+    var COACH_GANTI = {
+      matahari: 'Jalan kaki 10 minit di luar / cahaya petang lebih lama',
+      petang: 'Jalan kaki 10 minit di luar',
+      senaman: 'Regangan / senaman ringan 10 minit'
+    };
+    var coachKunciMesej = '';
 
     function coachTamat(t) {
       if (t.jenis === 'petang') return 17 * 60 + 30;
@@ -9836,7 +9846,7 @@
     }
     function coachStatusTugas(t, kini) {
       var rec = (coachHariData.hari.tugas || {})[t.kunci];
-      if (rec) return rec.s;
+      if (rec) return rec.s; // 'BUAT' | 'TAK_DAPAT' | 'GANTI'
       if (t.jenis === 'tidur' || t.jenis === 'fokus') return 'MALAM';
       if (kini >= coachTamat(t)) return 'ABAI';
       if (kini >= t.min) return 'SEKARANG';
@@ -9856,6 +9866,7 @@
         c.jumlah++;
         if (st === 'BUAT') c.siap++;
         else if (st === 'TAK_DAPAT') c.dapat++;
+        else if (st === 'GANTI') c.ganti = (c.ganti || 0) + 1;
         else if (st === 'ABAI') c.abai++;
       }
       if (j) {
@@ -9865,9 +9876,10 @@
           var st = coachStatusTugas(t, kini);
           kemas(t.jenis, st);
           if (st === 'ABAI') markah += COACH_BERAT[t.jenis] || 1;
+          else if (st === 'GANTI') markah += (COACH_BERAT[t.jenis] || 1) / 2; // tugas ganti = separuh markah dibuang
         }
       }
-      return { kat: kat, markah: markah, tidur: coachStatusTidurSemalam(), adaJadual: !!j };
+      return { kat: kat, markah: markah, tidur: coachStatusTidurSemalam(), adaJadual: !!j, kunci: markah > COACH_HAD_KUNCI, lepasTidur: j ? kini >= j.tidur : false };
     }
     function coachPaiKesihatan() {
       var k = coachKiraKesihatan(), h = '', hijau = 0, dinilai = 0;
@@ -9882,13 +9894,13 @@
         for (var i = 0; i < senarai.length; i++) {
           var c = k.kat[senarai[i][0]], st = '', teks;
           if (!c) { h += baris(senarai[i][1], 'tiada tugas', ''); continue; }
-          var dinilaiK = c.siap + c.abai + c.dapat;
+          var dinilaiK = c.siap + c.abai + c.dapat + (c.ganti || 0);
           if (senarai[i][0] === 'air') {
             teks = c.siap + '/' + c.jumlah + ' slot' + (c.dapat ? ' · ' + c.dapat + ' tak dapat' : '') + (c.abai ? ' · ' + c.abai + ' terlepas' : '');
             if (dinilaiK) st = c.abai === 0 ? 'HIJAU' : (c.abai === 1 ? 'KUNING' : 'MERAH');
           } else {
-            teks = c.siap ? 'SIAP' : (c.dapat ? 'TAK DAPAT (dikecualikan)' : (c.abai ? 'DIABAIKAN' : 'belum masa'));
-            if (dinilaiK) st = c.abai ? 'MERAH' : 'HIJAU';
+            teks = c.siap ? 'SIAP' : (c.ganti ? 'GANTI (separuh)' : (c.dapat ? 'TAK DAPAT (dikecualikan)' : (c.abai ? 'DIABAIKAN' : 'belum masa')));
+            if (dinilaiK) st = c.abai ? 'MERAH' : (c.ganti ? 'KUNING' : 'HIJAU');
           }
           h += baris(senarai[i][1], teks, st);
         }
@@ -9897,7 +9909,8 @@
       h += baris('Makan buah / sayur', 'POSPON (Fasa 3)', '');
       return '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;">' +
         '<div style="font-weight:bold;">PAI 1 · KESIHATAN · seimbang ' + hijau + '/' + dinilai + '</div>' + h +
-        '<div style="font-size:0.85rem;border-top:1px solid #000;margin-top:4px;padding-top:3px;">Markah diabaikan hari ini: <b>' + k.markah + '</b> (had ' + COACH_HAD_KUNCI + ')</div></div>';
+        '<div style="font-size:0.85rem;border-top:1px solid #000;margin-top:4px;padding-top:3px;">Markah diabaikan hari ini: <b>' + k.markah + '</b> (had ' + COACH_HAD_KUNCI + ')' +
+        (k.kunci ? ' · <b>LACI DIKUNCI</b>' : '') + '</div></div>';
     }
 
     // ── Senarai tugas kesihatan hari ini (SIAP / TAK DAPAT) + log minum / kencing ──
@@ -9913,17 +9926,20 @@
       if (!box) return;
       var j = coachJadualKini();
       if (!j) { box.innerHTML = ''; return; }
-      var kini = coachMinitKini(), h = '', tugas = coachHariData.hari.tugas || {}, i;
+      var kini = coachMinitKini(), h = '', tugas = coachHariData.hari.tugas || {}, i, lepasTidur = kini >= j.tidur;
       h += '<div style="font-weight:bold;margin-bottom:4px;">TUGAS KESIHATAN HARI INI</div>';
       for (i = 0; i < j.tugas.length; i++) {
         var t = j.tugas[i];
         if (t.jenis === 'fokus') continue;
         var st = coachStatusTugas(t, kini), rec = tugas[t.kunci];
-        var label = { BUAT: 'SIAP', TAK_DAPAT: 'TAK DAPAT', ABAI: 'DIABAIKAN', SEKARANG: 'SEKARANG', AKAN: '', MALAM: '' }[st] || '';
+        var label = { BUAT: 'SIAP', TAK_DAPAT: 'TAK DAPAT', GANTI: 'GANTI', ABAI: 'DIABAIKAN', SEKARANG: 'SEKARANG', AKAN: '', MALAM: '' }[st] || '';
         h += '<div style="border-bottom:1px solid #000;padding:4px 0;">' +
           '<div style="font-size:0.9rem;' + (st === 'SEKARANG' ? 'font-weight:bold;' : '') + '">' + coachTeksMasa(t.min) + ' · ' + t.nama + (label ? ' · <b>' + label + '</b>' : '') + '</div>';
         if (rec) {
-          h += '<div style="font-size:0.78rem;">' + (rec.s === 'BUAT' ? 'Ditanda ' : 'Sebab: ' + (rec.sebab || '-') + ' · ') + coachTeksMasa(new Date(rec.at).getHours() * 60 + new Date(rec.at).getMinutes()) + (rec.ml ? ' · ' + rec.ml + ' ml' : '') + '</div>';
+          h += '<div style="font-size:0.78rem;">' + (rec.s === 'BUAT' ? 'Ditanda ' : (rec.s === 'GANTI' ? 'Ganti: ' + (COACH_GANTI[t.jenis] || '-') + ' · ' : 'Sebab: ' + (rec.sebab || '-') + ' · ')) +
+            coachTeksMasa(new Date(rec.at).getHours() * 60 + new Date(rec.at).getMinutes()) + (rec.lewat ? ' (lewat)' : '') + (rec.ml ? ' · ' + rec.ml + ' ml' : '') + '</div>';
+        } else if (st === 'ABAI' && lepasTidur) {
+          h += '<div style="font-size:0.78rem;">Sudah masa tidur — tiada denda malam ini. Kiraan bermula semula esok.</div>';
         } else if (t.jenis === 'tidur') {
           h += '<div style="font-size:0.78rem;">Dinilai pagi esok dari laporan LAMPU DITUTUP.</div>';
         } else if (coachUI.ml === t.kunci) {
@@ -9931,6 +9947,11 @@
         } else if (coachUI.dapat === t.kunci) {
           h += '<div style="font-size:0.8rem;">Sebab luar:</div>' + coachBtnKecil('sebab', t.kunci + '|HUJAN', 'HUJAN') + coachBtnKecil('sebab', t.kunci + '|SAKIT', 'SAKIT') +
             coachBtnKecil('sebab', t.kunci + '|LAIN', 'LAIN') + coachBtnKecil('batal', t.kunci, 'BATAL');
+        } else if (st === 'ABAI') {
+          // Denda: buat tugas asal (lewat → markah penuh dibuang) ATAU tugas ganti (separuh)
+          h += '<div>' + coachBtnKecil('siap', t.kunci, 'SIAP (lewat)') +
+            (COACH_GANTI[t.jenis] ? coachBtnKecil('ganti', t.kunci, 'GANTI: ' + COACH_GANTI[t.jenis]) : '') +
+            coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         } else {
           h += '<div>' + coachBtnKecil('siap', t.kunci, 'SIAP') + coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         }
@@ -9977,6 +9998,12 @@
       if (ct === 'siap') {
         if (k.indexOf('air') === 0) { coachUI.ml = k; coachUI.dapat = ''; coachLukisTugas(); return; }
         d.tugas = {}; d.tugas[k] = { s: 'BUAT', at: now };
+        if (t.textContent.indexOf('lewat') !== -1) d.tugas[k].lewat = true;
+        coachSimpanHari(d, function() { var tg = coachHariData.hari.tugas || (coachHariData.hari.tugas = {}); tg[k] = d.tugas[k]; });
+        return;
+      }
+      if (ct === 'ganti') {
+        d.tugas = {}; d.tugas[k] = { s: 'GANTI', at: now };
         coachSimpanHari(d, function() { var tg = coachHariData.hari.tugas || (coachHariData.hari.tugas = {}); tg[k] = d.tugas[k]; });
         return;
       }
@@ -9993,7 +10020,13 @@
         if (!ml) { alert('Masukkan jumlah ml (1 – 3000).'); return; }
         var rekod = { at: now, ml: ml, slot: ct === 'simpanml' ? k : '' };
         d.minum = firebase.firestore.FieldValue.arrayUnion(rekod);
-        if (ct === 'simpanml') { d.tugas = {}; d.tugas[k] = { s: 'BUAT', at: now, ml: ml }; }
+        if (ct === 'simpanml') {
+          d.tugas = {}; d.tugas[k] = { s: 'BUAT', at: now, ml: ml };
+          var jA = coachJadualKini(), kiniA = coachMinitKini();
+          for (var ia = 0; jA && ia < jA.tugas.length; ia++) {
+            if (jA.tugas[ia].kunci === k && kiniA >= coachTamat(jA.tugas[ia])) d.tugas[k].lewat = true;
+          }
+        }
         coachUI = { ml: '', dapat: '', minum: false, kencing: false };
         coachSimpanHari(d, function() {
           var hr = coachHariData.hari;
@@ -10060,7 +10093,13 @@
 
       var now = new Date(), jam = now.getHours();
       var salam = jam >= 5 && jam < 12 ? 'Selamat pagi.' : (jam < 15 && jam >= 12 ? 'Selamat tengah hari.' : (jam >= 15 && jam < 19 ? 'Selamat petang.' : 'Selamat malam.'));
-      el('coach-bubble').textContent = salam + ' Sekarang pukul ' + coachTeksMasa(jam * 60 + now.getMinutes()) + '.\nSekarang: ' + coachTugasSekarang(fokus);
+      var kk = coachKiraKesihatan(), kunciTeks = '';
+      if (kk.kunci) {
+        kunciTeks = 'LACI DIKUNCI — markah diabaikan ' + kk.markah + ' (had ' + COACH_HAD_KUNCI + ').\n' +
+          (kk.lepasTidur ? 'Sudah masa tidur — kunci kekal sampai esok. Rehat.\n' : 'Buka kunci: tanda SIAP (lewat) atau GANTI pada tugas DIABAIKAN di bawah.\n');
+      }
+      if (coachKunciMesej && !kk.kunci && coachHariData.hari.laporanAt) coachKunciMesej = ''; // mesej hilang bila kunci dibuka
+      el('coach-bubble').textContent = (coachKunciMesej ? coachKunciMesej + '\n' : '') + kunciTeks + salam + ' Sekarang pukul ' + coachTeksMasa(jam * 60 + now.getMinutes()) + '.\nSekarang: ' + coachTugasSekarang(fokus);
       coachLukisHari();
       coachLukisTugas();
     }
@@ -10080,6 +10119,37 @@
     }
     el('btn-coach-terus').onclick = function() { bukaMini(); };
     el('btn-coach-kira').onclick = function() { bukaCoach(true); };
+    // ── KUNCI HEALTH FIRST pada butang LACI di menu ──
+    // Belum isi laporan pagi → ke page COACH dulu. Markah diabaikan > had → DIKUNCI (ke page COACH).
+    // Gagal baca Firebase → JANGAN halang (laci dibuka seperti biasa).
+    function coachSemakKunci(teruskan) {
+      if (!currentUser) { teruskan(); return; }
+      var perluMuat = coachHariData.id !== coachHariId() || !coachHariData.dimuatAt || Date.now() - coachHariData.dimuatAt > 5 * 60 * 1000;
+      (perluMuat ? coachMuatHari().then(function() { coachHariData.dimuatAt = Date.now(); }) : Promise.resolve()).then(function() {
+        if (!coachHariData.hari.laporanAt) {
+          coachKunciMesej = 'Isi LAPORAN PAGI dulu sebelum buka laci.';
+          bukaCoach(false);
+          return;
+        }
+        var kk = coachKiraKesihatan();
+        if (kk.kunci) {
+          coachKunciMesej = 'Laci tidak boleh dibuka sekarang.';
+          bukaCoach(false);
+          return;
+        }
+        coachKunciMesej = '';
+        teruskan();
+      }).catch(function() { teruskan(); });
+    }
+    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting'].forEach(function(id) {
+      var b = el(id);
+      if (!b || !b.onclick) return;
+      var asal = b.onclick;
+      b.onclick = function(e) {
+        var self = this;
+        coachSemakKunci(function() { asal.call(self, e); });
+      };
+    });
     el('btn-coach-menu').onclick = function() { coachLap = null; coachLukisLaporan(); showScreen('screen-menu'); };
     el('btn-coach-lapor').onclick = function() { coachMulaLaporan(); try { window.scrollTo(0, 0); } catch (e) {} };
     el('btn-coach-pening').onclick = function() {
