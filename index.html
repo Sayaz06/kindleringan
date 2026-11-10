@@ -10449,6 +10449,59 @@
       return null;
     }
     function coachTeksBeban(kg) { return kg === 0 ? 'badan' : (kg === 6 ? 'KB 6 kg' : kg + ' kg'); }
+    // ── FASA 4b: PROGRESI (dinilai bila SELESAI SESI) → coach/senaman.prog{kunci:{kg,u,lulus,gagal,kgGagal[],tahan,nota,at}} ──
+    // REP: julat 8–12 · capai sasaran semua set + RINGAN/OK → +1 rep (langkah kecil) · di 12 rep: 2 sesi berturut RINGAN → beban naik 1 anak tangga, rep balik 8
+    //      (beban itu pernah gagal → perlu 3 sesi, syarat lebih ketat) · tanpa beban: +1 rep sampai 20, kemudian semakan Ahad.
+    // SAAT (isometrik): +5 saat sampai 60. GAGAL (mana-mana set < sasaran) 1x → ulang sama · 2x berturut → rep turun ~10% (min 8) / −5 saat;
+    //      sudah 8 rep → beban turun 1 anak tangga (rekod kgGagal), rep 10. BERAT → ulang sama. SAKIT → TAHAN: tiada naik sampai lapor OK.
+    // Anak tangga dumbbell: BADAN → 2.5 → 5 → 7.5 → 10 kg (maks: semakan Ahad — tempo / satu kaki / masa tahan). KB 6 kg = tetap.
+    var COACH_REP_MIN = 8, COACH_REP_MAKS = 12, COACH_REP_BADAN_MAKS = 20, COACH_SAAT_MAKS = 60, COACH_SAAT_MIN = 10;
+    function coachTangga(x) { return x[3] === 6 ? [6] : [0, 2.5, 5, 7.5, 10]; }
+    function coachSenTarget(k, x) {
+      var nyata = coachSenNyata(), p = (nyata.prog || {})[k], akhir = (nyata.akhir || {})[k];
+      if (p) return p;
+      var kg = x[3] === null ? null : (akhir && akhir.kg !== undefined && akhir.kg !== null ? akhir.kg : x[3]);
+      return { kg: kg, u: x[2] === 'saat' ? COACH_SAAT : COACH_REP, lulus: 0, gagal: 0, kgGagal: [], tahan: false, nota: '' };
+    }
+    function coachSenProg(x, p0, rek) {
+      var p = JSON.parse(JSON.stringify(p0)), sas = rek.sasaran || p.u, hit = true, i, tg = coachTangga(x), saat = x[2] === 'saat', nota = '';
+      p.kgGagal = p.kgGagal || [];
+      for (i = 0; i < rek.rep.length; i++) if (rek.rep[i] < sas) hit = false;
+      if (rek.kg !== null && rek.kg !== undefined && rek.kg !== p.kg) { p.kg = rek.kg; p.lulus = 0; p.gagal = 0; }
+      p.u = sas;
+      if (rek.rasa === 'SAKIT') { p.tahan = true; p.lulus = 0; p.gagal = 0; nota = 'TAHAN (sakit) — tiada naik sampai lapor OK'; }
+      else if (!hit) {
+        p.lulus = 0; p.gagal = (p.gagal || 0) + 1;
+        if (p.gagal < 2) nota = 'Gagal 1x — ulang sama';
+        else {
+          p.gagal = 0;
+          var bawah = null;
+          for (i = 0; i < tg.length; i++) if (p.kg !== null && tg[i] < p.kg) bawah = tg[i];
+          if (saat) { p.u = Math.max(COACH_SAAT_MIN, p.u - 5); nota = 'Gagal 2x — turun ke ' + p.u + ' saat'; }
+          else if (p.u > COACH_REP_MIN) { p.u = Math.max(COACH_REP_MIN, Math.round(p.u * 0.9)); nota = 'Gagal 2x — rep turun ke ' + p.u; }
+          else if (bawah !== null) { if (p.kgGagal.indexOf(p.kg) === -1) p.kgGagal.push(p.kg); p.kg = bawah; p.u = COACH_REP; nota = 'Gagal 2x — beban turun ke ' + coachTeksBeban(bawah) + ', rep ' + COACH_REP; }
+          else nota = 'Gagal 2x — sudah paling ringan, kekal · semakan Ahad';
+        }
+      } else {
+        p.gagal = 0;
+        if (p.tahan) { p.tahan = false; p.lulus = 0; nota = 'Lapor OK — TAHAN dibuka, ulang sama dulu'; }
+        else if (rek.rasa === 'BERAT') { p.lulus = 0; nota = 'BERAT — ulang sama'; }
+        else if (saat) { if (p.u < COACH_SAAT_MAKS) { p.u += 5; nota = '+5 saat'; } else nota = 'Maks ' + COACH_SAAT_MAKS + ' saat — semakan Ahad'; }
+        else if (p.u < COACH_REP_MAKS) { p.u++; nota = '+1 rep'; }
+        else if (p.kg === null) { if (p.u < COACH_REP_BADAN_MAKS) { p.u++; nota = '+1 rep'; } else nota = 'Maks ' + COACH_REP_BADAN_MAKS + ' rep — semakan Ahad (tempo / satu kaki)'; }
+        else if (rek.rasa === 'RINGAN') {
+          var naik = null;
+          for (i = tg.length - 1; i >= 0; i--) if (tg[i] > p.kg) naik = tg[i];
+          var syarat = naik !== null && p.kgGagal.indexOf(naik) !== -1 ? 3 : 2;
+          p.lulus = (p.lulus || 0) + 1;
+          if (naik === null) nota = 'Beban maks — semakan Ahad (tempo perlahan / satu kaki / masa tahan)';
+          else if (p.lulus >= syarat) { p.kg = naik; p.u = COACH_REP_MIN; p.lulus = 0; nota = 'NAIK beban ke ' + coachTeksBeban(naik) + ', rep ' + COACH_REP_MIN; }
+          else nota = COACH_REP_MAKS + ' rep RINGAN ' + p.lulus + '/' + syarat + ' sesi';
+        } else { p.lulus = 0; nota = COACH_REP_MAKS + ' rep OK — perlu RINGAN 2 sesi berturut untuk naik'; }
+      }
+      p.nota = nota; p.at = rek.at;
+      return p;
+    }
     function coachLukisSenaman() {
       var box = el('coach-senaman');
       if (!box) return;
@@ -10459,11 +10512,13 @@
       h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' dilog') + '</div>';
       h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
       for (i = 0; i < sh.senarai.length; i++) {
-        var x = sh.senarai[i], k = x[0], r = lat[k], sasaran = COACH_SET + ' × ' + (x[2] === 'saat' ? COACH_SAAT + ' saat' : COACH_REP) + (x[4] ? ' setiap sisi' : '');
-        var kgMula = akhir[k] && akhir[k].kg !== undefined && akhir[k].kg !== null ? akhir[k].kg : x[3];
-        h += '<div style="border-top:1px solid #000;padding:3px 0;font-size:0.85rem;"><b>' + (i + 1) + '. ' + x[1] + '</b> · ' + sasaran + (x[3] !== null ? ' · ' + coachTeksBeban(kgMula) : '');
+        var x = sh.senarai[i], k = x[0], r = lat[k], tgt = coachSenTarget(k, x), kgMula = tgt.kg;
+        var uPapar = r && r.sasaran && sh.hs.siapAt ? r.sasaran : tgt.u, kgPapar = r && sh.hs.siapAt ? r.kg : kgMula;
+        var sasaran = COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' saat' : '') + (x[4] ? ' setiap sisi' : '');
+        h += '<div style="border-top:1px solid #000;padding:3px 0;font-size:0.85rem;"><b>' + (i + 1) + '. ' + x[1] + '</b> · ' + sasaran + (kgPapar !== null && kgPapar !== undefined ? ' · ' + coachTeksBeban(kgPapar) : '') + (tgt.tahan && !r ? ' · <b>TAHAN</b>' : '');
         if (r) h += '<div style="font-size:0.78rem;">DILOG: ' + (r.kg !== null && r.kg !== undefined ? coachTeksBeban(r.kg) + ' · ' : '') + r.rep.join(' / ') + (x[2] === 'saat' ? ' saat' : ' rep') + ' · <b>' + r.rasa + '</b>' +
-          (r.rasa === 'SAKIT' ? '<br><b>Henti latihan ini. Jangan naik beban sampai lapor OK. Sakit berlarutan → jumpa doktor.</b>' : '') + '</div>';
+          (r.rasa === 'SAKIT' ? '<br><b>Henti latihan ini. Jangan naik beban sampai lapor OK. Sakit berlarutan → jumpa doktor.</b>' : '') +
+          (sh.hs.siapAt && tgt.at === r.at ? '<br>Sesi depan: ' + (tgt.kg !== null ? coachTeksBeban(tgt.kg) + ' · ' : '') + COACH_SET + ' × ' + tgt.u + (x[2] === 'saat' ? ' saat' : '') + ' — ' + tgt.nota : '') + '</div>';
         if (coachUIS.buka === k) {
           var kg = coachUIS.kg !== null ? coachUIS.kg : kgMula, b, j;
           if (x[3] !== null) {
@@ -10472,7 +10527,7 @@
             h += b + '</div>';
           }
           h += '<div>';
-          for (j = 0; j < COACH_SET; j++) h += 'Set ' + (j + 1) + ': <input type="text" inputmode="numeric" id="coach-set-' + j + '" value="' + (r && r.rep[j] !== undefined ? r.rep[j] : (x[2] === 'saat' ? COACH_SAAT : COACH_REP)) + '" style="width:44px;font-size:1rem;padding:3px;border:2px solid #000;"> ';
+          for (j = 0; j < COACH_SET; j++) h += 'Set ' + (j + 1) + ': <input type="text" inputmode="numeric" id="coach-set-' + j + '" value="' + (r && r.rep[j] !== undefined ? r.rep[j] : tgt.u) + '" style="width:44px;font-size:1rem;padding:3px;border:2px solid #000;"> ';
           h += (x[2] === 'saat' ? 'saat' : 'rep') + '</div><div style="font-size:0.78rem;">Rasa (tekan untuk SIMPAN):</div>' +
             '<button type="button" data-cs="rasa" data-v="RINGAN" style="' + btn + '">RINGAN</button><button type="button" data-cs="rasa" data-v="OK" style="' + btn + '">OK</button>' +
             '<button type="button" data-cs="rasa" data-v="BERAT" style="' + btn + '">BERAT</button><button type="button" data-cs="rasa" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
@@ -10520,8 +10575,8 @@
           if (!(n >= 0 && n <= 300)) { alert('Isi set ' + (j + 1) + ' (0 – 300).'); return; }
           rep.push(n);
         }
-        var akhir = coachSenNyata().akhir || {}, kgMula = akhir[k] && akhir[k].kg !== undefined && akhir[k].kg !== null ? akhir[k].kg : x[3];
-        var rek = { kg: x[3] === null ? null : (coachUIS.kg !== null ? coachUIS.kg : kgMula), rep: rep, rasa: t.getAttribute('data-v'), at: now };
+        var tgt = coachSenTarget(k, x), kgMula = tgt.kg;
+        var rek = { kg: x[3] === null ? null : (coachUIS.kg !== null ? coachUIS.kg : kgMula), rep: rep, rasa: t.getAttribute('data-v'), at: now, sasaran: tgt.u };
         d = { senaman: { hari: sh.g, siri: sh.s, latihan: {} } };
         d.senaman.latihan[k] = rek;
         coachUIS = { buka: '', kg: null };
@@ -10547,7 +10602,10 @@
         siri[sh.g] = sh.s === 'A' ? 'B' : 'A';
         for (g2 in (nyata.akhir || {})) if (nyata.akhir.hasOwnProperty(g2)) akhirBaru[g2] = nyata.akhir[g2];
         for (kk in lat) if (lat.hasOwnProperty(kk)) akhirBaru[kk] = lat[kk];
-        coachSimpanSenNyata({ seterus: COACH_KITAR[(COACH_KITAR.indexOf(sh.g) + 1) % 3], siri: siri, akhir: akhirBaru });
+        var progBaru = {}, xs;
+        for (g2 in (nyata.prog || {})) if (nyata.prog.hasOwnProperty(g2)) progBaru[g2] = nyata.prog[g2];
+        for (kk in lat) if (lat.hasOwnProperty(kk) && (xs = coachSenLatihan(kk))) progBaru[kk] = coachSenProg(xs, coachSenTarget(kk, xs), lat[kk]);
+        coachSimpanSenNyata({ seterus: COACH_KITAR[(COACH_KITAR.indexOf(sh.g) + 1) % 3], siri: siri, akhir: akhirBaru, prog: progBaru });
         coachSimpanHari(d, function() {
           var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
           hs.hari = sh.g; hs.siri = sh.s; hs.siapAt = now;
