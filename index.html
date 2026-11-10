@@ -10614,12 +10614,28 @@
       for (i = 0; i < sh.senarai.length; i++) if (!lat[sh.senarai[i][0]] && !coachLatihanRehat(sh.senarai[i], sh)) return false;
       return true;
     }
+    // SEMAK OTOT: hanya kumpulan yang PERNAH DILATIH (atau ada status KERAS / SAKIT / BELUM PULIH).
+    // Belum pernah dilatih → tiada apa nak dilapor → tidak dipapar. Semua SEDIA → ringkas + butang LAPOR (buka bila perlu).
+    var coachUISOtot = false;
     function coachLukisOtot(sh, btn) {
-      var gs = [], i, j, h = '<div style="border:1px solid #000;padding:3px 5px;margin:3px 0;font-size:0.82rem;"><b>SEMAK OTOT HARI INI</b> (lapor sebelum mula)';
+      var gs = [], i, j, h, ada = false, nmS = [];
       for (i = 0; i < sh.senarai.length; i++) { var a = sh.senarai[i][5].split(','); for (j = 0; j < a.length; j++) if (gs.indexOf(a[j]) === -1) gs.push(a[j]); }
       gs.sort();
+      var pilih = [];
       for (i = 0; i < gs.length; i++) {
-        var g = gs[i], o = coachOtotStatus(g, sh), nm = g + '. ' + COACH_RECOVERY[g][0], lalu = o.beza === null ? 'belum pernah dilatih' : (o.beza === 0 ? 'dilatih hari ini' : 'dilatih ' + o.beza + ' hari lepas');
+        var o0 = coachOtotStatus(gs[i], sh);
+        if (o0.beza !== null || o0.st !== 'SEDIA') { pilih.push(gs[i]); if (o0.st !== 'SEDIA') ada = true; else nmS.push(gs[i] + '. ' + COACH_RECOVERY[gs[i]][0]); }
+      }
+      if (!pilih.length) return '';
+      if (!ada && !coachUISOtot) {
+        return '<div style="border:1px solid #000;padding:3px 5px;margin:3px 0;font-size:0.82rem;"><b>OTOT:</b> ' + nmS.join(', ') + ' — semua SEDIA. ' +
+          'Masih rasa keras / sakit dari sesi lepas? <button type="button" data-cs="ototbuka" style="' + btn + '">LAPOR</button></div>';
+      }
+      h = '<div style="border:1px solid #000;padding:3px 5px;margin:3px 0;font-size:0.82rem;"><b>SEMAK OTOT</b> (otot yang dilatih sebelum ini — lapor jika masih keras / sakit)' +
+        (coachUISOtot ? ' <button type="button" data-cs="ototbuka" style="' + btn + '">TUTUP</button>' : '');
+      for (i = 0; i < pilih.length; i++) {
+        var g = pilih[i], o = coachOtotStatus(g, sh), nm = g + '. ' + COACH_RECOVERY[g][0], lalu = o.beza === null ? 'belum pernah dilatih' : (o.beza === 0 ? 'dilatih hari ini' : 'dilatih ' + o.beza + ' hari lepas');
+        if (o.st === 'SEDIA' && !coachUISOtot) continue;
         var bk = function(v, t) { return '<button type="button" data-cs="otot" data-k="' + g + '" data-v="' + v + '" style="' + btn + '">' + t + '</button>'; };
         h += '<div style="border-top:1px solid #000;padding:2px 0;">' + nm + ' · ' + lalu + ' · <b>';
         if (o.st === 'SAKIT') h += 'SAKIT</b> (' + o.sejak + ' hari) — jangan latih.' + (o.sejak >= 7 ? ' <b>Sudah seminggu — jumpa doktor.</b>' : ' Berlarutan → jumpa doktor.') + '<br>' + bk('OKSAKIT', 'DAH OK');
@@ -10773,6 +10789,7 @@
       var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
       if (cs === 'buka') { coachUIS = { buka: t.getAttribute('data-k'), kg: null }; coachLukisSenaman(); return; }
       if (cs === 'tutup') { coachUIS = { buka: '', kg: null }; coachLukisSenaman(); return; }
+      if (cs === 'ototbuka') { coachUISOtot = !coachUISOtot; coachLukisSenaman(); return; }
       if (cs === 'otot') {
         var og = t.getAttribute('data-k'), ov = t.getAttribute('data-v'), ob = coachOtotStatus(og, sh).beza, lapor = { lapor: ov === 'BATAL' ? 'OK' : ov, hari: ob, at: now };
         if (ov === 'SAKIT' || ov === 'OKSAKIT') {
