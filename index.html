@@ -6001,6 +6001,9 @@
     .mn-bar button { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border: 2px solid #000; border-radius: 14px; background: #fff; color: #000;
       font-family: inherit; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; cursor: pointer; }
     .mn-bar button svg { width: 16px; height: 14px; }
+    /* Bar atas: MENU kiri · PROFIL kanan */
+    .mn-bar { display: flex; justify-content: space-between; align-items: center; }
+    .mn-bar button[data-gm-profil] svg { width: 16px; height: 16px; margin-right: 6px; }
     /* Mata wang game (Tiket / Dollar / Emas / Perak) di kanan atas, macam game CoC */
     .gc-bar { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0 0 6px; }
     .gc-pil.gc-lv { min-width: 0; }
@@ -6247,10 +6250,6 @@
     <!-- Bahagian lain disorok dalam butang tajuk (tekan untuk buka / tutup — satu terbuka pada satu masa) -->
     <button type="button" class="btn coach-sek-btn" data-sek="tugas">TUGAS KESIHATAN</button>
     <div id="coach-sek-tugas" style="display:none;"><div id="coach-tugas" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
-    <button type="button" class="btn coach-sek-btn" data-sek="makan">MAKAN (KEDAI)</button>
-    <div id="coach-sek-makan" style="display:none;"><div id="coach-makan" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
-    <button type="button" class="btn coach-sek-btn" data-sek="zat">PROFIL &amp; MONITOR ZAT</button>
-    <div id="coach-sek-zat" style="display:none;"><div id="coach-zat" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
     <button type="button" class="btn coach-sek-btn" data-sek="usaha">USAHA HARI INI</button>
     <div id="coach-sek-usaha" style="display:none;"><div id="coach-usaha" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div></div>
     <button type="button" class="btn coach-sek-btn" data-sek="pai">PAI &amp; LAPORAN HARI INI</button>
@@ -6792,6 +6791,42 @@
     </div>
     <div id="makmal-info" class="jw-info"></div>
     <div id="makmal-isi"></div>
+    <div style="height:30px;"></div>
+  </div>
+  <!-- PUSAT NUTRISI (Taman Sihat) — log makan (KEDAI makanan) -->
+  <div id="screen-nutrisi" class="screen">
+    <div class="status-bar">PUSAT NUTRISI</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-nutrisi-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <span class="gm-alat-tajuk">NUTRISI</span>
+      <button type="button" id="btn-nutrisi-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="nutrisi-info" class="jw-info"></div>
+    <div id="coach-makan" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
+  </div>
+  <!-- PROFIL (butang bar atas game) — profil diri + monitor zat + ringkasan -->
+  <div id="screen-profil" class="screen">
+    <div class="status-bar">PROFIL</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-profil-balik" class="gm-kecil">‹ Kembali</button>
+      <span class="gm-alat-tajuk">PROFIL</span>
+      <button type="button" id="btn-profil-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="profil-ringkas"></div>
+    <div id="coach-zat" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
+  </div>
+  <!-- BILIK TIDUR (Taman Sihat) — malapkan lampu + physiological sigh + lampu ditutup -->
+  <div id="screen-bilik" class="screen">
+    <div class="status-bar">BILIK TIDUR</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-bilik-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <span class="gm-alat-tajuk">BILIK TIDUR</span>
+      <button type="button" id="btn-bilik-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="bilik-info" class="jw-info"></div>
+    <div id="bilik-isi"></div>
     <div style="height:30px;"></div>
   </div>
   <div id="screen-hj" class="screen">
@@ -9752,7 +9787,7 @@
       var akhirAir = tidur - 150;
       for (a = bangun; a < akhirAir - 30; a += 120) { tambah(a, 'AIR — minum 1 gelas (slot ' + n + ')', 'air', 'air' + n); n++; }
       tambah(akhirAir, 'AIR TERAKHIR — selepas ini kurangkan minum (slot ' + n + ')', 'air', 'air' + n);
-      tambah(bangun + 180, 'FOKUS 90 MINIT — kerja susah, telefon jauh', 'fokus');
+      tambah(bangun + 180, 'FOKUS 90 MINIT — satu kerja, telefon jauh (app Kindle OK)', 'fokus');
       tambah(15 * 60, 'CAHAYA PETANG — keluar ambil cahaya siang (3–5 ptg)', 'petang');
       tambah(17 * 60, 'SENAMAN (5:00 ptg) — kemudian rutin FACE', 'senaman');
       tambah(tidur - 60, 'MALAPKAN LAMPU', 'malap');
@@ -9863,6 +9898,11 @@
       else if (jenis === 'simpan' || jenis === 'takingat') {
         var h24 = (coachLap.jam % 12) + (coachLap.pm ? 12 : 0);
         coachLap.jawapan[COACH_SOALAN[coachLap.langkah].kunci] = jenis === 'takingat' ? 'TAK_INGAT' : (coachDua(h24) + ':' + coachDua(coachLap.minit));
+        if (coachLap.langkah === 1 && coachHariData.semalam.lampuAt && coachHariData.semalam.lampu) {
+          coachLap.jawapan.lampu = coachHariData.semalam.lampu; // dari butang LAMPU DITUTUP (BILIK TIDUR)
+          coachSimpanLaporan();
+          return;
+        }
         if (coachLap.langkah < 2) {
           coachLap.langkah++;
           // Lalai soalan malam: 11:00 PM
@@ -10024,7 +10064,7 @@
         } else if (st === 'ABAI' && lepasTidur) {
           h += '<div style="font-size:0.78rem;">Sudah masa tidur — tiada denda malam ini. Kiraan bermula semula esok.</div>';
         } else if (t.jenis === 'tidur') {
-          h += '<div style="font-size:0.78rem;">Dinilai pagi esok dari laporan LAMPU DITUTUP.</div>';
+          h += '<div style="font-size:0.78rem;">Tekan LAMPU DITUTUP di BILIK TIDUR (atau jawab laporan pagi esok).</div>';
         } else if (coachUI.ml === t.kunci) {
           h += coachInputMl('simpanml', t.kunci);
         } else if (coachUI.dapat === t.kunci) {
@@ -10032,11 +10072,11 @@
             coachBtnKecil('sebab', t.kunci + '|LAIN', 'LAIN') + coachBtnKecil('batal', t.kunci, 'BATAL');
         } else if (st === 'ABAI') {
           // Denda: buat tugas asal (lewat → markah penuh dibuang) ATAU tugas ganti (separuh)
-          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : (t.jenis === 'matahari' || t.jenis === 'petang') ? coachNotaTaman : coachBtnKecil('siap', t.kunci, 'SIAP (lewat)')) +
+          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : (t.jenis === 'matahari' || t.jenis === 'petang') ? coachNotaTaman : (t.jenis === 'malap' || t.jenis === 'sigh') ? coachNotaBilik : coachBtnKecil('siap', t.kunci, 'SIAP (lewat)')) +
             (COACH_GANTI[t.jenis] ? coachBtnKecil('ganti', t.kunci, 'GANTI: ' + COACH_GANTI[t.jenis]) : '') +
             coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         } else {
-          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : (t.jenis === 'matahari' || t.jenis === 'petang') ? coachNotaTaman : coachBtnKecil('siap', t.kunci, 'SIAP')) + coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
+          h += '<div>' + (t.jenis === 'senaman' ? coachNotaSen : (t.jenis === 'matahari' || t.jenis === 'petang') ? coachNotaTaman : (t.jenis === 'malap' || t.jenis === 'sigh') ? coachNotaBilik : coachBtnKecil('siap', t.kunci, 'SIAP')) + coachBtnKecil('dapat', t.kunci, 'TAK DAPAT') + '</div>';
         }
         h += '</div>';
       }
@@ -10369,6 +10409,7 @@
         var hr = coachHariData.hari;
         (hr.makan || (hr.makan = [])).push(rekod);
       });
+      coachNutrisiSemak();
     };
     // ══════════ COACH — FASA 3b: PROFIL + MONITOR ZAT (ikut nama zat) ══════════
     // Profil: users/{uid}/coach/profil { jantina 'L'/'P', umur, berat, tinggi, beratAt } · berat juga disimpan ke coach_hari/{id}.berat (sejarah).
@@ -10517,6 +10558,7 @@
     var COACH_SET = 2, COACH_REP = 10, COACH_SAAT = 20;
     var coachNotaSen = '<div style="font-size:0.78rem;">Buat di GYM (Game → TAMAN SIHAT → GYM) → SELESAI SESI.</div>';
     var coachNotaTaman = '<div style="font-size:0.78rem;">Buat di TAMAN (Game → TAMAN SIHAT → TAMAN): KELUAR → DAH MASUK.</div>';
+    var coachNotaBilik = '<div style="font-size:0.78rem;">Buat di BILIK TIDUR (Game → TAMAN SIHAT → BILIK TIDUR).</div>';
     var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
     var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
     var COACH_RUTIN = {
@@ -11321,6 +11363,7 @@
           go = ['BUKA TUGAS KESIHATAN', function() { coachBukaSek('tugas', true); }];
         } else if (kini >= j.tidur) {
           b += kunciTeks + 'SEKARANG: masa tidur. Tutup lampu dan rehat.';
+          if (!dah.tidur) go = ['BILIK TIDUR (tekan LAMPU DITUTUP)', function() { bukaBilik(); }];
         } else if (aktif && aktif.jenis === 'air') {
           b += 'SEKARANG: minum 1 gelas air kosong (slot ' + aktif.kunci.replace('air', '') + ').';
           go = ['KE MAKMAL HIDRASI (log ml)', function() { bukaMakmal(aktif.kunci); }];
@@ -11328,11 +11371,14 @@
           b += 'SEKARANG: senaman ' + coachSenHari().g + ' ' + coachSenHari().s + ' di GYM, kemudian rutin FACE.';
           go = ['PERGI KE GYM', function() { bukaGym(); }];
         } else if (aktif && aktif.jenis === 'fokus') {
-          b += 'SEKARANG: FOKUS 90 MINIT — ' + (fokus || 'usaha') + ': ' + coachFokusTeks(fokus) + '. Satu kerja sahaja, telefon jauh.';
+          b += 'SEKARANG: FOKUS 90 MINIT — ' + (fokus || 'usaha') + ': ' + coachFokusTeks(fokus) + '. Satu kerja sahaja. Telefon jauh — app Kindle boleh guna (tidak dikunci).';
           go = coachFokusGo(fokus);
         } else if (aktif && (aktif.jenis === 'matahari' || aktif.jenis === 'petang')) {
           b += 'SEKARANG: ' + aktif.nama + ' — sekurang-kurangnya ' + COACH_TAMAN_MIN[aktif.jenis] + ' min di luar.';
           go = ['PERGI KE TAMAN', function() { bukaTaman(); }];
+        } else if (aktif && (aktif.jenis === 'malap' || aktif.jenis === 'sigh')) {
+          b += 'SEKARANG: malapkan lampu + physiological sigh ' + COACH_SIGH_BIL + ' pusingan. Telefon jauh; app Kindle boleh guna (cahaya rendah).';
+          go = ['KE BILIK TIDUR', function() { bukaBilik(); }];
         } else if (aktif) {
           b += 'SEKARANG: ' + aktif.nama + '.';
           go = ['BUKA TUGAS KESIHATAN', function() { coachBukaSek('tugas', true); }];
@@ -12618,6 +12664,8 @@
     EKO.GYM_STREAK_SEN = 50;  // GYM: setiap 7 hari berturut = +0.50 Kuning
     EKO.TAMAN_SEN = 5;        // TAMAN: matahari pagi / cahaya petang tepat masa = 0.05 Kuning setiap satu
     EKO.MAKMAL_SEN = 1;       // MAKMAL HIDRASI: setiap slot air tepat masa = 0.01 Kuning
+    EKO.NUTRISI_SEN = 5;      // PUSAT NUTRISI: capai sasaran buah + sayur hari ini = 0.05 Kuning
+    EKO.TIDUR_SEN = 5;        // BILIK TIDUR: malap lampu / sigh / lampu ditutup tepat masa = 0.05 Kuning setiap satu
     // ══ BANK PUSAT: semua harga & ganjaran boleh diubah admin. Disimpan dalam dompet.eko { KUNCI: nilai } ══
     // ARKED: hanya BONUS boleh diubah. Ganjaran asas (hadiah setiap perkataan) & kadar Bank Coin TETAP — dah dikira teliti (1 perkataan = 10 coin).
     // Nak naikkan harga barang → naikkan kadar duit (tab KADAR), bukan hadiah game.
@@ -12635,7 +12683,9 @@
       { k: 'GYM_FACE_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran rutin FACE', jenis: 'kuning', min: 0 },
       { k: 'GYM_STREAK_SEN', tab: 'kedai', grup: 'GYM', nama: 'Bonus setiap 7 hari berturut', jenis: 'kuning', min: 0 },
       { k: 'TAMAN_SEN', tab: 'kedai', grup: 'TAMAN', nama: 'Ganjaran matahari pagi / cahaya petang', jenis: 'kuning', min: 0 },
-      { k: 'MAKMAL_SEN', tab: 'kedai', grup: 'MAKMAL HIDRASI', nama: 'Ganjaran setiap slot air tepat masa', jenis: 'kuning', min: 0 }
+      { k: 'MAKMAL_SEN', tab: 'kedai', grup: 'MAKMAL HIDRASI', nama: 'Ganjaran setiap slot air tepat masa', jenis: 'kuning', min: 0 },
+      { k: 'NUTRISI_SEN', tab: 'kedai', grup: 'PUSAT NUTRISI', nama: 'Ganjaran capai sasaran buah + sayur', jenis: 'kuning', min: 0 },
+      { k: 'TIDUR_SEN', tab: 'kedai', grup: 'BILIK TIDUR', nama: 'Ganjaran malap lampu / sigh / lampu ditutup tepat masa', jenis: 'kuning', min: 0 }
     ];
     var BP_LALAI = {};
     (function() { for (var i = 0; i < BP_EKO.length; i++) BP_LALAI[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]); })();
@@ -12777,8 +12827,8 @@
       ['gym', 'GYM', 'Senaman + FACE', true],
       ['taman', 'TAMAN', 'Matahari pagi + cahaya petang', true],
       ['makmal', 'MAKMAL HIDRASI', 'Air + ujian kencing', true],
-      ['dapur', 'DAPUR', 'Makan + monitor zat', false],
-      ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', false]
+      ['nutrisi', 'PUSAT NUTRISI', 'Makan buah + sayur', true],
+      ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', true]
     ];
     function svgBangunan(k, nama, aktif) {
       var g = aktif ? '' : ' stroke-dasharray="5 3"', s = '<svg viewBox="0 0 120 132" xmlns="http://www.w3.org/2000/svg">';
@@ -12791,7 +12841,7 @@
       if (k === 'gym') s += '<path d="M48 38 H72" stroke="#000" stroke-width="3"/><rect x="43" y="31" width="5" height="14" fill="#000"/><rect x="72" y="31" width="5" height="14" fill="#000"/><rect x="38" y="34" width="5" height="8" fill="#000"/><rect x="77" y="34" width="5" height="8" fill="#000"/>';
       if (k === 'taman') s += '<circle cx="60" cy="38" r="6" fill="#000"/><path d="M60 26 V29 M60 47 V50 M48 38 H51 M69 38 H72 M52 30 L54 32 M66 44 L68 46 M52 46 L54 44 M66 32 L68 30" stroke="#000" stroke-width="2"/>';
       if (k === 'makmal') s += '<path d="M56 25 H64 M57 25 V33 L48 47 Q47 49 49.5 49 H70.5 Q73 49 72 47 L63 33 V25" fill="#fff" stroke="#000" stroke-width="2"/><path d="M51.5 42 H68.5 L71 46.5 Q71.5 48 70 48 H50 Q48.5 48 49 46.5 Z" fill="#000"/>';
-      if (k === 'dapur') s += '<path d="M47 36 H73 Q73 48 60 48 Q47 48 47 36 Z" fill="#000"/><path d="M55 33 Q53 29 55 26 M61 33 Q59 29 61 26 M67 33 Q65 29 67 26" fill="none" stroke="#000" stroke-width="1.5"/>';
+      if (k === 'nutrisi') s += '<path d="M47 36 H73 Q73 48 60 48 Q47 48 47 36 Z" fill="#000"/><path d="M55 33 Q53 29 55 26 M61 33 Q59 29 61 26 M67 33 Q65 29 67 26" fill="none" stroke="#000" stroke-width="1.5"/>';
       if (k === 'tidur') s += '<path d="M64 28 A10 10 0 1 0 66 46 A8 8 0 1 1 64 28 Z" fill="#000"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
@@ -12805,6 +12855,12 @@
         }
         if (b[0] === 'taman') {
           try { if (coachHariData.id === coachHariId() && coachHariData.hari.laporanAt) { var tg = coachHariData.hari.tugas || {}; sub = 'Pagi ' + (tg.matahari ? (tg.matahari.s === 'BUAT' ? 'SIAP' : tg.matahari.s) : 'belum') + ' · Petang ' + (tg.petang ? (tg.petang.s === 'BUAT' ? 'SIAP' : tg.petang.s) : 'belum'); } } catch (e) {}
+        }
+        if (b[0] === 'tidur') {
+          try { if (coachHariData.id === coachHariId() && coachHariData.hari.laporanAt) { var tb = coachHariData.hari.tugas || {}, jb = coachJadualKini(); sub = 'Tidur ' + coachTeksMasa(jb.tidur) + ' · ' + ['malap', 'sigh', 'tidur'].filter(function(q) { return tb[q] && tb[q].s === 'BUAT'; }).length + '/3 siap'; } } catch (e) {}
+        }
+        if (b[0] === 'nutrisi') {
+          try { if (coachHariData.id === coachHariId()) sub = 'Buah + sayur ' + coachMakanHari().g + '/' + COACH_SASARAN_BUAH_G + ' g'; } catch (e) {}
         }
         if (b[0] === 'makmal') {
           try { if (coachHariData.id === coachHariId()) { var mn = coachHariData.hari.minum || [], mlT = 0, q; for (q = 0; q < mn.length; q++) mlT += mn[q].ml || 0; sub = 'Air ' + mlT + ' ml · kencing ' + (coachHariData.hari.kencing || []).length + ' kali'; } } catch (e) {}
@@ -12828,6 +12884,8 @@
       if (k === 'gym') { bukaGym(); return; }
       if (k === 'taman') { bukaTaman(); return; }
       if (k === 'makmal') { bukaMakmal(); return; }
+      if (k === 'nutrisi') { bukaNutrisi(); return; }
+      if (k === 'tidur') { bukaBilik(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // ── GYM: page senaman (dipindah dari page COACH) ──
@@ -13111,6 +13169,192 @@
     };
     el('btn-makmal-keluar').onclick = function() { bukaTs(); };
     el('btn-makmal-coach').onclick = function() { bukaCoach(false); };
+    // ══ PUSAT NUTRISI (Taman Sihat): KEDAI makanan (log makan) dipindah dari page COACH ══
+    // Ganjaran: capai sasaran buah + sayur (COACH_SASARAN_BUAH_G) hari ini → EKO.NUTRISI_SEN Ringgit Kuning (sekali sehari, coach_hari.nutrisiKuning).
+    function bukaNutrisi() {
+      if (!currentUser) return;
+      showScreen('screen-nutrisi');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('nutrisi-info').textContent = 'Memuatkan...';
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        el('nutrisi-info').textContent = 'Capai ' + COACH_SASARAN_BUAH_G + ' g buah + sayur hari ini → +' + rm(EKO.NUTRISI_SEN || 0) + ' Ringgit Kuning. Zat penuh: butang PROFIL di atas.';
+        coachLukisMakan();
+      }).catch(function(e) { el('nutrisi-info').textContent = 'Gagal memuat PUSAT NUTRISI: ' + ((e && e.message) || e); });
+    }
+    function coachNutrisiSemak() {
+      var hr = coachHariData.hari, sen = EKO.NUTRISI_SEN || 0;
+      if (hr.nutrisiKuning !== undefined || coachMakanHari().g < COACH_SASARAN_BUAH_G) return;
+      coachSimpanHari({ nutrisiKuning: sen }, function() { hr.nutrisiKuning = sen; });
+      var info = el('nutrisi-info');
+      if (info) info.textContent = 'SASARAN ' + COACH_SASARAN_BUAH_G + ' g BUAH + SAYUR TERCAPAI!';
+      if (!sen) return;
+      var b = db.batch();
+      b.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'nutrisi', 'Buah + sayur ' + COACH_SASARAN_BUAH_G + ' g: +' + rm(sen) + ' Kuning');
+      b.commit().then(function() { DP.kuningSen = (DP.kuningSen || 0) + sen; if (info) info.textContent += ' +' + rm(sen) + ' Ringgit Kuning!'; }).catch(function() {});
+    }
+    el('btn-nutrisi-keluar').onclick = function() { bukaTs(); };
+    el('btn-nutrisi-coach').onclick = function() { bukaCoach(false); };
+    // ══ PROFIL (butang di bar atas game, sebelah MENU): semua maklumat diri — profil + monitor zat + ringkasan ══
+    var profilDari = '';
+    function bukaProfil() {
+      if (!currentUser) return;
+      var a = document.querySelector('.screen.active');
+      if (a && a.id !== 'screen-profil') profilDari = a.id;
+      showScreen('screen-profil');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('profil-ringkas').textContent = 'Memuatkan...';
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        lukisProfilRingkas();
+        coachLukisZat();
+      }).catch(function(e) { el('profil-ringkas').textContent = 'Gagal memuat profil: ' + ((e && e.message) || e); });
+    }
+    function lukisProfilRingkas() {
+      var sn = coachSenNyata(), lc = sn.lencana || {}, ada = [], i, hr = coachHariData.hari, tg = hr.tugas || {}, mn = hr.minum || [], ml = 0;
+      for (i = 0; i < COACH_LENCANA.length; i++) if (lc[COACH_LENCANA[i][0]]) ada.push(COACH_LENCANA[i][1]);
+      for (i = 0; i < mn.length; i++) ml += mn[i].ml || 0;
+      el('profil-ringkas').innerHTML = '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:4px 0;font-size:0.85rem;line-height:1.45;"><b>RINGKASAN</b>' +
+        '<br>Ringgit Kuning: <b>' + rm(DP.kuningSen || 0) + '</b>' +
+        '<br>Senaman: ' + (sn.jumlahSesi || 0) + ' sesi · streak ' + coachGymStreakKini() + ' hari · seterusnya ' + coachSenHari().g + ' ' + coachSenHari().s +
+        '<br>Hari ini: air ' + ml + ' ml · matahari ' + (tg.matahari ? (tg.matahari.s === 'BUAT' ? 'SIAP' : tg.matahari.s) : 'belum') + ' · buah + sayur ' + coachMakanHari().g + '/' + COACH_SASARAN_BUAH_G + ' g' +
+        '<br>Lencana: ' + (ada.length ? ada.join(', ') : 'belum ada') + '</div>';
+    }
+    el('btn-profil-balik').onclick = function() {
+      var p = profilDari;
+      if (p === 'screen-ts') bukaTs(); else if (p === 'screen-gym') bukaGym(); else if (p === 'screen-taman') bukaTaman(); else if (p === 'screen-makmal') bukaMakmal(); else if (p === 'screen-nutrisi') bukaNutrisi();
+      else if (p === 'screen-bilik') bukaBilik();
+      else if (p === 'screen-kd') bukaKd();
+    };
+    el('btn-profil-coach').onclick = function() { bukaCoach(false); };
+    document.addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== document && !(t.getAttribute && t.getAttribute('data-gm-profil'))) t = t.parentNode;
+      if (t && t !== document) bukaProfil();
+    });
+    // ══ BILIK TIDUR (Taman Sihat): MALAPKAN LAMPU + PHYSIOLOGICAL SIGH + LAMPU DITUTUP dalam bentuk permainan ══
+    // Malap / sigh: dari 1 jam sebelum masa tidur (boleh mula 1 jam lebih awal). Tepat masa → EKO.TIDUR_SEN Kuning setiap satu.
+    // Sigh: buat COACH_SIGH_BIL pusingan, tekan butang setiap pusingan → SIAP.
+    // LAMPU DITUTUP: tekan bila tutup lampu → coach_hari.lampu (HH:MM) + lampuAt; laporan pagi esok tak tanya lagi soalan lampu.
+    //   ≤ masa tidur + 30 min → Kuning. App Kindle TIDAK dikunci — tiada sekatan pada laci / game.
+    var COACH_SIGH_BIL = 5;
+    var COACH_BILIK_TIP = {
+      malap: ['Tutup lampu siling. Guna lampu meja / lampu kecil yang rendah sahaja.', 'Telefon: letak jauh dari katil (cas di luar bilik jika boleh).', 'App Kindle boleh guna — kecilkan cahaya depan Kindle (light) ke tahap rendah.'],
+      sigh: ['Tarik nafas melalui HIDUNG sampai penuh.', 'Tarik SEKALI LAGI sedikit melalui hidung (tambah sampai paru-paru betul-betul penuh).', 'Hembus PERLAHAN dan PANJANG melalui mulut sampai habis.', 'Itu 1 pusingan. Tekan butang selepas setiap pusingan.'],
+      tidur: ['Tekan LAMPU DITUTUP sebaik sahaja tutup lampu untuk tidur.', 'Masa ini direkod — esok pagi tak perlu jawab soalan lampu.']
+    };
+    var bilikUI = { sigh: 0, dapat: '' };
+    function lukisBilik() {
+      var box = el('bilik-isi');
+      if (!box) return;
+      var btn = 'padding:7px 9px;margin:3px 4px 3px 0;font-size:0.9rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btnA = btn + 'background:#000;color:#fff;';
+      var j = coachJadualKini(), hr = coachHariData.hari, h = '', a = ['malap', 'sigh', 'tidur'], i, tj, kini = coachMinitKini();
+      if (!hr.laporanAt || !j) {
+        box.innerHTML = '<div style="font-size:0.95rem;">Isi LAPORAN PAGI di page COACH dulu — masa tidur dikira dari waktu bangun.</div><button type="button" data-bl="coach" style="' + btn + '">KE COACH</button>';
+        return;
+      }
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:4px 0;font-size:0.8rem;"><b>GANJARAN</b>: +' + rm(EKO.TIDUR_SEN || 0) + ' Ringgit Kuning setiap tugas tepat masa. Sasaran tidur: <b>' + coachTeksMasa(j.tidur) + '</b>.</div>';
+      for (i = 0; i < a.length; i++) {
+        var jn = a[i], x = tamanTugas(jn);
+        if (!x) continue;
+        var t = x.t, rec = (hr.tugas || {})[t.kunci], st = coachStatusTugas(t, kini);
+        var tajuk = { malap: 'MALAPKAN LAMPU', sigh: 'PHYSIOLOGICAL SIGH', tidur: 'LAMPU DITUTUP' }[jn];
+        var masa = jn === 'tidur' ? coachTeksMasa(t.min) + ' (tepat: sebelum ' + coachTeksMasa(t.min + 30) + ')' : coachTeksMasa(t.min) + ' – ' + coachTeksMasa(coachTamat(t));
+        var awal = t.min - 60; // boleh mula 1 jam lebih awal
+        h += '<div style="border:' + (st === 'SEKARANG' ? '3px' : '2px') + ' solid #000;border-radius:10px;padding:6px 8px;margin:6px 0;' + (rec && rec.s === 'BUAT' ? 'background:#000;color:#fff;' : '') + '">';
+        h += '<div style="font-weight:bold;font-size:1.05rem;">' + tajuk + '</div><div style="font-size:0.85rem;">Masa: ' + masa + '</div>';
+        if (rec) {
+          h += '<div style="font-size:0.9rem;margin-top:3px;"><b>' + (rec.s === 'BUAT' ? 'SIAP' + (rec.lewat ? ' (lewat)' : '') + (jn === 'tidur' && hr.lampu ? ' · lampu ditutup ' + coachTeksMasa(coachKeMinit(hr.lampu)) : '') + (rec.kuning ? ' · +' + rm(rec.kuning) + ' Kuning' : '') :
+            rec.s === 'GANTI' ? 'GANTI' : 'TAK DAPAT · ' + (rec.sebab || '-')) + '</b></div>';
+        } else if (jn !== 'tidur' && st === 'ABAI' && kini >= j.tidur) {
+          h += '<div style="font-size:0.85rem;">Sudah masa tidur — tiada denda malam ini.</div>';
+        } else if (kini < awal) {
+          h += '<div style="font-size:0.85rem;margin-top:3px;">Belum masa. Datang semula pukul ' + coachTeksMasa(awal) + '.</div>';
+        } else if (bilikUI.dapat === t.kunci) {
+          h += '<div style="font-size:0.85rem;">Sebab tak dapat:</div><button type="button" data-bl="sebab" data-k="' + t.kunci + '" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
+            '<button type="button" data-bl="sebab" data-k="' + t.kunci + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-bl="batal" style="' + btn + '">BATAL</button>';
+        } else if (jn === 'sigh') {
+          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — masih boleh buat sekarang (lewat, tiada Kuning).</div>';
+          h += '<div style="font-size:1.1rem;font-weight:bold;margin:4px 0;">Pusingan ' + bilikUI.sigh + ' / ' + COACH_SIGH_BIL + '</div>' +
+            '<button type="button" data-bl="sigh" data-k="' + t.kunci + '" style="' + btnA + '">SIAP 1 PUSINGAN</button><button type="button" data-bl="dapat" data-k="' + t.kunci + '" style="' + btn + '">TAK DAPAT</button>';
+        } else {
+          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — masih boleh buat sekarang (lewat, tiada Kuning).</div>';
+          h += '<button type="button" data-bl="' + jn + '" data-k="' + t.kunci + '" style="' + btnA + '">' + (jn === 'malap' ? 'LAMPU DAH MALAP' : 'LAMPU DITUTUP SEKARANG') + '</button>' +
+            (jn === 'malap' ? '<button type="button" data-bl="dapat" data-k="' + t.kunci + '" style="' + btn + '">TAK DAPAT</button>' : '');
+        }
+        if (!rec) {
+          h += '<div style="font-size:0.78rem;margin-top:4px;line-height:1.35;"><b>CARA:</b>';
+          for (tj = 0; tj < COACH_BILIK_TIP[jn].length; tj++) h += '<br>' + (tj + 1) + '. ' + COACH_BILIK_TIP[jn][tj];
+          h += '</div>';
+        }
+        h += '</div>';
+      }
+      box.innerHTML = h;
+    }
+    function bukaBilik() {
+      if (!currentUser) return;
+      showScreen('screen-bilik');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('bilik-info').textContent = 'Memuatkan...';
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        el('bilik-info').textContent = '';
+        lukisBilik();
+      }).catch(function(e) { el('bilik-info').textContent = 'Gagal memuat BILIK TIDUR: ' + ((e && e.message) || e); });
+    }
+    function bilikSiap(k, jn, pesan, tambahan) {
+      var x = tamanTugas(jn), kini = coachMinitKini(), now = Date.now(), hr = coachHariData.hari, d = { tugas: {} };
+      var lewat = x ? kini >= (jn === 'tidur' ? x.t.min + 30 : coachTamat(x.t)) : false;
+      var sen = lewat ? 0 : (EKO.TIDUR_SEN || 0);
+      d.tugas[k] = { s: 'BUAT', at: now, kuning: sen };
+      if (lewat) d.tugas[k].lewat = true;
+      if (tambahan) for (var p in tambahan) if (tambahan.hasOwnProperty(p)) d[p] = tambahan[p];
+      coachSimpanHari(d, function() {
+        (hr.tugas || (hr.tugas = {}))[k] = d.tugas[k];
+        if (tambahan) for (var q in tambahan) if (tambahan.hasOwnProperty(q)) hr[q] = tambahan[q];
+      });
+      el('bilik-info').textContent = pesan + (lewat ? ' (lewat — tiada Kuning)' : '');
+      lukisBilik();
+      if (!sen) return;
+      var b = db.batch();
+      b.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'tidur', pesan + ': +' + rm(sen) + ' Kuning');
+      b.commit().then(function() { DP.kuningSen = (DP.kuningSen || 0) + sen; el('bilik-info').textContent += ' +' + rm(sen) + ' Ringgit Kuning!'; }).catch(function() {});
+    }
+    el('bilik-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-bl')) t = t.parentNode;
+      if (!t || t === this || !currentUser) return;
+      var bl = t.getAttribute('data-bl'), k = t.getAttribute('data-k') || '', hr = coachHariData.hari;
+      if (bl === 'coach') { bukaCoach(false); return; }
+      if (bl === 'dapat') { bilikUI.dapat = k; lukisBilik(); return; }
+      if (bl === 'batal') { bilikUI.dapat = ''; lukisBilik(); return; }
+      if (bl === 'malap') { bilikSiap(k, 'malap', 'Lampu dimalapkan'); return; }
+      if (bl === 'sigh') {
+        bilikUI.sigh++;
+        if (bilikUI.sigh < COACH_SIGH_BIL) { el('bilik-info').textContent = 'Bagus. Pusingan seterusnya: tarik, tarik lagi, hembus panjang.'; lukisBilik(); return; }
+        bilikUI.sigh = 0;
+        bilikSiap(k, 'sigh', 'Physiological sigh ' + COACH_SIGH_BIL + ' pusingan');
+        return;
+      }
+      if (bl === 'tidur') {
+        var dn = new Date(), hhmm = coachDua(dn.getHours()) + ':' + coachDua(dn.getMinutes());
+        bilikSiap(k, 'tidur', 'Lampu ditutup ' + coachTeksMasa(dn.getHours() * 60 + dn.getMinutes()) + '. Selamat tidur', { lampu: hhmm, lampuAt: Date.now() });
+        return;
+      }
+      if (bl === 'sebab') {
+        var d = { tugas: {} };
+        d.tugas[k] = { s: 'TAK_DAPAT', at: Date.now(), sebab: t.getAttribute('data-v') };
+        bilikUI.dapat = '';
+        coachSimpanHari(d, function() { (hr.tugas || (hr.tugas = {}))[k] = d.tugas[k]; });
+        el('bilik-info').textContent = 'Direkod: tak dapat (' + t.getAttribute('data-v') + ').';
+        lukisBilik();
+      }
+    };
+    el('btn-bilik-keluar').onclick = function() { bukaTs(); };
+    el('btn-bilik-coach').onclick = function() { bukaCoach(false); };
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
     function lukisPameran(teks) {
       var p = (KD.hijau || {}).pameran, it = p && kdCari(p.id);
@@ -13601,7 +13845,8 @@
         // Butang MENU di baris paling atas
         bar = document.createElement('div');
         bar.className = 'mn-bar';
-        bar.innerHTML = '<button type="button" data-gm-tab="menu"><svg viewBox="0 0 16 14" xmlns="http://www.w3.org/2000/svg"><path d="M1 2 H15 M1 7 H15 M1 12 H15" stroke="#000" stroke-width="2.2"/></svg>MENU</button>';
+        bar.innerHTML = '<button type="button" data-gm-tab="menu"><svg viewBox="0 0 16 14" xmlns="http://www.w3.org/2000/svg"><path d="M1 2 H15 M1 7 H15 M1 12 H15" stroke="#000" stroke-width="2.2"/></svg>MENU</button>' +
+          '<button type="button" data-gm-profil="1"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5" r="3.2" fill="none" stroke="#000" stroke-width="2"/><path d="M2 15 Q2 9.5 8 9.5 Q14 9.5 14 15" fill="none" stroke="#000" stroke-width="2"/></svg>PROFIL</button>';
         s.insertBefore(bar, s.firstChild);
       }
     })();
