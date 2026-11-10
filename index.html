@@ -10280,12 +10280,15 @@
         htmlEn += coachBar(label, pos ? null : (unit[k] || 0), pct, set.english[k], pos);
         if (!pos && set.english[k] - pct > fokusBeza) { fokusBeza = set.english[k] - pct; fokus = COACH_BIDANG[i][1]; }
       }
-      // USAHA: English vs Kuliah
-      var jumlahU = jumlahEn + (data.kuliah || 0);
-      var pctEn = jumlahU ? Math.round(jumlahEn * 100 / jumlahU) : 0;
+      // USAHA: BAHASA vs FAKTA — MINIT belajar HARI INI (dicatat automatik dalam laci) · sasaran 50:50
+      //   Bahasa = minit Laci Bahasa + SR Bebas + Reasoning + Presenting + Listening (PAWAGAM) · Fakta = minit Laci Fakta
+      var mbHari = coachHariData.id === coachHariId() ? (coachHariData.hari || {}) : {}, mb = mbHari.minitBelajar || {};
+      var minBahasa = (mb.bahasa || 0) + (mbHari.listening || 0), minFakta = mb.fakta || 0;
+      var jumlahU = minBahasa + minFakta;
+      var pctEn = jumlahU ? Math.round(minBahasa * 100 / jumlahU) : 0;
       var pctKu = jumlahU ? 100 - pctEn : 0;
-      var stEn = coachStatus(pctEn - set.englishKuliah[0]), stKu = coachStatus(pctKu - set.englishKuliah[1]);
-      var hijau = (stEn === 'HIJAU' ? 1 : 0) + (stKu === 'HIJAU' ? 1 : 0), dinilaiU = 2;
+      var stEn = jumlahU ? coachStatus(pctEn - set.englishKuliah[0]) : '', stKu = jumlahU ? coachStatus(pctKu - set.englishKuliah[1]) : '';
+      var hijau = (stEn === 'HIJAU' ? 1 : 0) + (stKu === 'HIJAU' ? 1 : 0), dinilaiU = jumlahU ? 2 : 0;
       var solat = coachSolatMinggu();
       if (solat) { dinilaiU++; if (solat.st === 'HIJAU') hijau++; }
 
@@ -10296,10 +10299,11 @@
       coachDataAkhir = data;
       h += coachPaiKesihatan();
       // PAI 2 · USAHA: 3 bulatan menegak — (a) English vs Kuliah · (b) English SEKARANG · (c) English SASARAN
-      var i2, pEK = coachPeratus([jumlahEn, data.kuliah || 0]);
-      var isi2 = coachPie([{ v: jumlahEn, n: 'English' }, { v: data.kuliah || 0, n: 'Kuliah' }], '(a) ENGLISH vs KULIAH') +
-        '<div style="font-size:0.85rem;line-height:1.5;"><b>English ' + pEK[0] + '%</b> (sasaran ' + set.englishKuliah[0] + '%) · <b>' + stEn + '</b><br>' +
-        '<b>Kuliah ' + pEK[1] + '%</b> (sasaran ' + set.englishKuliah[1] + '%) · <b>' + stKu + '</b></div>';
+      var i2, pEK = coachPeratus([minBahasa, minFakta]);
+      var isi2 = coachPie([{ v: minBahasa, n: 'Bahasa' }, { v: minFakta, n: 'Fakta' }], '(a) BAHASA vs FAKTA · minit hari ini') +
+        '<div style="font-size:0.85rem;line-height:1.5;"><b>Bahasa ' + pEK[0] + '%</b> · ' + minBahasa + ' min (sasaran ' + set.englishKuliah[0] + '%)' + (stEn ? ' · <b>' + stEn + '</b>' : '') + '<br>' +
+        '<b>Fakta ' + pEK[1] + '%</b> · ' + minFakta + ' min (sasaran ' + set.englishKuliah[1] + '%)' + (stKu ? ' · <b>' + stKu + '</b>' : '') + '</div>' +
+        '<div style="font-size:0.8rem;">Minit dicatat sendiri semasa awak dalam laci. Bahasa = Laci Bahasa, SR Bebas, Reasoning, Presenting + Listening (PAWAGAM). Fakta = Laci Fakta. Bermula semula setiap hari.</div>';
       var nE = [], cE = [], cS = [], kE = [];
       for (i2 = 0; i2 < COACH_BIDANG.length; i2++) {
         var kb = COACH_BIDANG[i2][0];
@@ -10347,7 +10351,7 @@
       }
       if (coachKunciMesej && !kk.kunci && coachHariData.hari.laporanAt) coachKunciMesej = ''; // mesej hilang bila kunci dibuka
       // Fokus usaha: Kuliah jika Kuliah di bawah sasaran (tidak HIJAU), jika tidak bidang English paling jauh di bawah sasaran
-      var fokusUtama = (stKu !== 'HIJAU' && pctKu < set.englishKuliah[1]) ? 'Kuliah' : fokus;
+      var fokusUtama = (stKu !== 'HIJAU' && pctKu < set.englishKuliah[1]) ? 'Fakta' : fokus;
       coachLukisHari();
       coachLukisTugas();
       coachLukisMakan();
@@ -11282,7 +11286,7 @@
       }
       L.push('Solat: ' + (solN ? sol.join(' · ') + ' · purata ' + Math.round(solJ / solN * 10) / 10 : 'tiada rekod'));
       L.push('Listening: ' + (lis.length ? lis.join(' · ') + ' · jumlah ' + lisJ + ' min' : 'tiada') + ' · stok terkumpul ' + (dA.listening || 0) + ' min');
-      L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Kuliah ' + (dA.kuliah || 0) + ' · Reasoning ' + (dA.reasoning || 0) + ' · Presenting ' + (dA.presenting || 0) + ' · Vocab level ' + (dA.vocab || 1) + (dA.vocabGame ? ' (' + dA.vocabGame + ')' : ''));
+      L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Fakta ' + (dA.kuliah || 0)
       var pai = el('coach-pai') ? el('coach-pai').innerHTML.replace(/<\/div>/g, ' | ').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').replace(/(\s*\|\s*)+/g, ' | ').trim() : '';
       if (pai) L.push('Pai hari ini: ' + pai);
       // 8. SKRIN LEWAT (anggaran dari sentuhan selepas masa malapkan lampu)
@@ -11438,7 +11442,7 @@
         Vocab: ['MAIN GAME VOCAB', function() { bukaMini(); }],
         Reasoning: ['BUKA LACI REASONING', function() { el('btn-go-reasoning').click(); }],
         Presenting: ['BUKA LACI PRESENTING', function() { el('btn-go-presenting').click(); }],
-        Kuliah: ['BUKA LACI FAKTA (KULIAH)', function() { el('btn-go-fakta').click(); }]
+        Fakta: ['BUKA LACI FAKTA', function() { el('btn-go-fakta').click(); }]
       };
       return m[f] || null;
     }
@@ -11449,7 +11453,7 @@
         Vocab: 'main game vocab (level terendah)',
         Reasoning: 'ulang kaji Laci Reasoning',
         Presenting: 'ulang kaji Laci Presenting',
-        Kuliah: 'ulang kaji nota kuliah di Laci Fakta'
+        Fakta: 'ulang kaji di Laci Fakta'
       }[f] || 'teruskan usaha';
     }
     function coachLukisBubble(fokus, salam, kunciTeks) {
@@ -11614,9 +11618,29 @@
       var asal = b.onclick;
       b.onclick = function(e) {
         var self = this;
-        coachSemakKunci(function() { asal.call(self, e); });
+        coachSemakKunci(function() { coachMasa.jenis = id === 'btn-go-fakta' ? 'fakta' : 'bahasa'; coachMasa.last = Date.now(); asal.call(self, e); });
       };
     });
+    // ══ MASA BELAJAR (Pai 2 a): minit dalam laci dicatat AUTOMATIK dari sentuhan ══
+    // Buka laci → 'fakta' (Laci Fakta) / 'bahasa' (Bahasa, SR Bebas, Reasoning, Presenting). Kembali ke MENU → berhenti.
+    // Jarak dua sentuhan ≤ 5 min dikira; lebih lama = rehat (tidak dikira). Simpan coach_hari.minitBelajar.{jenis} (minit penuh, increment).
+    var coachMasa = { jenis: '', last: 0, pending: 0 };
+    function coachMasaSentuh() {
+      if (!coachMasa.jenis || !currentUser) return;
+      var a = document.querySelector('.screen.active');
+      if (!a || a.id === 'screen-menu' || a.id === 'screen-login') { coachMasa.jenis = ''; coachMasa.last = 0; return; }
+      var t = Date.now(), d = coachMasa.last ? t - coachMasa.last : 0;
+      if (d > 0 && d <= 5 * 60 * 1000) coachMasa.pending += d;
+      coachMasa.last = t;
+      if (coachMasa.pending < 60000) return;
+      var m = Math.floor(coachMasa.pending / 60000), hid = coachHariId(), x = {};
+      coachMasa.pending -= m * 60000;
+      x[coachMasa.jenis] = firebase.firestore.FieldValue.increment(m);
+      if (coachHariData.id === hid) { var mbl = coachHariData.hari.minitBelajar || (coachHariData.hari.minitBelajar = {}); mbl[coachMasa.jenis] = (mbl[coachMasa.jenis] || 0) + m; }
+      kol('coach_hari').doc(hid).set({ minitBelajar: x }, { merge: true }).catch(function() {});
+    }
+    document.addEventListener('click', function() { try { coachMasaSentuh(); } catch (e) {} }, true);
+    document.addEventListener('keydown', function() { try { coachMasaSentuh(); } catch (e) {} }, true);
     el('btn-coach-menu').onclick = function() { coachLap = null; coachLukisLaporan(); showScreen('screen-menu'); };
     el('btn-coach-lapor').onclick = function() { bukaCoach(false); coachMulaLaporan(); try { window.scrollTo(0, 0); } catch (e) {} };
     el('btn-coach-pening').onclick = function() {
