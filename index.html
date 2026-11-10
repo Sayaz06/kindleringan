@@ -6735,14 +6735,14 @@
   </div>
   <!-- TAMAN SIHAT (tab game, sebelah KEDAI) — tugas kesihatan dalam bentuk bangunan. Kedai = belanja; Taman Sihat = buat tugas, dapat Ringgit Kuning. -->
   <div id="screen-ts" class="screen">
-    <div class="status-bar" id="ts-status">TAMAN SIHAT</div>
+    <div class="status-bar" id="ts-status">USAHA</div>
     <div class="gm-tab">
       <button type="button" data-gm-tab="pos">PELABUHAN</button>
       <button type="button" data-gm-tab="mini">MINI GAME</button>
       <button type="button" data-gm-tab="kd">KEDAI</button>
-      <button type="button" data-gm-tab="ts" class="gm-aktif">TAMAN SIHAT</button>
+      <button type="button" data-gm-tab="ts" class="gm-aktif">USAHA</button>
     </div>
-    <div class="jw-info" id="ts-info">Buat tugas kesihatan di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).</div>
+    <div class="jw-info" id="ts-info">Buat tugas di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).</div>
     <div id="ts-bangunan" class="kd-pondok"></div>
     <div id="coach-tugas" style="display:none;"></div>
   </div>
@@ -6797,7 +6797,7 @@
   <div id="screen-taman" class="screen">
     <div class="status-bar">TAMAN</div>
     <div class="gm-alat">
-      <button type="button" id="btn-taman-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <button type="button" id="btn-taman-keluar" class="gm-kecil">‹ Usaha</button>
       <span class="gm-alat-tajuk">TAMAN</span>
       <button type="button" id="btn-taman-coach" class="gm-kecil">Coach</button>
     </div>
@@ -6809,7 +6809,7 @@
   <div id="screen-makmal" class="screen">
     <div class="status-bar">MAKMAL HIDRASI</div>
     <div class="gm-alat">
-      <button type="button" id="btn-makmal-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <button type="button" id="btn-makmal-keluar" class="gm-kecil">‹ Usaha</button>
       <span class="gm-alat-tajuk">MAKMAL</span>
       <button type="button" id="btn-makmal-coach" class="gm-kecil">Coach</button>
     </div>
@@ -6821,7 +6821,7 @@
   <div id="screen-nutrisi" class="screen">
     <div class="status-bar">PUSAT NUTRISI</div>
     <div class="gm-alat">
-      <button type="button" id="btn-nutrisi-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <button type="button" id="btn-nutrisi-keluar" class="gm-kecil">‹ Usaha</button>
       <span class="gm-alat-tajuk">NUTRISI</span>
       <button type="button" id="btn-nutrisi-coach" class="gm-kecil">Coach</button>
     </div>
@@ -6853,7 +6853,7 @@
   <div id="screen-bilik" class="screen">
     <div class="status-bar">BILIK TIDUR</div>
     <div class="gm-alat">
-      <button type="button" id="btn-bilik-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <button type="button" id="btn-bilik-keluar" class="gm-kecil">‹ Usaha</button>
       <span class="gm-alat-tajuk">BILIK TIDUR</span>
       <button type="button" id="btn-bilik-coach" class="gm-kecil">Coach</button>
     </div>
@@ -10379,7 +10379,7 @@
       var kk = coachKiraKesihatan(), kunciTeks = '';
       if (kk.kunci) {
         kunciTeks = 'LACI DIKUNCI — markah diabaikan ' + kk.markah + ' (had ' + COACH_HAD_KUNCI + ').\n' +
-          (kk.lepasTidur ? 'Sudah masa tidur — kunci kekal sampai esok. Rehat.\n' : 'Buka kunci: tanda SIAP (lewat) atau GANTI pada tugas DIABAIKAN (senarai tugas di TAMAN SIHAT).\n');
+          (kk.lepasTidur ? 'Sudah masa tidur — kunci kekal sampai esok. Rehat.\n' : 'Buka kunci: tanda SIAP (lewat) atau GANTI pada tugas DIABAIKAN (bangunan bertanda TERLEPAS di USAHA).\n');
       }
       if (coachKunciMesej && !kk.kunci && coachHariData.hari.laporanAt) coachKunciMesej = ''; // mesej hilang bila kunci dibuka
       // Fokus usaha: Kuliah jika Kuliah di bawah sasaran (tidak HIJAU), jika tidak bidang English paling jauh di bawah sasaran
@@ -10702,9 +10702,9 @@
     // Minggu pertama: 2 set × 10 rep · isometrik 20 saat · rehat 60–90 saat · panaskan badan 3–5 min. Beban mula 5 kg (bentuk dulu).
     // Latihan: [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban, 0 = badan), sisi (1 = setiap sisi), kumpulan recovery]
     var COACH_SET = 2, COACH_REP = 10, COACH_SAAT = 20;
-    var coachNotaSen = '<div style="font-size:0.78rem;">Buat di GYM (Game → TAMAN SIHAT → GYM) → SELESAI SESI.</div>';
-    var coachNotaTaman = '<div style="font-size:0.78rem;">Buat di TAMAN (Game → TAMAN SIHAT → TAMAN): KELUAR → DAH MASUK.</div>';
-    var coachNotaBilik = '<div style="font-size:0.78rem;">Buat di BILIK TIDUR (Game → TAMAN SIHAT → BILIK TIDUR).</div>';
+    var coachNotaSen = '<div style="font-size:0.78rem;">Buat di GYM (Game → USAHA → GYM) → SELESAI SESI.</div>';
+    var coachNotaTaman = '<div style="font-size:0.78rem;">Buat di TAMAN (Game → USAHA → TAMAN): KELUAR → DAH MASUK.</div>';
+    var coachNotaBilik = '<div style="font-size:0.78rem;">Buat di BILIK TIDUR (Game → USAHA → BILIK TIDUR).</div>';
     var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
     var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
     var COACH_RUTIN = {
@@ -11856,8 +11856,8 @@
         }
         babak(salam + ' Sekarang pukul ' + jamTeks + '.', 'masuk');
         if (kk.kunci && !kk.lepasTidur) {
-          babak('Hah, laci saya KUNCI dulu!\nBanyak sangat tugas terlepas hari ni — markah ' + kk.markah + ', had saya ' + COACH_HAD_KUNCI + '.\nPergi Taman Sihat, cari bangunan yang ada tanda TERLEPAS. Siapkan lewat pun tak apa, atau buat GANTI.', 'marah',
-            [['JOM KE TAMAN SIHAT', function() { bukaTs(); }]]);
+          babak('Hah, laci saya KUNCI dulu!\nBanyak sangat tugas terlepas hari ni — markah ' + kk.markah + ', had saya ' + COACH_HAD_KUNCI + '.\nPergi USAHA, cari bangunan yang ada tanda TERLEPAS. Siapkan lewat pun tak apa, atau buat GANTI.', 'marah',
+            [['JOM KE USAHA', function() { bukaTs(); }]]);
         } else if (kini >= j.tidur) {
           babak('Dah lewat ni. Masa tidur dah sampai.\nTutup lampu, rehat. Esok kita sambung, ok?', 'diam', dah.tidur ? [] : [['KE BILIK TIDUR (LAMPU DITUTUP)', function() { bukaBilik(); }]]);
         } else if (aktif && aktif.jenis === 'air') {
@@ -11876,7 +11876,7 @@
         }
         if (abai.length && !kk.kunci) {
           var na = []; for (i = 0; i < abai.length; i++) na.push(abai[i].jenis === 'air' ? 'air slot ' + abai[i].kunci.replace('air', '') : abai[i].nama.split(' — ')[0].toLowerCase());
-          babak('Oh ya... tadi ada yang terlepas: ' + na.join(', ') + '.\nMasih boleh buat lewat. Bangunan yang ada tanda TERLEPAS kat Taman Sihat tu.', 'sedih', [['KE TAMAN SIHAT', function() { bukaTs(); }]]);
+          babak('Oh ya... tadi ada yang terlepas: ' + na.join(', ') + '.\nMasih boleh buat lewat. Bangunan yang ada tanda TERLEPAS kat USAHA tu.', 'sedih', [['KE USAHA', function() { bukaTs(); }]]);
         }
         var gBS = coachMakanHari().g;
         if (kini < j.tidur && gBS < COACH_SASARAN_BUAH_G) {
@@ -13356,7 +13356,9 @@
       ['taman', 'TAMAN', 'Matahari pagi + cahaya petang', true],
       ['makmal', 'MAKMAL HIDRASI', 'Air + ujian kencing', true],
       ['nutrisi', 'PUSAT NUTRISI', 'Makan buah + sayur', true],
-      ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', true]
+      ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', true],
+      ['surau', 'SURAU', 'Solat 5 waktu', true],
+      ['pawagam', 'PAWAGAM', 'Listening English (video)', true]
     ];
     function svgBangunan(k, nama, aktif) {
       var g = aktif ? '' : ' stroke-dasharray="5 3"', s = '<svg viewBox="0 0 120 132" xmlns="http://www.w3.org/2000/svg">';
@@ -13415,6 +13417,9 @@
         if (b[0] === 'makmal') {
           try { if (coachHariData.id === coachHariId()) { var mn = coachHariData.hari.minum || [], mlT = 0, q; for (q = 0; q < mn.length; q++) mlT += mn[q].ml || 0; sub = 'Air ' + mlT + ' ml · kencing ' + (coachHariData.hari.kencing || []).length + ' kali'; } } catch (e) {}
         }
+        if (b[0] === 'surau' || b[0] === 'pawagam') {
+          try { if (coachHariData.id === coachHariId()) { var hu = coachHariData.hari; sub = b[0] === 'surau' ? 'Solat hari ini ' + (typeof hu.solat === 'number' ? hu.solat : 0) + '/5' : 'Listening hari ini ' + (hu.listening || 0) + ' min'; } } catch (e) {}
+        }
         var tanda = '';
         try { tanda = tsTanda(b[0]); } catch (e) {}
         h += '<button type="button" class="kd-pd" data-ts="' + b[0] + '"' + (b[3] ? '' : ' style="opacity:0.85;"') + '>' +
@@ -13427,7 +13432,7 @@
       if (!currentUser) return;
       showScreen('screen-ts');
       try { window.scrollTo(0, 0); } catch (e) {}
-      el('ts-info').textContent = 'Buat tugas kesihatan di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).';
+      el('ts-info').textContent = 'Buat tugas di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).';
       lukisTs();
       Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
         coachDataAkhir = r[0];
@@ -13450,6 +13455,8 @@
       if (k === 'makmal') { bukaMakmal(); return; }
       if (k === 'nutrisi') { bukaNutrisi(); return; }
       if (k === 'tidur') { bukaBilik(); return; }
+      if (k === 'surau') { bukaSurau(); return; }
+      if (k === 'pawagam') { bukaPawagam(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // ── GYM: page senaman (dipindah dari page COACH) ──
@@ -14149,8 +14156,8 @@
       if (inf) inf.textContent = 'Listening ' + (hr.listening || 0) + ' min hari ini.';
       usBayar(baru * (EKO.PAWAGAM_SEN || 0), 'pawagam', 'Listening ' + (baru * 10) + ' min', 'pawagam-info');
     }
-    el('btn-us-surau-keluar').onclick = function() { bukaUs(); };
-    el('btn-us-pawagam-keluar').onclick = function() { bukaUs(); };
+    el('btn-us-surau-keluar').onclick = function() { bukaTs(); };
+    el('btn-us-pawagam-keluar').onclick = function() { bukaTs(); };
     el('btn-us-surau-coach').onclick = function() { bukaCoach(false); };
     el('btn-us-pawagam-coach').onclick = function() { bukaCoach(false); };
     // ── Senarai TUGAS KESIHATAN (dipindah ke TAMAN SIHAT) ──
@@ -14620,18 +14627,15 @@
           b.type = 'button'; b.setAttribute('data-gm-tab', 'kd'); b.textContent = 'KEDAI';
           t[i].appendChild(b);
         }
-        // Tab TAMAN SIHAT (selepas KEDAI): bangunan tugas kesihatan
+        // Tab USAHA (dulu TAMAN SIHAT, selepas KEDAI): semua bangunan tugas — GYM, TAMAN, MAKMAL, NUTRISI, BILIK TIDUR, SURAU, PAWAGAM
         if (!t[i].querySelector('[data-gm-tab="ts"]')) {
           b = document.createElement('button');
-          b.type = 'button'; b.setAttribute('data-gm-tab', 'ts'); b.textContent = 'TAMAN SIHAT';
+          b.type = 'button'; b.setAttribute('data-gm-tab', 'ts'); b.textContent = 'USAHA';
           t[i].appendChild(b);
         }
-        // Tab USAHA (selepas TAMAN SIHAT): SURAU + PAWAGAM
-        if (!t[i].querySelector('[data-gm-tab="us"]')) {
-          b = document.createElement('button');
-          b.type = 'button'; b.setAttribute('data-gm-tab', 'us'); b.textContent = 'USAHA';
-          t[i].appendChild(b);
-        }
+        // Tab USAHA lama (kawasan SURAU + PAWAGAM) dibuang — bangunannya kini dalam tab USAHA di atas
+        x = t[i].querySelector('[data-gm-tab="us"]');
+        if (x) x.parentNode.removeChild(x);
         // Tab PERATURAN di hujung kanan: PELABUHAN · ARKED · KEDAI · PERATURAN
         b = t[i].querySelector('[data-gm-tab="atur"]');
         if (!b) {
