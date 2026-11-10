@@ -10729,6 +10729,14 @@
       for (i = 0; i < sh.senarai.length; i++) if (lat[sh.senarai[i][0]]) n++;
       h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' stesen siap') + '</div>';
       h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
+      var lcN = coachSenNyata().lencana || {}, lcH = '', li;
+      for (li = 0; li < COACH_LENCANA.length; li++) {
+        var ada = !!lcN[COACH_LENCANA[li][0]];
+        lcH += '<span style="display:inline-block;margin:2px 3px 2px 0;padding:2px 5px;border:2px ' + (ada ? 'solid' : 'dashed') + ' #000;border-radius:5px;font-size:0.7rem;' + (ada ? 'background:#000;color:#fff;font-weight:bold;' : '') + '">' + COACH_LENCANA[li][1] + '</span>';
+      }
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:4px 0;font-size:0.8rem;"><b>GANJARAN</b> (Ringgit Kuning — belanja di PARTY): sesi penuh ' + rm(EKO.GYM_SEN || 0) +
+        ' · FACE ' + rm(EKO.GYM_FACE_SEN || 0) + ' · setiap 7 hari berturut +' + rm(EKO.GYM_STREAK_SEN || 0) + '<br><b>STREAK: ' + coachGymStreakKini() + ' hari</b> · jumlah sesi ' + (coachSenNyata().jumlahSesi || 0) +
+        (sh.hs.siapAt ? ' · hari ini +' + rm((sh.hs.ganjaran || 0) + (sh.hs.ganjaranFace || 0)) : '') + '<div style="margin-top:2px;">' + lcH + '</div></div>';
       if (!sh.hs.siapAt) h += coachLukisOtot(sh, btn);
       h += '<div style="font-size:0.8rem;margin:4px 0;">Tekan STESEN untuk tutorial &amp; log.</div><div style="text-align:center;font-size:0;">';
       for (i = 0; i < sh.senarai.length; i++) {
@@ -10832,24 +10840,74 @@
         var progBaru = {}, xs;
         for (g2 in (nyata.prog || {})) if (nyata.prog.hasOwnProperty(g2)) progBaru[g2] = nyata.prog[g2];
         for (kk in lat) if (lat.hasOwnProperty(kk) && (xs = coachSenLatihan(kk))) progBaru[kk] = coachSenProg(xs, coachSenTarget(kk, xs), lat[kk]);
-        coachSimpanSenNyata({ seterus: COACH_KITAR[(COACH_KITAR.indexOf(sh.g) + 1) % 3], siri: siri, akhir: akhirBaru, prog: progBaru, otot: ototBaru });
+        // GYM 3: ganjaran Ringgit Kuning ikut stesen siap · streak hari berturut · lencana
+        var gm = coachGymKira(sh, lat, rehatOtot, nyata, progBaru);
+        d.senaman.ganjaran = gm.sen;
+        coachSimpanSenNyata({ seterus: COACH_KITAR[(COACH_KITAR.indexOf(sh.g) + 1) % 3], siri: siri, akhir: akhirBaru, prog: progBaru, otot: ototBaru,
+          streak: gm.streak, lencana: gm.lencana, jumlahSesi: gm.jumlahSesi });
         coachSimpanHari(d, function() {
           var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
-          hs.hari = sh.g; hs.siri = sh.s; hs.siapAt = now;
+          hs.hari = sh.g; hs.siri = sh.s; hs.siapAt = now; hs.ganjaran = gm.sen;
           if (rehatOtot) hs.rehat = true;
           if (d.tugas) (coachHariData.hari.tugas || (coachHariData.hari.tugas = {})).senaman = d.tugas.senaman;
         });
+        coachGymBayar(gm.sen, gm.ket, gm.baru);
         return;
       }
       if (cs === 'face') {
-        d = { senaman: { hari: sh.g, siri: sh.s, face: sh.f, faceAt: now } };
+        var fs = EKO.GYM_FACE_SEN || 0;
+        d = { senaman: { hari: sh.g, siri: sh.s, face: sh.f, faceAt: now, ganjaranFace: fs } };
         coachSimpanSenNyata({ face: sh.f === 'A' ? 'B' : 'A' });
         coachSimpanHari(d, function() {
           var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
-          hs.hari = sh.g; hs.siri = sh.s; hs.face = sh.f; hs.faceAt = now;
+          hs.hari = sh.g; hs.siri = sh.s; hs.face = sh.f; hs.faceAt = now; hs.ganjaranFace = fs;
         });
+        coachGymBayar(fs, 'Rutin FACE ' + sh.f, []);
       }
     };
+    // ── GYM 3: GANJARAN (Ringgit Kuning — "hadiah kerja keras", dibelanja di pondok PARTY) + STREAK + LENCANA ──
+    // Nilai ganjaran diubah admin di Bank Pusat → tab KEDAI → GYM (EKO.GYM_SEN / GYM_FACE_SEN / GYM_STREAK_SEN).
+    // Sesi: GYM_SEN × (stesen SIAP / stesen yang patut dibuat — stesen REHAT tidak dikira). REHAT OTOT: tiada duit, streak diteruskan.
+    // Streak = hari coach berturut dengan SELESAI SESI (termasuk REHAT OTOT). Setiap 7 hari → bonus GYM_STREAK_SEN.
+    // Dompet: game_stat/dompet.kuningSen (increment) + dompet_log jenis 'gym'. Lencana: coach/senaman.lencana { id: hariId }.
+    var COACH_LENCANA = [
+      ['sesi1', 'SESI PERTAMA'], ['naik1', 'NAIK BEBAN PERTAMA'], ['streak7', '7 HARI BERTURUT'], ['sesi10', '10 SESI'],
+      ['streak30', '30 HARI BERTURUT'], ['sesi50', '50 SESI'], ['sesi100', '100 SESI']
+    ];
+    function coachGymStreakKini() {
+      var st = coachSenNyata().streak || {}, hari = coachHariData.id || coachHariId();
+      return st.akhir === hari || st.akhir === coachSemalamId(hari) ? (st.n || 0) : 0;
+    }
+    function coachGymKira(sh, lat, rehatOtot, nyata, progBaru) {
+      var hari = coachHariData.id || coachHariId(), i, siap = 0, patut = 0, k, ket = [];
+      for (i = 0; i < sh.senarai.length; i++) {
+        var x = sh.senarai[i];
+        if (lat[x[0]]) { siap++; patut++; } else if (!coachLatihanRehat(x, sh)) patut++;
+      }
+      var sen = rehatOtot || !patut ? 0 : Math.round((EKO.GYM_SEN || 0) * siap / patut);
+      if (sen) ket.push('Sesi ' + sh.g + ' ' + sh.s + ' (' + siap + '/' + patut + ' stesen)');
+      var st = nyata.streak || {}, n = st.akhir === hari ? (st.n || 1) : (st.akhir === coachSemalamId(hari) ? (st.n || 0) + 1 : 1);
+      if (st.akhir !== hari && n % 7 === 0 && EKO.GYM_STREAK_SEN) { sen += EKO.GYM_STREAK_SEN; ket.push('Bonus streak ' + n + ' hari'); }
+      var jumlah = (nyata.jumlahSesi || 0) + (rehatOtot ? 0 : 1), lc = {}, baru = [];
+      for (k in (nyata.lencana || {})) if (nyata.lencana.hasOwnProperty(k)) lc[k] = nyata.lencana[k];
+      var naik = false;
+      for (k in lat) if (lat.hasOwnProperty(k) && progBaru[k] && /^NAIK/.test(progBaru[k].nota || '')) naik = true;
+      var syarat = { sesi1: jumlah >= 1, naik1: naik, streak7: n >= 7, sesi10: jumlah >= 10, streak30: n >= 30, sesi50: jumlah >= 50, sesi100: jumlah >= 100 };
+      for (i = 0; i < COACH_LENCANA.length; i++) if (syarat[COACH_LENCANA[i][0]] && !lc[COACH_LENCANA[i][0]]) { lc[COACH_LENCANA[i][0]] = hari; baru.push(COACH_LENCANA[i][1]); }
+      return { sen: sen, ket: ket.join(' + ') || 'Sesi selesai', streak: { n: n, akhir: hari }, lencana: lc, jumlahSesi: jumlah, baru: baru };
+    }
+    function coachGymMesej(t) { var g = el('gym-info'); if (g) g.textContent = t; }
+    function coachGymBayar(sen, ket, baru) {
+      var lc = baru && baru.length ? ' · LENCANA BARU: ' + baru.join(', ') : '';
+      if (!(sen > 0)) { coachGymMesej((ket || '') + lc); return; }
+      var b = db.batch();
+      b.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
+      dpLog(b, 'gym', ket + ': +' + rm(sen) + ' Kuning');
+      b.commit().then(function() {
+        DP.kuningSen = (DP.kuningSen || 0) + sen;
+        coachGymMesej('+' + rm(sen) + ' Ringgit Kuning — ' + ket + lc);
+      }).catch(function(e) { coachGymMesej('Gagal beri ganjaran: ' + ((e && e.message) || e)); });
+    }
     // ══════════ COACH — FASA 5: RUMUSAN MINGGUAN (AHAD) + BUKU KEPUTUSAN ══════════
     // Butang RUMUSAN MINGGU → teks ringkas 7 hari coach (hari ini − 6 … hari ini) untuk di-COPY ke chat AI pada hari AHAD.
     // Salinan disimpan: users/{uid}/coach_rumusan/{hariId} { teks, at }.
@@ -12222,11 +12280,11 @@
     }
     // Tab PELABUHAN / ARKED / KEDAI: senarai nilai dengan ▼ ▲
     function bpFmt(d, v) {
-      if (d.jenis === 'merah' || d.jenis === 'biru') return rm(v);
+      if (d.jenis === 'merah' || d.jenis === 'biru' || d.jenis === 'kuning') return rm(v);
       if (d.jenis === 'pct') return v + '%';
       return String(v);
     }
-    function bpUnit(d) { return d.jenis === 'merah' ? 'Ringgit Merah' : d.jenis === 'biru' ? 'Ringgit Biru' : d.jenis === 'pct' ? 'dari modal' : d.unit; }
+    function bpUnit(d) { return d.jenis === 'merah' ? 'Ringgit Merah' : d.jenis === 'biru' ? 'Ringgit Biru' : d.jenis === 'kuning' ? 'Ringgit Kuning' : d.jenis === 'pct' ? 'dari modal' : d.unit; }
     function bpNilai(k) { return ADM.e[k]; }
     function bpBeza() {
       var b = ADM.b !== EKO.BIRU_KATA || ADM.m !== EKO.MERAH_KATA || ADM.k !== EKO.KUNING_SEN;
@@ -12497,6 +12555,9 @@
     EKO.HJ_JUAL_X = 1.5;
     EKO.HJ_BOS_SEN = 10;      // HADIAH BOS: 0.10 Merah setiap jenis barang (6 jenis = 0.60), diberi bila semua habis dijual
     EKO.MESIN_SEN = 1;        // BANK COIN: sewa mesin conveyor 0.01 Ringgit Biru sejam
+    EKO.GYM_SEN = 20;         // GYM: sesi senaman penuh = 0.20 Ringgit Kuning (ikut nisbah stesen siap)
+    EKO.GYM_FACE_SEN = 2;     // GYM: rutin FACE = 0.02 Kuning
+    EKO.GYM_STREAK_SEN = 50;  // GYM: setiap 7 hari berturut = +0.50 Kuning
     // ══ BANK PUSAT: semua harga & ganjaran boleh diubah admin. Disimpan dalam dompet.eko { KUNCI: nilai } ══
     // ARKED: hanya BONUS boleh diubah. Ganjaran asas (hadiah setiap perkataan) & kadar Bank Coin TETAP — dah dikira teliti (1 perkataan = 10 coin).
     // Nak naikkan harga barang → naikkan kadar duit (tab KADAR), bukan hadiah game.
@@ -12509,7 +12570,10 @@
       { k: 'BS_BONUS_NYAWA', tab: 'arked', grup: 'BETUL / SALAH', nama: 'BONUS setiap kesilapan tak dipakai', unit: 'g', min: 0 },
       { k: 'HJ_JUAL_X', tab: 'kedai', grup: 'INVESTMENT', nama: 'Pelanggan beli pada harga', jenis: 'pct', min: 100, step: 5 },
       { k: 'HJ_BOS_SEN', tab: 'kedai', grup: 'INVESTMENT', nama: 'HADIAH BOS setiap jenis barang', jenis: 'merah', min: 0 },
-      { k: 'MESIN_SEN', tab: 'kedai', grup: 'BANK COIN', nama: 'Sewa mesin conveyor sejam', jenis: 'biru', min: 0 }
+      { k: 'MESIN_SEN', tab: 'kedai', grup: 'BANK COIN', nama: 'Sewa mesin conveyor sejam', jenis: 'biru', min: 0 },
+      { k: 'GYM_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran sesi senaman penuh', jenis: 'kuning', min: 0 },
+      { k: 'GYM_FACE_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran rutin FACE', jenis: 'kuning', min: 0 },
+      { k: 'GYM_STREAK_SEN', tab: 'kedai', grup: 'GYM', nama: 'Bonus setiap 7 hari berturut', jenis: 'kuning', min: 0 }
     ];
     var BP_LALAI = {};
     (function() { for (var i = 0; i < BP_EKO.length; i++) BP_LALAI[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]); })();
