@@ -6782,6 +6782,18 @@
     <div id="taman-isi"></div>
     <div style="height:30px;"></div>
   </div>
+  <!-- MAKMAL HIDRASI (Taman Sihat) — air ikut slot + ujian kencing -->
+  <div id="screen-makmal" class="screen">
+    <div class="status-bar">MAKMAL HIDRASI</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-makmal-keluar" class="gm-kecil">‹ Taman Sihat</button>
+      <span class="gm-alat-tajuk">MAKMAL</span>
+      <button type="button" id="btn-makmal-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="makmal-info" class="jw-info"></div>
+    <div id="makmal-isi"></div>
+    <div style="height:30px;"></div>
+  </div>
   <div id="screen-hj" class="screen">
     <div class="status-bar">HADIAH BOS · INVESTMENT</div>
     <div class="gm-alat">
@@ -11311,7 +11323,7 @@
           b += kunciTeks + 'SEKARANG: masa tidur. Tutup lampu dan rehat.';
         } else if (aktif && aktif.jenis === 'air') {
           b += 'SEKARANG: minum 1 gelas air kosong (slot ' + aktif.kunci.replace('air', '') + ').';
-          go = ['LOG AIR (ml)', function() { coachBukaSek('tugas', true); coachUI.ml = aktif.kunci; coachUI.dapat = ''; coachLukisTugas(); }];
+          go = ['KE MAKMAL HIDRASI (log ml)', function() { bukaMakmal(aktif.kunci); }];
         } else if (aktif && aktif.jenis === 'senaman') {
           b += 'SEKARANG: senaman ' + coachSenHari().g + ' ' + coachSenHari().s + ' di GYM, kemudian rutin FACE.';
           go = ['PERGI KE GYM', function() { bukaGym(); }];
@@ -12605,6 +12617,7 @@
     EKO.GYM_FACE_SEN = 2;     // GYM: rutin FACE = 0.02 Kuning
     EKO.GYM_STREAK_SEN = 50;  // GYM: setiap 7 hari berturut = +0.50 Kuning
     EKO.TAMAN_SEN = 5;        // TAMAN: matahari pagi / cahaya petang tepat masa = 0.05 Kuning setiap satu
+    EKO.MAKMAL_SEN = 1;       // MAKMAL HIDRASI: setiap slot air tepat masa = 0.01 Kuning
     // ══ BANK PUSAT: semua harga & ganjaran boleh diubah admin. Disimpan dalam dompet.eko { KUNCI: nilai } ══
     // ARKED: hanya BONUS boleh diubah. Ganjaran asas (hadiah setiap perkataan) & kadar Bank Coin TETAP — dah dikira teliti (1 perkataan = 10 coin).
     // Nak naikkan harga barang → naikkan kadar duit (tab KADAR), bukan hadiah game.
@@ -12621,7 +12634,8 @@
       { k: 'GYM_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran sesi senaman penuh', jenis: 'kuning', min: 0 },
       { k: 'GYM_FACE_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran rutin FACE', jenis: 'kuning', min: 0 },
       { k: 'GYM_STREAK_SEN', tab: 'kedai', grup: 'GYM', nama: 'Bonus setiap 7 hari berturut', jenis: 'kuning', min: 0 },
-      { k: 'TAMAN_SEN', tab: 'kedai', grup: 'TAMAN', nama: 'Ganjaran matahari pagi / cahaya petang', jenis: 'kuning', min: 0 }
+      { k: 'TAMAN_SEN', tab: 'kedai', grup: 'TAMAN', nama: 'Ganjaran matahari pagi / cahaya petang', jenis: 'kuning', min: 0 },
+      { k: 'MAKMAL_SEN', tab: 'kedai', grup: 'MAKMAL HIDRASI', nama: 'Ganjaran setiap slot air tepat masa', jenis: 'kuning', min: 0 }
     ];
     var BP_LALAI = {};
     (function() { for (var i = 0; i < BP_EKO.length; i++) BP_LALAI[BP_EKO[i].k] = bpSimpanNilai(BP_EKO[i], EKO[BP_EKO[i].k]); })();
@@ -12762,7 +12776,7 @@
     var TS_BANGUNAN = [
       ['gym', 'GYM', 'Senaman + FACE', true],
       ['taman', 'TAMAN', 'Matahari pagi + cahaya petang', true],
-      ['telaga', 'TELAGA', 'Air + log kencing', false],
+      ['makmal', 'MAKMAL HIDRASI', 'Air + ujian kencing', true],
       ['dapur', 'DAPUR', 'Makan + monitor zat', false],
       ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', false]
     ];
@@ -12771,12 +12785,12 @@
       s += '<path d="M6 52 L60 14 L114 52 Z" fill="#fff" stroke="#000" stroke-width="2.5"' + g + '/>';
       s += '<rect x="14" y="52" width="92" height="70" fill="#fff" stroke="#000" stroke-width="2.5"' + g + '/>';
       s += '<rect x="20" y="58" width="80" height="18" fill="' + (aktif ? '#000' : '#fff') + '" stroke="#000" stroke-width="2"' + g + '/>';
-      s += '<text x="60" y="71.5" font-size="' + (nama.length > 7 ? 10 : 13) + '" font-weight="bold" text-anchor="middle" fill="' + (aktif ? '#fff' : '#000') + '">' + nama + '</text>';
+      s += '<text x="60" y="71.5" font-size="' + (nama.length > 11 ? 8.5 : (nama.length > 7 ? 10 : 13)) + '" font-weight="bold" text-anchor="middle" fill="' + (aktif ? '#fff' : '#000') + '">' + nama + '</text>';
       s += '<rect x="50" y="92" width="20" height="30" fill="#fff" stroke="#000" stroke-width="2"' + g + '/><rect x="22" y="84" width="20" height="16" fill="#fff" stroke="#000" stroke-width="2"' + g + '/><rect x="78" y="84" width="20" height="16" fill="#fff" stroke="#000" stroke-width="2"' + g + '/>';
       // Ikon di bumbung
       if (k === 'gym') s += '<path d="M48 38 H72" stroke="#000" stroke-width="3"/><rect x="43" y="31" width="5" height="14" fill="#000"/><rect x="72" y="31" width="5" height="14" fill="#000"/><rect x="38" y="34" width="5" height="8" fill="#000"/><rect x="77" y="34" width="5" height="8" fill="#000"/>';
       if (k === 'taman') s += '<circle cx="60" cy="38" r="6" fill="#000"/><path d="M60 26 V29 M60 47 V50 M48 38 H51 M69 38 H72 M52 30 L54 32 M66 44 L68 46 M52 46 L54 44 M66 32 L68 30" stroke="#000" stroke-width="2"/>';
-      if (k === 'telaga') s += '<path d="M60 27 Q52 38 52 42 A8 8 0 0 0 68 42 Q68 38 60 27 Z" fill="#000"/>';
+      if (k === 'makmal') s += '<path d="M56 25 H64 M57 25 V33 L48 47 Q47 49 49.5 49 H70.5 Q73 49 72 47 L63 33 V25" fill="#fff" stroke="#000" stroke-width="2"/><path d="M51.5 42 H68.5 L71 46.5 Q71.5 48 70 48 H50 Q48.5 48 49 46.5 Z" fill="#000"/>';
       if (k === 'dapur') s += '<path d="M47 36 H73 Q73 48 60 48 Q47 48 47 36 Z" fill="#000"/><path d="M55 33 Q53 29 55 26 M61 33 Q59 29 61 26 M67 33 Q65 29 67 26" fill="none" stroke="#000" stroke-width="1.5"/>';
       if (k === 'tidur') s += '<path d="M64 28 A10 10 0 1 0 66 46 A8 8 0 1 1 64 28 Z" fill="#000"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
@@ -12791,6 +12805,9 @@
         }
         if (b[0] === 'taman') {
           try { if (coachHariData.id === coachHariId() && coachHariData.hari.laporanAt) { var tg = coachHariData.hari.tugas || {}; sub = 'Pagi ' + (tg.matahari ? (tg.matahari.s === 'BUAT' ? 'SIAP' : tg.matahari.s) : 'belum') + ' · Petang ' + (tg.petang ? (tg.petang.s === 'BUAT' ? 'SIAP' : tg.petang.s) : 'belum'); } } catch (e) {}
+        }
+        if (b[0] === 'makmal') {
+          try { if (coachHariData.id === coachHariId()) { var mn = coachHariData.hari.minum || [], mlT = 0, q; for (q = 0; q < mn.length; q++) mlT += mn[q].ml || 0; sub = 'Air ' + mlT + ' ml · kencing ' + (coachHariData.hari.kencing || []).length + ' kali'; } } catch (e) {}
         }
         h += '<button type="button" class="kd-pd" data-ts="' + b[0] + '"' + (b[3] ? '' : ' style="opacity:0.85;"') + '>' + svgBangunan(b[0], b[1], b[3]) + '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
       }
@@ -12810,6 +12827,7 @@
       var k = t.getAttribute('data-ts');
       if (k === 'gym') { bukaGym(); return; }
       if (k === 'taman') { bukaTaman(); return; }
+      if (k === 'makmal') { bukaMakmal(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // ── GYM: page senaman (dipindah dari page COACH) ──
@@ -12966,6 +12984,133 @@
     }
     el('btn-taman-keluar').onclick = function() { bukaTs(); };
     el('btn-taman-coach').onclick = function() { bukaCoach(false); };
+    // ══ MAKMAL HIDRASI (Taman Sihat): AIR (ikut slot) + UJIAN KENCING (warna) ══
+    // Slot air dari coachJadual (air1..n). Log: coach_hari.tugas.airN {s:'BUAT', at, ml, lewat?, kuning} + minum[] {at, ml, slot}.
+    // Minum luar jadual → minum[] slot ''. Ujian kencing → kencing[] {at, warna} + keputusan.
+    // Ganjaran EKO.MAKMAL_SEN Ringgit Kuning setiap slot tepat masa (ujian kencing TIADA ganjaran — rekod jujur).
+    // Air kosong sahaja (keputusan 9 Nov). Kencing terlalu kerap / sakit / dahaga melampau → jumpa doktor.
+    var MAKMAL_WARNA = [
+      ['JERNIH', '#fff', 'Sangat cair. Cukup air — jika SELALU jernih, mungkin minum terlalu banyak sekaligus.'],
+      ['KUNING CAIR', '#ccc', 'BAIK — badan cukup air.'],
+      ['KUNING PEKAT', '#555', 'Kurang air — minum 1 gelas sekarang.']
+    ];
+    var makmalUI = { ml: '' };
+    function lukisMakmal() {
+      var box = el('makmal-isi');
+      if (!box) return;
+      var btn = 'padding:7px 9px;margin:3px 4px 3px 0;font-size:0.9rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btnA = btn + 'background:#000;color:#fff;';
+      var j = coachJadualKini(), h = '', i, kini = coachMinitKini(), hr = coachHariData.hari, tg = hr.tugas || {};
+      if (!hr.laporanAt || !j) {
+        box.innerHTML = '<div style="font-size:0.95rem;">Isi LAPORAN PAGI di page COACH dulu — slot air disusun ikut waktu bangun.</div><button type="button" data-mk="coach" style="' + btn + '">KE COACH</button>';
+        return;
+      }
+      var minum = hr.minum || [], ml = 0, kc = hr.kencing || [], slot = [], siap = 0;
+      for (i = 0; i < minum.length; i++) ml += minum[i].ml || 0;
+      for (i = 0; i < j.tugas.length; i++) if (j.tugas[i].jenis === 'air') { slot.push(j.tugas[i]); if (tg[j.tugas[i].kunci] && tg[j.tugas[i].kunci].s === 'BUAT') siap++; }
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;font-size:0.9rem;"><b>AIR HARI INI: ' + ml + ' ml</b> (' + minum.length + ' kali) · slot ' + siap + '/' + slot.length +
+        '<div style="font-size:0.78rem;">Air kosong sahaja. Ganjaran +' + rm(EKO.MAKMAL_SEN || 0) + ' Kuning setiap slot tepat masa.</div></div>';
+      // Slot air
+      h += '<div style="font-weight:bold;margin-top:6px;">SLOT AIR</div>';
+      for (i = 0; i < slot.length; i++) {
+        var t = slot[i], k = t.kunci, st = coachStatusTugas(t, kini), r = tg[k], n = k.replace('air', '');
+        var aktif = !r && (st === 'SEKARANG' || st === 'ABAI') && kini < j.tidur;
+        h += '<div style="border:' + (st === 'SEKARANG' && !r ? '3px' : '1px') + ' solid #000;border-radius:8px;padding:4px 7px;margin:4px 0;font-size:0.88rem;' + (r && r.s === 'BUAT' ? 'background:#000;color:#fff;' : '') + '">' +
+          '<b>Slot ' + n + '</b> · ' + coachTeksMasa(t.min) + (t.nama.indexOf('TERAKHIR') !== -1 ? ' · TERAKHIR' : '') + ' · <b>' +
+          (r ? (r.s === 'BUAT' ? 'SIAP ' + (r.ml || 0) + ' ml' + (r.lewat ? ' (lewat)' : '') : r.s === 'GANTI' ? 'GANTI' : 'TAK DAPAT') : (st === 'SEKARANG' ? 'SEKARANG' : st === 'ABAI' ? (kini >= j.tidur ? 'tiada denda' : 'DIABAIKAN') : 'nanti')) + '</b>';
+        if (aktif) {
+          if (makmalUI.ml === k) {
+            h += '<div>Berapa ml? <button type="button" data-mk="ml" data-k="' + k + '" data-v="250" style="' + btn + '">250</button><button type="button" data-mk="ml" data-k="' + k + '" data-v="350" style="' + btn + '">350</button>' +
+              '<button type="button" data-mk="ml" data-k="' + k + '" data-v="500" style="' + btn + '">500</button><br>atau: <input type="text" inputmode="numeric" id="makmal-ml" style="width:70px;font-size:1rem;padding:3px;border:2px solid #000;"> ml ' +
+              '<button type="button" data-mk="mlin" data-k="' + k + '" style="' + btnA + '">SIMPAN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
+          } else h += '<div><button type="button" data-mk="minum" data-k="' + k + '" style="' + (st === 'SEKARANG' ? btnA : btn) + '">' + (st === 'ABAI' ? 'MINUM SEKARANG (lewat)' : 'MINUM') + '</button></div>';
+        }
+        h += '</div>';
+      }
+      // Minum luar jadual
+      h += '<div style="margin-top:4px;font-size:0.85rem;">Minum luar jadual: ' +
+        (makmalUI.ml === 'luar' ? '<button type="button" data-mk="ml" data-k="luar" data-v="250" style="' + btn + '">250</button><button type="button" data-mk="ml" data-k="luar" data-v="500" style="' + btn + '">500</button>' +
+          '<input type="text" inputmode="numeric" id="makmal-ml" style="width:70px;font-size:1rem;padding:3px;border:2px solid #000;"> ml <button type="button" data-mk="mlin" data-k="luar" style="' + btnA + '">SIMPAN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button>'
+          : '<button type="button" data-mk="minum" data-k="luar" style="' + btn + '">+ MINUM</button>') + '</div>';
+      // Ujian kencing
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:8px 0 4px;"><b>UJIAN KENCING</b> (' + kc.length + ' kali hari ini)<div style="font-size:0.8rem;">Selepas kencing, pilih warna yang paling hampir:</div>';
+      for (i = 0; i < MAKMAL_WARNA.length; i++) {
+        var w = MAKMAL_WARNA[i];
+        h += '<button type="button" data-mk="warna" data-v="' + w[0] + '" style="' + btn + 'padding-left:4px;"><span style="display:inline-block;width:16px;height:16px;border:2px solid #000;border-radius:3px;background:' + w[1] + ';vertical-align:middle;margin-right:4px;"></span>' + w[0] + '</button>';
+      }
+      if (kc.length) {
+        var akhir = kc[kc.length - 1], ket = '';
+        for (i = 0; i < MAKMAL_WARNA.length; i++) if (MAKMAL_WARNA[i][0] === akhir.warna) ket = MAKMAL_WARNA[i][2];
+        h += '<div style="font-size:0.85rem;margin-top:3px;"><b>KEPUTUSAN TERAKHIR</b> (' + coachTeksMasa(new Date(akhir.at).getHours() * 60 + new Date(akhir.at).getMinutes()) + '): ' + akhir.warna + ' — ' + ket + '</div>';
+        var sej = [];
+        for (i = 0; i < kc.length; i++) sej.push(coachTeksMasa(new Date(kc[i].at).getHours() * 60 + new Date(kc[i].at).getMinutes()) + ' ' + (kc[i].warna || '-'));
+        h += '<div style="font-size:0.75rem;">Hari ini: ' + sej.join(' · ') + '</div>';
+      }
+      h += '<div style="font-size:0.72rem;margin-top:3px;">Kencing terlalu kerap luar biasa, sakit, atau dahaga melampau → jumpa doktor.</div></div>';
+      box.innerHTML = h;
+      var inp = document.getElementById('makmal-ml');
+      if (inp) { try { inp.focus(); } catch (e) {} }
+    }
+    function bukaMakmal(slot) {
+      if (!currentUser) return;
+      showScreen('screen-makmal');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('makmal-info').textContent = 'Memuatkan...';
+      Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
+        coachDataAkhir = r[0];
+        el('makmal-info').textContent = '';
+        makmalUI.ml = slot || '';
+        lukisMakmal();
+      }).catch(function(e) { el('makmal-info').textContent = 'Gagal memuat MAKMAL: ' + ((e && e.message) || e); });
+    }
+    function makmalSimpanMl(k, ml) {
+      var now = Date.now(), d = {}, hr = coachHariData.hari, rekod = { at: now, ml: ml, slot: k === 'luar' ? '' : k }, sen = 0, lewat = false;
+      d.minum = firebase.firestore.FieldValue.arrayUnion(rekod);
+      if (k !== 'luar') {
+        var j = coachJadualKini(), i;
+        for (i = 0; j && i < j.tugas.length; i++) if (j.tugas[i].kunci === k && coachMinitKini() >= coachTamat(j.tugas[i])) lewat = true;
+        sen = lewat ? 0 : (EKO.MAKMAL_SEN || 0);
+        d.tugas = {}; d.tugas[k] = { s: 'BUAT', at: now, ml: ml, kuning: sen };
+        if (lewat) d.tugas[k].lewat = true;
+      }
+      makmalUI.ml = '';
+      coachSimpanHari(d, function() {
+        (hr.minum || (hr.minum = [])).push(rekod);
+        if (d.tugas) (hr.tugas || (hr.tugas = {}))[k] = d.tugas[k];
+      });
+      el('makmal-info').textContent = '+' + ml + ' ml direkod' + (k === 'luar' ? ' (luar jadual).' : ' — slot ' + k.replace('air', '') + (lewat ? ' (lewat).' : '.'));
+      lukisMakmal();
+      if (sen) {
+        var b = db.batch();
+        b.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
+        dpLog(b, 'makmal', 'Air slot ' + k.replace('air', '') + ': +' + rm(sen) + ' Kuning');
+        b.commit().then(function() { DP.kuningSen = (DP.kuningSen || 0) + sen; el('makmal-info').textContent += ' +' + rm(sen) + ' Ringgit Kuning!'; }).catch(function() {});
+      }
+    }
+    el('makmal-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-mk')) t = t.parentNode;
+      if (!t || t === this || !currentUser) return;
+      var mk = t.getAttribute('data-mk'), k = t.getAttribute('data-k') || '';
+      if (mk === 'coach') { bukaCoach(false); return; }
+      if (mk === 'minum') { makmalUI.ml = k; lukisMakmal(); return; }
+      if (mk === 'batal') { makmalUI.ml = ''; lukisMakmal(); return; }
+      if (mk === 'ml') { makmalSimpanMl(k, parseInt(t.getAttribute('data-v'), 10)); return; }
+      if (mk === 'mlin') {
+        var inp = document.getElementById('makmal-ml'), n = parseInt(((inp && inp.value) || '').replace(/[^0-9]/g, ''), 10);
+        if (!(n > 0 && n <= 3000)) { alert('Masukkan jumlah ml (1 – 3000).'); return; }
+        makmalSimpanMl(k, n);
+        return;
+      }
+      if (mk === 'warna') {
+        var hr = coachHariData.hari, rekod = { at: Date.now(), warna: t.getAttribute('data-v') };
+        coachSimpanHari({ kencing: firebase.firestore.FieldValue.arrayUnion(rekod) }, function() { (hr.kencing || (hr.kencing = [])).push(rekod); });
+        el('makmal-info').textContent = 'Ujian kencing direkod: ' + rekod.warna + '.';
+        lukisMakmal();
+      }
+    };
+    el('btn-makmal-keluar').onclick = function() { bukaTs(); };
+    el('btn-makmal-coach').onclick = function() { bukaCoach(false); };
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
     function lukisPameran(teks) {
       var p = (KD.hijau || {}).pameran, it = p && kdCari(p.id);
