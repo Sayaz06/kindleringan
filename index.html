@@ -6253,6 +6253,8 @@
     <div id="coach-pai"></div>
     <button id="btn-coach-pening" class="btn">LAPOR PENING (sekarang)</button>
     <button id="btn-coach-lapor" class="btn">UBAH LAPORAN PAGI</button>
+    <button id="btn-coach-rumusan" class="btn">RUMUSAN MINGGU (untuk AI)</button>
+    <div id="coach-rumusan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:4px 0;"></div>
     <button id="btn-coach-kira" class="btn">KIRA SEMULA</button>
     <button id="btn-coach-menu" class="btn">MENU</button>
   </div>
@@ -9751,6 +9753,7 @@
       }
       var p = h.pening || [];
       if (p.length) t.push('Pening hari ini: ' + p.length + ' kali (' + p.join(', ') + ')');
+      if (new Date().getDay() === 0) t.push('HARI AHAD: semakan mingguan — tekan RUMUSAN MINGGU, salin ke chat AI.');
       el('coach-hari').textContent = t.join('\n');
     }
 
@@ -10697,6 +10700,219 @@
         });
       }
     };
+    // ══════════ COACH — FASA 5: RUMUSAN MINGGUAN (AHAD) + BUKU KEPUTUSAN ══════════
+    // Butang RUMUSAN MINGGU → teks ringkas 7 hari coach (hari ini − 6 … hari ini) untuk di-COPY ke chat AI pada hari AHAD.
+    // Salinan disimpan: users/{uid}/coach_rumusan/{hariId} { teks, at }.
+    // BUKU KEPUTUSAN disimpan dalam KOD (COACH_BUKU), ikut musim — entri baru / hasil DITAMBAH oleh AI melalui codebox Cari/Ganti selepas semakan Ahad.
+    //   Entri: { minggu, masalah, sebab, keputusan, jangkaan, hasil: 'BELUM DINILAI' | 'BERJAYA' | 'GAGAL' | 'BELUM PASTI' }
+    //   Keputusan GAGAL tidak dibuang — kekal sebagai pengajaran.
+    var COACH_BUKU = {
+      CUTI: [
+        // ← ENTRI BUKU KEPUTUSAN musim CUTI (AI tambah di sini melalui codebox)
+      ]
+    };
+    function coachSenaraiHari() {
+      var id = coachHariData.id || coachHariId(), a = [id], i;
+      for (i = 0; i < 6; i++) a.unshift(coachSemalamId(a[0]));
+      return a;
+    }
+    function coachHariPendek(id) {
+      var p = id.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return ['Ahd', 'Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab'][d.getDay()] + ' ' + p[2] + '/' + p[1];
+    }
+    function coachZatHariLain(hr) {
+      var m = hr.makan || [], g = 0, z = {}, i, k;
+      for (i = 0; i < m.length; i++) {
+        var mk = COACH_MAKANAN[m[i].id];
+        if (!mk) continue;
+        g += m[i].g;
+        for (k in mk.zat) if (mk.zat.hasOwnProperty(k)) z[k] = (z[k] || 0) + mk.zat[k] * m[i].g / 100;
+      }
+      return { g: g, zat: z };
+    }
+    function coachRumusan() {
+      var hariA = coachSenaraiHari(), M = coachHariData.minggu || {}, dA = coachDataAkhir || {}, L = [], i, j, k, hr;
+      var hariIni = coachHariData.id || coachHariId(), kiniR = coachMinitKini();
+      L.push('RUMUSAN COACH MINGGUAN — ' + hariA[0] + ' hingga ' + hariA[6] + ' · musim ' + (dA.musim || 'CUTI'));
+      L.push('(Data dari app Kindle. Hari tanpa rekod = app tak dibuka / tak buat.)');
+      var p = dA.profil;
+      L.push('');
+      L.push('PROFIL: ' + (p ? (p.jantina === 'L' ? 'Lelaki' : 'Perempuan') + ', ' + p.umur + ' thn, ' + p.tinggi + ' cm, ' + p.berat + ' kg (timbang ' + (p.beratAt || '-') + ')' : 'belum diisi'));
+      var brt = [];
+      for (i = 0; i < 7; i++) if ((M[hariA[i]] || {}).berat) brt.push(coachHariPendek(hariA[i]) + ' ' + M[hariA[i]].berat + ' kg');
+      L.push('Berat minggu ini: ' + (brt.length ? brt.join(' · ') : 'tiada timbangan'));
+      // 1. TIDUR
+      L.push('');
+      L.push('1. TIDUR (laporan pagi: tidur & lampu = malam sebelumnya)');
+      var bA = [], takIngat = 0, lampuOk = 0, lampuN = 0;
+      for (i = 0; i < 7; i++) {
+        hr = M[hariA[i]] || {};
+        if (!hr.laporanAt) { L.push('- ' + coachHariPendek(hariA[i]) + ': tiada laporan'); continue; }
+        var b = coachKeMinit(hr.bangun), td = coachKeMinit(hr.tidur), lp = coachKeMinit(hr.lampu), tm = '';
+        if (hr.bangun === 'TAK_INGAT') takIngat++; if (hr.tidur === 'TAK_INGAT') takIngat++; if (hr.lampu === 'TAK_INGAT') takIngat++;
+        if (b !== null) bA.push(b);
+        if (b !== null && td !== null) { var tp = (b + 1440) - (td < 12 * 60 ? td + 1440 : td); if (tp > 0 && tp < 1440) tm = ' · tempoh ' + Math.floor(tp / 60) + 'j' + (tp % 60) + 'm'; }
+        var sem = i > 0 ? M[hariA[i - 1]] : null, bs = sem ? coachKeMinit(sem.bangun) : null, ls = '';
+        if (bs !== null && lp !== null) { var l2 = lp < 12 * 60 ? lp + 1440 : lp; lampuN++; if (l2 <= bs + COACH_JAGA_MIN + 30) { lampuOk++; ls = ' (ikut sasaran)'; } else ls = ' (lewat ' + (l2 - bs - COACH_JAGA_MIN) + ' min dari sasaran)'; }
+        L.push('- ' + coachHariPendek(hariA[i]) + ': bangun ' + coachTeksMasa(b) + ' · tidur ' + coachTeksMasa(td) + ' · lampu ' + coachTeksMasa(lp) + ls + tm);
+      }
+      if (bA.length) {
+        var jum = 0, mn = bA[0], mx = bA[0];
+        for (i = 0; i < bA.length; i++) { jum += bA[i]; if (bA[i] < mn) mn = bA[i]; if (bA[i] > mx) mx = bA[i]; }
+        L.push('Trend bangun: purata ' + coachTeksMasa(Math.round(jum / bA.length)) + ', paling awal ' + coachTeksMasa(mn) + ', paling lewat ' + coachTeksMasa(mx) + ', beza paling besar ' + Math.floor((mx - mn) / 60) + ' jam ' + ((mx - mn) % 60) + ' min');
+      }
+      L.push('Lampu ikut sasaran: ' + lampuOk + '/' + lampuN + ' malam · jawapan "tak ingat": ' + takIngat + ' · tempoh jaga semasa: ' + (COACH_JAGA_MIN / 60) + ' jam');
+      // 2. PENING
+      var pen = [];
+      for (i = 0; i < 7; i++) if (((M[hariA[i]] || {}).pening || []).length) pen.push(coachHariPendek(hariA[i]) + ' (' + M[hariA[i]].pening.join(', ') + ')');
+      L.push('');
+      L.push('2. PENING: ' + (pen.length ? pen.length + ' hari — ' + pen.join(' · ') : 'tiada'));
+      // 3. AIR & KENCING + 4. TUGAS KESIHATAN
+      var slotLepas = {}, slotDisuruh = 0, slotBuat = 0, warna = {}, jenisSt = {}, baris3 = [];
+      for (i = 0; i < 7; i++) {
+        hr = M[hariA[i]] || {};
+        var mlH = 0, mn2 = hr.minum || [], kc = hr.kencing || [], tg = hr.tugas || {};
+        for (j = 0; j < mn2.length; j++) mlH += mn2[j].ml || 0;
+        for (j = 0; j < kc.length; j++) warna[kc[j].warna || '-'] = (warna[kc[j].warna || '-'] || 0) + 1;
+        var bg = coachKeMinit(hr.bangun);
+        if (bg === null && hr.laporanAt) { var la = new Date(hr.laporanAt); bg = la.getHours() * 60 + la.getMinutes(); }
+        if (bg !== null) {
+          var jd = coachJadual(bg), sudahLalu = hariA[i] !== hariIni;
+          for (j = 0; j < jd.tugas.length; j++) {
+            var t = jd.tugas[j];
+            if (t.jenis === 'fokus' || t.jenis === 'tidur') continue;
+            var rec = tg[t.kunci], st = rec ? (rec.s === 'BUAT' ? (rec.lewat ? 'LEWAT' : (rec.ganti ? 'REHAT_OTOT' : 'BUAT')) : rec.s) : (sudahLalu || kiniR >= coachTamat(t) ? 'TERLEPAS' : '');
+            if (!st) continue;
+            if (!jenisSt[t.jenis]) jenisSt[t.jenis] = {};
+            jenisSt[t.jenis][st] = (jenisSt[t.jenis][st] || 0) + 1;
+            if (t.jenis === 'air') { slotDisuruh++; if (rec && rec.s === 'BUAT') slotBuat++; else if (st === 'TERLEPAS') { var sn = t.kunci.replace('air', ''); slotLepas[sn] = (slotLepas[sn] || 0) + 1; } }
+          }
+        }
+        if (hr.laporanAt || mlH || kc.length) baris3.push('- ' + coachHariPendek(hariA[i]) + ': ' + mlH + ' ml (' + mn2.length + ' kali) · kencing ' + kc.length + ' kali');
+      }
+      L.push('');
+      L.push('3. AIR (air kosong sahaja) & KENCING');
+      for (i = 0; i < baris3.length; i++) L.push(baris3[i]);
+      L.push('Slot air diterima: ' + slotBuat + '/' + slotDisuruh + ' · slot paling kerap terlepas: ' + (function() {
+        var a = [], s; for (s in slotLepas) if (slotLepas.hasOwnProperty(s)) a.push('slot ' + s + ' (' + slotLepas[s] + 'x)');
+        return a.length ? a.join(', ') : 'tiada';
+      })());
+      var wA = []; for (k in warna) if (warna.hasOwnProperty(k)) wA.push(k + ' ' + warna[k]);
+      L.push('Warna kencing: ' + (wA.length ? wA.join(' · ') : 'tiada log'));
+      L.push('');
+      L.push('4. TUGAS KESIHATAN (BUAT / LEWAT / GANTI / TAK_DAPAT / TERLEPAS)');
+      for (k in jenisSt) if (jenisSt.hasOwnProperty(k)) {
+        var sA = [], s2; for (s2 in jenisSt[k]) if (jenisSt[k].hasOwnProperty(s2)) sA.push(s2 + ' ' + jenisSt[k][s2]);
+        L.push('- ' + k + ': ' + sA.join(' · '));
+      }
+      // 5. MAKAN & ZAT
+      L.push('');
+      L.push('5. MAKAN BUAH / SAYUR (sasaran ' + COACH_SASARAN_BUAH_G + ' g/hari) & ZAT UTAMA (dari makanan yang dilog sahaja)');
+      var dri = p && p.umur ? coachDRI(p) : null, kcS = p && p.umur ? coachTenaga(p) : 0, zJ = {}, hMakan = 0;
+      for (i = 0; i < 7; i++) {
+        var zh = coachZatHariLain(M[hariA[i]] || {});
+        if (!(M[hariA[i]] || {}).laporanAt && !zh.g) continue;
+        hMakan++;
+        for (k in zh.zat) if (zh.zat.hasOwnProperty(k)) zJ[k] = (zJ[k] || 0) + zh.zat[k];
+        L.push('- ' + coachHariPendek(hariA[i]) + ': ' + zh.g + ' g · ' + coachBulat(zh.zat.kcal || 0) + ' kcal · serat ' + coachBulat(zh.zat.serat || 0) + ' g · kalium ' + coachBulat(zh.zat.kalium || 0) + ' mg · natrium ' + coachBulat(zh.zat.natrium || 0) + ' mg');
+      }
+      if (hMakan && dri) {
+        var zU = ['protein', 'serat', 'kalium', 'magnesium', 'vitC', 'vitB6', 'folat', 'kalsium', 'besi', 'natrium'], zA = ['Tenaga ' + Math.round((zJ.kcal || 0) / hMakan) + '/' + kcS + ' kcal'];
+        for (i = 0; i < zU.length; i++) zA.push(COACH_ZAT_INFO[zU[i]][0] + ' ' + coachBulat((zJ[zU[i]] || 0) / hMakan) + '/' + coachBulat(dri[zU[i]].s) + ' ' + COACH_ZAT_INFO[zU[i]][1]);
+        L.push('Purata sehari (' + hMakan + ' hari) vs sasaran: ' + zA.join(' · '));
+      }
+      // 6. SENAMAN + RECOVERY
+      L.push('');
+      L.push('6. SENAMAN (5:00 ptg, rotasi LOWER → MIDDLE → UPPER, A/B) & RECOVERY');
+      var nyata = dA.senaman || {}, sakitMinggu = [];
+      for (i = 0; i < 7; i++) {
+        hr = M[hariA[i]] || {};
+        var hs = hr.senaman, tsen = (hr.tugas || {}).senaman;
+        if (!hs && !tsen && !hr.laporanAt) continue;
+        var ln = '- ' + coachHariPendek(hariA[i]) + ': ';
+        if (hs && hs.hari) {
+          var lat = hs.latihan || {}, rs = {}, nL = 0, x;
+          for (k in lat) if (lat.hasOwnProperty(k)) {
+            nL++; rs[lat[k].rasa] = (rs[lat[k].rasa] || 0) + 1;
+            if (lat[k].rasa === 'SAKIT') sakitMinggu.push(coachHariPendek(hariA[i]) + ' ' + ((x = coachSenLatihan(k)) ? x[1] : k));
+          }
+          var rA = []; for (k in rs) if (rs.hasOwnProperty(k)) rA.push(k + ' ' + rs[k]);
+          ln += hs.hari + ' ' + hs.siri + ' · ' + (hs.rehat ? 'REHAT OTOT' : (hs.siapAt ? 'SELESAI' : 'tak selesai')) + ' · ' + nL + '/' + COACH_RUTIN[hs.hari][hs.siri].length + ' latihan' + (rA.length ? ' (' + rA.join(', ') + ')' : '') + (hs.face ? ' · FACE ' + hs.face : ' · FACE tidak');
+          var ot = hs.otot || {}, oA = [];
+          for (k in ot) if (ot.hasOwnProperty(k) && ot[k].lapor !== 'OK') oA.push(k + ' ' + ot[k].lapor + (ot[k].hari !== null && ot[k].hari !== undefined ? ' (hari ke-' + ot[k].hari + ')' : ''));
+          if (oA.length) ln += ' · lapor otot: ' + oA.join(', ');
+        } else ln += tsen ? 'tugas ' + tsen.s + (tsen.sebab ? ' (' + tsen.sebab + ')' : '') : 'tiada sesi';
+        L.push(ln);
+      }
+      if (sakitMinggu.length) L.push('Latihan dilapor SAKIT: ' + sakitMinggu.join(' · '));
+      var pg = nyata.prog || {}, pA = [];
+      for (k in pg) if (pg.hasOwnProperty(k) && pg[k].at && coachTarikh(new Date(pg[k].at)) >= hariA[0] && /NAIK|turun|Gagal|TAHAN|maks|Maks/.test(pg[k].nota || '')) {
+        var xl = coachSenLatihan(k);
+        pA.push((xl ? xl[1] : k) + ': ' + pg[k].nota);
+      }
+      L.push('Perubahan progresi penting: ' + (pA.length ? pA.join(' · ') : 'tiada (naik rep biasa sahaja)'));
+      var rcA = [], g3;
+      for (g3 in COACH_RECOVERY) if (COACH_RECOVERY.hasOwnProperty(g3)) {
+        var akh = (nyata.otot || {})[g3], sk = (nyata.sakit || {})[g3];
+        if (akh || sk) rcA.push(g3 + ' ' + COACH_RECOVERY[g3][0] + ' rehat ' + COACH_RECOVERY[g3][1] + 'h, akhir dilatih ' + (akh || '-') + (sk ? ', SAKIT sejak ' + sk : ''));
+      }
+      L.push('Recovery setiap otot: ' + (rcA.length ? rcA.join(' · ') : 'belum ada data'));
+      // 7. USAHA
+      L.push('');
+      L.push('7. USAHA');
+      var sol = [], solJ = 0, solN = 0, lis = [], lisJ = 0;
+      for (i = 0; i < 7; i++) {
+        hr = M[hariA[i]] || {};
+        if (typeof hr.solat === 'number') { sol.push(coachHariPendek(hariA[i]) + ' ' + hr.solat); solJ += hr.solat; solN++; }
+        if (hr.listening) { lis.push(coachHariPendek(hariA[i]) + ' ' + hr.listening + ' min'); lisJ += hr.listening; }
+      }
+      L.push('Solat: ' + (solN ? sol.join(' · ') + ' · purata ' + Math.round(solJ / solN * 10) / 10 : 'tiada rekod'));
+      L.push('Listening: ' + (lis.length ? lis.join(' · ') + ' · jumlah ' + lisJ + ' min' : 'tiada') + ' · stok terkumpul ' + (dA.listening || 0) + ' min');
+      L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Kuliah ' + (dA.kuliah || 0) + ' · Reasoning ' + (dA.reasoning || 0) + ' · Presenting ' + (dA.presenting || 0) + ' · Vocab level ' + (dA.vocab || 1) + (dA.vocabGame ? ' (' + dA.vocabGame + ')' : ''));
+      var pai = el('coach-pai') ? el('coach-pai').innerHTML.replace(/<\/div>/g, ' | ').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').replace(/(\s*\|\s*)+/g, ' | ').trim() : '';
+      if (pai) L.push('Pai hari ini: ' + pai);
+      // 8. SKRIN LEWAT
+      L.push('');
+      L.push('8. SKRIN LEWAT MALAM: belum dirakam (ciri belum dibina).');
+      // 9. BUKU KEPUTUSAN
+      L.push('');
+      var bk = COACH_BUKU[dA.musim || 'CUTI'] || [];
+      L.push('9. BUKU KEPUTUSAN musim ' + (dA.musim || 'CUTI') + ' (' + bk.length + ' entri)');
+      if (!bk.length) L.push('- belum ada entri');
+      for (i = 0; i < bk.length; i++) {
+        var e = bk[i];
+        L.push('- [' + (i + 1) + '] ' + e.minggu + ' · Masalah: ' + e.masalah + ' · Sangkaan sebab: ' + e.sebab + ' · Keputusan: ' + e.keputusan + ' · Jangkaan: ' + e.jangkaan + ' · HASIL: ' + (e.hasil || 'BELUM DINILAI'));
+      }
+      L.push('');
+      L.push('MINTA AI: (1) nilai entri yang BELUM DINILAI → BERJAYA / GAGAL / BELUM PASTI; (2) cari masalah minggu ini & sebab; (3) beri keputusan baru (jangan ulang yang GAGAL tanpa sebab); (4) beri codebox Cari/Ganti untuk ubah peraturan + tambah entri ke COACH_BUKU.');
+      return L.join('\n');
+    }
+    function coachLukisRumusan() {
+      var box = el('coach-rumusan');
+      if (!box) return;
+      var teks = coachRumusan(), ahad = new Date().getDay() === 0;
+      var btn = 'padding:6px 8px;margin:2px 4px 2px 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      box.innerHTML = '<div style="font-weight:bold;">RUMUSAN MINGGU' + (ahad ? ' — HARI AHAD: semakan mingguan' : '') + '</div>' +
+        '<div style="font-size:0.75rem;">Salin teks ini, tampal ke chat AI. AI beri codebox untuk ubah peraturan + Buku Keputusan.</div>' +
+        '<textarea id="coach-rumusan-teks" readonly style="width:100%;height:260px;font-size:0.75rem;border:2px solid #000;box-sizing:border-box;"></textarea>' +
+        '<button type="button" data-cr="salin" style="' + btn + '">SALIN</button><button type="button" data-cr="tutup" style="' + btn + '">TUTUP</button><span id="coach-rumusan-info" style="font-size:0.8rem;"></span>';
+      document.getElementById('coach-rumusan-teks').value = teks;
+      box.style.display = 'block';
+      if (currentUser) kol('coach_rumusan').doc(coachHariData.id || coachHariId()).set({ teks: teks, at: Date.now() }).catch(function() {});
+    }
+    el('coach-rumusan').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !t.getAttribute('data-cr')) t = t.parentNode;
+      if (!t || t === this) return;
+      var cr = t.getAttribute('data-cr'), ta = document.getElementById('coach-rumusan-teks'), info = document.getElementById('coach-rumusan-info'), ok = false;
+      if (cr === 'tutup') { this.style.display = 'none'; this.innerHTML = ''; return; }
+      if (cr === 'salin' && ta) {
+        try { ta.removeAttribute('readonly'); ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length); ok = document.execCommand('copy'); } catch (er) {}
+        ta.setAttribute('readonly', 'readonly');
+        if (info) info.textContent = ok ? ' Disalin.' : ' Teks dipilih — tekan lama untuk salin.';
+      }
+    };
+    el('btn-coach-rumusan').onclick = function() { coachLukisRumusan(); };
     // ══════════ COACH — FASA 2d: LISTENING + SOLAT → PAI 2 PENUH + PAI 3 ══════════
     // Listening: user report minit → users/{uid}/coach/stok.listening (stok terkumpul, increment) + coach_hari/{id}.listening (hari ini).
     // Solat: bilangan hari ini 0–5 → coach_hari/{id}.solat. Status ikut PURATA 7 hari coach (hari yang direkod sahaja):
