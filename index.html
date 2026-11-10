@@ -6247,6 +6247,8 @@
     <!-- COACH bercakap: watak + bubble (gaya penjaga pelabuhan) + butang jawapan -->
     <div class="pj-kotak"><div class="pj-watak" id="coach-watak"></div><div class="pj-cakap" id="coach-bubble">Memuatkan...</div></div>
     <div id="coach-jawab"></div>
+    <!-- PUSAT NUTRISI sentiasa ada di Coach: makan buah / sayur bila-bila masa → log terus -->
+    <button type="button" id="btn-coach-makan" class="btn" style="margin-top:6px;">+ LOG MAKAN BUAH / SAYUR</button>
     <button id="btn-coach-go" class="btn btn-primary" style="display:none;">GO</button>
     <div id="coach-laporan" style="display:none;border:3px solid #000;border-radius:10px;padding:8px;margin:0 0 6px;"></div>
     <!-- Page COACH = bubble + GO + 3 PAI sahaja. Tugas → TAMAN SIHAT · Usaha → tab USAHA · Laporan & lain-lain → PROFIL -->
@@ -11549,6 +11551,11 @@
           var na = []; for (i = 0; i < abai.length; i++) na.push(abai[i].jenis === 'air' ? 'air slot ' + abai[i].kunci.replace('air', '') : abai[i].nama.split(' — ')[0].toLowerCase());
           babak('Oh ya... tadi ada yang terlepas: ' + na.join(', ') + '.\nMasih boleh buat lewat. Bangunan yang ada tanda TERLEPAS kat Taman Sihat tu.', 'sedih', [['KE TAMAN SIHAT', function() { bukaTs(); }]]);
         }
+        var gBS = coachMakanHari().g;
+        if (kini < j.tidur && gBS < COACH_SASARAN_BUAH_G) {
+          babak('Buah + sayur hari ni: ' + gBS + ' / ' + COACH_SASARAN_BUAH_G + ' g.\n' + (gBS ? 'Sikit lagi! ' : 'Belum makan lagi. ') + 'Bila-bila awak makan buah atau sayur, terus log — butang LOG MAKAN sentiasa ada kat bawah saya.', gBS ? 'masuk' : 'diam',
+            [['LOG MAKAN SEKARANG', function() { bukaNutrisi(); }]]);
+        }
         var mb = coachHariData.hari.minitBelajar || {}, mBa = (mb.bahasa || 0) + (coachHariData.hari.listening || 0), mFa = mb.fakta || 0;
         if (kini < j.tidur) {
           var tUsaha = 'Belajar hari ni: Bahasa ' + mBa + ' min, Fakta ' + mFa + ' min.';
@@ -11699,6 +11706,7 @@
     document.addEventListener('click', function() { try { coachMasaSentuh(); } catch (e) {} }, true);
     document.addEventListener('keydown', function() { try { coachMasaSentuh(); } catch (e) {} }, true);
     el('btn-coach-menu').onclick = function() { coachLap = null; coachLukisLaporan(); showScreen('screen-menu'); };
+    el('btn-coach-makan').onclick = function() { bukaNutrisi(); };
     el('btn-coach-lapor').onclick = function() { bukaCoach(false); coachMulaLaporan(); try { window.scrollTo(0, 0); } catch (e) {} };
     el('btn-coach-pening').onclick = function() {
       if (!currentUser) return;
