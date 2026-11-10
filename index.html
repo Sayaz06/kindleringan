@@ -10630,46 +10630,120 @@
       }
       return h + '</div>';
     }
+    // ── GYM 2: STESEN + TUTORIAL setiap latihan ──
+    // Setiap latihan = satu STESEN (kad). Tekan stesen → TUTORIAL (langkah + AWAS) + borang log.
+    // Tutorial ringkas cara biasa (bentuk asas) — ubah melalui kod jika user mahu (semakan Ahad).
+    var COACH_TUTORIAL = {
+      gobletSquat: ['Pegang 1 dumbbell tegak di depan dada, siku ke bawah.', 'Kaki selebar bahu, hujung kaki sedikit ke luar.', 'Turun macam duduk ke kerusi: punggung ke belakang, dada tegak, lutut ikut arah jari kaki.', 'Turun sampai peha selari lantai (atau setakat selesa), tolak tumit untuk naik.', 'AWAS: lutut jangan masuk ke dalam; tumit kekal di lantai.'],
+      rdl: ['Berdiri, dumbbell di depan peha, lutut bengkok sedikit (kekal).', 'Tolak punggung ke belakang, dumbbell turun rapat di depan kaki.', 'Belakang LURUS, turun sampai rasa tarikan di belakang peha (biasanya paras lutut / bawah lutut).', 'Picit punggung untuk naik semula ke berdiri.', 'AWAS: jangan bongkokkan belakang; ini gerakan pinggul, bukan cangkung.'],
+      hipThrust: ['Duduk di lantai, belakang atas bersandar pada tepi sofa / katil.', 'Letak dumbbell di atas pinggul (alas dengan kain), kaki rata, lutut bengkok.', 'Tolak tumit, angkat pinggul sampai badan lurus dari bahu ke lutut.', 'Picit punggung 1 saat di atas, turun perlahan.', 'AWAS: jangan lengkung pinggang di atas; dagu sedikit ke bawah.'],
+      bridgeBantal: ['Baring, lutut bengkok, kaki rata di lantai.', 'Kepit bantal di antara lutut.', 'Picit bantal sambil angkat pinggul sampai lurus dari bahu ke lutut.', 'Tahan 1 saat, turun perlahan.', 'AWAS: tolak guna tumit, bukan hujung kaki.'],
+      abduksi: ['Baring mengiring, kaki lurus bertindih, kepala atas lengan.', 'Angkat kaki atas lurus ke atas (lebih kurang 30–45 darjah), jari kaki menghala ke depan.', 'Turun perlahan. Habiskan semua rep, kemudian tukar sisi.', 'AWAS: jangan putar badan ke belakang; gerak dari pinggul.'],
+      calfBerdiri: ['Berdiri, pegang dinding / kerusi untuk imbangan.', 'Naik ke hujung kaki setinggi boleh.', 'Tahan 1 saat di atas, turun perlahan sampai tumit hampir mencecah lantai.', 'AWAS: lutut lurus (tidak dikunci); jangan melantun.'],
+      toeRaise: ['Berdiri bersandar ke dinding, tumit sedikit ke depan.', 'Angkat hujung kaki ke atas (tumit kekal di lantai).', 'Turun perlahan.', 'AWAS: gerak perlahan; rasa otot depan betis.'],
+      wallSit: ['Sandar belakang ke dinding.', 'Turun sampai lutut bengkok lebih kurang 90 darjah (atau setakat selesa).', 'Lutut di atas buku lali, tahan masa yang ditetapkan.', 'AWAS: jika sakit lutut, naikkan sedikit (sudut lebih kecil).'],
+      bulgarian: ['Berdiri membelakangkan kerusi, letak atas kaki belakang di atas kerusi.', 'Kaki depan selangkah besar ke depan.', 'Turun lurus ke bawah sampai peha depan hampir selari lantai.', 'Tolak tumit depan untuk naik. Habiskan rep, tukar kaki.', 'AWAS: lutut depan jangan masuk ke dalam; pegang dinding untuk imbangan jika perlu.'],
+      hamBridge: ['Baring, tumit di atas kerusi, lutut bengkok sedikit.', 'Tekan tumit ke kerusi, angkat pinggul ke atas.', 'Tahan pada masa yang ditetapkan, rasa belakang peha bekerja.', 'AWAS: jika kejang, turun dan rehat sekejap.'],
+      slBridge: ['Baring, satu kaki rata di lantai, satu lagi lurus ke atas / diangkat.', 'Tolak tumit kaki di lantai, angkat pinggul.', 'Turun perlahan. Habiskan rep, tukar kaki.', 'AWAS: pinggul kekal paras (jangan senget).'],
+      sumoSquat: ['Kaki lebar (lebih dari bahu), hujung kaki ke luar.', 'Pegang 1 dumbbell tergantung di tengah.', 'Turun dengan dada tegak, lutut ikut arah jari kaki.', 'Tolak tumit untuk naik.', 'AWAS: lutut jangan masuk ke dalam.'],
+      copenhagen: ['Baring mengiring, siku di lantai.', 'Letak kaki atas di atas kerusi / sofa (versi mudah: lutut di atas kerusi).', 'Angkat pinggul sampai badan lurus, tahan masa ditetapkan.', 'Tukar sisi.', 'AWAS: mula dengan versi lutut; berhenti jika sakit pangkal peha.'],
+      clamshell: ['Baring mengiring, lutut bengkok, tumit bertemu.', 'Buka lutut atas ke atas (macam kerang), tumit kekal bersentuh.', 'Turun perlahan. Habiskan rep, tukar sisi.', 'AWAS: pinggul jangan berpusing ke belakang.'],
+      calfDuduk: ['Duduk di kerusi, kaki rata, letak dumbbell di atas lutut.', 'Angkat tumit setinggi boleh.', 'Tahan 1 saat, turun perlahan.', 'AWAS: gerak penuh, jangan melantun.'],
+      heelWalk: ['Berdiri, angkat hujung kaki — berdiri atas tumit sahaja.', 'Berjalan perlahan atas tumit untuk masa ditetapkan.', 'AWAS: dekat dinding untuk imbangan.'],
+      bridgeHold: ['Baring, lutut bengkok, kaki rata.', 'Angkat pinggul sampai lurus dari bahu ke lutut.', 'Picit punggung, tahan masa ditetapkan.', 'AWAS: jangan lengkung pinggang.'],
+      pushUp: ['Tangan di lantai sedikit lebih lebar dari bahu (versi mudah: lutut di lantai).', 'Badan lurus dari kepala ke lutut / kaki.', 'Turun sampai dada hampir mencecah lantai, siku lebih kurang 45 darjah dari badan.', 'Tolak naik.', 'AWAS: pinggang jangan jatuh / punggung jangan terangkat.'],
+      floorPress: ['Baring di lantai, lutut bengkok, satu dumbbell setiap tangan di paras dada.', 'Tolak dumbbell lurus ke atas.', 'Turun perlahan sampai lengan atas menyentuh lantai.', 'AWAS: siku lebih kurang 45 darjah dari badan, bukan 90.'],
+      row: ['Satu tangan & lutut sama sisi di atas kerusi, belakang rata.', 'Tangan satu lagi pegang dumbbell tergantung.', 'Tarik dumbbell ke arah pinggang, siku rapat ke badan.', 'Turun perlahan. Habiskan rep, tukar sisi.', 'AWAS: jangan pusing badan untuk tarik.'],
+      deadBug: ['Baring, tangan lurus ke siling, lutut 90 darjah di udara.', 'Tekan pinggang rapat ke lantai.', 'Luruskan tangan kanan ke belakang + kaki kiri ke depan perlahan, kembali. Tukar sisi.', 'AWAS: pinggang jangan terangkat dari lantai.'],
+      sidePlank: ['Baring mengiring, siku di bawah bahu.', 'Angkat pinggul sampai badan lurus (versi mudah: lutut di lantai).', 'Tahan masa ditetapkan, tukar sisi.', 'AWAS: pinggul jangan jatuh.'],
+      sideBend: ['Berdiri, dumbbell di satu tangan.', 'Bengkok ke sisi dumbbell perlahan, kemudian kembali tegak.', 'Habiskan rep, tukar tangan.', 'AWAS: bengkok ke sisi sahaja, jangan ke depan.'],
+      birdDog: ['Merangkak: tangan bawah bahu, lutut bawah pinggul.', 'Luruskan tangan kanan ke depan + kaki kiri ke belakang.', 'Tahan masa ditetapkan, tukar sisi.', 'AWAS: belakang rata, pinggul jangan senget.'],
+      hollow: ['Baring, tekan pinggang rapat ke lantai.', 'Angkat bahu & kaki sedikit dari lantai, tangan ke depan / atas.', 'Tahan masa ditetapkan (versi mudah: lutut bengkok).', 'AWAS: jika pinggang terangkat, bengkokkan lutut.'],
+      inclinePush: ['Tangan di tepi kerusi / meja yang kukuh, badan lurus.', 'Turun dada ke arah tepi kerusi.', 'Tolak naik.', 'AWAS: pastikan kerusi tak bergerak (sandar ke dinding).'],
+      pullover: ['Baring di lantai, pegang 1 dumbbell dengan dua tangan di atas dada.', 'Siku bengkok sedikit, turunkan dumbbell ke belakang kepala perlahan.', 'Tarik kembali ke atas dada.', 'AWAS: turun setakat selesa untuk bahu.'],
+      rowTahan: ['Sama seperti One-arm DB row (tangan & lutut di atas kerusi).', 'Tarik dumbbell ke pinggang, TAHAN 3 saat di atas.', 'Turun perlahan. Habiskan rep, tukar sisi.', 'AWAS: belakang rata, jangan pusing badan.'],
+      revCrunch: ['Baring, lutut bengkok di udara, tangan di sisi.', 'Gulung pinggul ke atas ke arah dada.', 'Turun perlahan.', 'AWAS: guna otot perut, jangan hayun kaki.'],
+      russian: ['Duduk, lutut bengkok, badan condong sedikit ke belakang, belakang lurus.', 'Pegang kettlebell di depan dada.', 'Pusing badan ke kiri dan kanan (kiri + kanan = 1 rep).', 'AWAS: kaki di lantai dulu; gerak perlahan.'],
+      suitcase: ['Pegang dumbbell di satu tangan di sisi badan.', 'Berjalan tegak untuk masa ditetapkan.', 'Tukar tangan.', 'AWAS: badan jangan senget ke sisi dumbbell.'],
+      superman: ['Meniarap, tangan lurus ke depan.', 'Angkat tangan, dada & kaki sedikit dari lantai.', 'Tahan masa ditetapkan.', 'AWAS: angkat sedikit sahaja; leher selari, pandang lantai.'],
+      plank: ['Siku di bawah bahu, kaki lurus di belakang.', 'Badan lurus dari kepala ke tumit.', 'Tahan masa ditetapkan (versi mudah: lutut di lantai).', 'AWAS: punggung jangan naik / pinggang jangan jatuh.'],
+      ohp: ['Duduk tegak di kerusi, dumbbell di paras bahu.', 'Tolak lurus ke atas sampai lengan hampir lurus.', 'Turun perlahan ke paras bahu.', 'AWAS: jangan lengkung pinggang; perut ketat.'],
+      lateral: ['Berdiri, dumbbell di sisi, siku bengkok sedikit.', 'Angkat ke sisi sampai paras bahu.', 'Turun perlahan.', 'AWAS: jangan hayun; bahu jangan terangkat ke telinga.'],
+      revFly: ['Bongkok dari pinggul (belakang lurus), dumbbell tergantung.', 'Angkat tangan ke sisi, picit belikat.', 'Turun perlahan.', 'AWAS: beban ringan; belakang kekal lurus.'],
+      curl: ['Berdiri, dumbbell di sisi, tapak tangan ke depan.', 'Bengkokkan siku, angkat ke bahu.', 'Turun perlahan sampai lurus.', 'AWAS: siku rapat ke badan, jangan hayun badan.'],
+      ohTri: ['Pegang 1 dumbbell dengan dua tangan di atas kepala.', 'Bengkokkan siku, turunkan dumbbell ke belakang kepala.', 'Luruskan semula.', 'AWAS: siku menghala ke depan, jangan terbuka luas.'],
+      shrug: ['Berdiri, dumbbell di sisi.', 'Angkat bahu lurus ke arah telinga.', 'Tahan 1 saat, turun perlahan.', 'AWAS: jangan putar bahu; lurus naik-turun.'],
+      wrist: ['Duduk, lengan bawah di atas peha, pergelangan di luar lutut.', 'Wrist curl: tapak tangan ke atas, bengkok pergelangan ke atas.', 'Reverse: tapak tangan ke bawah, angkat belakang tangan.', 'AWAS: beban ringan, gerak perlahan.'],
+      leherIso: ['Duduk tegak. Letak tapak tangan di dahi.', 'Tolak kepala ke tangan, tangan melawan — kepala TIDAK bergerak. Tahan.', 'Ulang: belakang kepala, sisi kiri, sisi kanan.', 'AWAS: tekanan RINGAN sahaja; henti jika pening / kebas / sakit.'],
+      declinePush: ['Kaki di atas kerusi, tangan di lantai.', 'Badan lurus, turun dada ke lantai.', 'Tolak naik.', 'AWAS: lebih susah dari push-up biasa — kurangkan rep jika perlu.'],
+      scaption: ['Berdiri, dumbbell ringan, ibu jari ke atas.', 'Angkat tangan ke depan-sisi (bentuk Y kecil) sampai paras bahu.', 'Turun perlahan.', 'AWAS: beban ringan; bahu jangan terangkat.'],
+      ytHold: ['Meniarap, dahi di atas tuala.', 'Y: angkat tangan ke depan-sisi (bentuk Y), ibu jari ke atas, tahan.', 'T: angkat tangan ke sisi (bentuk T), tahan.', 'AWAS: angkat dengan belikat, bukan pinggang.'],
+      extRot: ['Baring mengiring, siku atas bengkok 90 darjah, rapat ke badan.', 'Pegang dumbbell ringan, putar lengan bawah ke atas.', 'Turun perlahan. Habiskan rep, tukar sisi.', 'AWAS: siku kekal rapat ke badan; beban sangat ringan.'],
+      hammer: ['Berdiri, dumbbell di sisi, tapak tangan menghadap badan.', 'Bengkokkan siku, angkat (Zottman: pusing tapak tangan ke bawah di atas, turun perlahan).', 'Turun perlahan.', 'AWAS: siku rapat, jangan hayun.'],
+      slTri: ['Pegang dumbbell di satu tangan di atas kepala.', 'Bengkokkan siku, turun ke belakang kepala.', 'Luruskan semula. Habiskan rep, tukar tangan.', 'AWAS: siku menghala ke atas; tangan satu lagi pegang lengan untuk sokongan.'],
+      farmer: ['Pegang dumbbell di kedua-dua tangan di sisi, berdiri tegak.', 'Genggam kuat, tahan masa ditetapkan.', 'Akhir sesi: pusing pergelangan (tapak ke atas / bawah) perlahan beberapa kali.', 'AWAS: bahu ke bawah & belakang.'],
+      leherB: ['Chin tuck: duduk tegak, tarik dagu ke belakang (dagu berlapis), tahan.', 'Prone neck extension: meniarap, angkat kepala sedikit, pandang lantai, tahan.', 'Side-lying neck raise: baring mengiring, angkat kepala sedikit ke arah bahu atas, tahan; tukar sisi.', 'AWAS: gerak kecil & perlahan; henti jika pening / kebas / sakit.']
+    };
+    function coachLukisStesen(sh, btn, btnA) {
+      var k = coachUIS.buka, x = coachSenLatihan(k), lat = sh.hs.latihan || {}, r = lat[k], tgt = coachSenTarget(k, x), kgMula = tgt.kg, h = '', j, b;
+      var rehat = !r && !sh.hs.siapAt ? coachLatihanRehat(x, sh) : '';
+      var tut = COACH_TUTORIAL[k] || ['Tutorial belum ada.'];
+      h += '<button type="button" data-cs="tutup" style="' + btn + '">‹ KEMBALI KE GYM</button>';
+      h += '<div style="font-weight:bold;font-size:1.1rem;margin:4px 0 2px;">' + x[1] + '</div>';
+      h += '<div style="font-size:0.85rem;">Sasaran: ' + COACH_SET + ' × ' + tgt.u + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') +
+        (kgMula !== null && kgMula !== undefined ? ' · ' + coachTeksBeban(kgMula) : '') + (tgt.tahan ? ' · <b>TAHAN</b>' : '') + ' · rehat 60–90 saat antara set</div>';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:5px 0;font-size:0.85rem;line-height:1.4;"><b>TUTORIAL</b>';
+      for (j = 0; j < tut.length; j++) h += '<div style="margin-top:3px;">' + (tut[j].indexOf('AWAS') === 0 ? '<b>' + tut[j] + '</b>' : (j + 1) + '. ' + tut[j]) + '</div>';
+      h += '</div>';
+      if (r) h += '<div style="font-size:0.82rem;">DILOG: ' + (r.kg !== null && r.kg !== undefined ? coachTeksBeban(r.kg) + ' · ' : '') + r.rep.join(' / ') + (x[2] === 'saat' ? ' saat' : ' rep') + ' · <b>' + r.rasa + '</b>' +
+        (r.rasa === 'SAKIT' ? '<br><b>Henti latihan ini. Jangan naik beban sampai lapor OK. Sakit berlarutan → jumpa doktor.</b>' : '') +
+        (sh.hs.siapAt && tgt.at === r.at ? '<br>Sesi depan: ' + (tgt.kg !== null ? coachTeksBeban(tgt.kg) + ' · ' : '') + COACH_SET + ' × ' + tgt.u + (x[2] === 'saat' ? ' saat' : '') + ' — ' + tgt.nota : '') + '</div>';
+      if (rehat) h += '<div style="font-size:0.85rem;"><b>REHAT HARI INI</b> — otot ' + rehat + '. Tutorial untuk rujukan sahaja.</div>';
+      else if (!sh.hs.siapAt || r) {
+        var kg = coachUIS.kg !== null ? coachUIS.kg : (r && r.kg !== undefined && r.kg !== null ? r.kg : kgMula);
+        h += '<div style="font-weight:bold;margin-top:4px;">LOG</div>';
+        if (x[3] !== null) {
+          b = '<div>Beban: ';
+          for (j = 0; j < COACH_BEBAN.length; j++) b += '<button type="button" data-cs="kg" data-v="' + COACH_BEBAN[j] + '" style="' + (COACH_BEBAN[j] === kg ? btnA : btn) + '">' + (COACH_BEBAN[j] === 0 ? 'BADAN' : (COACH_BEBAN[j] === 6 ? 'KB 6' : COACH_BEBAN[j])) + '</button>';
+          h += b + '</div>';
+        }
+        h += '<div>';
+        for (j = 0; j < COACH_SET; j++) h += 'Set ' + (j + 1) + ': <input type="text" inputmode="numeric" id="coach-set-' + j + '" value="' + (r && r.rep[j] !== undefined ? r.rep[j] : tgt.u) + '" style="width:44px;font-size:1rem;padding:3px;border:2px solid #000;"> ';
+        h += (x[2] === 'saat' ? 'saat' : 'rep') + '</div><div style="font-size:0.78rem;">Rasa (tekan untuk SIMPAN):</div>' +
+          '<button type="button" data-cs="rasa" data-v="RINGAN" style="' + btn + '">RINGAN</button><button type="button" data-cs="rasa" data-v="OK" style="' + btn + '">OK</button>' +
+          '<button type="button" data-cs="rasa" data-v="BERAT" style="' + btn + '">BERAT</button><button type="button" data-cs="rasa" data-v="SAKIT" style="' + btn + '">SAKIT</button>';
+      }
+      return h;
+    }
     function coachLukisSenaman() {
       var box = el('coach-senaman');
       if (!box) return;
-      var sh = coachSenHari(), lat = sh.hs.latihan || {}, akhir = coachSenNyata().akhir || {}, h = '', i, n = 0;
+      var sh = coachSenHari(), lat = sh.hs.latihan || {}, h = '', i, n = 0;
       var btn = 'padding:6px 8px;margin:2px 4px 2px 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
       var btnA = btn + 'background:#000;color:#fff;';
+      if (coachUIS.buka && coachSenLatihan(coachUIS.buka)) {
+        box.innerHTML = coachLukisStesen(sh, btn, btnA);
+        try { box.scrollIntoView(); } catch (e) {}
+        return;
+      }
       for (i = 0; i < sh.senarai.length; i++) if (lat[sh.senarai[i][0]]) n++;
-      h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' dilog') + '</div>';
+      h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' stesen siap') + '</div>';
       h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
       if (!sh.hs.siapAt) h += coachLukisOtot(sh, btn);
+      h += '<div style="font-size:0.8rem;margin:4px 0;">Tekan STESEN untuk tutorial &amp; log.</div><div style="text-align:center;font-size:0;">';
       for (i = 0; i < sh.senarai.length; i++) {
-        var x = sh.senarai[i], k = x[0], r = lat[k], tgt = coachSenTarget(k, x), kgMula = tgt.kg;
-        var uPapar = r && r.sasaran && sh.hs.siapAt ? r.sasaran : tgt.u, kgPapar = r && sh.hs.siapAt ? r.kg : kgMula;
-        var sasaran = COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' saat' : '') + (x[4] ? ' setiap sisi' : '');
-        h += '<div style="border-top:1px solid #000;padding:3px 0;font-size:0.85rem;"><b>' + (i + 1) + '. ' + x[1] + '</b> · ' + sasaran + (kgPapar !== null && kgPapar !== undefined ? ' · ' + coachTeksBeban(kgPapar) : '') + (tgt.tahan && !r ? ' · <b>TAHAN</b>' : '');
-        if (r) h += '<div style="font-size:0.78rem;">DILOG: ' + (r.kg !== null && r.kg !== undefined ? coachTeksBeban(r.kg) + ' · ' : '') + r.rep.join(' / ') + (x[2] === 'saat' ? ' saat' : ' rep') + ' · <b>' + r.rasa + '</b>' +
-          (r.rasa === 'SAKIT' ? '<br><b>Henti latihan ini. Jangan naik beban sampai lapor OK. Sakit berlarutan → jumpa doktor.</b>' : '') +
-          (sh.hs.siapAt && tgt.at === r.at ? '<br>Sesi depan: ' + (tgt.kg !== null ? coachTeksBeban(tgt.kg) + ' · ' : '') + COACH_SET + ' × ' + tgt.u + (x[2] === 'saat' ? ' saat' : '') + ' — ' + tgt.nota : '') + '</div>';
-        if (coachUIS.buka === k) {
-          var kg = coachUIS.kg !== null ? coachUIS.kg : kgMula, b, j;
-          if (x[3] !== null) {
-            b = '<div>';
-            for (j = 0; j < COACH_BEBAN.length; j++) b += '<button type="button" data-cs="kg" data-v="' + COACH_BEBAN[j] + '" style="' + (COACH_BEBAN[j] === kg ? btnA : btn) + '">' + (COACH_BEBAN[j] === 0 ? 'BADAN' : (COACH_BEBAN[j] === 6 ? 'KB 6' : COACH_BEBAN[j])) + '</button>';
-            h += b + '</div>';
-          }
-          h += '<div>';
-          for (j = 0; j < COACH_SET; j++) h += 'Set ' + (j + 1) + ': <input type="text" inputmode="numeric" id="coach-set-' + j + '" value="' + (r && r.rep[j] !== undefined ? r.rep[j] : tgt.u) + '" style="width:44px;font-size:1rem;padding:3px;border:2px solid #000;"> ';
-          h += (x[2] === 'saat' ? 'saat' : 'rep') + '</div><div style="font-size:0.78rem;">Rasa (tekan untuk SIMPAN):</div>' +
-            '<button type="button" data-cs="rasa" data-v="RINGAN" style="' + btn + '">RINGAN</button><button type="button" data-cs="rasa" data-v="OK" style="' + btn + '">OK</button>' +
-            '<button type="button" data-cs="rasa" data-v="BERAT" style="' + btn + '">BERAT</button><button type="button" data-cs="rasa" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
-            '<button type="button" data-cs="tutup" style="' + btn + '">BATAL</button>';
-        } else if (!r && !sh.hs.siapAt && coachLatihanRehat(x, sh)) {
-          h += '<div style="font-size:0.78rem;"><b>REHAT</b> — otot ' + coachLatihanRehat(x, sh) + '</div>';
-        } else if (!sh.hs.siapAt || r) {
-          h += '<div><button type="button" data-cs="buka" data-k="' + k + '" style="' + btn + '">' + (r ? 'UBAH' : 'LOG') + '</button></div>';
-        }
-        h += '</div>';
+        var x = sh.senarai[i], k = x[0], r = lat[k], tgt = coachSenTarget(k, x);
+        var uPapar = r && r.sasaran ? r.sasaran : tgt.u, kgPapar = r ? r.kg : tgt.kg;
+        var rehat = !r && !sh.hs.siapAt ? coachLatihanRehat(x, sh) : '';
+        var st = r ? 'SIAP · ' + r.rasa : (rehat ? 'REHAT' : (sh.hs.siapAt ? 'tidak dibuat' : (tgt.tahan ? 'TAHAN' : 'BELUM')));
+        h += '<button type="button" data-cs="buka" data-k="' + k + '" style="display:inline-block;vertical-align:top;width:48%;min-height:84px;margin:0 1% 8px;padding:5px 6px;border:' + (rehat ? '2px dashed' : '2px solid') + ' #000;border-radius:8px;' +
+          'background:' + (r ? '#000' : '#fff') + ';color:' + (r ? '#fff' : '#000') + ';font-family:inherit;font-size:0.8rem;text-align:left;line-height:1.3;">' +
+          '<b>STESEN ' + (i + 1) + '</b><br>' + x[1] + '<br>' + COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' s' : '') + (x[4] ? '/sisi' : '') + (kgPapar !== null && kgPapar !== undefined ? ' · ' + coachTeksBeban(kgPapar) : '') + '<br><b>' + st + '</b></button>';
       }
+      h += '</div>';
       if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">' + (!n && coachSenSemuaRehat(sh) ? 'REHAT OTOT: regangan / jalan ringan 10 min → SELESAI' : 'SELESAI SESI ' + sh.g + ' ' + sh.s) + '</button></div>';
       if (sh.hs.rehat) h += '<div style="font-size:0.8rem;">Hari ini REHAT OTOT (regangan / jalan ringan). Rotasi diteruskan; siri ' + sh.g + ' ' + sh.s + ' diulang lain kali.</div>';
+      if (sh.hs.siapAt && !sh.hs.rehat) h += '<div style="font-size:0.8rem;">Tekan stesen untuk lihat "Sesi depan".</div>';
       h += '<div style="border-top:2px solid #000;margin-top:4px;padding-top:3px;font-size:0.85rem;"><b>RUTIN FACE ' + sh.f + '</b> (5–7 min, terus selepas senaman)' + (sh.hs.face ? ' · <b>SIAP</b>' : '') +
         '<div style="font-size:0.78rem;">' + COACH_FACE[sh.f] + '</div>' +
         (sh.hs.face ? '' : '<button type="button" data-cs="face" style="' + btn + '">FACE ' + sh.f + ' SIAP</button>') + '</div>';
