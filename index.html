@@ -10303,7 +10303,7 @@
       var isi2 = coachPie([{ v: minBahasa, n: 'Bahasa' }, { v: minFakta, n: 'Fakta' }], '(a) BAHASA vs FAKTA · minit hari ini') +
         '<div style="font-size:0.85rem;line-height:1.5;"><b>Bahasa ' + pEK[0] + '%</b> · ' + minBahasa + ' min (sasaran ' + set.englishKuliah[0] + '%)' + (stEn ? ' · <b>' + stEn + '</b>' : '') + '<br>' +
         '<b>Fakta ' + pEK[1] + '%</b> · ' + minFakta + ' min (sasaran ' + set.englishKuliah[1] + '%)' + (stKu ? ' · <b>' + stKu + '</b>' : '') + '</div>' +
-        '<div style="font-size:0.8rem;">Minit dicatat sendiri semasa awak dalam laci. Bahasa = Laci Bahasa, SR Bebas, Reasoning, Presenting + Listening (PAWAGAM). Fakta = Laci Fakta. Bermula semula setiap hari.</div>';
+        '<div style="font-size:0.8rem;">Minit dicatat sendiri. Bahasa = Laci Bahasa, SR Bebas, Reasoning, ARKED + Pelabuhan (game) + Listening (PAWAGAM). Fakta = Laci Fakta. Presenting tidak dikira. Bermula semula setiap hari.</div>';
       var nE = [], cE = [], cS = [], kE = [];
       for (i2 = 0; i2 < COACH_BIDANG.length; i2++) {
         var kb = COACH_BIDANG[i2][0];
@@ -11286,7 +11286,7 @@
       }
       L.push('Solat: ' + (solN ? sol.join(' · ') + ' · purata ' + Math.round(solJ / solN * 10) / 10 : 'tiada rekod'));
       L.push('Listening: ' + (lis.length ? lis.join(' · ') + ' · jumlah ' + lisJ + ' min' : 'tiada') + ' · stok terkumpul ' + (dA.listening || 0) + ' min');
-      L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Fakta ' + (dA.kuliah || 0)
+      L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Fakta ' + (dA.kuliah || 0) + ' · Reasoning ' + (dA.reasoning || 0) + ' · Presenting ' + (dA.presenting || 0) + ' · Vocab level ' + (dA.vocab || 1) + (dA.vocabGame ? ' (' + dA.vocabGame + ')' : ''));
       var pai = el('coach-pai') ? el('coach-pai').innerHTML.replace(/<\/div>/g, ' | ').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').replace(/(\s*\|\s*)+/g, ' | ').trim() : '';
       if (pai) L.push('Pai hari ini: ' + pai);
       // 8. SKRIN LEWAT (anggaran dari sentuhan selepas masa malapkan lampu)
@@ -11618,25 +11618,29 @@
       var asal = b.onclick;
       b.onclick = function(e) {
         var self = this;
-        coachSemakKunci(function() { coachMasa.jenis = id === 'btn-go-fakta' ? 'fakta' : 'bahasa'; coachMasa.last = Date.now(); asal.call(self, e); });
+        coachSemakKunci(function() { coachMasa.jenis = id === 'btn-go-fakta' ? 'fakta' : (id === 'btn-go-presenting' ? '' : 'bahasa'); coachMasa.last = Date.now(); asal.call(self, e); });
       };
     });
     // ══ MASA BELAJAR (Pai 2 a): minit dalam laci dicatat AUTOMATIK dari sentuhan ══
-    // Buka laci → 'fakta' (Laci Fakta) / 'bahasa' (Bahasa, SR Bebas, Reasoning, Presenting). Kembali ke MENU → berhenti.
+    // Buka laci → 'fakta' (Laci Fakta) / 'bahasa' (Bahasa, SR Bebas, Reasoning). PRESENTING tidak dikira. Kembali ke MENU → berhenti.
+    // ARKED + PELABUHAN (game perkataan) juga dikira 'bahasa'. Listening (PAWAGAM) ditambah terus dalam pai.
     // Jarak dua sentuhan ≤ 5 min dikira; lebih lama = rehat (tidak dikira). Simpan coach_hari.minitBelajar.{jenis} (minit penuh, increment).
     var coachMasa = { jenis: '', last: 0, pending: 0 };
+    var COACH_SKRIN_ARKED = /^screen-(game|mini|gp-|jw-|mm|dr|bs|gsr|gbank)/;
     function coachMasaSentuh() {
-      if (!coachMasa.jenis || !currentUser) return;
-      var a = document.querySelector('.screen.active');
-      if (!a || a.id === 'screen-menu' || a.id === 'screen-login') { coachMasa.jenis = ''; coachMasa.last = 0; return; }
+      if (!currentUser) return;
+      var a = document.querySelector('.screen.active'), sid = a ? a.id : '';
+      if (!a || sid === 'screen-menu' || sid === 'screen-login') { coachMasa.jenis = ''; coachMasa.last = 0; return; }
+      var jenis = coachMasa.jenis || (COACH_SKRIN_ARKED.test(sid) ? 'bahasa' : '');
+      if (!jenis) { coachMasa.last = 0; return; }
       var t = Date.now(), d = coachMasa.last ? t - coachMasa.last : 0;
       if (d > 0 && d <= 5 * 60 * 1000) coachMasa.pending += d;
       coachMasa.last = t;
       if (coachMasa.pending < 60000) return;
       var m = Math.floor(coachMasa.pending / 60000), hid = coachHariId(), x = {};
       coachMasa.pending -= m * 60000;
-      x[coachMasa.jenis] = firebase.firestore.FieldValue.increment(m);
-      if (coachHariData.id === hid) { var mbl = coachHariData.hari.minitBelajar || (coachHariData.hari.minitBelajar = {}); mbl[coachMasa.jenis] = (mbl[coachMasa.jenis] || 0) + m; }
+      x[jenis] = firebase.firestore.FieldValue.increment(m);
+      if (coachHariData.id === hid) { var mbl = coachHariData.hari.minitBelajar || (coachHariData.hari.minitBelajar = {}); mbl[jenis] = (mbl[jenis] || 0) + m; }
       kol('coach_hari').doc(hid).set({ minitBelajar: x }, { merge: true }).catch(function() {});
     }
     document.addEventListener('click', function() { try { coachMasaSentuh(); } catch (e) {} }, true);
@@ -13371,7 +13375,7 @@
       if (p === 'screen-ts') bukaTs(); else if (p === 'screen-gym') bukaGym(); else if (p === 'screen-taman') bukaTaman(); else if (p === 'screen-makmal') bukaMakmal(); else if (p === 'screen-nutrisi') bukaNutrisi();
       else if (p === 'screen-bilik') bukaBilik();
       else if (p === 'screen-us') bukaUs(); else if (p === 'screen-surau') bukaSurau(); else if (p === 'screen-pawagam') bukaPawagam();
-      else if (p === 'screen-kd') bukaKd();
+      else if (p === 'screen-kd') bukaKd(); else if (p && el(p)) showScreen(p); else bukaMini();
     };
     el('btn-profil-coach').onclick = function() { bukaCoach(false); };
     document.addEventListener('click', function(e) {
