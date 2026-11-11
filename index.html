@@ -10717,7 +10717,7 @@
         ['adductorStretch', 'Adductor stretch (berdiri)', 'saat', null, 1, 'Q'], ['armCircleLaju', 'Arm circles laju (lawan jam + ikut jam)', 'saat', null, 0, 'K'],
         ['armScissor', 'Arm scissors', 'saat', null, 0, 'G,K'], ['altVup', 'Alt V-up', 'rep', null, 0, 'J'], ['hooks', 'Alternating hooks', 'saat', null, 0, 'K,G'],
         ['armCurlCrunch', 'Arm curls crunch', 'rep', null, 1, 'M'], ['arnoldPress', 'Arnold dumbbell press', 'rep', 2.5, 0, 'K,M'],
-        ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G']], B: [] },
+        ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G'], ['hammerCurl', 'Alternate hammer curl', 'rep', 2.5, 1, 'M,N']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11023,6 +11023,17 @@
           ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
         nafas: ['Tarik nafas dalam sebelum mula — sediakan badan.', 'Hembus nafas melalui mulut semasa tolak tangan ke atas.',
           'Tarik nafas melalui hidung semasa turunkan tangan.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      hammerCurl: {
+        arahan: ['Berdiri, kaki selebar bahu. Pegang satu dumbbell di setiap tangan.', 'Tangan lurus di sisi badan, tapak tangan menghadap satu sama lain.',
+          'Bengkokkan tangan KIRI, angkat dumbbell ke bahu, kemudian turunkan.', 'Tukar ke tangan KANAN dan ulang. Selang-seli.'],
+        fokus: ['Bisep', 'Lengan bawah'],
+        silap: [['Siku bergerak', 'Siku mesti kekal di sisi badan. Kalau bergerak, bisep tak bekerja sepenuhnya dan bentuk salah — mudah cedera.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.'],
+          ['Belakang membongkok', 'Membebankan tulang belakang dan mudah cedera. Ketatkan core, belakang lurus.'],
+          ['Turun tanpa kawalan', 'Turunkan dumbbell perlahan. Jatuh laju menegangkan sendi bahu.']],
+        nafas: ['Tarik nafas dalam sebelum mula — sediakan badan.', 'Hembus nafas melalui mulut semasa angkat dumbbell.',
+          'Tarik nafas melalui hidung semasa turunkan dumbbell.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
       }
     };
     function coachInfoHtml(k) {
