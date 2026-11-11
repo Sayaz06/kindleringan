@@ -10723,7 +10723,7 @@
         ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'],
         ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
         ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
-        ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B']], B: [] },
+        ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11176,6 +11176,17 @@
           ['Badan tidak sejajar', 'Pinggul, bahu dan lutut segaris. Lutut jangan masuk ke dalam.'],
           ['Kaki terlalu dekat dengan pinggul', 'Lutut terbeban semasa pinggul diangkat.']],
         nafas: ['Tarik nafas dalam semasa turunkan pinggul — core ketat, badan stabil.', 'Hembus nafas semasa angkat pinggul — kekal terkawal dan stabil.']
+      },
+      sideLegLift: {
+        arahan: ['Baring mengiring ke KANAN, kepala atas lengan kanan.', 'Angkat kaki atas (KIRI) ke atas, kemudian turunkan ke posisi mula.',
+          'Kaki kiri naik dan turun LURUS sepanjang latihan.', 'Habiskan semua rep, kemudian tukar sisi (baring ke KIRI, angkat kaki KANAN).', 'Bagus untuk otot gluteus.'],
+        fokus: ['Glute', 'Adductor'],
+        silap: [['Kaki diangkat terlalu tinggi', 'Membebankan sendi pinggul dan pinggang. Angkat sampai rasa regangan di kaki sahaja.'],
+          ['Pinggul berpusing', 'Fokus beralih dari otot peha luar ke hip flexor. Pinggul kekal menghadap ke depan.'],
+          ['Badan terpulas', 'Pinggang melengkung dan mudah cedera. Badan kekal lurus.'],
+          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.']],
+        nafas: ['Hembus nafas semasa angkat kaki — core dan otot peha luar bekerja.', 'Tarik nafas semasa turunkan kaki ke posisi mula.',
+          'Jangan tahan nafas — tekanan darah naik dan latihan jadi lebih susah.']
       }
     };
     function coachInfoHtml(k) {
