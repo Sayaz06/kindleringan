@@ -10718,7 +10718,7 @@
         ['armScissor', 'Arm scissors', 'saat', null, 0, 'G,K'], ['altVup', 'Alt V-up', 'rep', null, 0, 'J'], ['hooks', 'Alternating hooks', 'saat', null, 0, 'K,G'],
         ['armCurlCrunch', 'Arm curls crunch', 'rep', null, 1, 'M'], ['arnoldPress', 'Arnold dumbbell press', 'rep', 2.5, 0, 'K,M'],
         ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G'], ['hammerCurl', 'Alternate hammer curl', 'rep', 2.5, 1, 'M,N'],
-        ['armSwingStep', 'Arm swings with lateral steps', 'saat', null, 0, 'Q']], B: [] },
+        ['armSwingStep', 'Arm swings with lateral steps', 'saat', null, 0, 'Q'], ['bicycleCrunch', 'Bicycle crunches', 'rep', null, 0, 'J']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11044,6 +11044,15 @@
           ['Langkah terlalu jauh', 'Berat badan beralih terlalu jauh — susah kembali dan hilang imbangan.'],
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.']],
         nafas: ['Bernafas berirama ikut rentak langkah.', 'Bernafas secara semula jadi. Jangan tahan nafas — badan jadi tegang.']
+      },
+      bicycleCrunch: {
+        arahan: ['Baring di lantai, tangan di belakang telinga. Angkat lutut.', 'Rapatkan siku KANAN ke lutut KIRI.',
+          'Kemudian rapatkan siku KIRI ke lutut KANAN (macam mengayuh basikal).', 'Ulang. Selang-seli.'],
+        fokus: ['Abs', 'Glute', 'Quadriceps'],
+        silap: [['Tarik leher', 'Boleh menegangkan dan mencederakan leher. Tangan sekadar di belakang kepala — angkat badan guna otot core.'],
+          ['Guna siku untuk angkat badan', 'Menegangkan leher dan bahu. Angkat badan guna otot core.'],
+          ['Kaki terlalu tinggi', 'Membebankan pinggang. Kaki rendah sekitar 45 darjah — seluruh core termasuk abs bawah bekerja.']],
+        nafas: ['Hembus nafas semasa angkat badan atas — ketatkan core, angkat lebih berkesan dan elak cedera.', 'Tarik nafas semasa kembali ke posisi mula — relakskan core, jaga bentuk.']
       }
     };
     function coachInfoHtml(k) {
