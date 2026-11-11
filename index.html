@@ -10722,7 +10722,7 @@
         ['birdDog', 'Bird dog', 'rep', null, 1, 'I'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A'],
         ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'],
         ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
-        ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E']], B: [] },
+        ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11158,6 +11158,14 @@
           ['Lutut dikunci di atas', 'Lutut lurus terkunci membebankan sendi. Lutut kekal sedikit lembut.'],
           ['Kuantiti lebih penting dari kualiti', 'Lebih baik kurang rep dengan bentuk betul daripada banyak rep dengan bentuk teruk.']],
         nafas: ['Hembus nafas dalam melalui mulut semasa naik ke hujung kaki.', 'Tarik nafas melalui hidung semasa turunkan tumit.', 'Nafas stabil dan sekata — satu tarik dan satu hembus setiap rep.']
+      },
+      wallSit: {
+        arahan: ['Sandar belakang ke dinding.', 'Gelongsor turun sampai lutut bengkok 90 darjah.',
+          'Belakang kekal rapat ke dinding, tangan jauh dari kaki (jangan tolak peha). Tahan.', 'Menguatkan otot quadriceps.'],
+        fokus: ['Quadriceps', 'Glute', 'Hamstring', 'Betis'],
+        silap: [['Lutut tidak tepat di atas buku lali', 'Lutut terbeban tanpa perlu. Lutut tegak di atas buku lali.'],
+          ['Belakang tidak rapat ke dinding', 'Kurang berkesan dan membebankan pinggang. Seluruh belakang rata ke dinding.']],
+        nafas: ['Tarik nafas melalui hidung, hembus melalui mulut.', 'Nafas perlahan dan dalam — oksigen sampai ke otot dan elak pening.']
       }
     };
     function coachInfoHtml(k) {
