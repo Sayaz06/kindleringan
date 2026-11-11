@@ -10711,7 +10711,7 @@
     // [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban), sisi (1 = setiap sisi), kumpulan recovery]
     var COACH_RUTIN = {
       LOWER: { A: [], B: [] },
-      MIDDLE: { A: [['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K']], B: [] },
+      MIDDLE: { A: [['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K'], ['punches', 'Punches', 'saat', null, 0, 'K,M,G']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -10859,6 +10859,16 @@
           ['Kedudukan tangan salah', 'Tangan selebar bahu dan separas dada. Terlalu tinggi / rendah boleh menegangkan bahu.'],
           ['Pergerakan tidak penuh', 'Turunkan badan sampai hidung hampir sentuh dinding, kemudian tolak balik ke posisi mula.']],
         nafas: ['Tarik nafas semasa badan turun ke dinding.', 'Hembus nafas semasa tolak menjauhi dinding.', 'Bernafas dalam supaya badan cukup oksigen.']
+      },
+      punches: {
+        arahan: ['Berdiri dengan sebelah kaki ke depan, lutut bengkok sedikit.', 'Bengkokkan siku, genggam penumbuk di depan muka.',
+          'Tumbuk sebelah tangan lurus ke depan, tapak tangan menghadap lantai.', 'Tarik tangan balik, kemudian ulang dengan tangan sebelah lagi. Selang-seli.'],
+        fokus: ['Bahu', 'Trisep', 'Dada'],
+        silap: [['Tumbukan terlalu lurus / jauh', 'Membebankan sendi dan otot, lama-lama boleh cedera. Jaga bentuk, tumbuk sejauh yang selesa sahaja.'],
+          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
+          ['Bahu tegang', 'Boleh menegangkan leher dan belakang. Bahu kekal relaks, pergerakan lancar.']],
+        nafas: ['Tarik nafas dalam melalui hidung semasa bersedia untuk tumbuk.', 'Hembus nafas kuat melalui mulut semasa menumbuk.',
+          'Bernafas stabil dan berirama; fokus pada hembusan untuk ketatkan core.', 'Jangan tahan nafas atau bernafas terlalu laju — cepat penat.']
       }
     };
     function coachInfoHtml(k) {
