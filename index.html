@@ -10707,10 +10707,11 @@
     var coachNotaBilik = '<div style="font-size:0.78rem;">Buat di BILIK TIDUR (Game → USAHA → BILIK TIDUR).</div>';
     var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
     var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
-    // SENARAI SENAMAN DIKOSONGKAN — senaman baru akan dimasukkan semula. Struktur kumpulan (LOWER / MIDDLE / UPPER × A / B) dikekalkan.
+    // SENARAI SENAMAN BARU (berat badan + dumbbell). Maklumat penuh setiap latihan: COACH_INFO (cara buat, otot fokus, kesilapan biasa, pernafasan).
+    // [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban), sisi (1 = setiap sisi), kumpulan recovery]
     var COACH_RUTIN = {
       LOWER: { A: [], B: [] },
-      MIDDLE: { A: [], B: [] },
+      MIDDLE: { A: [['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -10847,6 +10848,35 @@
         h += '</div>';
       }
       return h + '</div>';
+    }
+    // ── MAKLUMAT LATIHAN (format baru): arahan = CARA BUAT · fokus = OTOT FOKUS (pertama = utama) · silap = [tajuk, huraian] · nafas = PERNAFASAN ──
+    var COACH_INFO = {
+      wallPush: {
+        arahan: ['Berdiri menghadap dinding, satu langkah besar dari dinding.', 'Hulur tangan lurus ke dinding dan bersandar padanya. Angkat tumit.',
+          'Bengkokkan siku perlahan-lahan, bawa badan atas ke arah dinding.', 'Tolak semula ke posisi mula dan ulang. Badan kekal LURUS.'],
+        fokus: ['Dada', 'Trisep', 'Bahu'],
+        silap: [['Belakang membongkok', 'Kurang guna otot dada dan membebankan pinggang. Ketatkan core, tulang belakang neutral sepanjang latihan.'],
+          ['Kedudukan tangan salah', 'Tangan selebar bahu dan separas dada. Terlalu tinggi / rendah boleh menegangkan bahu.'],
+          ['Pergerakan tidak penuh', 'Turunkan badan sampai hidung hampir sentuh dinding, kemudian tolak balik ke posisi mula.']],
+        nafas: ['Tarik nafas semasa badan turun ke dinding.', 'Hembus nafas semasa tolak menjauhi dinding.', 'Bernafas dalam supaya badan cukup oksigen.']
+      }
+    };
+    function coachInfoHtml(k) {
+      var f = COACH_INFO[k], h = '', i, tut;
+      if (!f) {
+        tut = COACH_TUTORIAL[k] || ['Tutorial belum ada.'];
+        for (i = 0; i < tut.length; i++) h += '<div style="margin-top:3px;">' + (tut[i].indexOf('AWAS') === 0 ? '<b>' + tut[i] + '</b>' : (i + 1) + '. ' + tut[i]) + '</div>';
+        return h;
+      }
+      var tj = function(t) { return '<div style="font-weight:bold;margin-top:6px;border-bottom:1px solid #000;">' + t + '</div>'; };
+      h += tj('CARA BUAT');
+      for (i = 0; i < f.arahan.length; i++) h += '<div style="margin-top:2px;">' + (i + 1) + '. ' + f.arahan[i] + '</div>';
+      h += tj('OTOT FOKUS') + '<div style="margin-top:2px;"><b>' + f.fokus[0] + '</b>' + (f.fokus.length > 1 ? ' (utama) · ' + f.fokus.slice(1).join(' · ') : '') + '</div>';
+      h += tj('KESILAPAN BIASA');
+      for (i = 0; i < f.silap.length; i++) h += '<div style="margin-top:3px;"><b>' + (i + 1) + '. ' + f.silap[i][0] + '</b> — ' + f.silap[i][1] + '</div>';
+      h += tj('PERNAFASAN');
+      for (i = 0; i < f.nafas.length; i++) h += '<div style="margin-top:2px;">- ' + f.nafas[i] + '</div>';
+      return h;
     }
     // ── GYM 2: STESEN + TUTORIAL setiap latihan ──
     // Setiap latihan = satu STESEN (kad). Tekan stesen → TUTORIAL (langkah + AWAS) + borang log.
@@ -11020,13 +11050,12 @@
     function coachLukisStesen(sh, btn, btnA) {
       var k = coachUIS.buka, x = coachSenLatihan(k), lat = sh.hs.latihan || {}, r = lat[k], tgt = coachSenTarget(k, x), kgMula = tgt.kg, h = '', j, b;
       var rehat = !r && !sh.hs.siapAt ? coachLatihanRehat(x, sh) : '';
-      var tut = COACH_TUTORIAL[k] || ['Tutorial belum ada.'];
       h += '<button type="button" data-cs="tutup" style="' + btn + '">‹ KEMBALI KE GYM</button>';
       h += '<div style="font-weight:bold;font-size:1.1rem;margin:4px 0 2px;">' + x[1] + '</div>';
       h += '<div style="font-size:0.85rem;">Sasaran: ' + COACH_SET + ' × ' + tgt.u + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') +
         (kgMula !== null && kgMula !== undefined ? ' · ' + coachTeksBeban(kgMula) : '') + (tgt.tahan ? ' · <b>TAHAN</b>' : '') + ' · rehat 60–90 saat antara set</div>';
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:5px 0;font-size:0.85rem;line-height:1.4;"><b>TUTORIAL</b>' + coachLidi(k);
-      for (j = 0; j < tut.length; j++) h += '<div style="margin-top:3px;">' + (tut[j].indexOf('AWAS') === 0 ? '<b>' + tut[j] + '</b>' : (j + 1) + '. ' + tut[j]) + '</div>';
+      h += coachInfoHtml(k);
       h += '</div>';
       if (r) h += '<div style="font-size:0.82rem;">DILOG: ' + (r.kg !== null && r.kg !== undefined ? coachTeksBeban(r.kg) + ' · ' : '') + r.rep.join(' / ') + (x[2] === 'saat' ? ' saat' : ' rep') + ' · <b>' + r.rasa + '</b>' +
         (r.rasa === 'SAKIT' ? '<br><b>Henti latihan ini. Jangan naik beban sampai lapor OK. Sakit berlarutan → jumpa doktor.</b>' : '') +
@@ -11161,9 +11190,8 @@
       if (x[3] !== null && x[3] !== 6) h += '<div style="text-align:center;font-size:0.8rem;">Beban: <button type="button" data-cs="wkkg" data-v="-1" style="' + btn + '">−</button>' + kgT + ' <button type="button" data-cs="wkkg" data-v="1" style="' + btn + '">+</button></div>';
       h += '<div style="text-align:center;"><button type="button" data-cs="wktut" style="' + btn + '">' + (W.tut ? 'SOROK TUTORIAL' : 'TUTORIAL (lupa cara?)') + '</button></div>';
       if (W.tut) {
-        var tut = COACH_TUTORIAL[k] || ['Tutorial belum ada.'];
         h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:4px 0;font-size:0.85rem;line-height:1.4;">';
-        for (i = 0; i < tut.length; i++) h += '<div style="margin-top:2px;">' + (tut[i].indexOf('AWAS') === 0 ? '<b>' + tut[i] + '</b>' : (i + 1) + '. ' + tut[i]) + '</div>';
+        h += coachInfoHtml(k);
         h += '</div>';
       }
       var nx = W.set < COACH_SET - 1 ? 'Set ' + (W.set + 2) : (W.i < W.senarai.length - 1 ? coachSenLatihan(W.senarai[W.i + 1])[1] : 'TAMAT SENAMAN');
