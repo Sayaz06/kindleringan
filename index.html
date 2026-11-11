@@ -10725,7 +10725,8 @@
         ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
         ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A'], ['donkeyKick', 'Donkey kicks', 'rep', null, 1, 'A'],
         ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M'], ['dbRowDua', 'Bent over row (dua tangan)', 'rep', 5, 0, 'H,L,M,I'],
-        ['rearDeltRow', 'Dumbbell rear delt row', 'rep', 2.5, 0, 'K,L'], ['reverseFly', 'Reverse flys', 'rep', 2.5, 0, 'K,L'], ['dbShrug', 'Dumbbell shrug', 'rep', 5, 0, 'L']], B: [] },
+        ['rearDeltRow', 'Dumbbell rear delt row', 'rep', 2.5, 0, 'K,L'], ['reverseFly', 'Reverse flys', 'rep', 2.5, 0, 'K,L'], ['dbShrug', 'Dumbbell shrug', 'rep', 5, 0, 'L'],
+        ['superman', 'Superman', 'rep', null, 0, 'I']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11248,6 +11249,14 @@
           ['Belakang melengkung', 'Membebankan tulang belakang dan mudah cedera. Ketatkan core, belakang lurus.'],
           ['Otot tidak dikecutkan sepenuhnya', 'Picit otot bahu dan belakang atas di atas — baru dapat faedah penuh.']],
         nafas: ['Hembus nafas melalui mulut semasa angkat bahu.', 'Tarik nafas melalui hidung semasa turunkan bahu.']
+      },
+      superman: {
+        arahan: ['Baring meniarap, tangan lurus ke depan melepasi kepala.', 'Angkat kedua-dua tangan dan kaki dari lantai serentak.',
+          'Tahan 2 saat.', 'Turun ke posisi mula dan ulang.'],
+        fokus: ['Pinggang belakang', 'Glute', 'Hamstring'],
+        silap: [['Angkat tangan dan kaki terlalu tinggi', 'Belakang melengkung berlebihan — boleh sakit dan cedera. Angkat sedikit sahaja dari lantai.'],
+          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.']],
+        nafas: ['Tarik nafas dalam semasa angkat tangan dan kaki.', 'Tahan nafas 1–2 saat di atas.', 'Hembus nafas semasa turunkan tangan dan kaki.', 'Nafas dalam dan stabil sepanjang gerakan.']
       }
     };
     function coachInfoHtml(k) {
