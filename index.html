@@ -10721,7 +10721,8 @@
         ['armSwingStep', 'Arm swings with lateral steps', 'saat', null, 0, 'Q'], ['bicycleCrunch', 'Bicycle crunches', 'rep', null, 0, 'J'],
         ['birdDog', 'Bird dog', 'rep', null, 1, 'I'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A'],
         ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'],
-        ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A']], B: [] },
+        ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
+        ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11128,6 +11129,35 @@
           ['Tidak turun cukup rendah', 'Glute dan hamstring kurang bekerja. Turun sampai peha selari dengan lantai.'],
           ['Tumit terangkat', 'Berat badan beralih ke depan dan lutut terbeban. Tapak kaki rata di lantai.']],
         nafas: ['Tarik nafas dalam beberapa kali sebelum mula.', 'Tarik nafas dalam semasa turun.', 'Hembus nafas semasa naik.', 'Nafas dalam dan perlahan.']
+      },
+      bulgarian: {
+        arahan: ['Berdiri beberapa kaki di depan bangku / kerusi. Letak kaki KIRI di atas bangku di belakang.',
+          'Turunkan badan sampai lutut belakang hampir sentuh lantai dan peha depan selari dengan lantai.', 'Kembali ke posisi mula dan ulang.',
+          'Jarak kaki depan dari bangku mesti cukup supaya lutut depan tidak melepasi jari kaki. Badan atas tegak.', 'Habiskan semua rep, kemudian tukar sisi (kaki KANAN di atas bangku).'],
+        fokus: ['Glute', 'Quadriceps', 'Hamstring', 'Betis'],
+        silap: [['Lutut depan melepasi jari kaki', 'Sendi lutut terbeban berlebihan dan boleh cedera.'],
+          ['Condong terlalu ke depan', 'Kaki depan terbeban berlebihan dan boleh cedera.'],
+          ['Kaki belakang tidak stabil', 'Kaki belakang kekal mantap semasa turun naik supaya latihan lebih berkesan.']],
+        nafas: ['Tarik nafas semasa turun.', 'Hembus nafas semasa naik.', 'Kekalkan irama tarik dan hembus yang sama sepanjang latihan.']
+      },
+      slDeadlift: {
+        arahan: ['Berdiri atas kaki KIRI, belakang lurus.', 'Bongkok dari pinggul — tangan capai ke lantai, kaki KANAN diluruskan ke belakang dan ke atas.',
+          'Kembali berdiri tegak dan ulang.', 'Habiskan semua rep, kemudian tukar sisi (berdiri atas kaki KANAN).'],
+        fokus: ['Hamstring', 'Glute', 'Pinggang belakang'],
+        silap: [['Belakang membongkok', 'Membebankan tulang belakang dan mudah cedera. Ketatkan core, belakang lurus.'],
+          ['Berat badan di hujung kaki', 'Berat tak seimbang — mudah goyang dan jatuh. Tumit rapat ke lantai, berat badan di tumit.'],
+          ['Kaki belakang kurang tinggi', 'Glute dan hamstring kurang bekerja. Angkat kaki sampai paras pinggul, kemudian turunkan.']],
+        nafas: ['Tarik nafas dalam semasa bongkok ke depan dan angkat kaki belakang.', 'Hembus nafas semasa turunkan kaki dan kembali berdiri.',
+          'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      calfRaise: {
+        arahan: ['Berdiri tegak, kaki rapat.', 'Angkat tumit — berdiri di hujung jari kaki.', 'Turunkan tumit. Ulang angkat dan turun.'],
+        fokus: ['Betis'],
+        silap: [['Naik terlalu laju', 'Gerak laju menegangkan tendon Achilles. Gerak terkawal — jangan melantun atau menyentak.'],
+          ['Condong ke depan / belakang', 'Berat badan tak seimbang — tak selesa dan boleh cedera.'],
+          ['Lutut dikunci di atas', 'Lutut lurus terkunci membebankan sendi. Lutut kekal sedikit lembut.'],
+          ['Kuantiti lebih penting dari kualiti', 'Lebih baik kurang rep dengan bentuk betul daripada banyak rep dengan bentuk teruk.']],
+        nafas: ['Hembus nafas dalam melalui mulut semasa naik ke hujung kaki.', 'Tarik nafas melalui hidung semasa turunkan tumit.', 'Nafas stabil dan sekata — satu tarik dan satu hembus setiap rep.']
       }
     };
     function coachInfoHtml(k) {
