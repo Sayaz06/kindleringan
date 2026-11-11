@@ -10724,7 +10724,7 @@
         ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
         ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
         ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A'], ['donkeyKick', 'Donkey kicks', 'rep', null, 1, 'A'],
-        ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M']], B: [] },
+        ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M'], ['dbRowDua', 'Bent over row (dua tangan)', 'rep', 5, 0, 'H,L,M,I']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11208,6 +11208,15 @@
           ['Bahu terangkat', 'Biasanya bila tarik dumbbell terlalu tinggi — trap atas terlebih kerja, lats kurang. Bahu kekal ke bawah.'],
           ['Turun tanpa kawalan', 'Turunkan dumbbell perlahan. Jatuh laju menegangkan sendi bahu.']],
         nafas: ['Tarik nafas dalam sebelum mula.', 'Hembus nafas semasa tarik dumbbell ke atas (ke arah pinggang / ketiak).', 'Tarik nafas dalam semula semasa turunkan dumbbell.']
+      },
+      dbRowDua: {
+        arahan: ['Berdiri, kaki selebar bahu. Condong ke depan, lutut bengkok sedikit, punggung ke belakang.', 'Pegang satu dumbbell di setiap tangan.',
+          'Bengkokkan siku dan tarik ke BELAKANG.', 'Turunkan tangan, ulang.'],
+        fokus: ['Belakang (lats)', 'Bahu', 'Trap', 'Bisep', 'Lengan bawah', 'Dada'],
+        silap: [['Belakang tidak lurus', 'Membebankan pinggang dan kurang berkesan.'],
+          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
+          ['Guna momentum, bukan otot', 'Hayun tangan atau badan untuk angkat beban — otot sasaran tak bekerja dan mudah cedera.']],
+        nafas: ['Tarik nafas dalam semasa turunkan beban.', 'Hembus nafas perlahan semasa tarik beban.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
       }
     };
     function coachInfoHtml(k) {
