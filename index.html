@@ -10722,7 +10722,8 @@
         ['birdDog', 'Bird dog', 'rep', null, 1, 'I'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A'],
         ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'],
         ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
-        ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C']], B: [] },
+        ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
+        ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11166,6 +11167,15 @@
         silap: [['Lutut tidak tepat di atas buku lali', 'Lutut terbeban tanpa perlu. Lutut tegak di atas buku lali.'],
           ['Belakang tidak rapat ke dinding', 'Kurang berkesan dan membebankan pinggang. Seluruh belakang rata ke dinding.']],
         nafas: ['Tarik nafas melalui hidung, hembus melalui mulut.', 'Nafas perlahan dan dalam — oksigen sampai ke otot dan elak pening.']
+      },
+      buttBridge: {
+        arahan: ['Baring terlentang, lutut bengkok, tapak kaki rata di lantai. Tangan rata di sisi badan.', 'Angkat punggung ke atas, kemudian turunkan. Ulang.'],
+        fokus: ['Glute', 'Hamstring'],
+        silap: [['Pinggul diangkat terlalu tinggi', 'Membebankan pinggang dan boleh cedera.'],
+          ['Glute tidak diketatkan', 'Otot lain (pinggang / hamstring) yang terbeban. Picit punggung semasa naik.'],
+          ['Badan tidak sejajar', 'Pinggul, bahu dan lutut segaris. Lutut jangan masuk ke dalam.'],
+          ['Kaki terlalu dekat dengan pinggul', 'Lutut terbeban semasa pinggul diangkat.']],
+        nafas: ['Tarik nafas dalam semasa turunkan pinggul — core ketat, badan stabil.', 'Hembus nafas semasa angkat pinggul — kekal terkawal dan stabil.']
       }
     };
     function coachInfoHtml(k) {
