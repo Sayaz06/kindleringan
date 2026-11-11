@@ -10732,7 +10732,11 @@
         ['sidePlank', 'Side plank', 'saat', null, 1, 'J'], ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['russian', 'Russian twist', 'rep', 0, 0, 'J'],
         ['legRaise', 'Leg raises', 'rep', null, 0, 'J'], ['mountainClimber', 'Mountain climber', 'saat', null, 0, 'J'], ['jumpingJack', 'Jumping jacks', 'saat', null, 0, 'Q'],
         ['highStep', 'High stepping', 'saat', null, 0, 'Q'], ['quadStretch', 'Quad stretch', 'saat', null, 1, 'Q'], ['hamStretch', 'Sitting hamstring stretch', 'saat', null, 1, 'Q'],
-        ['childPose', "Child's pose", 'saat', null, 0, 'Q'], ['cobra', 'Cobra stretch', 'saat', null, 0, 'Q'], ['triStretch', 'Triceps stretch', 'saat', null, 1, 'Q']], B: [] },
+        ['childPose', "Child's pose", 'saat', null, 0, 'Q'], ['cobra', 'Cobra stretch', 'saat', null, 0, 'Q'], ['triStretch', 'Triceps stretch', 'saat', null, 1, 'Q'],
+        ['bicepCurl', 'Dumbbell bicep curl', 'rep', 5, 0, 'M,N'], ['concCurl', 'Concentration curl', 'rep', 2.5, 1, 'M'], ['ohp', 'Dumbbell overhead press', 'rep', 5, 0, 'K,M'],
+        ['lateral', 'Dumbbell lateral raise', 'rep', 2.5, 0, 'K'], ['frontRaise', 'Dumbbell front raise', 'rep', 2.5, 0, 'K'], ['benchPress', 'Dumbbell bench press', 'rep', 5, 0, 'G,M,K'],
+        ['benchFly', 'Dumbbell bench fly', 'rep', 2.5, 0, 'G'], ['pullover', 'Dumbbell pullover', 'rep', 5, 0, 'H,G'], ['rdl', 'Dumbbell Romanian deadlift', 'rep', 5, 0, 'B,A,I'],
+        ['inclinePress', 'Incline dumbbell press', 'rep', 5, 0, 'G,K,M'], ['inclineFly', 'Incline dumbbell fly', 'rep', 2.5, 0, 'G,K']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11447,6 +11451,124 @@
           ['Leher tidak neutral', 'Leher tegang dan regangan kurang berkesan. Kepala tegak, jangan tunduk.']],
         nafas: ['Tarik nafas dalam dan perlahan semasa angkat tangan ke atas kepala.', 'Hembus perlahan semasa turunkan tangan ke belakang kepala.',
           'Tahan regangan 10–15 saat.', 'Nafas dalam dan stabil — jangan tahan nafas, badan jadi tegang.']
+      },
+      // ── Dari app Dumbbells (arahan ditulis sendiri — app tiada arahan) ──
+      bicepCurl: {
+        arahan: ['Berdiri, kaki selebar bahu. Satu dumbbell di setiap tangan, tangan lurus di sisi, tapak tangan menghadap ke DEPAN.',
+          'Siku rapat di sisi badan. Bengkokkan siku — angkat dumbbell ke arah bahu.', 'Picit bisep di atas, kemudian turunkan perlahan sampai tangan lurus.',
+          'Boleh buat serentak, atau selang-seli kiri dan kanan (Alternate bicep curl).'],
+        fokus: ['Bisep', 'Lengan bawah'],
+        silap: [['Siku bergerak ke depan', 'Bahu yang ambil alih, bisep kurang bekerja. Siku kekal di sisi badan.'],
+          ['Menghayun badan', 'Guna momentum — bisep tak bekerja dan pinggang terbeban. Badan tegak, angkat guna lengan sahaja.'],
+          ['Turun terlalu laju', 'Separuh faedah hilang. Turun perlahan (2–3 saat) sampai tangan lurus sepenuhnya.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Hembus nafas semasa angkat dumbbell.', 'Tarik nafas semasa turunkan dumbbell.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      concCurl: {
+        arahan: ['Duduk di hujung bangku / kerusi, kaki dibuka luas.', 'Pegang dumbbell dengan tangan KANAN. Sandarkan belakang lengan atas (dekat siku) pada bahagian DALAM peha kanan.',
+          'Tangan lurus ke bawah. Angkat dumbbell ke arah bahu — hanya lengan bawah yang bergerak.', 'Picit bisep di atas, turunkan perlahan. Habiskan semua rep, kemudian tukar ke tangan KIRI.'],
+        fokus: ['Bisep'],
+        silap: [['Lengan atas terangkat dari peha', 'Bahu yang bekerja. Lengan atas kekal rapat ke peha sepanjang masa.'],
+          ['Badan bergoyang', 'Guna momentum. Badan diam, hanya lengan bawah bergerak.'],
+          ['Tangan tidak lurus di bawah', 'Pergerakan tak penuh. Luruskan tangan hampir sepenuhnya setiap rep.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Hembus nafas semasa angkat dumbbell.', 'Tarik nafas semasa turunkan dumbbell.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      ohp: {
+        arahan: ['Berdiri (atau duduk tegak di bangku), satu dumbbell di setiap tangan.', 'Angkat dumbbell ke paras bahu — siku di bawah, tapak tangan menghadap ke DEPAN.',
+          'Tolak KEDUA-DUA dumbbell serentak ke atas kepala sampai tangan lurus.', 'Turunkan perlahan ke paras bahu. Ulang.'],
+        fokus: ['Bahu', 'Trisep', 'Dada atas'],
+        silap: [['Belakang melengkung', 'Membebankan pinggang. Ketatkan core dan punggung, rusuk jangan terdorong ke depan.'],
+          ['Tangan tidak lurus di atas', 'Pergerakan tak penuh dan kurang berkesan. Luruskan tangan sepenuhnya.'],
+          ['Turun terlalu rendah / laju', 'Sendi bahu tertekan. Turun terkawal sampai paras bahu sahaja.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas di bawah (paras bahu).', 'Hembus nafas semasa tolak ke atas.', 'Tarik nafas semasa turunkan.']
+      },
+      lateral: {
+        arahan: ['Berdiri, kaki selebar bahu, satu dumbbell di setiap tangan di sisi badan.', 'Siku bengkok sedikit (kekal).',
+          'Angkat kedua-dua tangan ke SISI sampai paras bahu — macam menuang air dari teko.', 'Turunkan perlahan. Ulang.'],
+        fokus: ['Bahu (sisi)'],
+        silap: [['Angkat melebihi paras bahu', 'Trap atas yang ambil alih dan sendi bahu tertekan. Paras bahu sudah cukup.'],
+          ['Menghayun badan', 'Guna momentum — bahu tak bekerja. Badan tegak, gerak terkawal.'],
+          ['Bahu terangkat', 'Leher tegang. Bahu kekal ke bawah, jauh dari telinga.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Hembus nafas semasa angkat ke sisi.', 'Tarik nafas semasa turunkan.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      frontRaise: {
+        arahan: ['Berdiri, kaki selebar bahu, dumbbell di depan peha, tapak tangan menghadap badan.', 'Siku bengkok sedikit (kekal).',
+          'Angkat dumbbell ke DEPAN sampai paras bahu (boleh dua tangan serentak atau selang-seli).', 'Turunkan perlahan ke depan peha. Ulang.'],
+        fokus: ['Bahu (depan)', 'Dada atas'],
+        silap: [['Angkat terlalu tinggi', 'Melebihi paras bahu membebankan sendi. Paras bahu sahaja.'],
+          ['Badan condong ke belakang', 'Pinggang melengkung dan guna momentum. Badan tegak, core ketat.'],
+          ['Turun terlalu laju', 'Kurang berkesan. Turun perlahan dan terkawal.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Hembus nafas semasa angkat ke depan.', 'Tarik nafas semasa turunkan.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      benchPress: {
+        arahan: ['Baring di bangku, kaki rata di lantai. Satu dumbbell di setiap tangan di sisi dada, siku sekitar 45 darjah dari badan.',
+          'Tolak dumbbell ke atas sampai tangan lurus di atas dada.', 'Turunkan perlahan ke sisi dada. Ulang.',
+          'TANPA BANGKU (asrama): buat atas lantai (Floor press) — turun sampai lengan atas sentuh lantai.'],
+        fokus: ['Dada', 'Trisep', 'Bahu (depan)'],
+        silap: [['Siku terkembang 90 darjah', 'Sendi bahu tertekan. Siku sekitar 45 darjah dari badan.'],
+          ['Punggung terangkat dari bangku', 'Pinggang melengkung berlebihan. Punggung dan bahu kekal rapat ke bangku.'],
+          ['Dumbbell dijatuhkan laju', 'Bahu dan dada boleh cedera. Turun perlahan dan terkawal.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas semasa turunkan dumbbell.', 'Hembus nafas semasa tolak ke atas.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      benchFly: {
+        arahan: ['Baring di bangku, dumbbell di atas dada, tapak tangan menghadap satu sama lain, siku bengkok sedikit (kekal).',
+          'Buka tangan perlahan ke SISI dalam bentuk lengkung sampai rasa regangan di dada (siku sedikit bawah paras bangku).',
+          'Rapatkan semula di atas dada — macam memeluk pokok besar. Ulang.', 'TANPA BANGKU (asrama): buat atas lantai (Floor fly) — turun sampai siku sentuh lantai.'],
+        fokus: ['Dada'],
+        silap: [['Tangan terlalu lurus', 'Siku dan bahu tertekan. Siku bengkok sedikit dan kekal sepanjang gerakan.'],
+          ['Turun terlalu rendah', 'Sendi bahu terlebih regang. Turun sampai rasa regangan dada sahaja.'],
+          ['Jadi gerakan "press"', 'Siku bengkok makin banyak = jadi bench press. Sudut siku kekal sama.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas semasa buka tangan ke sisi.', 'Hembus nafas semasa rapatkan di atas dada.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      pullover: {
+        arahan: ['Baring di bangku (atau lantai). Pegang SATU dumbbell dengan dua tangan di atas dada, siku bengkok sedikit.',
+          'Turunkan dumbbell perlahan ke BELAKANG kepala dalam bentuk lengkung, sampai rasa regangan di dada dan sisi badan (lats).',
+          'Tarik semula dumbbell ke atas dada dengan tangan hampir lurus. Ulang.'],
+        fokus: ['Dada', 'Belakang (lats)', 'Trisep'],
+        silap: [['Belakang melengkung', 'Pinggang terangkat dari bangku. Ketatkan core, rusuk kekal ke bawah.'],
+          ['Turun terlalu jauh', 'Sendi bahu terlebih regang. Turun setakat yang selesa.'],
+          ['Siku bengkok terlalu banyak', 'Jadi gerakan trisep. Siku bengkok sedikit dan kekal.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas dalam semasa turunkan dumbbell ke belakang kepala.', 'Hembus nafas semasa tarik semula ke atas dada.']
+      },
+      rdl: {
+        arahan: ['Berdiri, kaki selebar pinggul. Dumbbell di depan peha, lutut bengkok sedikit (kekal).',
+          'Tolak punggung ke BELAKANG (bongkok dari pinggul) — dumbbell turun rapat di depan kaki, belakang LURUS.',
+          'Turun sampai rasa tarikan di belakang peha (biasanya paras lutut / pertengahan betis).', 'Tolak pinggul ke depan untuk berdiri semula, picit punggung di atas. Ulang.'],
+        fokus: ['Hamstring', 'Glute', 'Pinggang belakang'],
+        silap: [['Belakang membongkok', 'Bahaya untuk tulang belakang. Dada terbuka, belakang lurus sepanjang masa.'],
+          ['Jadi squat', 'Lutut terlalu bengkok — hamstring kurang bekerja. Gerakan dari pinggul, bukan lutut.'],
+          ['Dumbbell jauh dari badan', 'Pinggang terbeban. Dumbbell sentiasa rapat dengan kaki.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas semasa bongkok turun.', 'Hembus nafas semasa berdiri semula.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      inclinePress: {
+        arahan: ['Laras bangku 30–45 darjah. Duduk bersandar, satu dumbbell di setiap tangan di sisi dada atas.',
+          'Tolak dumbbell ke atas sampai tangan lurus di atas dada atas.', 'Turunkan perlahan ke sisi dada. Ulang.',
+          'Perlu bangku LARAS (rumah sahaja). Tiada bangku laras → ganti Dumbbell bench press / Floor press.'],
+        fokus: ['Dada atas', 'Bahu (depan)', 'Trisep'],
+        silap: [['Bangku terlalu tegak', 'Melebihi 45 darjah = jadi senaman bahu. 30–45 darjah sudah cukup.'],
+          ['Siku terkembang 90 darjah', 'Sendi bahu tertekan. Siku sekitar 45 darjah dari badan.'],
+          ['Punggung terangkat', 'Pinggang melengkung. Punggung dan belakang rapat ke bangku.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas semasa turunkan dumbbell.', 'Hembus nafas semasa tolak ke atas.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      inclineFly: {
+        arahan: ['Laras bangku 30–45 darjah. Baring bersandar, dumbbell di atas dada atas, tapak tangan menghadap satu sama lain, siku bengkok sedikit.',
+          'Buka tangan perlahan ke SISI dalam bentuk lengkung sampai rasa regangan di dada atas.', 'Rapatkan semula di atas dada. Ulang.',
+          'Perlu bangku LARAS (rumah sahaja). Tiada bangku laras → ganti Dumbbell bench fly / Floor fly.'],
+        fokus: ['Dada atas', 'Bahu (depan)'],
+        silap: [['Tangan terlalu lurus', 'Siku dan bahu tertekan. Siku bengkok sedikit dan kekal.'],
+          ['Turun terlalu rendah', 'Sendi bahu terlebih regang. Turun sampai rasa regangan sahaja.'],
+          ['Bangku terlalu tegak', 'Melebihi 45 darjah = bahu yang bekerja. 30–45 darjah sahaja.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas semasa buka tangan ke sisi.', 'Hembus nafas semasa rapatkan di atas dada.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
       }
     };
     function coachInfoHtml(k) {
