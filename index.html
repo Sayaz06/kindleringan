@@ -10727,7 +10727,8 @@
         ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M'], ['dbRowDua', 'Bent over row (dua tangan)', 'rep', 5, 0, 'H,L,M,I'],
         ['rearDeltRow', 'Dumbbell rear delt row', 'rep', 2.5, 0, 'K,L'], ['reverseFly', 'Reverse flys', 'rep', 2.5, 0, 'K,L'], ['dbShrug', 'Dumbbell shrug', 'rep', 5, 0, 'L'],
         ['superman', 'Superman', 'rep', null, 0, 'I'], ['pushUp', 'Push-ups', 'rep', null, 0, 'G,M,K'], ['kneePush', 'Knee push-ups', 'rep', null, 0, 'G,M,K'],
-        ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['tricepsDip', 'Triceps dips', 'rep', null, 0, 'M,G,K']], B: [] },
+        ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['tricepsDip', 'Triceps dips', 'rep', null, 0, 'M,G,K'],
+        ['ohTri', 'Dumbbell triceps extension', 'rep', 5, 0, 'M']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11296,6 +11297,16 @@
           ['Terlalu guna momentum', 'Hayun badan untuk naik / turun — kurang berkesan dan mudah cedera. Gerak terkawal.'],
           ['Bahu membulat ke depan', 'Membebankan bahu dan kurang berkesan untuk trisep. Dada terbuka, bahu ke belakang.']],
         nafas: ['Tarik nafas semasa turunkan badan.', 'Hembus nafas semasa tolak badan naik ke posisi mula.']
+      },
+      ohTri: {
+        arahan: ['Berdiri, kaki selebar bahu.', 'Pegang SATU dumbbell dengan dua tangan (ibu jari bersilang), angkat ke atas kepala.',
+          'Bengkokkan siku — turunkan dumbbell ke belakang kepala.', 'Luruskan tangan, angkat semula ke atas. Ulang.'],
+        fokus: ['Trisep'],
+        silap: [['Belakang melengkung', 'Membebankan tulang belakang dan mudah cedera. Ketatkan core, belakang lurus.'],
+          ['Siku tidak menghala ke depan', 'Siku terkembang — fokus beralih dari trisep ke bahu dan sendi bahu terbeban. Siku rapat, menghala ke depan.'],
+          ['Tangan tidak lurus sepenuhnya', 'Di atas, luruskan tangan sepenuhnya. Kalau tidak, pergerakan tak penuh dan kurang berkesan.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas dalam semasa turunkan beban.', 'Hembus nafas perlahan semasa angkat beban.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
       }
     };
     function coachInfoHtml(k) {
