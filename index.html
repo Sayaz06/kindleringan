@@ -10728,7 +10728,7 @@
         ['rearDeltRow', 'Dumbbell rear delt row', 'rep', 2.5, 0, 'K,L'], ['reverseFly', 'Reverse flys', 'rep', 2.5, 0, 'K,L'], ['dbShrug', 'Dumbbell shrug', 'rep', 5, 0, 'L'],
         ['superman', 'Superman', 'rep', null, 0, 'I'], ['pushUp', 'Push-ups', 'rep', null, 0, 'G,M,K'], ['kneePush', 'Knee push-ups', 'rep', null, 0, 'G,M,K'],
         ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['tricepsDip', 'Triceps dips', 'rep', null, 0, 'M,G,K'],
-        ['ohTri', 'Dumbbell triceps extension', 'rep', 5, 0, 'M']], B: [] },
+        ['ohTri', 'Dumbbell triceps extension', 'rep', 5, 0, 'M'], ['dbKickback', 'Dumbbell kickbacks', 'rep', 2.5, 0, 'M']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11307,6 +11307,17 @@
           ['Tangan tidak lurus sepenuhnya', 'Di atas, luruskan tangan sepenuhnya. Kalau tidak, pergerakan tak penuh dan kurang berkesan.'],
           ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
         nafas: ['Tarik nafas dalam semasa turunkan beban.', 'Hembus nafas perlahan semasa angkat beban.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      dbKickback: {
+        arahan: ['Berdiri tegak, satu dumbbell di setiap tangan di sisi badan.', 'Condong ke depan, lutut bengkok sedikit. Bengkokkan siku, bawa dumbbell ke arah dada.',
+          'Luruskan tangan ke BELAKANG dan picit trisep. Siku kekal di tempatnya.', 'Bawa dumbbell balik ke dada. Ulang.'],
+        fokus: ['Trisep'],
+        silap: [['Belakang membongkok', 'Membebankan tulang belakang dan mudah cedera. Ketatkan core, belakang lurus.'],
+          ['Tumit terangkat', 'Tumit rapat ke lantai dan jangan condong terlalu jauh — kekal stabil, lutut tak tertekan.'],
+          ['Tangan tidak lurus sepenuhnya', 'Berhenti awal = trisep kurang bekerja. Luruskan tangan sepenuhnya ke belakang, siku tidak bergerak.'],
+          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
+        nafas: ['Tarik nafas dalam sebelum mula.', 'Hembus nafas perlahan semasa luruskan tangan ke belakang.', 'Tarik nafas dalam semasa bawa dumbbell balik.',
+          'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
       }
     };
     function coachInfoHtml(k) {
