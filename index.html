@@ -10720,7 +10720,8 @@
         ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G'], ['hammerCurl', 'Alternate hammer curl', 'rep', 2.5, 1, 'M,N'],
         ['armSwingStep', 'Arm swings with lateral steps', 'saat', null, 0, 'Q'], ['bicycleCrunch', 'Bicycle crunches', 'rep', null, 0, 'J'],
         ['birdDog', 'Bird dog', 'rep', null, 1, 'I'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A'],
-        ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B']], B: [] },
+        ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'],
+        ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11117,6 +11118,16 @@
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
           ['Lutut depan melepasi jari kaki', 'Sendi lutut terbeban berlebihan — lama-lama boleh cedera.']],
         nafas: ['Tarik nafas semasa melangkah ke depan dan turun.', 'Hembus nafas semasa tolak naik.', 'Ini membantu menstabilkan core dan jaga bentuk.']
+      },
+      sumoSquat: {
+        arahan: ['Berdiri, kaki 1.5 kali selebar bahu, jari kaki menghala ke LUAR. Tangan di sisi.',
+          'Turunkan badan sampai peha selari dengan lantai, sambil rapatkan tangan di depan dada.', 'Kembali ke posisi mula dan ulang.'],
+        fokus: ['Adductor (peha dalam)', 'Glute', 'Quadriceps', 'Hamstring', 'Betis'],
+        silap: [['Lutut masuk ke dalam', 'Membebankan sendi lutut. Lutut sebaris dengan jari kaki (menghala ke luar), dan jangan melepasi jari kaki.'],
+          ['Belakang membongkok', 'Membebankan tulang belakang dan mudah cedera. Ketatkan core, belakang lurus.'],
+          ['Tidak turun cukup rendah', 'Glute dan hamstring kurang bekerja. Turun sampai peha selari dengan lantai.'],
+          ['Tumit terangkat', 'Berat badan beralih ke depan dan lutut terbeban. Tapak kaki rata di lantai.']],
+        nafas: ['Tarik nafas dalam beberapa kali sebelum mula.', 'Tarik nafas dalam semasa turun.', 'Hembus nafas semasa naik.', 'Nafas dalam dan perlahan.']
       }
     };
     function coachInfoHtml(k) {
