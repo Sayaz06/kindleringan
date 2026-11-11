@@ -10724,7 +10724,8 @@
         ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
         ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
         ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A'], ['donkeyKick', 'Donkey kicks', 'rep', null, 1, 'A'],
-        ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M'], ['dbRowDua', 'Bent over row (dua tangan)', 'rep', 5, 0, 'H,L,M,I']], B: [] },
+        ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M'], ['dbRowDua', 'Bent over row (dua tangan)', 'rep', 5, 0, 'H,L,M,I'],
+        ['rearDeltRow', 'Dumbbell rear delt row', 'rep', 2.5, 0, 'K,L']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11217,6 +11218,17 @@
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
           ['Guna momentum, bukan otot', 'Hayun tangan atau badan untuk angkat beban — otot sasaran tak bekerja dan mudah cedera.']],
         nafas: ['Tarik nafas dalam semasa turunkan beban.', 'Hembus nafas perlahan semasa tarik beban.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      rearDeltRow: {
+        arahan: ['Berdiri, kaki selebar bahu, satu dumbbell di setiap tangan.', 'Bongkok dari pinggul sampai belakang hampir selari dengan lantai. Tangan tergantung ke bawah.',
+          'Tangan sebaris dengan bahu. Bengkokkan dan angkat siku ke SISI sampai lengan atas selari dengan lantai.', 'Turunkan perlahan dan ulang.'],
+        fokus: ['Bahu (belakang)', 'Trap', 'Belakang'],
+        silap: [['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.'],
+          ['Bahu membulat ke depan', 'Tulang belikat menjauh — kurang berkesan. Picit tulang belikat supaya bahu belakang bekerja.'],
+          ['Angkat terlalu tinggi', 'Otot lain (trap) yang ambil alih, bukan bahu belakang. Sampai lengan atas selari lantai sahaja.'],
+          ['Guna momentum, bukan otot', 'Hayun tangan atau badan untuk angkat beban — otot sasaran tak bekerja dan mudah cedera.']],
+        nafas: ['Tarik nafas dalam melalui hidung semasa turunkan beban ke depan.', 'Hembus nafas perlahan melalui mulut semasa angkat beban ke sisi.',
+          'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
       }
     };
     function coachInfoHtml(k) {
