@@ -10723,7 +10723,7 @@
         ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'],
         ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
         ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
-        ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A']], B: [] },
+        ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A'], ['donkeyKick', 'Donkey kicks', 'rep', null, 1, 'A']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11187,6 +11187,16 @@
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.']],
         nafas: ['Hembus nafas semasa angkat kaki — core dan otot peha luar bekerja.', 'Tarik nafas semasa turunkan kaki ke posisi mula.',
           'Jangan tahan nafas — tekanan darah naik dan latihan jadi lebih susah.']
+      },
+      donkeyKick: {
+        arahan: ['Merangkak: lutut di bawah punggung, tangan di bawah bahu.', 'Angkat kaki KIRI (lutut bengkok, tapak kaki ke siling) dan picit punggung sekuat yang boleh.',
+          'Kembali ke posisi mula dan ulang.', 'Habiskan semua rep, kemudian tukar ke kaki KANAN.'],
+        fokus: ['Glute'],
+        silap: [['Pinggang melengkung', 'Boleh sakit pinggang dan menghilangkan faedah latihan. Core ketat sepanjang masa.'],
+          ['Kaki diangkat terlalu tinggi', 'Membebankan pinggul dan pinggang. Angkat sampai paras pinggul sahaja, jaga bentuk.'],
+          ['Glute tidak digunakan', 'Latihan ini untuk glute — ketatkan punggung sepanjang gerakan. Jangan hayun kaki atau guna momentum.'],
+          ['Lutut sokongan tidak stabil', 'Lutut yang menyokong badan kekal tegak dan tidak bergerak.']],
+        nafas: ['Hembus nafas semasa angkat kaki — core ketat, badan stabil.', 'Tarik nafas semasa turunkan kaki — kekal terkawal semasa kembali.']
       }
     };
     function coachInfoHtml(k) {
