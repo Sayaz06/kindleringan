@@ -10711,7 +10711,7 @@
     // [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban), sisi (1 = setiap sisi), kumpulan recovery]
     var COACH_RUTIN = {
       LOWER: { A: [], B: [] },
-      MIDDLE: { A: [['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K'], ['punches', 'Punches', 'saat', null, 0, 'K,M,G']], B: [] },
+      MIDDLE: { A: [['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K'], ['punches', 'Punches', 'saat', null, 0, 'K,M,G'], ['armRaise', 'Arm raises (angkat tangan ke sisi)', 'saat', null, 0, 'K']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -10869,6 +10869,15 @@
           ['Bahu tegang', 'Boleh menegangkan leher dan belakang. Bahu kekal relaks, pergerakan lancar.']],
         nafas: ['Tarik nafas dalam melalui hidung semasa bersedia untuk tumbuk.', 'Hembus nafas kuat melalui mulut semasa menumbuk.',
           'Bernafas stabil dan berirama; fokus pada hembusan untuk ketatkan core.', 'Jangan tahan nafas atau bernafas terlalu laju — cepat penat.']
+      },
+      armRaise: {
+        arahan: ['Berdiri, kaki selebar bahu.', 'Angkat kedua-dua tangan ke sisi sampai paras bahu, kemudian turunkan.', 'Ulang. Tangan kekal LURUS sepanjang latihan.'],
+        fokus: ['Bahu'],
+        silap: [['Angkat tangan terlalu tinggi', 'Melebihi paras bahu boleh menegangkan sendi bahu. Tangan sebaris dengan bahu sahaja.'],
+          ['Bahu terangkat (membongkok)', 'Menegangkan leher dan bahu. Bahu kekal relaks dan ke bawah.'],
+          ['Menghayun tangan', 'Laju / tak terkawal = kurang berkesan dan mudah cedera. Gerak perlahan dan terkawal.'],
+          ['Belakang melengkung', 'Membebankan pinggang. Ketatkan core, tulang belakang neutral.']],
+        nafas: ['Hembus nafas perlahan melalui mulut semasa angkat tangan.', 'Tarik nafas dalam melalui hidung semasa turunkan tangan.']
       }
     };
     function coachInfoHtml(k) {
@@ -11250,21 +11259,31 @@
       var btnA = btn + 'background:#000;color:#fff;';
       if (sh.hs.siapAt) coachWK.aktif = false;
       if (coachWK.aktif) { box.innerHTML = coachWKLukis(sh, btn, btnA); try { window.scrollTo(0, 0); } catch (e) {} return; }
-      // KATALOG: semua latihan ikut kumpulan (LOWER / MIDDLE / UPPER × A / B) + gambar orang lidi + kod (contoh L-A3) untuk komen
+      // KATALOG: SEMUA latihan dalam satu senarai, ikut kumpulan (kumpulan kosong disorok) · setiap kad: kod, nama, otot fokus, gambar,
+      // LIHAT CARA (buka / tutup maklumat penuh: cara buat, otot fokus, kesilapan biasa, pernafasan) + butang muat naik gambar
       if (coachUIS.katalog) {
-        var kg0 = coachUIS.katalog, kp = kg0.split(' '), sen = COACH_RUTIN[kp[0]][kp[1]], gk2, sk2;
-        h += '<button type="button" data-cs="katalogtutup" style="' + btn + '">‹ KEMBALI KE GYM</button><div style="font-weight:bold;font-size:1.1rem;margin:4px 0;">SEMUA LATIHAN</div><div>';
-        for (gk2 in COACH_RUTIN) for (sk2 in COACH_RUTIN[gk2]) h += '<button type="button" data-cs="katgrup" data-v="' + gk2 + ' ' + sk2 + '" style="' + ((gk2 + ' ' + sk2) === kg0 ? btnA : btn) + '">' + gk2 + ' ' + sk2 + '</button>';
-        h += '</div>';
-        for (i = 0; i < sen.length; i++) {
-          h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:6px 0;"><div style="font-weight:bold;">' + kp[0].charAt(0) + '-' + kp[1] + (i + 1) + ' · ' + sen[i][1] + '</div>' +
-            '<div style="font-size:0.78rem;">' + (sen[i][2] === 'saat' ? 'tahan (saat)' : 'rep') + (sen[i][3] !== null && sen[i][3] !== 0 ? ' · guna beban' : '') + (sen[i][4] ? ' · setiap sisi' : '') + '</div>' + coachLidi(sen[i][0]) +
-            '<div style="text-align:center;"><button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="a" style="' + btn + '">GAMBAR 1 (MULA)</button><button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="b" style="' + btn + '">GAMBAR 2 (AKHIR)</button>' +
-            (coachGambar[sen[i][0]] ? '<button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="padam" style="' + btn + '">PADAM GAMBAR</button>' : '') + '</div></div>';
+        var gk2, sk2, sen, jumlahL = 0, fk;
+        h += '<button type="button" data-cs="katalogtutup" style="' + btn + '">‹ KEMBALI KE GYM</button><div style="font-weight:bold;font-size:1.1rem;margin:4px 0;">SEMUA LATIHAN</div>';
+        for (gk2 in COACH_RUTIN) for (sk2 in COACH_RUTIN[gk2]) {
+          sen = COACH_RUTIN[gk2][sk2];
+          if (!sen.length) continue;
+          h += '<div style="font-weight:bold;font-size:1rem;margin:10px 0 2px;border-bottom:3px solid #000;">' + gk2 + ' ' + sk2 + ' (' + sen.length + ')</div>';
+          for (i = 0; i < sen.length; i++) {
+            jumlahL++;
+            fk = COACH_INFO[sen[i][0]] ? COACH_INFO[sen[i][0]].fokus.join(', ') : '';
+            var bukaI = coachUIS.katInfo === sen[i][0];
+            h += '<div id="kat-' + sen[i][0] + '" style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:6px 0;"><div style="font-weight:bold;">' + gk2.charAt(0) + '-' + sk2 + (i + 1) + ' · ' + sen[i][1] + '</div>' +
+              '<div style="font-size:0.78rem;">' + (sen[i][2] === 'saat' ? 'masa (saat)' : 'rep') + (sen[i][3] !== null && sen[i][3] !== 0 ? ' · guna beban' : ' · berat badan') + (sen[i][4] ? ' · setiap sisi' : '') + (fk ? ' · otot: ' + fk : '') + '</div>' + coachLidi(sen[i][0]) +
+              '<div style="text-align:center;"><button type="button" data-cs="katinfo" data-k="' + sen[i][0] + '" style="' + (bukaI ? btnA : btn) + '">' + (bukaI ? 'TUTUP CARA' : 'LIHAT CARA') + '</button></div>' +
+              (bukaI ? '<div style="font-size:0.85rem;line-height:1.4;border-top:1px solid #000;margin-top:4px;">' + coachInfoHtml(sen[i][0]) + '</div>' : '') +
+              '<div style="text-align:center;"><button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="a" style="' + btn + '">GAMBAR 1 (MULA)</button><button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="b" style="' + btn + '">GAMBAR 2 (AKHIR)</button>' +
+              (coachGambar[sen[i][0]] ? '<button type="button" data-cs="gbr" data-k="' + sen[i][0] + '" data-v="padam" style="' + btn + '">PADAM GAMBAR</button>' : '') + '</div></div>';
+          }
         }
-        h += '<div style="font-size:0.8rem;">Gambar tak jelas? Beritahu kod (contoh ' + kp[0].charAt(0) + '-' + kp[1] + '3) untuk dibetulkan.</div>';
+        if (!jumlahL) h += '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;">Belum ada latihan.</div>';
+        else h += '<div style="font-size:0.8rem;">Jumlah ' + jumlahL + ' latihan. Ada yang tak jelas? Beritahu kod (contoh M-A1).</div>';
         box.innerHTML = h;
-        try { window.scrollTo(0, 0); } catch (e) {}
+        try { var kEl = coachUIS.katInfo && document.getElementById('kat-' + coachUIS.katInfo); if (kEl) kEl.scrollIntoView(); else window.scrollTo(0, 0); } catch (e) {}
         return;
       }
       if (coachUIS.buka && coachSenLatihan(coachUIS.buka)) {
@@ -11273,6 +11292,7 @@
         return;
       }
       for (i = 0; i < sh.senarai.length; i++) if (lat[sh.senarai[i][0]]) n++;
+      h += '<button type="button" data-cs="katalog" style="display:block;width:100%;padding:8px;margin:0 0 6px;font-size:1rem;font-weight:bold;border:2px solid #000;border-radius:8px;background:#fff;color:#000;">SEMUA LATIHAN (cara buat + gambar)</button>';
       h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' stesen siap') + '</div>';
       h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
       var lcN = coachSenNyata().lencana || {}, lcH = '', li;
@@ -11311,7 +11331,6 @@
           '<b>' + (i + 1) + '. ' + x[1] + '</b><br>' + COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') + (st ? ' · <b>' + st + '</b>' : '') + '</button>';
       }
       h += '</div><div style="font-size:0.75rem;">Tekan nama latihan untuk tutorial / log manual.</div>';
-      h += '<button type="button" data-cs="katalog" style="' + btn + 'margin-top:4px;">SEMUA LATIHAN (ikut kumpulan + gambar)</button>';
       if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">' + (!n && coachSenSemuaRehat(sh) ? 'REHAT OTOT: regangan / jalan ringan 10 min → SELESAI' : 'SELESAI SESI ' + sh.g + ' ' + sh.s) + '</button></div>';
       if (sh.hs.rehat) h += '<div style="font-size:0.8rem;">Hari ini REHAT OTOT (regangan / jalan ringan). Rotasi diteruskan; siri ' + sh.g + ' ' + sh.s + ' diulang lain kali.</div>';
       if (sh.hs.siapAt && !sh.hs.rehat) h += '<div style="font-size:0.8rem;">Tekan stesen untuk lihat "Sesi depan".</div>';
@@ -11335,11 +11354,11 @@
       if (!t || t === this || !currentUser) return;
       var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
       if (cs.indexOf('wk') === 0) { coachWKKlik(cs, t, sh, now); return; }
-      if (cs === 'katalog') { coachUIS.katalog = sh.g + ' ' + sh.s; coachLukisSenaman(); return; }
-      if (cs === 'katgrup') { coachUIS.katalog = t.getAttribute('data-v'); coachLukisSenaman(); return; }
-      if (cs === 'katalogtutup') { coachUIS.katalog = ''; coachLukisSenaman(); return; }
+      if (cs === 'katalog') { coachUIS.katalog = 'SEMUA'; coachUIS.katInfo = ''; coachLukisSenaman(); return; }
+      if (cs === 'katgrup') { coachUIS.katalog = 'SEMUA'; coachLukisSenaman(); return; }
+      if (cs === 'katinfo') { var kI = t.getAttribute('data-k'); coachUIS.katInfo = coachUIS.katInfo === kI ? '' : kI; coachLukisSenaman(); return; }
+      if (cs === 'katalogtutup') { coachUIS.katalog = ''; coachUIS.katInfo = ''; coachLukisSenaman(); return; }
       if (cs === 'gbr') {
-        var gk = t.getAttribute('data-k'), gv = t.getAttribute('data-v');
         if (gv !== 'padam') { bukaGambar(gk, gv); return; }
         if (!confirm('Padam gambar sendiri untuk latihan ini? (orang lidi akan dipapar semula)')) return;
         kol('coach_gambar').doc(gk).delete().then(function() { delete coachGambar[gk]; coachLukisSenaman(); }).catch(function(e) { alert('Gagal padam: ' + ((e && e.message) || e)); });
