@@ -10713,7 +10713,7 @@
       LOWER: { A: [], B: [] },
       MIDDLE: { A: [['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K'], ['punches', 'Punches', 'saat', null, 0, 'K,M,G'], ['armRaise', 'Side arm raise', 'saat', null, 0, 'K'],
         ['calfStretch', 'Calf stretch', 'saat', null, 1, 'Q'], ['bahuDepan', 'Anterior shoulder stretch', 'saat', null, 0, 'Q'], ['crunch9090', '90/90 crunch', 'rep', null, 0, 'J'],
-        ['abCrunch', 'Abdominal crunches', 'rep', null, 0, 'J'], ['armCircle', 'Arm circles', 'saat', null, 0, 'Q']], B: [] },
+        ['abCrunch', 'Abdominal crunches', 'rep', null, 0, 'J'], ['armCircle', 'Arm circles', 'saat', null, 0, 'Q'], ['armRaiseAtas', 'Arm raises', 'saat', null, 0, 'K,G']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -10928,6 +10928,16 @@
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
           ['Gerak tersentak / laju', 'Buat dengan lancar dan terkawal. Sentak atau laju membebankan bahu dan mudah cedera.']],
         nafas: ['Tarik dan hembus nafas dengan irama tetap sepanjang latihan.', 'Jangan tahan nafas — badan jadi tegang dan latihan lebih susah.']
+      },
+      armRaiseAtas: {
+        arahan: ['Berdiri, tangan lurus ke DEPAN paras bahu.', 'Hembus nafas, angkat tangan ke atas kepala.', 'Tarik nafas, turunkan ke posisi mula. Ulang.'],
+        fokus: ['Bahu', 'Dada'],
+        silap: [['Angkat tangan terlalu tinggi', 'Membebankan bahu dan leher. Angkat setinggi yang selesa sahaja.'],
+          ['Guna momentum, bukan otot', 'Otot sasaran tak bekerja dengan betul dan mudah cedera.'],
+          ['Belakang melengkung / bahu terangkat', 'Belakang melengkung boleh sakit pinggang dan kurang berkesan untuk bahu. Bahu terangkat boleh sakit leher.'],
+          ['Siku bengkok', 'Otot bahu kurang bekerja. Tangan kekal lurus.']],
+        nafas: ['Hembus nafas dalam melalui mulut semasa angkat tangan.', 'Tarik nafas kuat melalui hidung semasa turunkan tangan.',
+          'Bernafas stabil dan berirama; fokus pada hembusan untuk ketatkan core.', 'Jangan tahan nafas atau bernafas terlalu laju — cepat penat.']
       }
     };
     function coachInfoHtml(k) {
