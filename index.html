@@ -10730,7 +10730,7 @@
         ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['tricepsDip', 'Triceps dips', 'rep', null, 0, 'M,G,K'],
         ['ohTri', 'Dumbbell triceps extension', 'rep', 5, 0, 'M'], ['dbKickback', 'Dumbbell kickbacks', 'rep', 2.5, 0, 'M'], ['plank', 'Plank', 'saat', null, 0, 'J'],
         ['sidePlank', 'Side plank', 'saat', null, 1, 'J'], ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['russian', 'Russian twist', 'rep', 0, 0, 'J'],
-        ['legRaise', 'Leg raises', 'rep', null, 0, 'J'], ['mountainClimber', 'Mountain climber', 'saat', null, 0, 'J']], B: [] },
+        ['legRaise', 'Leg raises', 'rep', null, 0, 'J'], ['mountainClimber', 'Mountain climber', 'saat', null, 0, 'J'], ['jumpingJack', 'Jumping jacks', 'saat', null, 0, 'Q']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11378,6 +11378,15 @@
           ['Terlalu laju', 'Kurang berkesan dan bentuk mudah rosak. Laju yang masih boleh jaga bentuk.'],
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.']],
         nafas: ['Bernafas semula jadi dan dalam. Jangan tahan nafas.', 'Kekalkan irama nafas yang sama sepanjang latihan.']
+      },
+      jumpingJack: {
+        arahan: ['Mula dengan kaki rapat, tangan di sisi.', 'Lompat — kaki dibuka luas, tangan diangkat ke atas kepala.',
+          'Lompat balik ke posisi mula, kemudian rep seterusnya.', 'Latihan seluruh badan — semua kumpulan otot besar bekerja.'],
+        fokus: ['Bahu', 'Quadriceps', 'Adductor', 'Dada', 'Glute', 'Betis'],
+        silap: [['Mendarat terlalu kuat', 'Hentakan kuat membebankan kaki, buku lali dan lutut. Mendarat di hujung tapak kaki (bukan tumit) — lebih menyerap hentakan.'],
+          ['Lutut tidak dibengkokkan', 'Lutut lurus kaku — kurang berkesan dan lutut terhentak. Lutut sentiasa lembut sedikit.'],
+          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.']],
+        nafas: ['Tarik nafas semasa lompat kaki ke luar.', 'Hembus nafas semasa lompat kaki rapat semula.', 'Nafas dalam supaya badan cukup oksigen.']
       }
     };
     function coachInfoHtml(k) {
