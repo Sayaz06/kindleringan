@@ -10719,7 +10719,8 @@
         ['armCurlCrunch', 'Arm curls crunch', 'rep', null, 1, 'M'], ['arnoldPress', 'Arnold dumbbell press', 'rep', 2.5, 0, 'K,M'],
         ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G'], ['hammerCurl', 'Alternate hammer curl', 'rep', 2.5, 1, 'M,N'],
         ['armSwingStep', 'Arm swings with lateral steps', 'saat', null, 0, 'Q'], ['bicycleCrunch', 'Bicycle crunches', 'rep', null, 0, 'J'],
-        ['birdDog', 'Bird dog', 'rep', null, 1, 'I'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A']], B: [] },
+        ['birdDog', 'Bird dog', 'rep', null, 1, 'I'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A'],
+        ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11085,6 +11086,17 @@
           ['Mendarat terlalu kuat', 'Hentakan kuat membebankan kaki, buku lali dan lutut. Mendarat di hujung tapak kaki (bukan tumit) — lebih menyerap hentakan.']],
         nafas: ['Tarik nafas semasa cangkung dan letak tangan di lantai.', 'Hembus nafas semasa tendang kaki ke belakang dan turunkan dada.',
           'Tarik nafas semasa tolak naik dan tarik kaki ke depan.', 'Hembus nafas semasa lompat.']
+      },
+      lungeKick: {
+        arahan: ['Berdiri tegak.', 'Langkah kaki KANAN ke belakang dan turunkan badan (lunge).',
+          'Semasa naik, tendang kaki KANAN ke depan dan ke atas.', 'Kembali ke posisi mula dan ulang. Habiskan semua rep, kemudian tukar ke kaki KIRI.'],
+        fokus: ['Glute', 'Quadriceps', 'Hamstring', 'Betis', 'Adductor'],
+        silap: [['Lutut masuk ke dalam', 'Membebankan sendi lutut. Lutut sebaris dengan jari kaki, dan lutut depan jangan melepasi jari kaki.'],
+          ['Belakang tidak lurus', 'Membebankan pinggang dan kurang berkesan.'],
+          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
+          ['Kaki tidak lurus semasa tendang', 'Kurang berkesan dan susah jaga imbangan. Luruskan kaki sepenuhnya.']],
+        nafas: ['Tarik nafas dalam melalui hidung semasa langkah ke belakang (lunge).', 'Tahan nafas 1–2 saat semasa beralih ke tendangan.',
+          'Hembus nafas perlahan melalui mulut semasa tendang ke depan.', 'Nafas perlahan dan dalam sepanjang latihan.']
       }
     };
     function coachInfoHtml(k) {
