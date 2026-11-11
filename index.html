@@ -10715,7 +10715,8 @@
         ['calfStretch', 'Calf stretch', 'saat', null, 1, 'Q'], ['bahuDepan', 'Anterior shoulder stretch', 'saat', null, 0, 'Q'], ['crunch9090', '90/90 crunch', 'rep', null, 0, 'J'],
         ['abCrunch', 'Abdominal crunches', 'rep', null, 0, 'J'], ['armCircle', 'Arm circles', 'saat', null, 0, 'Q'], ['armRaiseAtas', 'Arm raises', 'saat', null, 0, 'K,G'],
         ['adductorStretch', 'Adductor stretch (berdiri)', 'saat', null, 1, 'Q'], ['armCircleLaju', 'Arm circles laju (lawan jam + ikut jam)', 'saat', null, 0, 'K'],
-        ['armScissor', 'Arm scissors', 'saat', null, 0, 'G,K'], ['altVup', 'Alt V-up', 'rep', null, 0, 'J'], ['hooks', 'Alternating hooks', 'saat', null, 0, 'K,G']], B: [] },
+        ['armScissor', 'Arm scissors', 'saat', null, 0, 'G,K'], ['altVup', 'Alt V-up', 'rep', null, 0, 'J'], ['hooks', 'Alternating hooks', 'saat', null, 0, 'K,G'],
+        ['armCurlCrunch', 'Arm curls crunch', 'rep', null, 1, 'M']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -10991,6 +10992,15 @@
           ['Pinggul dan kaki tidak dipusing', 'Pusingan menggunakan seluruh badan dan menambah kuasa. Tanpa pusingan, bahu yang menanggung beban.'],
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.']],
         nafas: ['Tarik nafas melalui hidung, hembus melalui mulut.', 'Nafas pendek dan cepat supaya otot terus dapat oksigen.']
+      },
+      armCurlCrunch: {
+        arahan: ['Baring mengiring ke KIRI, lutut bengkok dan diangkat.', 'Tangan KIRI pegang peha kiri, tangan KANAN di belakang kepala.',
+          'Angkat badan atas dengan MENARIK peha kiri (guna bisep). Turun perlahan. Ulang.', 'Habiskan semua rep, kemudian tukar sisi (baring ke KANAN, tangan KANAN pegang peha).'],
+        fokus: ['Bisep', 'Lengan bawah', 'Abs'],
+        silap: [['Guna abs, bukan bisep', 'Latihan ini untuk bisep. Kalau perut yang angkat badan, bisep kurang bekerja dan latihan kurang berkesan.'],
+          ['Tarik leher', 'Kepala dan leher kekal neutral supaya otot leher tidak tegang.']],
+        nafas: ['Hembus nafas melalui mulut semasa angkat bahu dari lantai — core kekal stabil.', 'Tarik nafas melalui hidung semasa turunkan bahu — relaks, sedia untuk rep seterusnya.',
+          'Nafas dalam sepanjang latihan supaya otot cukup oksigen.']
       }
     };
     function coachInfoHtml(k) {
