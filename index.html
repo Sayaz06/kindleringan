@@ -10729,7 +10729,8 @@
         ['superman', 'Superman', 'rep', null, 0, 'I'], ['pushUp', 'Push-ups', 'rep', null, 0, 'G,M,K'], ['kneePush', 'Knee push-ups', 'rep', null, 0, 'G,M,K'],
         ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['tricepsDip', 'Triceps dips', 'rep', null, 0, 'M,G,K'],
         ['ohTri', 'Dumbbell triceps extension', 'rep', 5, 0, 'M'], ['dbKickback', 'Dumbbell kickbacks', 'rep', 2.5, 0, 'M'], ['plank', 'Plank', 'saat', null, 0, 'J'],
-        ['sidePlank', 'Side plank', 'saat', null, 1, 'J'], ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['russian', 'Russian twist', 'rep', 0, 0, 'J']], B: [] },
+        ['sidePlank', 'Side plank', 'saat', null, 1, 'J'], ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['russian', 'Russian twist', 'rep', 0, 0, 'J'],
+        ['legRaise', 'Leg raises', 'rep', null, 0, 'J']], B: [] },
       UPPER: { A: [], B: [] }
     };
     var COACH_FACE = {
@@ -11356,6 +11357,17 @@
           ['Pusing terlalu laju', 'Menegangkan tulang belakang dan mudah cedera. Pusing terkawal.'],
           ['Pusing terlalu jauh', 'Menegangkan tulang belakang. Pusing dalam julat yang selesa — tiada sakit.']],
         nafas: ['Hembus nafas semasa pusing badan ke sisi — ketatkan core.', 'Tarik nafas semasa kembali ke tengah.']
+      },
+      legRaise: {
+        arahan: ['Baring terlentang, letak tangan di bawah pinggul sebagai sokongan.', 'Angkat kaki (lurus) sampai bersudut tegak 90 darjah dengan lantai.',
+          'Turunkan kaki perlahan-lahan dan ulang.'],
+        fokus: ['Abs', 'Glute', 'Quadriceps'],
+        silap: [['Kaki diangkat terlalu tinggi', 'Pinggang terlalu bengkok dan mudah cedera.'],
+          ['Kaki tidak dikawal', 'Bentuk jadi salah dan kurang berkesan. Naik dan turun perlahan.'],
+          ['Terlalu guna kekuatan kaki', 'Core mesti bekerja — kalau kaki sahaja yang angkat, kesan latihan berkurang.'],
+          ['Pinggang tiada sokongan', 'Boleh merosakkan tulang belakang. Letak tuala berlipat di bawah pinggang.']],
+        nafas: ['Pernafasan betul mengaktifkan core, latihan lebih berkesan dan melindungi tulang belakang.', 'Hembus nafas semasa angkat kaki — lebih terkawal.',
+          'Tarik nafas semasa turunkan kaki — kurang tekanan pada tulang belakang.']
       }
     };
     function coachInfoHtml(k) {
