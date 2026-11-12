@@ -10158,15 +10158,19 @@
       tambah('Buah + sayur ' + g + '/' + COACH_SASARAN_BUAH_G + ' g', g / COACH_SASARAN_BUAH_G);
       var pc = jumlah ? Math.round(dapat * 100 / jumlah) : 0;
       coachSkorKes = { h: sudah.length, n: jumlah, p: pc };
-      // Lukis: bulatan putih + sektor hitam dari pukul 12 (ikut arah jam) + peratus di tengah
+      // Lukis: bulatan + SEKTOR (2 jejari + lengkok). Jejari pertama SENTIASA menghala pukul 12; jejari kedua bergerak ikut arah jam.
+      //   Sektor minor (< 50%) / major (> 50%) diwarnakan kelabu; 100% = bulatan penuh kelabu. Peratus ditulis dalam sektor.
       var cx = 120, cy = 110, r = 90, f = jumlah ? dapat / jumlah : 0, s = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="3"/>';
-      if (f >= 0.999) s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#000"/>';
-      else if (f > 0) {
-        var a1 = -Math.PI / 2 + f * 2 * Math.PI;
-        s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + ' A' + r + ' ' + r + ' 0 ' + (f > 0.5 ? 1 : 0) + ' 1 ' + (cx + r * Math.cos(a1)).toFixed(2) + ' ' + (cy + r * Math.sin(a1)).toFixed(2) + ' Z" fill="#000"/>';
-      }
-      s += '<circle cx="' + cx + '" cy="' + cy + '" r="34" fill="#fff" stroke="#000" stroke-width="3"/>' +
-        '<text x="' + cx + '" y="' + (cy + 8) + '" font-size="24" font-weight="bold" text-anchor="middle" fill="#000">' + pc + '%</text>';
+      var a1 = -Math.PI / 2 + f * 2 * Math.PI, x1 = (cx + r * Math.cos(a1)).toFixed(2), y1 = (cy + r * Math.sin(a1)).toFixed(2);
+      if (f >= 0.999) s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#bbb" stroke="#000" stroke-width="3"/>';
+      else if (f > 0) s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + ' A' + r + ' ' + r + ' 0 ' + (f > 0.5 ? 1 : 0) + ' 1 ' + x1 + ' ' + y1 + ' Z" fill="#bbb" stroke="#000" stroke-width="3" stroke-linejoin="round"/>';
+      s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + '" stroke="#000" stroke-width="4"/>'; // jejari pukul 12 (sentiasa ada)
+      if (f > 0 && f < 0.999) s += '<path d="M' + cx + ' ' + cy + ' L' + x1 + ' ' + y1 + '" stroke="#000" stroke-width="4"/>';
+      s += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#000"/>';
+      var am = -Math.PI / 2 + f * Math.PI, dlm = f >= 0.12;
+      var tx = dlm ? cx + r * 0.55 * Math.cos(am) : cx + 30, ty = dlm ? cy + r * 0.55 * Math.sin(am) + 8 : cy - r * 0.45;
+      if (f >= 0.999) { tx = cx; ty = cy + 40; }
+      s += '<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" font-size="22" font-weight="bold" text-anchor="' + (dlm ? 'middle' : 'start') + '" fill="#000">' + pc + '%</text>';
       var pie = '<div style="text-align:center;"><svg viewBox="0 0 240 220" width="240" height="220" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>';
       var isi = pie +
         '<div style="font-size:0.85rem;line-height:1.5;"><b>SUDAH (' + sudah.length + '):</b> ' + (sudah.length ? sudah.join(', ') : '-') + '<br>' +
