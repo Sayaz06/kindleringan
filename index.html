@@ -6253,9 +6253,8 @@
       <button type="button" id="btn-coach-menu" class="gm-kecil" style="float:left;font-weight:bold;">‹ MENU</button>
       <button type="button" id="btn-coach-terus" class="gm-kecil" style="float:right;font-weight:bold;">Pergi ke game ›</button>
     </div>
-    <!-- COACH bercakap: watak + bubble (gaya penjaga pelabuhan) + butang jawapan -->
-    <div class="pj-kotak"><div class="pj-watak" id="coach-watak"></div><div class="pj-cakap" id="coach-bubble">Memuatkan...</div></div>
-    <div id="coach-jawab"></div>
+    <!-- COACH bercakap: watak + bubble (gaya penjaga pelabuhan) · butang ‹ Sebelum / Seterusnya › + jawapan DALAM bubble (12 Nov) -->
+    <div class="pj-kotak"><div class="pj-watak" id="coach-watak"></div><div class="pj-cakap"><div id="coach-bubble">Memuatkan...</div><div id="coach-jawab"></div></div></div>
     <!-- PUSAT NUTRISI sentiasa ada di Coach: makan buah / sayur bila-bila masa → log terus -->
     <button type="button" id="btn-coach-makan" class="btn" style="margin-top:6px;">+ LOG MAKAN BUAH / SAYUR</button>
     <button id="btn-coach-go" class="btn btn-primary" style="display:none;">GO</button>
@@ -10418,7 +10417,7 @@
         if (!coachHariData.hari.laporanAt && !coachLap) coachMulaLaporan();
       }).catch(function(e) {
         el('coach-status').textContent = 'COACH';
-        el('coach-bubble').textContent = 'Gagal memuat data coach: ' + ((e && e.message) || e) + '\nTekan TERUSKAN KE GAME untuk main seperti biasa.';
+        el('coach-bubble').textContent = 'Gagal memuat data coach: ' + ((e && e.message) || e) + '\nTekan Pergi ke game untuk main seperti biasa.';
       });
     }
     // ══════════ COACH — FASA 3a: MAKAN BUAH / SAYUR (KEDAI) ══════════
@@ -12728,9 +12727,20 @@
       var b = coachBabak[coachBabakI], box = el('coach-jawab'), h = '', i;
       if (!b || !box) return;
       penjaga('coach-watak', 'coach', b.aksi || 'diam', b.c, 'coach-bubble');
-      for (i = 0; b.b && i < b.b.length; i++) h += '<button type="button" class="btn' + (i === 0 ? ' btn-primary' : '') + '" data-cj="' + i + '">' + b.b[i][0] + '</button>';
-      if (coachBabakI < coachBabak.length - 1) h += '<button type="button" class="btn" data-cj="lagi">' + (b.b && b.b.length ? 'NANTI · SETERUSNYA ›' : 'SETERUSNYA ›') + '</button>';
-      else if (coachBabak.length > 1) h += '<button type="button" class="btn" data-cj="ulang">‹ DENGAR SEMULA</button>';
+      // Butang kecil dalam bubble: baris 1 = ‹ Sebelum (kiri) · Seterusnya › (kanan) · baris 2 = jawapan (contoh: Ke taman)
+      var kb = 'padding:2px 9px;margin:0;font-family:inherit;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:12px;background:#fff;color:#000;';
+      var kbA = kb + 'background:#000;color:#fff;';
+      if (coachBabak.length > 1) {
+        h += '<div style="overflow:hidden;margin-top:8px;white-space:normal;">';
+        if (coachBabakI > 0) h += '<button type="button" data-cj="balik" style="float:left;' + kb + '">‹ Sebelum</button>';
+        if (coachBabakI < coachBabak.length - 1) h += '<button type="button" data-cj="lagi" style="float:right;' + kb + '">Seterusnya ›</button>';
+        h += '</div>';
+      }
+      if (b.b && b.b.length) {
+        h += '<div style="text-align:center;margin-top:6px;white-space:normal;">';
+        for (i = 0; i < b.b.length; i++) h += '<button type="button" data-cj="' + i + '" style="' + (i === 0 ? kbA : kb) + 'margin:2px 3px;">' + b.b[i][0] + '</button>';
+        h += '</div>';
+      }
       box.innerHTML = h;
     }
     el('coach-jawab').onclick = function(e) {
@@ -12739,6 +12749,7 @@
       if (!t || t === this) return;
       var v = t.getAttribute('data-cj');
       if (v === 'lagi') { coachBabakI++; coachLukisBabak(); return; }
+      if (v === 'balik') { if (coachBabakI > 0) coachBabakI--; coachLukisBabak(); return; }
       if (v === 'ulang') { coachBabakI = 0; coachLukisBabak(); return; }
       var b = coachBabak[coachBabakI];
       if (b && b.b && b.b[+v]) b.b[+v][1]();
