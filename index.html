@@ -10425,14 +10425,29 @@
         if (COACH_POSPON[kb]) continue;
         kE.push(i2); nE.push(unit[kb] || 0); cE.push({ v: unit[kb] || 0, n: COACH_BIDANG[i2][1] }); cS.push({ v: set.english[kb], n: COACH_BIDANG[i2][1] });
       }
-      var pE = coachPeratus(nE), legE = '';
+      var pE = coachPeratus(nE), legE = '', jumE = 0, kalkL = '';
+      for (i2 = 0; i2 < nE.length; i2++) jumE += nE[i2];
       for (i2 = 0; i2 < kE.length; i2++) {
         var bd = COACH_BIDANG[kE[i2]], sas = set.english[bd[0]];
         legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : '') + ')</span><br>';
+        // KALKULATOR LISTENING (12 Nov): berapa minit lagi supaya Listening = sasaran %.
+        //   (L + x) / (J + x) = s/100  →  x = (s·J − 100·L) / (100 − s)   · L = minit listening, J = jumlah semua bidang
+        if (bd[0] === 'listening') {
+          var L = nE[i2], perlu;
+          if (sas >= 100) perlu = jumE - L > 0 ? -1 : 0;
+          else perlu = Math.ceil((sas * jumE - 100 * L) / (100 - sas));
+          if (!jumE && sas > 0) perlu = 1;
+          kalkL = '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;">' +
+            '<b>KALKULATOR LISTENING</b><br>' +
+            (perlu === -1 ? 'Sasaran 100% hanya boleh dicapai jika bidang lain 0.'
+              : perlu > 0 ? 'Awak perlukan <b>' + perlu + ' minit</b> lagi listening untuk capai <b>' + sas + '%</b>.'
+              : 'Listening dah capai sasaran <b>' + sas + '%</b>. Bagus!') +
+            '<div style="font-size:0.75rem;margin-top:2px;">Kira ikut jumlah sekarang (' + jumE + '). Kalau awak tambah bidang lain, minit perlu ikut naik.</div></div>';
+        }
       }
       isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
         coachPie(cS, '(c) ENGLISH SASARAN') +
-        '<div style="font-size:0.8rem;">Bandingkan pai (b) dengan (c): hirisan yang sama nama patut sama besar.</div>' +
+        '<div style="font-size:0.8rem;">Bandingkan pai (b) dengan (c): hirisan yang sama nama patut sama besar.</div>' + kalkL +
         '<div style="margin:5px 0;font-size:0.85rem;border-top:1px solid #000;padding-top:4px;"><b>Solat</b> · ' + (solat ? 'purata ' + solat.purata + '/5 (7 hari) · <b>' + solat.st + '</b>' : 'belum direkod') + '</div>';
       h += coachKotakPai('PAI 2 · USAHA · seimbang ' + hijau + '/' + dinilaiU, isi2);
       // PAI 3 · KESEIMBANGAN: Kesihatan /10 (% SIAP Pai 1 ÷ 10) + Usaha /10 (bahagian HIJAU Pai 2 ÷ 10) → jumlah = 100% pai. Seimbang = 50:50.
