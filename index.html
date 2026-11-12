@@ -12092,9 +12092,11 @@
       // HARI REHAT → senarai disorok (BATAL REHAT di panel rehat) · selain itu butang REHAT HARI INI di atas
       if (sh.jenis === 'REHAT') { box.innerHTML = coachLukisJog(sh, btn, btnA); return; }
       h += '<div style="text-align:right;"><button type="button" data-cs="jenis" data-v="REHAT" style="' + btn + '">REHAT HARI INI</button></div>';
-      if (sh.jenis !== 'GYM') { box.innerHTML = h + coachLukisJog(sh, btn, btnA); return; }
-      h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' stesen siap') + '</div>';
-      var tS = tamanTugas('senaman');
+      // Senaman + jogging boleh dibuat pada hari yang sama: hari JOGGING → jogging dulu, senaman (pilihan) di bawah · hari SENAMAN → jogging (pilihan) di bawah senarai
+      var jogH = coachLukisJog(sh, btn, btnA), garisH = '<div style="border-top:3px solid #000;margin:12px 0 6px;"></div>';
+      if (sh.jenis === 'JOG') h += jogH + garisH;
+      h += '<div style="font-weight:bold;margin-bottom:2px;">' + (sh.jenis === 'JOG' ? 'SENAMAN (pilihan) — ' : 'SENAMAN 5:00 PTG — ') + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' stesen siap') + '</div>';
+      var tS = sh.jenis === 'GYM' ? tamanTugas('senaman') : null;
       if (tS) {
         var recS = (coachHariData.hari.tugas || {})[tS.t.kunci], stS = coachStatusTugas(tS.t, coachMinitKini());
         if (!recS && stS === 'ABAI' && coachMinitKini() < tS.j.tidur) {
@@ -12121,13 +12123,11 @@
           '<span style="float:right;font-weight:bold;font-size:1rem;">' + (kgPapar !== null && kgPapar !== undefined ? coachTeksBeban(kgPapar) : '') + '</span>' +
           '<b>' + (i + 1) + '. ' + x[1] + '</b><br>' + COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') + (st ? ' · <b>' + st + '</b>' : '') + '</button>';
       }
-      h += '</div>';
+      h += coachFaceSenarai(sh, sh.senarai.length + 1, sh.senarai.length > 0) + '</div>';
       if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">' + (!n && coachSenSemuaRehat(sh) ? 'REHAT OTOT: regangan / jalan ringan 10 min → SELESAI' : 'SELESAI SESI ' + sh.g + ' ' + sh.s) + '</button></div>';
       if (sh.hs.rehat) h += '<div style="font-size:0.8rem;">Hari ini REHAT OTOT (regangan / jalan ringan). Rotasi diteruskan; siri ' + sh.g + ' ' + sh.s + ' diulang lain kali.</div>';
       if (sh.hs.siapAt && !sh.hs.rehat) h += '<div style="font-size:0.8rem;">Tekan stesen untuk lihat "Sesi depan".</div>';
-      h += '<div style="border-top:2px solid #000;margin-top:4px;padding-top:3px;font-size:0.85rem;"><b>RUTIN FACE ' + sh.f + '</b> (5–7 min, terus selepas senaman)' + (sh.hs.face ? ' · <b>SIAP</b>' : '') +
-        '<div style="font-size:0.78rem;">' + COACH_FACE[sh.f] + '</div>' +
-        (sh.hs.face ? '' : '<button type="button" data-cs="face" style="' + btn + '">FACE ' + sh.f + ' SIAP</button>') + '</div>';
+      if (sh.jenis === 'GYM') h += garisH + jogH;
       box.innerHTML = h;
     }
     // ── JOGGING (hari Sel / Kha / Sab) + HARI REHAT (Ahad) ──
@@ -12143,7 +12143,7 @@
         return h + '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"><b>HARI REHAT</b><br>Tiada senaman atau jogging hari ini.</div>' +
           '<button type="button" data-cs="jenis" data-v="' + (asal === 'REHAT' ? 'GYM' : asal) + '" style="' + btn + '">BATAL REHAT</button>';
       }
-      h += '<div style="font-weight:bold;font-size:1.05rem;">JOGGING 5:00 PTG</div><div style="font-size:0.78rem;">Sasaran ' + COACH_JOG_SASARAN + ' min.</div>';
+      h += '<div style="font-weight:bold;font-size:1.05rem;">' + (sh.jenis === 'JOG' ? 'JOGGING 5:00 PTG' : 'JOGGING (pilihan)') + '</div><div style="font-size:0.78rem;">Sasaran ' + COACH_JOG_SASARAN + ' min.</div>';
       if (hs.jog) {
         h += '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;background:#000;color:#fff;font-weight:bold;">JOGGING SIAP — ' + hs.jog.minit + ' min</div>';
       } else {
@@ -12158,16 +12158,27 @@
         h += '<div style="font-size:0.85rem;">Atau isi sendiri: <input id="coach-jog-minit" type="number" min="1" max="300" inputmode="numeric" style="width:70px;font-size:1rem;border:2px solid #000;padding:2px 4px;"> min ' +
           '<button type="button" data-cs="jogsimpan" style="' + btnA + '">SIMPAN JOGGING</button></div>';
       }
-      h += '<div style="border-top:2px solid #000;margin-top:6px;padding-top:3px;font-size:0.85rem;"><b>RUTIN FACE ' + sh.f + '</b> (5–7 min, selepas jogging)' + (hs.face ? ' · <b>SIAP</b>' : '') +
-        '<div style="font-size:0.78rem;">' + COACH_FACE[sh.f] + '</div>' +
-        (hs.face ? '' : '<button type="button" data-cs="face" style="' + btn + '">FACE ' + sh.f + ' SIAP</button>') + '</div>';
+      return h;
+    }
+    // Rutin FACE: setiap latihan FACE = satu baris dalam senarai, sambung nombor selepas senaman terakhir, bertanda "FACE A / B" (12 Nov).
+    // Tekan → sahkan SIAP (coach_hari.senaman.faceSiap { indeks: 1 }). Semua siap → FACE hari ini SIAP (giliran A ↔ B). Tips FACE: dari dokumen user (akan datang).
+    function coachFaceLatihan(f) { return (COACH_FACE[f] || '').split(' · '); }
+    function coachFaceSenarai(sh, mula, garis) {
+      var a = coachFaceLatihan(sh.f), fs = sh.hs.faceSiap || {}, h = '', i, siap, nm;
+      for (i = 0; i < a.length; i++) {
+        siap = !!(sh.hs.face || fs[i]); nm = a[i].charAt(0).toUpperCase() + a[i].slice(1);
+        h += '<button type="button" data-cs="' + (siap ? '' : 'facei') + '" data-v="' + i + '" style="display:block;width:100%;margin:0;padding:7px 8px;border:0;' + (garis || i ? 'border-top:1px solid #000;' : '') +
+          'background:' + (siap ? '#000' : '#fff') + ';color:' + (siap ? '#fff' : '#000') + ';font-family:inherit;font-size:0.9rem;text-align:left;line-height:1.3;">' +
+          '<span style="float:right;font-size:0.7rem;font-weight:bold;border:1.5px solid ' + (siap ? '#fff' : '#000') + ';border-radius:4px;padding:0 4px;margin-left:4px;">FACE ' + sh.f + '</span>' +
+          '<b>' + (mula + i) + '. ' + nm + '</b>' + (siap ? '<br><b>SIAP</b>' : '') + '</button>';
+      }
       return h;
     }
     function coachJogSimpan(n, sh, now) {
       var jogSen = 0; // GYM / jogging tiada ganjaran (12 Nov)
       var nyata = coachSenNyata(), gm = coachGymKira({ senarai: [], g: sh.g, s: sh.s, hs: sh.hs }, {}, true, nyata, {}), sen = jogSen + gm.sen, iS;
-      var d = { senaman: { jenis: 'JOG', jog: { minit: n, at: now }, ganjaran: sen } }, tg = coachHariData.hari.tugas || {};
-      if (!tg.senaman) {
+      var d = { senaman: { jog: { minit: n, at: now } } }, tg = coachHariData.hari.tugas || {};
+      if (!tg.senaman && sh.jenis === 'JOG') { // hari SENAMAN: jogging tambahan sahaja — tugas dikira bila SELESAI SESI
         d.tugas = { senaman: { s: 'BUAT', at: now } };
         var jS = coachJadualKini(), kiniS = coachMinitKini();
         for (iS = 0; jS && iS < jS.tugas.length; iS++) if (jS.tugas[iS].kunci === 'senaman' && kiniS >= coachTamat(jS.tugas[iS])) d.tugas.senaman.lewat = true;
@@ -12176,7 +12187,7 @@
       coachSimpanSenNyata({ streak: gm.streak, lencana: gm.lencana });
       coachSimpanHari(d, function() {
         var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
-        hs.jenis = 'JOG'; hs.jog = d.senaman.jog; hs.ganjaran = sen;
+        hs.jog = d.senaman.jog;
         if (d.tugas) (coachHariData.hari.tugas || (coachHariData.hari.tugas = {})).senaman = d.tugas.senaman;
       });
       coachGymBayar(sen, 'Jogging ' + n + ' min' + (gm.sen ? ' + bonus streak' : ''), gm.baru);
@@ -12324,7 +12335,30 @@
         coachGymBayar(gm.sen, gm.ket, gm.baru);
         return;
       }
+      if (cs === 'facei') {
+        var fi = +t.getAttribute('data-v'), fa = coachFaceLatihan(sh.f), fsB = {}, fk, fn = 0;
+        if (!confirm('Siap: ' + fa[fi] + '?')) return;
+        for (fk in (sh.hs.faceSiap || {})) if (sh.hs.faceSiap.hasOwnProperty(fk)) fsB[fk] = sh.hs.faceSiap[fk];
+        fsB[fi] = 1;
+        for (fk in fsB) if (fsB.hasOwnProperty(fk)) fn++;
+        if (fn < fa.length) {
+          d = { senaman: { faceSiap: {} } }; d.senaman.faceSiap[fi] = 1;
+          coachSimpanHari(d, function() { (coachHariData.hari.senaman || (coachHariData.hari.senaman = {})).faceSiap = fsB; });
+          coachLukisSenaman();
+          return;
+        }
+        d = { senaman: { hari: sh.g, siri: sh.s, face: sh.f, faceAt: now, ganjaranFace: 0, faceSiap: fsB } };
+        coachSimpanSenNyata({ face: sh.f === 'A' ? 'B' : 'A' });
+        coachSimpanHari(d, function() {
+          var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
+          hs.hari = sh.g; hs.siri = sh.s; hs.face = sh.f; hs.faceAt = now; hs.ganjaranFace = 0; hs.faceSiap = fsB;
+        });
+        coachGymMesej('Rutin FACE ' + sh.f + ' SIAP.');
+        coachLukisSenaman();
+        return;
+      }
       if (cs === 'face') {
+        if (!confirm('Rutin FACE ' + sh.f + ' siap?')) return;
         var fs = 0; // GYM tiada ganjaran (12 Nov)
         d = { senaman: { hari: sh.g, siri: sh.s, face: sh.f, faceAt: now, ganjaranFace: fs } };
         coachSimpanSenNyata({ face: sh.f === 'A' ? 'B' : 'A' });
@@ -12509,8 +12543,8 @@
         var hs = hr.senaman, tsen = (hr.tugas || {}).senaman;
         if (!hs && !tsen && !hr.laporanAt) continue;
         var ln = '- ' + coachHariPendek(hariA[i]) + ': ';
-        if (hs && hs.jog) ln += 'JOGGING ' + hs.jog.minit + ' min' + (hs.face ? ' · FACE ' + hs.face : ' · FACE tidak');
-        else if (hs && hs.jenis === 'REHAT') ln += 'HARI REHAT';
+        if (hs && hs.jog) ln += 'JOGGING ' + hs.jog.minit + ' min · ';
+        if (hs && hs.jenis === 'REHAT') ln += 'HARI REHAT';
         else if (hs && hs.hari) {
           var lat = hs.latihan || {}, rs = {}, nL = 0, x;
           for (k in lat) if (lat.hasOwnProperty(k)) {
@@ -14657,7 +14691,7 @@
       var minum = hr.minum || [], ml = 0, kc = hr.kencing || [], slot = [], siap = 0;
       for (i = 0; i < minum.length; i++) ml += minum[i].ml || 0;
       for (i = 0; i < j.tugas.length; i++) if (j.tugas[i].jenis === 'air') { slot.push(j.tugas[i]); if (tg[j.tugas[i].kunci] && tg[j.tugas[i].kunci].s === 'BUAT') siap++; }
-      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;font-size:0.9rem;"><b>AIR HARI INI: ' + ml + ' ml</b> (' + minum.length + ' kali) · slot ' + siap + '/' + slot.length + '</div>';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;font-size:0.9rem;"><b>AIR HARI INI: ' + ml + ' ml</b> (' + minum.length + ' kali)</div>';
       // Slot air
       h += '<div style="font-weight:bold;margin-top:6px;">SLOT AIR</div>';
       for (i = 0; i < slot.length; i++) {
