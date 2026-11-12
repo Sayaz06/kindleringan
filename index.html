@@ -9841,7 +9841,9 @@
       tambah(akhirAir, 'AIR TERAKHIR — selepas ini kurangkan minum (slot ' + n + ')', 'air', 'air' + n);
       tambah(bangun + 180, 'FOKUS 90 MINIT — satu kerja, telefon jauh (app Kindle OK)', 'fokus');
       tambah(15 * 60, 'CAHAYA PETANG — keluar ambil cahaya siang (3–5 ptg)', 'petang');
-      tambah(17 * 60, 'SENAMAN (5:00 ptg) — kemudian rutin FACE', 'senaman');
+      var jnH = coachJenisKini(); // SENAMAN / JOGGING ikut hari · REHAT (Ahad) → tiada tugas
+      if (jnH === 'GYM') tambah(17 * 60, 'SENAMAN (5:00 ptg) — kemudian rutin FACE', 'senaman');
+      else if (jnH === 'JOG') tambah(17 * 60, 'JOGGING (5:00 ptg) — kemudian rutin FACE', 'senaman');
       tambah(tidur - 60, 'MALAPKAN LAMPU', 'malap');
       tambah(tidur - 60, 'PHYSIOLOGICAL SIGH — 2 tarik nafas hidung + hembus panjang', 'sigh');
       tambah(tidur, 'LAMPU DITUTUP — masa tidur', 'tidur');
@@ -10702,43 +10704,95 @@
     // Minggu pertama: 2 set × 10 rep · isometrik 20 saat · rehat 60–90 saat · panaskan badan 3–5 min. Beban mula 5 kg (bentuk dulu).
     // Latihan: [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban, 0 = badan), sisi (1 = setiap sisi), kumpulan recovery]
     var COACH_SET = 2, COACH_REP = 10, COACH_SAAT = 20;
-    var coachNotaSen = '<div style="font-size:0.78rem;">Buat di GYM (Game → USAHA → GYM) → SELESAI SESI.</div>';
+    var coachNotaSen = '<div style="font-size:0.78rem;">Buat di GYM (Game → USAHA → GYM) → senaman: SELESAI SESI · jogging: SIMPAN JOGGING.</div>';
     var coachNotaTaman = '<div style="font-size:0.78rem;">Buat di TAMAN (Game → USAHA → TAMAN): KELUAR → DAH MASUK.</div>';
     var coachNotaBilik = '<div style="font-size:0.78rem;">Buat di BILIK TIDUR (Game → USAHA → BILIK TIDUR).</div>';
     var COACH_KITAR = ['LOWER', 'MIDDLE', 'UPPER'];
     var COACH_BEBAN = [0, 2.5, 5, 6, 7.5, 10]; // 6 = kettlebell
-    // SENARAI SENAMAN BARU (berat badan + dumbbell). Maklumat penuh setiap latihan: COACH_INFO (cara buat, otot fokus, kesilapan biasa, pernafasan).
-    // [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban), sisi (1 = setiap sisi), kumpulan recovery]
-    var COACH_RUTIN = {
-      LOWER: { A: [], B: [] },
-      MIDDLE: { A: [['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K'], ['punches', 'Punches', 'saat', null, 0, 'K,M,G'], ['armRaise', 'Side arm raise', 'saat', null, 0, 'K'],
-        ['calfStretch', 'Calf stretch', 'saat', null, 1, 'Q'], ['bahuDepan', 'Anterior shoulder stretch', 'saat', null, 0, 'Q'], ['crunch9090', '90/90 crunch', 'rep', null, 0, 'J'],
-        ['abCrunch', 'Abdominal crunches', 'rep', null, 0, 'J'], ['armCircle', 'Arm circles', 'saat', null, 0, 'Q'], ['armRaiseAtas', 'Arm raises', 'saat', null, 0, 'K,G'],
-        ['adductorStretch', 'Adductor stretch (berdiri)', 'saat', null, 1, 'Q'], ['armCircleLaju', 'Arm circles laju (lawan jam + ikut jam)', 'saat', null, 0, 'K'],
-        ['armScissor', 'Arm scissors', 'saat', null, 0, 'G,K'], ['altVup', 'Alt V-up', 'rep', null, 0, 'J'], ['hooks', 'Alternating hooks', 'saat', null, 0, 'K,G'],
-        ['armCurlCrunch', 'Arm curls crunch', 'rep', null, 1, 'M'], ['arnoldPress', 'Arnold dumbbell press', 'rep', 2.5, 0, 'K,M'],
-        ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G'], ['hammerCurl', 'Alternate hammer curl', 'rep', 2.5, 1, 'M,N'],
-        ['armSwingStep', 'Arm swings with lateral steps', 'saat', null, 0, 'Q'], ['bicycleCrunch', 'Bicycle crunches', 'rep', null, 0, 'J'],
-        ['birdDog', 'Bird dog', 'rep', null, 1, 'I'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A'],
-        ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'],
-        ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'], ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'],
-        ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'], ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
-        ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A'], ['donkeyKick', 'Donkey kicks', 'rep', null, 1, 'A'],
-        ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M'], ['dbRowDua', 'Bent over row (dua tangan)', 'rep', 5, 0, 'H,L,M,I'],
-        ['rearDeltRow', 'Dumbbell rear delt row', 'rep', 2.5, 0, 'K,L'], ['reverseFly', 'Reverse flys', 'rep', 2.5, 0, 'K,L'], ['dbShrug', 'Dumbbell shrug', 'rep', 5, 0, 'L'],
-        ['superman', 'Superman', 'rep', null, 0, 'I'], ['pushUp', 'Push-ups', 'rep', null, 0, 'G,M,K'], ['kneePush', 'Knee push-ups', 'rep', null, 0, 'G,M,K'],
-        ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['tricepsDip', 'Triceps dips', 'rep', null, 0, 'M,G,K'],
-        ['ohTri', 'Dumbbell triceps extension', 'rep', 5, 0, 'M'], ['dbKickback', 'Dumbbell kickbacks', 'rep', 2.5, 0, 'M'], ['plank', 'Plank', 'saat', null, 0, 'J'],
-        ['sidePlank', 'Side plank', 'saat', null, 1, 'J'], ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['russian', 'Russian twist', 'rep', 0, 0, 'J'],
-        ['legRaise', 'Leg raises', 'rep', null, 0, 'J'], ['mountainClimber', 'Mountain climber', 'saat', null, 0, 'J'], ['jumpingJack', 'Jumping jacks', 'saat', null, 0, 'Q'],
-        ['highStep', 'High stepping', 'saat', null, 0, 'Q'], ['quadStretch', 'Quad stretch', 'saat', null, 1, 'Q'], ['hamStretch', 'Sitting hamstring stretch', 'saat', null, 1, 'Q'],
-        ['childPose', "Child's pose", 'saat', null, 0, 'Q'], ['cobra', 'Cobra stretch', 'saat', null, 0, 'Q'], ['triStretch', 'Triceps stretch', 'saat', null, 1, 'Q'],
-        ['bicepCurl', 'Dumbbell bicep curl', 'rep', 5, 0, 'M,N'], ['concCurl', 'Concentration curl', 'rep', 2.5, 1, 'M'], ['ohp', 'Dumbbell overhead press', 'rep', 5, 0, 'K,M'],
-        ['lateral', 'Dumbbell lateral raise', 'rep', 2.5, 0, 'K'], ['frontRaise', 'Dumbbell front raise', 'rep', 2.5, 0, 'K'], ['benchPress', 'Dumbbell bench press', 'rep', 5, 0, 'G,M,K'],
-        ['benchFly', 'Dumbbell bench fly', 'rep', 2.5, 0, 'G'], ['pullover', 'Dumbbell pullover', 'rep', 5, 0, 'H,G'], ['rdl', 'Dumbbell Romanian deadlift', 'rep', 5, 0, 'B,A,I'],
-        ['inclinePress', 'Incline dumbbell press', 'rep', 5, 0, 'G,K,M'], ['inclineFly', 'Incline dumbbell fly', 'rep', 2.5, 0, 'G,K']], B: [] },
-      UPPER: { A: [], B: [] }
+    // KATALOG SENAMAN (berat badan + dumbbell + kettlebell) — ikut KUMPULAN. Maklumat penuh: COACH_INFO (cara buat, otot fokus, kesilapan biasa, pernafasan).
+    // Baris: [kunci, nama, unit 'rep'|'saat', beban mula kg (null = tiada beban, 0 = badan → boleh tambah dumbbell), sisi (1 = setiap sisi), kumpulan recovery (PERTAMA = otot utama)]
+    // Kumpulan: [nama, kod (contoh KAKI-3), senarai]. Kod katalog bertukar bila susunan berubah — gambar & progres disimpan ikut KUNCI, bukan kod.
+    var COACH_KATALOG = [
+      ['PANASKAN BADAN / KARDIO', 'PNS', [
+        ['jumpingJack', 'Jumping jacks', 'saat', null, 0, 'Q'], ['highStep', 'High stepping', 'saat', null, 0, 'Q'], ['armCircle', 'Arm circles', 'saat', null, 0, 'Q'],
+        ['armCircleLaju', 'Arm circles laju (lawan jam + ikut jam)', 'saat', null, 0, 'K'], ['armSwingStep', 'Arm swings with lateral steps', 'saat', null, 0, 'Q'], ['punches', 'Punches', 'saat', null, 0, 'K,M,G'],
+        ['hooks', 'Alternating hooks', 'saat', null, 0, 'K,G'], ['armScissor', 'Arm scissors', 'saat', null, 0, 'G,K'], ['burpees', 'Burpees', 'rep', null, 0, 'G,C,A']
+      ]],
+      ['KAKI', 'KAKI', [
+        ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'], ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'],
+        ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'], ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'],
+        ['rdl', 'Dumbbell Romanian deadlift', 'rep', 5, 0, 'B,A,I'], ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'],
+        ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A'], ['donkeyKick', 'Donkey kicks', 'rep', null, 1, 'A'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
+        ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['toeRaise', 'Toe raise', 'rep', null, 0, 'F'], ['heelWalk', 'Heel walk', 'saat', null, 0, 'F']
+      ]],
+      ['BELAKANG', 'BLK', [
+        ['dbRowSatu', 'Bent over dumbbell row (satu tangan)', 'rep', 5, 1, 'H,L,M'], ['dbRowDua', 'Bent over row (dua tangan)', 'rep', 5, 0, 'H,L,M,I'], ['rearDeltRow', 'Dumbbell rear delt row', 'rep', 2.5, 0, 'L,K'],
+        ['reverseFly', 'Reverse flys', 'rep', 2.5, 0, 'L,K'], ['dbShrug', 'Dumbbell shrug', 'rep', 5, 0, 'L'], ['pullover', 'Dumbbell pullover', 'rep', 5, 0, 'G,H'],
+        ['superman', 'Superman', 'rep', null, 0, 'I'], ['birdDog', 'Bird dog', 'rep', null, 1, 'I']
+      ]],
+      ['DADA', 'DADA', [
+        ['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K'], ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['kneePush', 'Knee push-ups', 'rep', null, 0, 'G,M,K'],
+        ['pushUp', 'Push-ups', 'rep', null, 0, 'G,M,K'], ['benchPress', 'Dumbbell bench press', 'rep', 5, 0, 'G,M,K'], ['benchFly', 'Dumbbell bench fly', 'rep', 2.5, 0, 'G'],
+        ['inclinePress', 'Incline dumbbell press', 'rep', 5, 0, 'G,K,M'], ['inclineFly', 'Incline dumbbell fly', 'rep', 2.5, 0, 'G,K']
+      ]],
+      ['BAHU', 'BAHU', [
+        ['armRaise', 'Side arm raise', 'saat', null, 0, 'K'], ['armRaiseAtas', 'Arm raises', 'saat', null, 0, 'K,G'], ['ohp', 'Dumbbell overhead press', 'rep', 5, 0, 'K,M'],
+        ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G'], ['arnoldPress', 'Arnold dumbbell press', 'rep', 2.5, 0, 'K,M'], ['lateral', 'Dumbbell lateral raise', 'rep', 2.5, 0, 'K'],
+        ['frontRaise', 'Dumbbell front raise', 'rep', 2.5, 0, 'K']
+      ]],
+      ['LENGAN', 'LGN', [
+        ['bicepCurl', 'Dumbbell bicep curl', 'rep', 5, 0, 'M,N'], ['hammerCurl', 'Alternate hammer curl', 'rep', 2.5, 1, 'M,N'], ['concCurl', 'Concentration curl', 'rep', 2.5, 1, 'M'],
+        ['armCurlCrunch', 'Arm curls crunch', 'rep', null, 1, 'M'], ['ohTri', 'Dumbbell triceps extension', 'rep', 5, 0, 'M'], ['dbKickback', 'Dumbbell kickbacks', 'rep', 2.5, 0, 'M'],
+        ['tricepsDip', 'Triceps dips', 'rep', null, 0, 'M,G,K']
+      ]],
+      ['CORE', 'CORE', [
+        ['crunch9090', '90/90 crunch', 'rep', null, 0, 'J'], ['abCrunch', 'Abdominal crunches', 'rep', null, 0, 'J'], ['bicycleCrunch', 'Bicycle crunches', 'rep', null, 0, 'J'],
+        ['altVup', 'Alt V-up', 'rep', null, 0, 'J'], ['legRaise', 'Leg raises', 'rep', null, 0, 'J'], ['russian', 'Russian twist', 'rep', 0, 0, 'J'],
+        ['deadBug', 'Dead bug', 'rep', null, 0, 'J'], ['plank', 'Plank', 'saat', null, 0, 'J'], ['sidePlank', 'Side plank', 'saat', null, 1, 'J'],
+        ['mountainClimber', 'Mountain climber', 'saat', null, 0, 'J']
+      ]],
+      ['REGANGAN', 'RGN', [
+        ['calfStretch', 'Calf stretch', 'saat', null, 1, 'Q'], ['quadStretch', 'Quad stretch', 'saat', null, 1, 'Q'], ['hamStretch', 'Sitting hamstring stretch', 'saat', null, 1, 'Q'],
+        ['adductorStretch', 'Adductor stretch (berdiri)', 'saat', null, 1, 'Q'], ['bahuDepan', 'Anterior shoulder stretch', 'saat', null, 0, 'Q'], ['triStretch', 'Triceps stretch', 'saat', null, 1, 'Q'],
+        ['childPose', "Child's pose", 'saat', null, 0, 'Q'], ['cobra', 'Cobra stretch', 'saat', null, 0, 'Q']
+      ]],
+      ['LEHER', 'LHR', [
+        ['leherIso', 'Leher isometrik (4 arah)', 'saat', null, 0, 'O']
+      ]]
+    ];
+    // SESI ikut rotasi hari SENAMAN: LOWER (kaki) → MIDDLE (belakang + core) → UPPER (dada, bahu, lengan) · setiap kumpulan berselang A / B.
+    // Otot utama sesi berturut tidak bertindih (rehat 2 hari cukup). Setiap sesi: 1 panaskan badan → latihan utama → regangan.
+    var COACH_SESI = {
+      LOWER: {
+        A: ['jumpingJack', 'squats', 'rdl', 'lunges', 'buttBridge', 'calfRaise', 'toeRaise', 'quadStretch', 'hamStretch'],
+        B: ['highStep', 'sumoSquat', 'bulgarian', 'slDeadlift', 'sideLegLift', 'donkeyKick', 'wallSit', 'heelWalk', 'calfStretch', 'adductorStretch']
+      },
+      MIDDLE: {
+        A: ['armSwingStep', 'dbRowSatu', 'rearDeltRow', 'superman', 'plank', 'deadBug', 'bicycleCrunch', 'leherIso', 'childPose'],
+        B: ['mountainClimber', 'dbRowDua', 'reverseFly', 'dbShrug', 'birdDog', 'sidePlank', 'russian', 'legRaise', 'cobra']
+      },
+      UPPER: {
+        A: ['armCircle', 'benchPress', 'ohp', 'inclinePress', 'lateral', 'bicepCurl', 'ohTri', 'pushUp', 'bahuDepan', 'triStretch'],
+        B: ['punches', 'inclineFly', 'benchFly', 'arnoldPress', 'frontRaise', 'hammerCurl', 'dbKickback', 'tricepsDip', 'pullover', 'bahuDepan']
+      }
     };
+    // Senaman perlu bangku LARAS (rumah sahaja) — disorok bila LOKASI = ASRAMA
+    var COACH_PERLU_LARAS = ['inclinePress', 'inclineFly'];
+    var COACH_RUTIN = (function() {
+      var idx = {}, r = {}, i, j, g, s, a;
+      for (i = 0; i < COACH_KATALOG.length; i++) for (j = 0; j < COACH_KATALOG[i][2].length; j++) idx[COACH_KATALOG[i][2][j][0]] = COACH_KATALOG[i][2][j];
+      for (g in COACH_SESI) { r[g] = {}; for (s in COACH_SESI[g]) { a = []; for (i = 0; i < COACH_SESI[g][s].length; i++) if (idx[COACH_SESI[g][s][i]]) a.push(idx[COACH_SESI[g][s][i]]); r[g][s] = a; } }
+      return r;
+    })();
+    // JENIS HARI (Ahad … Sabtu): SENAMAN Isn / Rab / Jum · JOGGING Sel / Kha / Sab · REHAT Ahad. Boleh tukar untuk hari ini (coach_hari.senaman.jenis).
+    var COACH_JENIS_HARI = ['REHAT', 'GYM', 'JOG', 'GYM', 'JOG', 'GYM', 'JOG'];
+    var COACH_JENIS_NAMA = { GYM: 'SENAMAN', JOG: 'JOGGING', REHAT: 'REHAT' };
+    var COACH_JOG_SASARAN = 20; // minit jogging untuk ganjaran penuh
+    function coachJenisHari(id) { var p = id.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]); return COACH_JENIS_HARI[d.getDay()]; }
+    function coachJenisKini() {
+      var hs = (coachHariData.hari && coachHariData.hari.senaman) || {};
+      return hs.jenis || coachJenisHari(coachHariData.id || coachHariId());
+    }
     var COACH_FACE = {
       A: 'Eyebrow raise hold + lawan jari · alternate eyebrow raise · eye squeeze hold · lower eyelid raise · nasal flare hold · frown hold (3 kali sahaja) · tarik kulit kepala ke belakang · latihan telinga depan cermin',
       B: 'Smile hold + lawan jari · unilateral smile · lip press + kiss hold + "O" hold · cheek suck-in · tiup pipi + tekan tangan · upper lip raise · tarik sudut mulut ke bawah + bibir bawah · mentalis pout · tongue press ke lelangit · jaw clench RINGAN'
@@ -10748,11 +10802,15 @@
     function coachSenHari() {
       var st = coachSenNyata(), hs = coachHariData.hari.senaman || {};
       var g = hs.hari || st.seterus || 'LOWER', s = hs.siri || (st.siri && st.siri[g]) || 'A';
-      return { g: g, s: s, f: hs.face || st.face || 'A', hs: hs, senarai: COACH_RUTIN[g][s] };
+      if (!COACH_RUTIN[g]) g = 'LOWER';
+      if (!COACH_RUTIN[g][s]) s = 'A';
+      var lok = st.lokasi === 'ASRAMA' ? 'ASRAMA' : 'RUMAH', sen = COACH_RUTIN[g][s], i, a = [];
+      for (i = 0; i < sen.length; i++) if (lok === 'RUMAH' || COACH_PERLU_LARAS.indexOf(sen[i][0]) === -1) a.push(sen[i]);
+      return { g: g, s: s, f: hs.face || st.face || 'A', hs: hs, senarai: a, jenis: coachJenisKini(), lokasi: lok };
     }
     function coachSenLatihan(k) {
-      var g, s, i;
-      for (g in COACH_RUTIN) for (s in COACH_RUTIN[g]) for (i = 0; i < COACH_RUTIN[g][s].length; i++) if (COACH_RUTIN[g][s][i][0] === k) return COACH_RUTIN[g][s][i];
+      var i, j;
+      for (i = 0; i < COACH_KATALOG.length; i++) for (j = 0; j < COACH_KATALOG[i][2].length; j++) if (COACH_KATALOG[i][2][j][0] === k) return COACH_KATALOG[i][2][j];
       return null;
     }
     function coachTeksBeban(kg) { return kg === 0 ? 'badan' : (kg === 6 ? 'KB 6 kg' : kg + ' kg'); }
@@ -10833,7 +10891,7 @@
       return { st: 'SEDIA', beza: beza, pulih: lap === 'PULIH' };
     }
     function coachLatihanRehat(x, sh) {
-      var gs = x[5].split(','), i, st;
+      var gs = [x[5].split(',')[0]], i, st; // otot UTAMA sahaja (kumpulan pertama)
       for (i = 0; i < gs.length; i++) { st = coachOtotStatus(gs[i], sh).st; if (st !== 'SEDIA') return gs[i] + ' ' + (st === 'BELUM' ? 'BELUM PULIH' : st); }
       return '';
     }
@@ -10847,7 +10905,7 @@
     var coachUISOtot = false;
     function coachLukisOtot(sh, btn) {
       var gs = [], i, j, h, ada = false, nmS = [];
-      for (i = 0; i < sh.senarai.length; i++) { var a = sh.senarai[i][5].split(','); for (j = 0; j < a.length; j++) if (gs.indexOf(a[j]) === -1) gs.push(a[j]); }
+      for (i = 0; i < sh.senarai.length; i++) { var a = [sh.senarai[i][5].split(',')[0]]; for (j = 0; j < a.length; j++) if (a[j] !== 'Q' && gs.indexOf(a[j]) === -1) gs.push(a[j]); }
       gs.sort();
       var pilih = [];
       for (i = 0; i < gs.length; i++) {
@@ -11569,6 +11627,36 @@
           ['Bangku terlalu tegak', 'Melebihi 45 darjah = bahu yang bekerja. 30–45 darjah sahaja.'],
           ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
         nafas: ['Tarik nafas semasa buka tangan ke sisi.', 'Hembus nafas semasa rapatkan di atas dada.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+      },
+      // ── Tambahan (tiada dalam app): betis depan + leher ──
+      toeRaise: {
+        arahan: ['Berdiri tegak, belakang bersandar ke dinding, tumit sekitar 20–30 cm dari dinding.', 'Angkat HUJUNG kaki (jari kaki) ke atas — berat badan di tumit.',
+          'Tahan 1 saat di atas, turunkan perlahan. Ulang.', 'Lebih susah: buat satu kaki, atau berdiri tanpa sandar.'],
+        fokus: ['Betis depan (tibialis)'],
+        silap: [['Gerak terlalu laju', 'Otot betis depan kurang bekerja. Naik dan turun terkawal.'],
+          ['Punggung terkeluar / badan condong', 'Imbangan terganggu. Badan lurus, punggung rapat ke dinding.'],
+          ['Pergerakan separuh', 'Angkat jari kaki setinggi yang boleh setiap rep.']],
+        nafas: ['Hembus nafas semasa angkat jari kaki.', 'Tarik nafas semasa turunkan.']
+      },
+      heelWalk: {
+        arahan: ['Berdiri, angkat jari kaki — berdiri atas TUMIT sahaja.', 'Berjalan ke depan dengan langkah kecil atas tumit.',
+          'Badan tegak, pandang ke depan. Teruskan sampai masa tamat.'],
+        fokus: ['Betis depan (tibialis)'],
+        silap: [['Jari kaki jatuh ke lantai', 'Betis depan berhenti bekerja. Jari kaki kekal terangkat sepanjang masa.'],
+          ['Badan condong ke belakang', 'Hilang imbangan. Badan tegak, core ketat.'],
+          ['Langkah terlalu besar', 'Susah kawal. Langkah kecil dan stabil.']],
+        nafas: ['Bernafas biasa dan berirama.', 'Jangan tahan nafas.']
+      },
+      leherIso: {
+        arahan: ['Duduk atau berdiri tegak, dagu ditarik sedikit ke belakang (leher neutral).',
+          'DEPAN: tapak tangan di dahi — tolak kepala ke depan, tangan menahan, kepala TIDAK bergerak. Tahan.',
+          'BELAKANG: tangan di belakang kepala — tolak ke belakang, tahan. KIRI / KANAN: tangan di sisi kepala — tolak ke sisi, tahan.',
+          'Masa yang ditetapkan = setiap arah. Tolak sederhana (50–70% tenaga), bukan sekuat hati.'],
+        fokus: ['Leher'],
+        silap: [['Tolak terlalu kuat', 'Leher boleh tegang. Tenaga sederhana dan mantap.'],
+          ['Kepala bergerak', 'Ini latihan isometrik — tangan dan kepala saling menahan, tiada pergerakan.'],
+          ['Bahu terangkat', 'Bahu relaks dan ke bawah sepanjang masa.']],
+        nafas: ['Bernafas biasa semasa menahan — JANGAN tahan nafas.', 'Hembus perlahan semasa mula menolak.']
       }
     };
     function coachInfoHtml(k) {
@@ -11953,17 +12041,17 @@
       // KATALOG: SEMUA latihan dalam satu senarai, ikut kumpulan (kumpulan kosong disorok) · setiap kad: kod, nama, otot fokus, gambar,
       // LIHAT CARA (buka / tutup maklumat penuh: cara buat, otot fokus, kesilapan biasa, pernafasan) + butang muat naik gambar
       if (coachUIS.katalog) {
-        var gk2, sk2, sen, jumlahL = 0, fk;
+        var ci, kodK, sen, jumlahL = 0, fk;
         h += '<button type="button" data-cs="katalogtutup" style="' + btn + '">‹ KEMBALI KE GYM</button><div style="font-weight:bold;font-size:1.1rem;margin:4px 0;">SEMUA LATIHAN</div>';
-        for (gk2 in COACH_RUTIN) for (sk2 in COACH_RUTIN[gk2]) {
-          sen = COACH_RUTIN[gk2][sk2];
+        for (ci = 0; ci < COACH_KATALOG.length; ci++) {
+          sen = COACH_KATALOG[ci][2]; kodK = COACH_KATALOG[ci][1];
           if (!sen.length) continue;
-          h += '<div style="font-weight:bold;font-size:1rem;margin:10px 0 2px;border-bottom:3px solid #000;">' + gk2 + ' ' + sk2 + ' (' + sen.length + ')</div>';
+          h += '<div style="font-weight:bold;font-size:1rem;margin:10px 0 2px;border-bottom:3px solid #000;">' + COACH_KATALOG[ci][0] + ' (' + sen.length + ')</div>';
           for (i = 0; i < sen.length; i++) {
             jumlahL++;
             fk = COACH_INFO[sen[i][0]] ? COACH_INFO[sen[i][0]].fokus.join(', ') : '';
             var bukaI = coachUIS.katInfo === sen[i][0];
-            h += '<div id="kat-' + sen[i][0] + '" style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:6px 0;"><div style="font-weight:bold;">' + gk2.charAt(0) + '-' + sk2 + (i + 1) + ' · ' + sen[i][1] + '</div>' +
+            h += '<div id="kat-' + sen[i][0] + '" style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:6px 0;"><div style="font-weight:bold;">' + kodK + '-' + (i + 1) + ' · ' + sen[i][1] + '</div>' +
               '<div style="font-size:0.78rem;">' + (sen[i][2] === 'saat' ? 'masa (saat)' : 'rep') + (sen[i][3] !== null && sen[i][3] !== 0 ? ' · guna beban' : ' · berat badan') + (sen[i][4] ? ' · setiap sisi' : '') + (fk ? ' · otot: ' + fk : '') + '</div>' + coachLidi(sen[i][0]) +
               '<div style="text-align:center;"><button type="button" data-cs="katinfo" data-k="' + sen[i][0] + '" style="' + (bukaI ? btnA : btn) + '">' + (bukaI ? 'TUTUP CARA' : 'LIHAT CARA') + '</button></div>' +
               (bukaI ? '<div style="font-size:0.85rem;line-height:1.4;border-top:1px solid #000;margin-top:4px;">' + coachInfoHtml(sen[i][0]) + '</div>' : '') +
@@ -11972,7 +12060,7 @@
           }
         }
         if (!jumlahL) h += '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;">Belum ada latihan.</div>';
-        else h += '<div style="font-size:0.8rem;">Jumlah ' + jumlahL + ' latihan. Ada yang tak jelas? Beritahu kod (contoh M-A1).</div>';
+        else h += '<div style="font-size:0.8rem;">Jumlah ' + jumlahL + ' latihan. Ada yang tak jelas? Beritahu kod (contoh KAKI-3).</div>';
         box.innerHTML = h;
         try { var kEl = coachUIS.katInfo && document.getElementById('kat-' + coachUIS.katInfo); if (kEl) kEl.scrollIntoView(); else window.scrollTo(0, 0); } catch (e) {}
         return;
@@ -11984,6 +12072,11 @@
       }
       for (i = 0; i < sh.senarai.length; i++) if (lat[sh.senarai[i][0]]) n++;
       h += '<button type="button" data-cs="katalog" style="display:block;width:100%;padding:8px;margin:0 0 6px;font-size:1rem;font-weight:bold;border:2px solid #000;border-radius:8px;background:#fff;color:#000;">SEMUA LATIHAN (cara buat + gambar)</button>';
+      // HARI INI: SENAMAN / JOGGING / REHAT (ikut hari — boleh tukar) · LOKASI: RUMAH / ASRAMA (asrama = tiada bangku laras)
+      var jnB = function(v) { return '<button type="button" data-cs="jenis" data-v="' + v + '" style="' + (sh.jenis === v ? btnA : btn) + '">' + COACH_JENIS_NAMA[v] + '</button>'; };
+      var lkB = function(v) { return '<button type="button" data-cs="lokasi" data-v="' + v + '" style="' + (sh.lokasi === v ? btnA : btn) + '">' + v + '</button>'; };
+      h += '<div style="font-size:0.8rem;">HARI INI: ' + jnB('GYM') + jnB('JOG') + jnB('REHAT') + '</div><div style="font-size:0.8rem;margin-bottom:4px;">LOKASI: ' + lkB('RUMAH') + lkB('ASRAMA') + '</div>';
+      if (sh.jenis !== 'GYM') { box.innerHTML = h + coachLukisJog(sh, btn, btnA); return; }
       h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' stesen siap') + '</div>';
       h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
       var lcN = coachSenNyata().lencana || {}, lcH = '', li;
@@ -12030,6 +12123,56 @@
         (sh.hs.face ? '' : '<button type="button" data-cs="face" style="' + btn + '">FACE ' + sh.f + ' SIAP</button>') + '</div>';
       box.innerHTML = h;
     }
+    // ── JOGGING (hari Sel / Kha / Sab) + HARI REHAT (Ahad) ──
+    // Log: coach_hari.senaman { jenis: 'JOG', jog: { minit, at }, ganjaran } + tugas.senaman BUAT. Rotasi senaman TIDAK maju.
+    // Ganjaran: EKO.GYM_JOG_SEN (jika diset admin) atau EKO.GYM_SEN — penuh bila ≥ COACH_JOG_SASARAN minit, kurang → ikut nisbah. Streak diteruskan.
+    var coachJogMula = 0;
+    try { coachJogMula = +(localStorage.getItem('coach_jog_mula') || 0); } catch (e) {}
+    function coachJogSetMula(t) { coachJogMula = t; try { if (t) localStorage.setItem('coach_jog_mula', String(t)); else localStorage.removeItem('coach_jog_mula'); } catch (e) {} }
+    function coachLukisJog(sh, btn, btnA) {
+      var hs = sh.hs, h = '', jm;
+      if (sh.jenis === 'REHAT') {
+        return h + '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"><b>HARI REHAT</b><br>Tiada senaman atau jogging hari ini — otot membesar semasa rehat. Kalau mahu: jalan santai 10–20 min atau regangan ringan.</div>';
+      }
+      h += '<div style="font-weight:bold;font-size:1.05rem;">JOGGING 5:00 PTG</div><div style="font-size:0.78rem;">Sasaran ' + COACH_JOG_SASARAN + ' min · panaskan badan 3–5 min (jalan laju) · rentak masih boleh bercakap · sejukkan badan 5 min (jalan + regangan betis / quads).</div>';
+      if (hs.jog) {
+        h += '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;background:#000;color:#fff;font-weight:bold;">JOGGING SIAP — ' + hs.jog.minit + ' min' + (hs.ganjaran ? ' · +' + rm(hs.ganjaran) : '') + '</div>';
+      } else {
+        if (coachJogMula) {
+          jm = new Date(coachJogMula);
+          h += '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;">Mula pukul <b>' + coachTeksMasa(jm.getHours() * 60 + jm.getMinutes()) + '</b> · sedang jogging (' + Math.max(0, Math.round((Date.now() - coachJogMula) / 60000)) + ' min)<br>' +
+            '<button type="button" data-cs="jogtamat" style="display:block;width:100%;padding:12px;margin:6px 0;font-size:1.2rem;font-weight:bold;border:3px solid #000;border-radius:10px;background:#000;color:#fff;">TAMAT JOGGING</button>' +
+            '<button type="button" data-cs="jogbatal" style="' + btn + '">BATAL</button></div>';
+        } else {
+          h += '<button type="button" data-cs="jogmula" style="display:block;width:100%;padding:12px;margin:6px 0;font-size:1.2rem;font-weight:bold;border:3px solid #000;border-radius:10px;background:#000;color:#fff;">MULA JOGGING</button>';
+        }
+        h += '<div style="font-size:0.85rem;">Atau isi sendiri: <input id="coach-jog-minit" type="number" min="1" max="300" inputmode="numeric" style="width:70px;font-size:1rem;border:2px solid #000;padding:2px 4px;"> min ' +
+          '<button type="button" data-cs="jogsimpan" style="' + btnA + '">SIMPAN JOGGING</button></div>';
+      }
+      h += '<div style="border-top:2px solid #000;margin-top:6px;padding-top:3px;font-size:0.85rem;"><b>RUTIN FACE ' + sh.f + '</b> (5–7 min, selepas jogging)' + (hs.face ? ' · <b>SIAP</b>' : '') +
+        '<div style="font-size:0.78rem;">' + COACH_FACE[sh.f] + '</div>' +
+        (hs.face ? '' : '<button type="button" data-cs="face" style="' + btn + '">FACE ' + sh.f + ' SIAP</button>') + '</div>';
+      return h;
+    }
+    function coachJogSimpan(n, sh, now) {
+      var penuh = EKO.GYM_JOG_SEN || EKO.GYM_SEN || 0, jogSen = n >= COACH_JOG_SASARAN ? penuh : Math.round(penuh * n / COACH_JOG_SASARAN);
+      var nyata = coachSenNyata(), gm = coachGymKira({ senarai: [], g: sh.g, s: sh.s, hs: sh.hs }, {}, true, nyata, {}), sen = jogSen + gm.sen, iS;
+      var d = { senaman: { jenis: 'JOG', jog: { minit: n, at: now }, ganjaran: sen } }, tg = coachHariData.hari.tugas || {};
+      if (!tg.senaman) {
+        d.tugas = { senaman: { s: 'BUAT', at: now } };
+        var jS = coachJadualKini(), kiniS = coachMinitKini();
+        for (iS = 0; jS && iS < jS.tugas.length; iS++) if (jS.tugas[iS].kunci === 'senaman' && kiniS >= coachTamat(jS.tugas[iS])) d.tugas.senaman.lewat = true;
+      }
+      coachJogSetMula(0);
+      coachSimpanSenNyata({ streak: gm.streak, lencana: gm.lencana });
+      coachSimpanHari(d, function() {
+        var hs = coachHariData.hari.senaman || (coachHariData.hari.senaman = {});
+        hs.jenis = 'JOG'; hs.jog = d.senaman.jog; hs.ganjaran = sen;
+        if (d.tugas) (coachHariData.hari.tugas || (coachHariData.hari.tugas = {})).senaman = d.tugas.senaman;
+      });
+      coachGymBayar(sen, 'Jogging ' + n + ' min' + (gm.sen ? ' + bonus streak' : ''), gm.baru);
+      coachLukisSenaman();
+    }
     function coachSimpanSenNyata(baru) {
       var st = coachSenNyata(), k;
       for (k in baru) if (baru.hasOwnProperty(k)) st[k] = baru[k];
@@ -12046,6 +12189,28 @@
       var cs = t.getAttribute('data-cs'), sh = coachSenHari(), now = Date.now(), d, j;
       if (cs.indexOf('wk') === 0) { coachWKKlik(cs, t, sh, now); return; }
       if (cs === 'katalog') { coachUIS.katalog = 'SEMUA'; coachUIS.katInfo = ''; coachLukisSenaman(); return; }
+      if (cs === 'lokasi') { coachSimpanSenNyata({ lokasi: t.getAttribute('data-v') }); coachLukisSenaman(); return; }
+      if (cs === 'jenis') {
+        var jv = t.getAttribute('data-v');
+        coachSimpanHari({ senaman: { jenis: jv } }, function() { (coachHariData.hari.senaman || (coachHariData.hari.senaman = {})).jenis = jv; });
+        coachLukisSenaman();
+        return;
+      }
+      if (cs === 'jogmula') { coachJogSetMula(now); coachLukisSenaman(); return; }
+      if (cs === 'jogbatal') { coachJogSetMula(0); coachLukisSenaman(); return; }
+      if (cs === 'jogtamat') {
+        var jmn = Math.round((now - coachJogMula) / 60000);
+        if (!(jmn >= 1)) { alert('Kurang 1 minit — teruskan jogging dulu.'); return; }
+        if (jmn > 300) jmn = 300;
+        coachJogSimpan(jmn, sh, now);
+        return;
+      }
+      if (cs === 'jogsimpan') {
+        var jin = document.getElementById('coach-jog-minit'), jn2 = parseInt(((jin && jin.value) || '').replace(/[^0-9]/g, ''), 10);
+        if (!(jn2 >= 1 && jn2 <= 300)) { alert('Isi minit jogging (1 – 300).'); return; }
+        coachJogSimpan(jn2, sh, now);
+        return;
+      }
       if (cs === 'katgrup') { coachUIS.katalog = 'SEMUA'; coachLukisSenaman(); return; }
       if (cs === 'katinfo') { var kI = t.getAttribute('data-k'); coachUIS.katInfo = coachUIS.katInfo === kI ? '' : kI; coachLukisSenaman(); return; }
       if (cs === 'katalogtutup') { coachUIS.katalog = ''; coachUIS.katInfo = ''; coachLukisSenaman(); return; }
@@ -12130,7 +12295,7 @@
         for (g2 in (nyata.siri || {})) if (nyata.siri.hasOwnProperty(g2)) siri[g2] = nyata.siri[g2];
         if (!rehatOtot) siri[sh.g] = sh.s === 'A' ? 'B' : 'A';
         for (g2 in (nyata.otot || {})) if (nyata.otot.hasOwnProperty(g2)) ototBaru[g2] = nyata.otot[g2];
-        for (kk in lat) if (lat.hasOwnProperty(kk) && coachSenLatihan(kk)) { var gsL = coachSenLatihan(kk)[5].split(','); for (iS = 0; iS < gsL.length; iS++) ototBaru[gsL[iS]] = hariOt; }
+        for (kk in lat) if (lat.hasOwnProperty(kk) && coachSenLatihan(kk)) { var gsL = [coachSenLatihan(kk)[5].split(',')[0]]; for (iS = 0; iS < gsL.length; iS++) ototBaru[gsL[iS]] = hariOt; }
         for (g2 in (nyata.akhir || {})) if (nyata.akhir.hasOwnProperty(g2)) akhirBaru[g2] = nyata.akhir[g2];
         for (kk in lat) if (lat.hasOwnProperty(kk)) akhirBaru[kk] = lat[kk];
         var progBaru = {}, xs;
@@ -12172,7 +12337,8 @@
     ];
     function coachGymStreakKini() {
       var st = coachSenNyata().streak || {}, hari = coachHariData.id || coachHariId();
-      return st.akhir === hari || st.akhir === coachSemalamId(hari) ? (st.n || 0) : 0;
+      var sem = coachSemalamId(hari);
+      return st.akhir === hari || st.akhir === sem || (coachJenisHari(sem) === 'REHAT' && st.akhir === coachSemalamId(sem)) ? (st.n || 0) : 0; // Ahad rehat tidak putuskan streak
     }
     function coachGymKira(sh, lat, rehatOtot, nyata, progBaru) {
       var hari = coachHariData.id || coachHariId(), i, siap = 0, patut = 0, k, ket = [];
@@ -12182,7 +12348,7 @@
       }
       var sen = rehatOtot || !patut ? 0 : Math.round((EKO.GYM_SEN || 0) * siap / patut);
       if (sen) ket.push('Sesi ' + sh.g + ' ' + sh.s + ' (' + siap + '/' + patut + ' stesen)');
-      var st = nyata.streak || {}, n = st.akhir === hari ? (st.n || 1) : (st.akhir === coachSemalamId(hari) ? (st.n || 0) + 1 : 1);
+      var st = nyata.streak || {}, semK = coachSemalamId(hari), n = st.akhir === hari ? (st.n || 1) : (st.akhir === semK || (coachJenisHari(semK) === 'REHAT' && st.akhir === coachSemalamId(semK)) ? (st.n || 0) + 1 : 1);
       if (st.akhir !== hari && n % 7 === 0 && EKO.GYM_STREAK_SEN) { sen += EKO.GYM_STREAK_SEN; ket.push('Bonus streak ' + n + ' hari'); }
       var jumlah = (nyata.jumlahSesi || 0) + (rehatOtot ? 0 : 1), lc = {}, baru = [];
       for (k in (nyata.lencana || {})) if (nyata.lencana.hasOwnProperty(k)) lc[k] = nyata.lencana[k];
@@ -12334,14 +12500,16 @@
         var hs = hr.senaman, tsen = (hr.tugas || {}).senaman;
         if (!hs && !tsen && !hr.laporanAt) continue;
         var ln = '- ' + coachHariPendek(hariA[i]) + ': ';
-        if (hs && hs.hari) {
+        if (hs && hs.jog) ln += 'JOGGING ' + hs.jog.minit + ' min' + (hs.face ? ' · FACE ' + hs.face : ' · FACE tidak');
+        else if (hs && hs.jenis === 'REHAT') ln += 'HARI REHAT';
+        else if (hs && hs.hari) {
           var lat = hs.latihan || {}, rs = {}, nL = 0, x;
           for (k in lat) if (lat.hasOwnProperty(k)) {
             nL++; rs[lat[k].rasa] = (rs[lat[k].rasa] || 0) + 1;
             if (lat[k].rasa === 'SAKIT') sakitMinggu.push(coachHariPendek(hariA[i]) + ' ' + ((x = coachSenLatihan(k)) ? x[1] : k));
           }
           var rA = []; for (k in rs) if (rs.hasOwnProperty(k)) rA.push(k + ' ' + rs[k]);
-          ln += hs.hari + ' ' + hs.siri + ' · ' + (hs.rehat ? 'REHAT OTOT' : (hs.siapAt ? 'SELESAI' : 'tak selesai')) + ' · ' + nL + '/' + COACH_RUTIN[hs.hari][hs.siri].length + ' latihan' + (rA.length ? ' (' + rA.join(', ') + ')' : '') + (hs.face ? ' · FACE ' + hs.face : ' · FACE tidak');
+          ln += hs.hari + ' ' + hs.siri + ' · ' + (hs.rehat ? 'REHAT OTOT' : (hs.siapAt ? 'SELESAI' : 'tak selesai')) + ' · ' + nL + '/' + ((COACH_RUTIN[hs.hari] || {})[hs.siri] || []).length + ' latihan' + (rA.length ? ' (' + rA.join(', ') + ')' : '') + (hs.face ? ' · FACE ' + hs.face : ' · FACE tidak');
           var ot = hs.otot || {}, oA = [];
           for (k in ot) if (ot.hasOwnProperty(k) && ot[k].lapor !== 'OK') oA.push(k + ' ' + ot[k].lapor + (ot[k].hari !== null && ot[k].hari !== undefined ? ' (hari ke-' + ot[k].hari + ')' : ''));
           if (oA.length) ln += ' · lapor otot: ' + oA.join(', ');
@@ -14129,7 +14297,7 @@
       for (i = 0; i < TS_BANGUNAN.length; i++) {
         b = TS_BANGUNAN[i]; sub = b[2];
         if (b[0] === 'gym') {
-          try { if (coachDataAkhir && coachHariData.id === coachHariId()) { var sh = coachSenHari(); sub = 'Senaman 5 ptg · ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ''); } } catch (e) {}
+          try { if (coachDataAkhir && coachHariData.id === coachHariId()) { var sh = coachSenHari(); sub = sh.jenis === 'JOG' ? 'Jogging 5 ptg' + (sh.hs.jog ? ' · SIAP ' + sh.hs.jog.minit + ' min' : '') : (sh.jenis === 'REHAT' ? 'Hari rehat' : 'Senaman 5 ptg · ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : '')); } } catch (e) {}
         }
         if (b[0] === 'taman') {
           try { if (coachHariData.id === coachHariId() && coachHariData.hari.laporanAt) { var tg = coachHariData.hari.tugas || {}; sub = 'Pagi ' + (tg.matahari ? (tg.matahari.s === 'BUAT' ? 'SIAP' : tg.matahari.s) : 'belum') + ' · Petang ' + (tg.petang ? (tg.petang.s === 'BUAT' ? 'SIAP' : tg.petang.s) : 'belum'); } } catch (e) {}
