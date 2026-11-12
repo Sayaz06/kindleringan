@@ -442,10 +442,12 @@
     /* Butang anak panah alih kursor */
     #kb-sendiri .kb-k.kb-lebar[data-k="KIRI"], #kb-sendiri .kb-k.kb-lebar[data-k="KANAN"] { font-size: 1.3rem; }
     body.kb-buka { padding-bottom: var(--kb-h, 0px); }
-    /* SEMUA skrin — pendekkan skrin ke atas papan kekunci & boleh skrol di dalamnya */
+    /* SEMUA skrin — pendekkan skrin ke atas papan kekunci & boleh skrol di dalamnya
+       (12 Nov) guna tinggi SEBENAR yang nampak (--kb-ruang, dikira JS) — 100vh di phone termasuk bar URL → kotak taip terlindung bawah papan kekunci */
     body.kb-buka .screen.active {
-      height: calc(100vh - var(--kb-h, 0px)) !important; min-height: 0 !important;
+      height: var(--kb-ruang, calc(100vh - var(--kb-h, 0px))) !important; min-height: 0 !important;
       overflow-y: auto !important; -webkit-overflow-scrolling: touch;
+      padding-bottom: 80px !important; box-sizing: border-box;
     }
     /* MENU BERHALAMAN — titik menegak ganti scroll bar (e-ink: lompat terus, tiada skrol) · Ringan: titik di KANAN */
     #screen-menu.active { height: 100vh; min-height: 0; overflow: hidden; position: relative; padding-right: 40px; }
@@ -12979,19 +12981,35 @@
       if (f >= 0.999) s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#bbb" stroke="#000" stroke-width="3"/>';
       else if (f > 0) { var p1 = titik(f, r); s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + ' A' + r + ' ' + r + ' 0 ' + (f > 0.5 ? 1 : 0) + ' 1 ' + p1[0] + ' ' + p1[1] + ' Z" fill="#bbb" stroke="#000" stroke-width="3" stroke-linejoin="round"/>'; }
       s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + '" stroke="#000" stroke-width="4"/>';
-      // Tag SASARAN: jejari putus-putus + label di luar bulatan
-      var ps = titik(sas / 100, r + 4), pl = titik(sas / 100, r + 16);
-      s += '<path d="M' + cx + ' ' + cy + ' L' + ps[0] + ' ' + ps[1] + '" stroke="#000" stroke-width="3" stroke-dasharray="6 4"/>' +
-        '<text x="' + pl[0] + '" y="' + (+pl[1] + 5) + '" font-size="15" font-weight="bold" text-anchor="' + (sas < 50 ? 'start' : 'end') + '" fill="#000">' + sas + '%</text>';
+      // Jejari putus-putus = SASARAN
+      var ps = titik(sas / 100, r);
+      s += '<path d="M' + cx + ' ' + cy + ' L' + ps[0] + ' ' + ps[1] + '" stroke="#000" stroke-width="3" stroke-dasharray="6 4"/>';
       s += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#000"/>';
-      if (f > 0) { var pt = titik(f / 2, r * 0.55); s += '<text x="' + pt[0] + '" y="' + (+pt[1] + 7) + '" font-size="20" font-weight="bold" text-anchor="middle" fill="#000">' + pc + '%</text>'; }
+      // TAG bergaris (gaya pai English: nama tebal + peratus di bawah, garis ke bulatan)
+      var tagY = {};
+      function tag(fr, nama, teks) {
+        var a = -Math.PI / 2 + fr * 2 * Math.PI, kanan = Math.cos(a) >= 0;
+        var x0 = cx + r * Math.cos(a), y0 = cy + r * Math.sin(a), x1 = cx + (r + 14) * Math.cos(a), y1 = cy + (r + 14) * Math.sin(a);
+        var sisi = kanan ? 'k' : 'w';
+        if (tagY[sisi] !== undefined && Math.abs(y1 - tagY[sisi]) < 40) y1 = tagY[sisi] + 40 > cy + r + 10 ? tagY[sisi] - 40 : tagY[sisi] + 40; // elak bertindih
+        y1 = Math.max(4, Math.min(cy + r + 10, y1));
+        tagY[sisi] = y1;
+        var x2 = kanan ? cx + r + 26 : cx - r - 26, tx = kanan ? x2 + 4 : x2 - 4, an = kanan ? 'start' : 'end';
+        return '<path d="M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' L' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' L' + x2.toFixed(1) + ' ' + y1.toFixed(1) + '" fill="none" stroke="#000" stroke-width="2"/>' +
+          '<text x="' + tx.toFixed(1) + '" y="' + (y1 - 2).toFixed(1) + '" font-size="15" font-weight="bold" text-anchor="' + an + '" fill="#000">' + nama + '</text>' +
+          '<text x="' + tx.toFixed(1) + '" y="' + (y1 + 15).toFixed(1) + '" font-size="15" text-anchor="' + an + '" fill="#000">' + teks + '</text>';
+      }
+      s += tag(f / 2, 'Listening', pc + '%');
+      s += tag(sas / 100, 'Sasaran', sas + '%');
       var perlu;
       if (!J) perlu = sas > 0 ? 1 : 0;
       else if (sas >= 100) perlu = J - L > 0 ? -1 : 0;
       else perlu = Math.ceil((sas * J - 100 * L) / (100 - sas));
+      var hr = coachHariData.hari || {};
       return '<div style="border-top:1px solid #000;margin-top:8px;padding-top:4px;font-weight:bold;">LISTENING vs ENGLISH LAIN</div>' +
-        '<div style="text-align:center;"><svg viewBox="-20 0 280 230" width="260" height="214" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>' +
-        '<div style="font-size:0.85rem;text-align:center;">Kelabu = Listening <b>' + pc + '%</b> (' + L + ' min) · Garis putus-putus = sasaran <b>' + sas + '%</b></div>' +
+        '<div style="text-align:center;"><svg viewBox="-110 -10 460 250" style="width:100%;max-width:380px;" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>' +
+        '<div style="font-size:0.9rem;">Listening hari ini: <b>' + (hr.listening || 0) + ' min</b></div>' +
+        '<div style="font-size:0.9rem;">Jumlah terkumpul: <b>' + L + ' min</b></div>' +
         '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>KALKULATOR</b><br>' +
         (perlu === -1 ? 'Sasaran 100% hanya boleh dicapai jika bidang lain 0.'
           : perlu > 0 ? 'Awak perlukan <b>' + perlu + ' minit</b> lagi listening untuk capai <b>' + sas + '%</b>.'
@@ -13004,9 +13022,7 @@
       var hr = coachHariData.hari || {}, h = '';
       h += '<div style="font-weight:bold;margin-bottom:4px;">LISTENING ENGLISH</div>';
       h += '<div style="font-size:0.8rem;">Kuning hari ini: ' + rm((hr.pawagamUnit || 0) * (EKO.PAWAGAM_SEN || 0)) + ' (' + ((hr.pawagamUnit || 0) * 10) + ' / ' + (PAWAGAM_HAD_UNIT * 10) + ' min dibayar)</div>';
-      var lsHari = hr.listening || 0, lsJumlah = (coachDataAkhir && coachDataAkhir.listening) || 0;
-      h += '<div style="font-size:0.9rem;margin-top:6px;">Listening hari ini: <b>' + lsHari + ' min</b> · jumlah terkumpul: ' + lsJumlah + ' min</div>';
-      h += pawagamPaiListening();
+      h += pawagamPaiListening(); // listening hari ini + jumlah terkumpul kini di bawah pai
       if (coachUIU.listening) {
         h += '<div style="margin:4px 0;">minit: <input type="text" inputmode="numeric" id="coach-ls-input" style="width:90px;font-size:1rem;padding:4px;border:2px solid #000;"> ' +
           '<button type="button" data-cu="lssimpan" style="padding:6px 8px;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;">SIMPAN</button> ' +
@@ -16770,9 +16786,15 @@
       }, 0);
     }
 
+    // Tinggi skrin yang BENAR-BENAR nampak (ambil yang lebih kecil: saiz Kindle dicatat vs innerHeight phone)
+    function tinggiNampak() {
+      var s = window.saizKindle ? window.saizKindle() : null, a = (s && s.h) || 0, b = window.innerHeight || 0;
+      return a && b ? Math.min(a, b) : (a || b);
+    }
     function kemaskiniTinggi() {
       var h = kb.offsetHeight;
       document.documentElement.style.setProperty('--kb-h', h + 'px');
+      document.documentElement.style.setProperty('--kb-ruang', Math.max(120, tinggiNampak() - h) + 'px');
       return h;
     }
     function turunOverlay() {
@@ -16800,11 +16822,14 @@
     }
     function pastikanNampak(el, h) {
       if (!el || dalamSkrinKunci(el)) return;
-      var s = window.saizKindle ? window.saizKindle() : null;
-      var tinggiSkrin = (s && s.h) || window.innerHeight || 0;
+      var tinggiSkrin = tinggiNampak();
       var r = el.getBoundingClientRect();
       if (r.bottom > tinggiSkrin - h - 8 || r.top < 0) {
         try { el.scrollIntoView({ block: 'center' }); } catch (x) { el.scrollIntoView(false); }
+        // Sandaran: skrol skrin aktif secara manual jika masih terlindung
+        r = el.getBoundingClientRect();
+        var sk = document.querySelector('.screen.active');
+        if (sk && r.bottom > tinggiSkrin - h - 8) sk.scrollTop += Math.round(r.bottom - (tinggiSkrin - h) / 2);
       }
     }
 
