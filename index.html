@@ -6085,8 +6085,12 @@
     .kd-pulang div b { display: block; font-size: 1.1rem; }
     .kd-pulang div.kd-hitam { background: #000; color: #fff; }
     .kd-kecil { font-size: 0.7rem; text-align: center; margin-top: 4px; }
-    /* PEKAN KEDAI: bar tempat disorok, 4 pondok berpapan iklan (inline-block, tiada flex gap untuk Kindle) */
-    #screen-kd .gm-tab { display: none !important; }
+    /* PEKAN KEDAI: 4 pondok berpapan iklan (inline-block, tiada flex gap untuk Kindle) — bar tempat KEKAL dipapar (12 Nov) */
+    /* GYM: topbar ikon (dumbbell = senaman hari ini · spana = tetapan + semua latihan) */
+    .gym-topbar { display: flex; background: #000; border-radius: 8px; margin: 4px 0; overflow: hidden; }
+    .gym-topbar button { flex: 1 1 0; background: #000; color: #fff; border: 0; border-bottom: 5px solid #000; padding: 8px 0 3px; font-family: inherit; font-weight: bold; font-size: 0.75rem; }
+    .gym-topbar button.gym-aktif { border-bottom-color: #fff; }
+    .gym-topbar svg { display: block; width: 30px; height: 30px; margin: 0 auto 2px; fill: #fff; }
     .kd-pondok { margin: 6px 0 16px; text-align: center; font-size: 0; }
     .kd-pd { display: inline-block; vertical-align: top; width: 48%; margin: 0 1% 12px; padding: 2px 0 6px; border: 0; background: none; color: #000; font-family: inherit; font-size: 1rem; cursor: pointer; }
     .kd-pd svg { display: block; width: 100%; max-width: 180px; height: auto; margin: 0 auto; }
@@ -6785,9 +6789,13 @@
   <div id="screen-gym" class="screen">
     <div class="status-bar" id="gym-status">GYM</div>
     <div class="gm-alat">
-      <button type="button" id="btn-gym-keluar" class="gm-kecil">‹ Taman</button>
+      <button type="button" id="btn-gym-keluar" class="gm-kecil">‹ Usaha</button>
       <span class="gm-alat-tajuk">GYM</span>
       <button type="button" id="btn-gym-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="gym-topbar" class="gym-topbar">
+      <button type="button" data-gymtab="hari" class="gym-aktif"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>HARI INI</button>
+      <button type="button" data-gymtab="tetapan"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>TETAPAN</button>
     </div>
     <div id="gym-info" class="jw-info"></div>
     <div id="coach-senaman" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
@@ -12037,12 +12045,21 @@
       var btn = 'padding:6px 8px;margin:2px 4px 2px 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
       var btnA = btn + 'background:#000;color:#fff;';
       if (sh.hs.siapAt) coachWK.aktif = false;
+      // Topbar: HARI INI / TETAPAN (disorok semasa mod workout) · butang ‹ Usaha disorok di page TETAPAN
+      var tbG = el('gym-topbar'), klG = el('btn-gym-keluar');
+      if (tbG) { tbG.style.display = coachWK.aktif ? 'none' : ''; tbG.children[0].className = coachUIS.katalog ? '' : 'gym-aktif'; tbG.children[1].className = coachUIS.katalog ? 'gym-aktif' : ''; }
+      if (klG) klG.style.display = coachUIS.katalog ? 'none' : '';
       if (coachWK.aktif) { box.innerHTML = coachWKLukis(sh, btn, btnA); try { window.scrollTo(0, 0); } catch (e) {} return; }
       // KATALOG: SEMUA latihan dalam satu senarai, ikut kumpulan (kumpulan kosong disorok) · setiap kad: kod, nama, otot fokus, gambar,
       // LIHAT CARA (buka / tutup maklumat penuh: cara buat, otot fokus, kesilapan biasa, pernafasan) + butang muat naik gambar
       if (coachUIS.katalog) {
         var ci, kodK, sen, jumlahL = 0, fk;
-        h += '<button type="button" data-cs="katalogtutup" style="' + btn + '">‹ KEMBALI KE GYM</button><div style="font-weight:bold;font-size:1.1rem;margin:4px 0;">SEMUA LATIHAN</div>';
+        // TETAPAN: tukar SENAMAN / JOGGING hari ini · LOKASI rumah / asrama · kemudian SEMUA LATIHAN
+        var jnB = function(v) { return '<button type="button" data-cs="jenis" data-v="' + v + '" style="' + (sh.jenis === v ? btnA : btn) + '">' + COACH_JENIS_NAMA[v] + '</button>'; };
+        var lkB = function(v) { return '<button type="button" data-cs="lokasi" data-v="' + v + '" style="' + (sh.lokasi === v ? btnA : btn) + '">' + v + '</button>'; };
+        h += '<div style="font-weight:bold;font-size:1.1rem;margin:2px 0 4px;">TETAPAN</div>';
+        h += '<div style="font-size:0.85rem;">HARI INI: ' + jnB('GYM') + jnB('JOG') + '</div><div style="font-size:0.85rem;">LOKASI: ' + lkB('RUMAH') + lkB('ASRAMA') + '</div>';
+        h += '<div style="font-weight:bold;font-size:1.1rem;margin:10px 0 2px;">SEMUA LATIHAN</div>';
         for (ci = 0; ci < COACH_KATALOG.length; ci++) {
           sen = COACH_KATALOG[ci][2]; kodK = COACH_KATALOG[ci][1];
           if (!sen.length) continue;
@@ -12071,22 +12088,11 @@
         return;
       }
       for (i = 0; i < sh.senarai.length; i++) if (lat[sh.senarai[i][0]]) n++;
-      h += '<button type="button" data-cs="katalog" style="display:block;width:100%;padding:8px;margin:0 0 6px;font-size:1rem;font-weight:bold;border:2px solid #000;border-radius:8px;background:#fff;color:#000;">SEMUA LATIHAN (cara buat + gambar)</button>';
-      // HARI INI: SENAMAN / JOGGING / REHAT (ikut hari — boleh tukar) · LOKASI: RUMAH / ASRAMA (asrama = tiada bangku laras)
-      var jnB = function(v) { return '<button type="button" data-cs="jenis" data-v="' + v + '" style="' + (sh.jenis === v ? btnA : btn) + '">' + COACH_JENIS_NAMA[v] + '</button>'; };
-      var lkB = function(v) { return '<button type="button" data-cs="lokasi" data-v="' + v + '" style="' + (sh.lokasi === v ? btnA : btn) + '">' + v + '</button>'; };
-      h += '<div style="font-size:0.8rem;">HARI INI: ' + jnB('GYM') + jnB('JOG') + jnB('REHAT') + '</div><div style="font-size:0.8rem;margin-bottom:4px;">LOKASI: ' + lkB('RUMAH') + lkB('ASRAMA') + '</div>';
+      // HARI REHAT → senarai disorok (BATAL REHAT di panel rehat) · selain itu butang REHAT HARI INI di atas
+      if (sh.jenis === 'REHAT') { box.innerHTML = coachLukisJog(sh, btn, btnA); return; }
+      h += '<div style="text-align:right;"><button type="button" data-cs="jenis" data-v="REHAT" style="' + btn + '">REHAT HARI INI</button></div>';
       if (sh.jenis !== 'GYM') { box.innerHTML = h + coachLukisJog(sh, btn, btnA); return; }
       h += '<div style="font-weight:bold;margin-bottom:2px;">SENAMAN 5:00 PTG — ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : ' · ' + n + '/' + sh.senarai.length + ' stesen siap') + '</div>';
-      h += '<div style="font-size:0.75rem;">Panaskan badan 3–5 min (jalan setempat + putar sendi) · ' + COACH_SET + ' set · rehat 60–90 saat antara set · fokus BENTUK · henti jika SAKIT (bukan lenguh).</div>';
-      var lcN = coachSenNyata().lencana || {}, lcH = '', li;
-      for (li = 0; li < COACH_LENCANA.length; li++) {
-        var ada = !!lcN[COACH_LENCANA[li][0]];
-        lcH += '<span style="display:inline-block;margin:2px 3px 2px 0;padding:2px 5px;border:2px ' + (ada ? 'solid' : 'dashed') + ' #000;border-radius:5px;font-size:0.7rem;' + (ada ? 'background:#000;color:#fff;font-weight:bold;' : '') + '">' + COACH_LENCANA[li][1] + '</span>';
-      }
-      h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 6px;margin:4px 0;font-size:0.8rem;"><b>GANJARAN</b> (Ringgit Kuning — belanja di PARTY): sesi penuh ' + rm(EKO.GYM_SEN || 0) +
-        ' · FACE ' + rm(EKO.GYM_FACE_SEN || 0) + ' · setiap 7 hari berturut +' + rm(EKO.GYM_STREAK_SEN || 0) + '<br><b>STREAK: ' + coachGymStreakKini() + ' hari</b> · jumlah sesi ' + (coachSenNyata().jumlahSesi || 0) +
-        (sh.hs.siapAt ? ' · hari ini +' + rm((sh.hs.ganjaran || 0) + (sh.hs.ganjaranFace || 0)) : '') + '<div style="margin-top:2px;">' + lcH + '</div></div>';
       var tS = tamanTugas('senaman');
       if (tS) {
         var recS = (coachHariData.hari.tugas || {})[tS.t.kunci], stS = coachStatusTugas(tS.t, coachMinitKini());
@@ -12114,7 +12120,7 @@
           '<span style="float:right;font-weight:bold;font-size:1rem;">' + (kgPapar !== null && kgPapar !== undefined ? coachTeksBeban(kgPapar) : '') + '</span>' +
           '<b>' + (i + 1) + '. ' + x[1] + '</b><br>' + COACH_SET + ' × ' + uPapar + (x[2] === 'saat' ? ' saat' : ' rep') + (x[4] ? ' setiap sisi' : '') + (st ? ' · <b>' + st + '</b>' : '') + '</button>';
       }
-      h += '</div><div style="font-size:0.75rem;">Tekan nama latihan untuk tutorial / log manual.</div>';
+      h += '</div>';
       if (!sh.hs.siapAt) h += '<div style="margin-top:4px;"><button type="button" data-cs="selesai" style="' + btnA + '">' + (!n && coachSenSemuaRehat(sh) ? 'REHAT OTOT: regangan / jalan ringan 10 min → SELESAI' : 'SELESAI SESI ' + sh.g + ' ' + sh.s) + '</button></div>';
       if (sh.hs.rehat) h += '<div style="font-size:0.8rem;">Hari ini REHAT OTOT (regangan / jalan ringan). Rotasi diteruskan; siri ' + sh.g + ' ' + sh.s + ' diulang lain kali.</div>';
       if (sh.hs.siapAt && !sh.hs.rehat) h += '<div style="font-size:0.8rem;">Tekan stesen untuk lihat "Sesi depan".</div>';
@@ -12132,11 +12138,13 @@
     function coachLukisJog(sh, btn, btnA) {
       var hs = sh.hs, h = '', jm;
       if (sh.jenis === 'REHAT') {
-        return h + '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"><b>HARI REHAT</b><br>Tiada senaman atau jogging hari ini — otot membesar semasa rehat. Kalau mahu: jalan santai 10–20 min atau regangan ringan.</div>';
+        var asal = coachJenisHari(coachHariData.id || coachHariId());
+        return h + '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"><b>HARI REHAT</b><br>Tiada senaman atau jogging hari ini.</div>' +
+          '<button type="button" data-cs="jenis" data-v="' + (asal === 'REHAT' ? 'GYM' : asal) + '" style="' + btn + '">BATAL REHAT</button>';
       }
-      h += '<div style="font-weight:bold;font-size:1.05rem;">JOGGING 5:00 PTG</div><div style="font-size:0.78rem;">Sasaran ' + COACH_JOG_SASARAN + ' min · panaskan badan 3–5 min (jalan laju) · rentak masih boleh bercakap · sejukkan badan 5 min (jalan + regangan betis / quads).</div>';
+      h += '<div style="font-weight:bold;font-size:1.05rem;">JOGGING 5:00 PTG</div><div style="font-size:0.78rem;">Sasaran ' + COACH_JOG_SASARAN + ' min.</div>';
       if (hs.jog) {
-        h += '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;background:#000;color:#fff;font-weight:bold;">JOGGING SIAP — ' + hs.jog.minit + ' min' + (hs.ganjaran ? ' · +' + rm(hs.ganjaran) : '') + '</div>';
+        h += '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;background:#000;color:#fff;font-weight:bold;">JOGGING SIAP — ' + hs.jog.minit + ' min</div>';
       } else {
         if (coachJogMula) {
           jm = new Date(coachJogMula);
@@ -12155,7 +12163,7 @@
       return h;
     }
     function coachJogSimpan(n, sh, now) {
-      var penuh = EKO.GYM_JOG_SEN || EKO.GYM_SEN || 0, jogSen = n >= COACH_JOG_SASARAN ? penuh : Math.round(penuh * n / COACH_JOG_SASARAN);
+      var jogSen = 0; // GYM / jogging tiada ganjaran (12 Nov)
       var nyata = coachSenNyata(), gm = coachGymKira({ senarai: [], g: sh.g, s: sh.s, hs: sh.hs }, {}, true, nyata, {}), sen = jogSen + gm.sen, iS;
       var d = { senaman: { jenis: 'JOG', jog: { minit: n, at: now }, ganjaran: sen } }, tg = coachHariData.hari.tugas || {};
       if (!tg.senaman) {
@@ -12316,7 +12324,7 @@
         return;
       }
       if (cs === 'face') {
-        var fs = EKO.GYM_FACE_SEN || 0;
+        var fs = 0; // GYM tiada ganjaran (12 Nov)
         d = { senaman: { hari: sh.g, siri: sh.s, face: sh.f, faceAt: now, ganjaranFace: fs } };
         coachSimpanSenNyata({ face: sh.f === 'A' ? 'B' : 'A' });
         coachSimpanHari(d, function() {
@@ -12346,10 +12354,10 @@
         var x = sh.senarai[i];
         if (lat[x[0]]) { siap++; patut++; } else if (!coachLatihanRehat(x, sh)) patut++;
       }
-      var sen = rehatOtot || !patut ? 0 : Math.round((EKO.GYM_SEN || 0) * siap / patut);
-      if (sen) ket.push('Sesi ' + sh.g + ' ' + sh.s + ' (' + siap + '/' + patut + ' stesen)');
+      var sen = 0; // GYM tiada ganjaran (12 Nov)
+      if (!rehatOtot && patut) ket.push('Sesi ' + sh.g + ' ' + sh.s + ' selesai (' + siap + '/' + patut + ' stesen)');
       var st = nyata.streak || {}, semK = coachSemalamId(hari), n = st.akhir === hari ? (st.n || 1) : (st.akhir === semK || (coachJenisHari(semK) === 'REHAT' && st.akhir === coachSemalamId(semK)) ? (st.n || 0) + 1 : 1);
-      if (st.akhir !== hari && n % 7 === 0 && EKO.GYM_STREAK_SEN) { sen += EKO.GYM_STREAK_SEN; ket.push('Bonus streak ' + n + ' hari'); }
+      if (st.akhir !== hari && n % 7 === 0) ket.push('Streak ' + n + ' hari');
       var jumlah = (nyata.jumlahSesi || 0) + (rehatOtot ? 0 : 1), lc = {}, baru = [];
       for (k in (nyata.lencana || {})) if (nyata.lencana.hasOwnProperty(k)) lc[k] = nyata.lencana[k];
       var naik = false;
@@ -12361,7 +12369,7 @@
     function coachGymMesej(t) { var g = el('gym-info'); if (g) g.textContent = t; }
     function coachGymBayar(sen, ket, baru) {
       var lc = baru && baru.length ? ' · LENCANA BARU: ' + baru.join(', ') : '';
-      if (!(sen > 0)) { coachGymMesej((ket || '') + lc); return; }
+      if (true) { coachGymMesej((ket || '') + lc); return; } // GYM tiada ganjaran (12 Nov) — mesej sahaja
       var b = db.batch();
       b.set(refDompet(), { kuningSen: firebase.firestore.FieldValue.increment(sen), updatedAt: Date.now() }, { merge: true });
       dpLog(b, 'gym', ket + ': +' + rm(sen) + ' Kuning');
@@ -14099,9 +14107,6 @@
       { k: 'HJ_JUAL_X', tab: 'kedai', grup: 'INVESTMENT', nama: 'Pelanggan beli pada harga', jenis: 'pct', min: 100, step: 5 },
       { k: 'HJ_BOS_SEN', tab: 'kedai', grup: 'INVESTMENT', nama: 'HADIAH BOS setiap jenis barang', jenis: 'merah', min: 0 },
       { k: 'MESIN_SEN', tab: 'kedai', grup: 'BANK COIN', nama: 'Sewa mesin conveyor sejam', jenis: 'biru', min: 0 },
-      { k: 'GYM_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran sesi senaman penuh', jenis: 'kuning', min: 0 },
-      { k: 'GYM_FACE_SEN', tab: 'kedai', grup: 'GYM', nama: 'Ganjaran rutin FACE', jenis: 'kuning', min: 0 },
-      { k: 'GYM_STREAK_SEN', tab: 'kedai', grup: 'GYM', nama: 'Bonus setiap 7 hari berturut', jenis: 'kuning', min: 0 },
       { k: 'TAMAN_SEN', tab: 'kedai', grup: 'TAMAN', nama: 'Ganjaran matahari pagi / cahaya petang', jenis: 'kuning', min: 0 },
       { k: 'MAKMAL_SEN', tab: 'kedai', grup: 'MAKMAL HIDRASI', nama: 'Ganjaran setiap slot air tepat masa', jenis: 'kuning', min: 0 },
       { k: 'NUTRISI_SEN', tab: 'kedai', grup: 'PUSAT NUTRISI', nama: 'Ganjaran capai sasaran buah + sayur', jenis: 'kuning', min: 0 },
@@ -14471,6 +14476,15 @@
       }).catch(function(e) { el('gym-info').textContent = 'Gagal memuat GYM: ' + ((e && e.message) || e); });
     }
     el('btn-gym-keluar').onclick = function() { bukaTs(); };
+    el('gym-topbar').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gymtab'))) t = t.parentNode;
+      if (!t || t === this) return;
+      coachUIS.katalog = t.getAttribute('data-gymtab') === 'tetapan' ? 'SEMUA' : '';
+      coachUIS.katInfo = ''; coachUIS.buka = '';
+      coachLukisSenaman();
+      try { window.scrollTo(0, 0); } catch (er) {}
+    };
     el('btn-gym-coach').onclick = function() { bukaCoach(false); };
     // ══ TAMAN (Taman Sihat): MATAHARI PAGI + CAHAYA PETANG dalam bentuk permainan ══
     // Tekan KELUAR KE TAMAN → masa mula disimpan (coach_hari.keluar.{kunci}.mula) → balik, tekan DAH MASUK.
