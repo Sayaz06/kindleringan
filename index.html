@@ -14562,8 +14562,9 @@
     function lukisTaman() {
       var box = el('taman-isi');
       if (!box) return;
-      var btn = 'padding:7px 9px;margin:3px 4px 3px 0;font-size:0.9rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btn = 'padding:5px 8px;margin:4px 4px 0 0;font-size:0.8rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
       var btnA = btn + 'background:#000;color:#fff;';
+      var btnX = btn + 'border-style:dashed;border-color:#999;color:#999;'; // belum masa: nampak tapi tak boleh tekan
       var h = '', a = ['matahari', 'petang'], i, kini = coachMinitKini(), keluar = coachHariData.hari.keluar || {};
       if (!coachHariData.hari.laporanAt || !coachJadualKini()) {
         box.innerHTML = '<div style="font-size:0.95rem;">Isi LAPORAN PAGI di page COACH dulu — masa matahari pagi dikira dari waktu bangun.</div><button type="button" data-tm="coach" style="' + btn + '">KE COACH</button>';
@@ -14576,7 +14577,7 @@
         var tajuk = jn === 'matahari' ? t.nama.split(' — ')[0] : 'CAHAYA PETANG';
         var masa = jn === 'petang' ? '3:00 – 5:30 PM' : coachTeksMasa(t.min) + ' – ' + coachTeksMasa(coachTamat(t));
         h += '<div style="border:' + (st === 'SEKARANG' ? '3px' : '2px') + ' solid #000;border-radius:10px;padding:6px 8px;margin:6px 0;' + (rec && rec.s === 'BUAT' ? 'background:#000;color:#fff;' : '') + '">';
-        h += '<div style="font-weight:bold;font-size:1.05rem;">' + tajuk + '</div><div style="font-size:0.85rem;">Masa: ' + masa + ' · sasaran ' + min + ' min di luar</div>';
+        h += '<div style="font-weight:bold;font-size:1.05rem;">' + tajuk + '</div><div style="font-size:0.85rem;">Masa: ' + masa + ' · ' + min + ' min di luar</div>';
         if (rec) {
           h += '<div style="font-size:0.9rem;margin-top:3px;"><b>' + (rec.s === 'BUAT' ? 'SIAP' + (rec.lewat ? ' (lewat)' : '') + (rec.minit ? ' · ' + rec.minit + ' min di luar' : '') + (rec.kuning ? ' · +' + rm(rec.kuning) + ' Kuning' : '') :
             rec.s === 'GANTI' ? 'GANTI: ' + (COACH_GANTI[jn] || '-') : 'TAK DAPAT · ' + (rec.sebab || '-')) + '</b></div>';
@@ -14587,14 +14588,15 @@
           h += '<div style="font-size:0.95rem;margin-top:3px;"><b>DI LUAR</b> sejak ' + coachTeksMasa(new Date(kl.mula).getHours() * 60 + new Date(kl.mula).getMinutes()) + ' · ' + dah + ' / ' + min + ' min</div>' +
             '<button type="button" data-tm="masuk" data-k="' + k + '" style="' + btnA + '">DAH MASUK</button><button type="button" data-tm="semak" style="' + btn + '">SEMAK MASA</button><button type="button" data-tm="batalkeluar" data-k="' + k + '" style="' + btn + '">BATAL</button>';
         } else if (st === 'AKAN' && jn === 'petang') {
-          h += '<div style="font-size:0.85rem;margin-top:3px;">Belum masa. Datang semula pukul ' + coachTeksMasa(jn === 'petang' ? 15 * 60 : t.min) + '.</div>';
+          h += '<div style="font-size:0.8rem;margin-top:2px;">Buka pukul ' + coachTeksMasa(15 * 60) + '</div>' +
+            '<button type="button" disabled style="' + btnX + '">KELUAR KE TAMAN</button><button type="button" disabled style="' + btnX + '">TAK DAPAT</button>';
         } else if (tamanUI.dapat === k) {
           h += '<div style="font-size:0.85rem;">Sebab tak dapat:</div><button type="button" data-tm="sebab" data-k="' + k + '" data-v="HUJAN" style="' + btn + '">HUJAN</button><button type="button" data-tm="sebab" data-k="' + k + '" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
             '<button type="button" data-tm="sebab" data-k="' + k + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-tm="batal" style="' + btn + '">BATAL</button>';
         } else {
-          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — boleh keluar sekarang (lewat, tiada Kuning) atau buat GANTI.</div>';
-          h += '<button type="button" data-tm="keluar" data-k="' + k + '" style="' + btnA + '">' + (st === 'ABAI' ? 'KELUAR SEKARANG (lewat)' : 'KELUAR KE TAMAN') + '</button>' +
-            (st === 'ABAI' && COACH_GANTI[jn] ? '<button type="button" data-tm="ganti" data-k="' + k + '" style="' + btn + '">GANTI: ' + COACH_GANTI[jn] + '</button>' : '') +
+          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — keluar lewat (tiada Kuning) atau GANTI: ' + (COACH_GANTI[jn] || '-').toLowerCase() + '.</div>';
+          h += '<button type="button" data-tm="keluar" data-k="' + k + '" style="' + btnA + '">' + (st === 'ABAI' ? 'KELUAR (lewat)' : 'KELUAR KE TAMAN') + '</button>' +
+            (st === 'ABAI' && COACH_GANTI[jn] ? '<button type="button" data-tm="ganti" data-k="' + k + '" style="' + btn + '">GANTI</button>' : '') +
             '<button type="button" data-tm="dapat" data-k="' + k + '" style="' + btn + '">TAK DAPAT</button>';
         }
         h += '</div>';
@@ -14895,8 +14897,9 @@
     function lukisBilik() {
       var box = el('bilik-isi');
       if (!box) return;
-      var btn = 'padding:7px 9px;margin:3px 4px 3px 0;font-size:0.9rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btn = 'padding:5px 8px;margin:4px 4px 0 0;font-size:0.8rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
       var btnA = btn + 'background:#000;color:#fff;';
+      var btnX = btn + 'border-style:dashed;border-color:#999;color:#999;'; // belum masa: nampak tapi tak boleh tekan
       var j = coachJadualKini(), hr = coachHariData.hari, h = '', a = ['malap', 'sigh', 'tidur'], i, tj, kini = coachMinitKini();
       if (!hr.laporanAt || !j) {
         box.innerHTML = '<div style="font-size:0.95rem;">Isi LAPORAN PAGI di page COACH dulu — masa tidur dikira dari waktu bangun.</div><button type="button" data-bl="coach" style="' + btn + '">KE COACH</button>';
@@ -14918,17 +14921,19 @@
         } else if (jn !== 'tidur' && st === 'ABAI' && kini >= j.tidur) {
           h += '<div style="font-size:0.85rem;">Sudah masa tidur — tiada denda malam ini.</div>';
         } else if (kini < awal) {
-          h += '<div style="font-size:0.85rem;margin-top:3px;">Belum masa. Datang semula pukul ' + coachTeksMasa(awal) + '.</div>';
+          h += '<div style="font-size:0.8rem;margin-top:2px;">Buka pukul ' + coachTeksMasa(awal) + '</div>' +
+            '<button type="button" disabled style="' + btnX + '">' + { malap: 'LAMPU DAH MALAP', sigh: 'SIAP 1 PUSINGAN', tidur: 'LAMPU DITUTUP' }[jn] + '</button>' +
+            (jn !== 'tidur' ? '<button type="button" disabled style="' + btnX + '">TAK DAPAT</button>' : '');
         } else if (bilikUI.dapat === t.kunci) {
           h += '<div style="font-size:0.85rem;">Sebab tak dapat:</div><button type="button" data-bl="sebab" data-k="' + t.kunci + '" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
             '<button type="button" data-bl="sebab" data-k="' + t.kunci + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-bl="batal" style="' + btn + '">BATAL</button>';
         } else if (jn === 'sigh') {
-          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — masih boleh buat sekarang (lewat, tiada Kuning).</div>';
-          h += '<div style="font-size:1.1rem;font-weight:bold;margin:4px 0;">Pusingan ' + bilikUI.sigh + ' / ' + COACH_SIGH_BIL + '</div>' +
+          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — boleh buat lewat (tiada Kuning).</div>';
+          h += '<div style="font-size:0.95rem;font-weight:bold;margin:3px 0 0;">Pusingan ' + bilikUI.sigh + ' / ' + COACH_SIGH_BIL + '</div>' +
             '<button type="button" data-bl="sigh" data-k="' + t.kunci + '" style="' + btnA + '">SIAP 1 PUSINGAN</button><button type="button" data-bl="dapat" data-k="' + t.kunci + '" style="' + btn + '">TAK DAPAT</button>';
         } else {
-          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — masih boleh buat sekarang (lewat, tiada Kuning).</div>';
-          h += '<button type="button" data-bl="' + jn + '" data-k="' + t.kunci + '" style="' + btnA + '">' + (jn === 'malap' ? 'LAMPU DAH MALAP' : 'LAMPU DITUTUP SEKARANG') + '</button>' +
+          if (st === 'ABAI') h += '<div style="font-size:0.85rem;margin-top:3px;"><b>DIABAIKAN</b> — boleh buat lewat (tiada Kuning).</div>';
+          h += '<button type="button" data-bl="' + jn + '" data-k="' + t.kunci + '" style="' + btnA + '">' + (jn === 'malap' ? 'LAMPU DAH MALAP' : 'LAMPU DITUTUP') + '</button>' +
             (jn === 'malap' ? '<button type="button" data-bl="dapat" data-k="' + t.kunci + '" style="' + btn + '">TAK DAPAT</button>' : '');
         }
         h += '</div>';
