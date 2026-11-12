@@ -13006,13 +13006,15 @@
       else if (sas >= 100) perlu = J - L > 0 ? -1 : 0;
       else perlu = Math.ceil((sas * J - 100 * L) / (100 - sas));
       var hr = coachHariData.hari || {};
+      // Minit → "7 jam 24 minit" / "45 minit" / "2 jam"
+      function jm(m) { m = Math.max(0, Math.round(m || 0)); var j = Math.floor(m / 60), n = m % 60; return j ? j + ' jam' + (n ? ' ' + n + ' minit' : '') : n + ' minit'; }
       return '<div style="border-top:1px solid #000;margin-top:8px;padding-top:4px;font-weight:bold;">LISTENING vs ENGLISH LAIN</div>' +
         '<div style="text-align:center;"><svg viewBox="-110 -10 460 250" style="width:100%;max-width:380px;" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>' +
-        '<div style="font-size:0.9rem;">Listening hari ini: <b>' + (hr.listening || 0) + ' min</b></div>' +
-        '<div style="font-size:0.9rem;">Jumlah terkumpul: <b>' + L + ' min</b></div>' +
+        '<div style="font-size:0.9rem;">Listening hari ini: <b>' + jm(hr.listening) + '</b></div>' +
+        '<div style="font-size:0.9rem;">Jumlah terkumpul: <b>' + jm(L) + '</b></div>' +
         '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>KALKULATOR</b><br>' +
         (perlu === -1 ? 'Sasaran 100% hanya boleh dicapai jika bidang lain 0.'
-          : perlu > 0 ? 'Awak perlukan <b>' + perlu + ' minit</b> lagi listening untuk capai <b>' + sas + '%</b>.'
+          : perlu > 0 ? 'Awak perlukan <b>' + jm(perlu) + '</b> lagi listening untuk capai <b>' + sas + '%</b>.'
           : 'Listening dah capai sasaran <b>' + sas + '%</b>. Bagus!') +
         '<div style="font-size:0.75rem;margin-top:2px;">Kira ikut jumlah English sekarang (' + J + '). Kalau bidang lain bertambah, minit perlu ikut naik.</div></div>';
     }
