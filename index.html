@@ -10127,47 +10127,51 @@
     function coachKotakPai(tajuk, isi) {
       return '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;"><div style="font-weight:bold;margin-bottom:3px;">' + tajuk + '</div>' + isi + '</div>';
     }
-    // PAI 1 · KESIHATAN: setiap tugas yang SUDAH dinilai = 1 bahagian sama besar.
-    //   Hitam = SIAP · Jalur = SEPARUH (ganti / air 1 terlepas) · Putih = TERLEPAS. Tengah = peratus SIAP.
-    //   Belum masa & TAK DAPAT (sebab luar) TIDAK masuk pai (disenarai di bawah).
+    // PAI 1 · KESIHATAN (12 Nov): SATU sektor hitam bermula pukul 12 dan membesar ikut tugas yang SUDAH dibuat → 100% = semua tugas hari ini siap.
+    //   Setiap tugas = 1 bahagian sama besar. Air & buah/sayur dikira separa (cth air 4/8 = 1/2 bahagian). GANTI = dikira siap.
+    //   TAK DAPAT (sebab luar) sahaja = tidak dikira langsung.
     function coachPaiKesihatan() {
-      var k = coachKiraKesihatan(), hijau = 0, dinilai = 0, i, kump = { HIJAU: [], KUNING: [], MERAH: [] }, belum = [], kecuali = [];
+      var k = coachKiraKesihatan(), i, jumlah = 0, dapat = 0, sudah = [], belum = [], kecuali = [];
       var senarai = [['air', 'Air'], ['matahari', 'Matahari'], ['petang', 'Cahaya petang'], ['senaman', 'Senaman'], ['malap', 'Malap lampu'], ['sigh', 'Sigh']];
-      function masuk(label, st, nota) {
-        if (st === 'HIJAU' || st === 'KUNING' || st === 'MERAH') { dinilai++; if (st === 'HIJAU') hijau++; kump[st].push(label + (nota ? ' (' + nota + ')' : '')); }
-        else belum.push(label);
-      }
       if (!k.adaJadual) {
         coachSkorKes = { h: 0, n: 0 };
         return coachKotakPai('PAI 1 · KESIHATAN HARI INI', '<div style="font-size:0.85rem;">Isi LAPORAN PAGI dulu — tugas kesihatan ikut waktu bangun.</div>');
       }
-      for (i = 0; i < senarai.length; i++) {
-        var c = k.kat[senarai[i][0]], st = '';
-        if (!c) continue;
-        var dinilaiK = c.siap + c.abai + c.dapat + (c.ganti || 0);
-        if (senarai[i][0] === 'air') {
-          if (dinilaiK) st = c.abai === 0 ? 'HIJAU' : (c.abai === 1 ? 'KUNING' : 'MERAH');
-          masuk('Air', st, dinilaiK ? c.siap + '/' + c.jumlah + ' slot' : '');
-        } else if (!c.siap && !c.ganti && !c.abai && c.dapat) {
-          kecuali.push(senarai[i][1]);
-        } else {
-          if (dinilaiK) st = c.abai ? 'MERAH' : (c.ganti ? 'KUNING' : 'HIJAU');
-          masuk(senarai[i][1], st, c.ganti ? 'ganti' : '');
-        }
+      function tambah(label, f) {
+        f = Math.max(0, Math.min(1, f));
+        jumlah++; dapat += f;
+        if (f >= 1) sudah.push(label); else belum.push(label);
       }
-      if (k.tidur) masuk('Tidur semalam', k.tidur, k.tidur === 'MERAH' ? 'lewat' : ''); else belum.push('Tidur semalam (tiada data)');
-      var km = k.kat.makan;
-      if (km && km.st) masuk('Buah + sayur', km.st, km.g + '/' + COACH_SASARAN_BUAH_G + ' g'); else belum.push('Buah + sayur (' + (km ? km.g : 0) + ' g)');
-      var nH = kump.HIJAU.length, nK = kump.KUNING.length, nM = kump.MERAH.length, p = coachPeratus([nH, nK, nM]);
-      coachSkorKes = { h: hijau, n: dinilai, p: p[0] };
-      var pie = coachPie([{ v: nH, n: 'SIAP' }, { v: nK, n: 'SEPARUH' }, { v: nM, n: 'TERLEPAS' }]);
-      var leg = '<div style="font-size:0.85rem;line-height:1.5;">' +
-        '<b>SIAP ' + p[0] + '%</b> (' + nH + ')' + (nH ? ': ' + kump.HIJAU.join(', ') : '') + '<br>' +
-        '<b>SEPARUH ' + p[1] + '%</b> (' + nK + ')' + (nK ? ': ' + kump.KUNING.join(', ') : '') + '<br>' +
-        '<b>TERLEPAS ' + p[2] + '%</b> (' + nM + ')' + (nM ? ': ' + kump.MERAH.join(', ') : '') + '</div>';
-      var isi = pie + leg +
-        '<div style="font-size:0.8rem;margin-top:3px;">Pai = ' + dinilai + ' tugas yang sudah dinilai (jumlah 100%).' +
-        (belum.length ? '<br>Belum dikira: ' + belum.join(', ') + '.' : '') + (kecuali.length ? '<br>Tak dapat (sebab luar, tidak dikira): ' + kecuali.join(', ') + '.' : '') + '</div>' +
+      for (i = 0; i < senarai.length; i++) {
+        var c = k.kat[senarai[i][0]];
+        if (!c) continue;
+        var buat = c.siap + (c.ganti || 0);
+        if (senarai[i][0] === 'air') {
+          var nAir = c.jumlah - c.dapat;
+          if (nAir > 0) tambah('Air ' + buat + '/' + nAir, buat / nAir); else kecuali.push('Air');
+        } else if (!buat && c.dapat) {
+          kecuali.push(senarai[i][1]);
+        } else tambah(senarai[i][1], buat ? 1 : 0);
+      }
+      if (k.tidur) tambah('Tidur semalam', k.tidur === 'MERAH' ? 0 : 1);
+      var km = k.kat.makan, g = km ? km.g : 0;
+      tambah('Buah + sayur ' + g + '/' + COACH_SASARAN_BUAH_G + ' g', g / COACH_SASARAN_BUAH_G);
+      var pc = jumlah ? Math.round(dapat * 100 / jumlah) : 0;
+      coachSkorKes = { h: sudah.length, n: jumlah, p: pc };
+      // Lukis: bulatan putih + sektor hitam dari pukul 12 (ikut arah jam) + peratus di tengah
+      var cx = 120, cy = 110, r = 90, f = jumlah ? dapat / jumlah : 0, s = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="3"/>';
+      if (f >= 0.999) s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#000"/>';
+      else if (f > 0) {
+        var a1 = -Math.PI / 2 + f * 2 * Math.PI;
+        s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + ' A' + r + ' ' + r + ' 0 ' + (f > 0.5 ? 1 : 0) + ' 1 ' + (cx + r * Math.cos(a1)).toFixed(2) + ' ' + (cy + r * Math.sin(a1)).toFixed(2) + ' Z" fill="#000"/>';
+      }
+      s += '<circle cx="' + cx + '" cy="' + cy + '" r="34" fill="#fff" stroke="#000" stroke-width="3"/>' +
+        '<text x="' + cx + '" y="' + (cy + 8) + '" font-size="24" font-weight="bold" text-anchor="middle" fill="#000">' + pc + '%</text>';
+      var pie = '<div style="text-align:center;"><svg viewBox="0 0 240 220" width="240" height="220" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>';
+      var isi = pie +
+        '<div style="font-size:0.85rem;line-height:1.5;"><b>SUDAH (' + sudah.length + '):</b> ' + (sudah.length ? sudah.join(', ') : '-') + '<br>' +
+        '<b>BELUM (' + belum.length + '):</b> ' + (belum.length ? belum.join(', ') : '-') + '</div>' +
+        (kecuali.length ? '<div style="font-size:0.8rem;margin-top:3px;">Tak dapat (sebab luar, tidak dikira): ' + kecuali.join(', ') + '.</div>' : '') +
         '<div style="font-size:0.85rem;border-top:1px solid #000;margin-top:4px;padding-top:3px;">Markah diabaikan hari ini: <b>' + k.markah + '</b> (had ' + COACH_HAD_KUNCI + ')' + (k.kunci ? ' · <b>LACI DIKUNCI</b>' : '') + '</div>';
       return coachKotakPai('PAI 1 · KESIHATAN HARI INI', isi);
     }
