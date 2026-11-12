@@ -14369,9 +14369,18 @@
         }
         var tanda = '';
         try { tanda = tsTanda(b[0]); } catch (e) {}
+        // Tanda = cop di tengah bumbung, tutup simbol bangunan (gaya cop SOLD, 12 Nov) — tidak menolak bangunan ke bawah
+        var cop = '';
+        if (tanda) {
+          var copHitam = tanda.indexOf('TERLEPAS') !== -1;
+          cop = '<span style="position:absolute;z-index:2;left:50%;top:29%;padding:2px 7px;border:3px double ' + (copHitam ? '#fff' : '#000') + ';outline:2px solid #000;' +
+            'font-weight:bold;font-size:0.78rem;white-space:nowrap;letter-spacing:1px;text-transform:uppercase;' +
+            '-webkit-transform:translate(-50%,-50%) rotate(-10deg);transform:translate(-50%,-50%) rotate(-10deg);' +
+            (copHitam ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + tanda + '</span>';
+        }
         h += '<button type="button" class="kd-pd" data-ts="' + b[0] + '"' + (b[3] ? '' : ' style="opacity:0.85;"') + '>' +
-          (tanda ? '<span style="display:block;margin:0 auto 2px;padding:2px 4px;border:2px solid #000;border-radius:5px;font-weight:bold;font-size:0.75rem;' + (tanda.indexOf('TERLEPAS') !== -1 ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + tanda + '</span>' : '') +
-          svgBangunan(b[0], b[1], b[3]) + '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
+          '<span style="position:relative;display:block;max-width:180px;margin:0 auto;">' + svgBangunan(b[0], b[1], b[3]) + cop + '</span>' +
+          '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
       }
       el('ts-bangunan').innerHTML = h;
     }
