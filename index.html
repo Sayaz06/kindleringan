@@ -12859,6 +12859,27 @@
       var b = coachBabak[coachBabakI];
       if (b && b.b && b.b[+v]) b.b[+v][1]();
     };
+    // Tugas TERLEPAS dalam bubble (12 Nov): AIR paling penting → disebut dulu + butang terus ke Makmal.
+    //   utama = true: tiada tugas aktif (babak utama) · false: susulan selepas tugas aktif ("Oh ya...")
+    function coachBabakTerlepas(abai, babak, utama) {
+      var air = [], lain = [], i, x;
+      for (i = 0; i < abai.length; i++) {
+        x = abai[i];
+        if (x.jenis === 'air') air.push(x.kunci.replace('air', ''));
+        else lain.push(x.nama.split(' — ')[0].toLowerCase());
+      }
+      var ml = 0, mn = coachHariData.hari.minum || [];
+      for (i = 0; i < mn.length; i++) ml += mn[i].ml || 0;
+      var airKunci = null;
+      for (i = 0; i < abai.length; i++) if (abai[i].jenis === 'air') { airKunci = abai[i].kunci; break; }
+      if (air.length) {
+        babak((utama ? 'Tunggu dulu!' : 'Oh ya... satu lagi, ini penting.') + '\n' + (ml ? 'Air hari ni baru ' + ml + ' ml' : 'Awak belum minum air langsung hari ni') + ' — slot ' + air.join(', ') + ' terlepas.\n' +
+          'Air paling penting. Minum segelas sekarang (lewat pun tak apa), lepas tu log kat Makmal.' + (lain.length ? '\nLepas tu: ' + lain.join(', ') + ' — masih boleh buat lewat.' : ''), 'marah',
+          [['MINUM SEKARANG · MAKMAL', function() { bukaMakmal(airKunci); }]].concat(lain.length ? [['KE USAHA', function() { bukaTs(); }]] : []));
+      } else {
+        babak((utama ? 'Belum habis lagi.' : 'Oh ya...') + ' Tadi ada yang terlepas: ' + lain.join(', ') + '.\nMasih boleh buat lewat. Bangunan yang ada tanda TERLEPAS kat USAHA tu.', 'sedih', [['KE USAHA', function() { bukaTs(); }]]);
+      }
+    }
     function coachLukisBubble(fokus, salam, kunciTeks) {
       var now = new Date(), kk = coachKiraKesihatan(), j = coachJadualKini(), B = [], jamTeks = coachTeksMasa(now.getHours() * 60 + now.getMinutes());
       function babak(c, aksi, butang) { B.push({ c: c, aksi: aksi, b: butang || [] }); }
@@ -12892,12 +12913,14 @@
             [['JOM KE TAMAN', function() { bukaTaman(); }]]);
         } else if (aktif && (aktif.jenis === 'malap' || aktif.jenis === 'sigh')) {
           babak('Dah dekat masa tidur.\nMalapkan lampu dulu, lepas tu tarik nafas — sigh ' + COACH_SIGH_BIL + ' kali.\nTelefon jauhkan. Kindle boleh, cahaya rendah.', 'diam', [['KE BILIK TIDUR', function() { bukaBilik(); }]]);
+        } else if (abai.length && !kk.kunci) {
+          // Tiada tugas aktif TAPI ada yang terlepas → jangan kata "tak ada tugas, bagus" (12 Nov). AIR diutamakan.
+          coachBabakTerlepas(abai, babak, true);
         } else {
           babak('Tak ada tugas kesihatan sekarang. Bagus!\nJom belajar: ' + (fokus || 'teruskan') + ' — ' + coachFokusTeks(fokus) + '.', 'gembira', goF ? [goF] : []);
         }
-        if (abai.length && !kk.kunci) {
-          var na = []; for (i = 0; i < abai.length; i++) na.push(abai[i].jenis === 'air' ? 'air slot ' + abai[i].kunci.replace('air', '') : abai[i].nama.split(' — ')[0].toLowerCase());
-          babak('Oh ya... tadi ada yang terlepas: ' + na.join(', ') + '.\nMasih boleh buat lewat. Bangunan yang ada tanda TERLEPAS kat USAHA tu.', 'sedih', [['KE USAHA', function() { bukaTs(); }]]);
+        if (aktif && abai.length && !kk.kunci) { // susulan selepas tugas aktif
+          coachBabakTerlepas(abai, babak, false);
         }
         var gBS = coachMakanHari().g;
         if (kini < j.tidur && gBS < COACH_SASARAN_BUAH_G) {
