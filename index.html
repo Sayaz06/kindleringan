@@ -12235,6 +12235,7 @@
       if (cs === 'katinfo') { var kI = t.getAttribute('data-k'); coachUIS.katInfo = coachUIS.katInfo === kI ? '' : kI; coachLukisSenaman(); return; }
       if (cs === 'katalogtutup') { coachUIS.katalog = ''; coachUIS.katInfo = ''; coachLukisSenaman(); return; }
       if (cs === 'gbr') {
+        var gk = t.getAttribute('data-k'), gv = t.getAttribute('data-v'); // fix: gk/gv tidak ditakrif → butang GAMBAR tak jalan
         if (gv !== 'padam') { bukaGambar(gk, gv); return; }
         if (!confirm('Padam gambar sendiri untuk latihan ini? (orang lidi akan dipapar semula)')) return;
         kol('coach_gambar').doc(gk).delete().then(function() { delete coachGambar[gk]; coachLukisSenaman(); }).catch(function(e) { alert('Gagal padam: ' + ((e && e.message) || e)); });
@@ -14692,8 +14693,9 @@
     function lukisMakmal() {
       var box = el('makmal-isi');
       if (!box) return;
-      var btn = 'padding:7px 9px;margin:3px 4px 3px 0;font-size:0.9rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btn = 'padding:5px 8px;margin:4px 4px 0 0;font-size:0.8rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
       var btnA = btn + 'background:#000;color:#fff;';
+      var btnX = btn + 'border-style:dashed;border-color:#999;color:#999;'; // belum masa: nampak tapi tak boleh tekan
       var j = coachJadualKini(), h = '', i, kini = coachMinitKini(), hr = coachHariData.hari, tg = hr.tugas || {};
       if (!hr.laporanAt || !j) {
         box.innerHTML = '<div style="font-size:0.95rem;">Isi LAPORAN PAGI di page COACH dulu — slot air disusun ikut waktu bangun.</div><button type="button" data-mk="coach" style="' + btn + '">KE COACH</button>';
@@ -14718,8 +14720,11 @@
               '<button type="button" data-mk="mlin" data-k="' + k + '" style="' + btnA + '">SIMPAN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
           } else if (makmalUI.dapat === k) {
             h += '<div>Sebab tak dapat: <button type="button" data-mk="sebab" data-k="' + k + '" data-v="SAKIT" style="' + btn + '">SAKIT</button><button type="button" data-mk="sebab" data-k="' + k + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
-          } else h += '<div><button type="button" data-mk="minum" data-k="' + k + '" style="' + (st === 'SEKARANG' ? btnA : btn) + '">' + (st === 'ABAI' ? 'MINUM SEKARANG (lewat)' : 'MINUM') + '</button>' +
+          } else h += '<div><button type="button" data-mk="minum" data-k="' + k + '" style="' + (st === 'SEKARANG' ? btnA : btn) + '">' + (st === 'ABAI' ? 'MINUM (lewat)' : 'MINUM') + '</button>' +
             (st === 'ABAI' ? '<button type="button" data-mk="dapat" data-k="' + k + '" style="' + btn + '">TAK DAPAT</button>' : '') + '</div>';
+        } else if (!r && st === 'AKAN' && kini < j.tidur) {
+          // Belum masa: butang tetap nampak tapi tak boleh tekan
+          h += '<div><button type="button" disabled style="' + btnX + '">MINUM</button></div>';
         }
         h += '</div>';
       }
