@@ -14589,8 +14589,7 @@
           h += '<div style="font-size:0.95rem;margin-top:3px;"><b>DI LUAR</b> sejak ' + coachTeksMasa(new Date(kl.mula).getHours() * 60 + new Date(kl.mula).getMinutes()) + ' · ' + dah + ' / ' + min + ' min</div>' +
             '<button type="button" data-tm="masuk" data-k="' + k + '" style="' + btnA + '">DAH MASUK</button><button type="button" data-tm="semak" style="' + btn + '">SEMAK MASA</button><button type="button" data-tm="batalkeluar" data-k="' + k + '" style="' + btn + '">BATAL</button>';
         } else if (st === 'AKAN' && jn === 'petang') {
-          h += '<div style="font-size:0.8rem;margin-top:2px;">Buka pukul ' + coachTeksMasa(15 * 60) + '</div>' +
-            '<button type="button" disabled style="' + btnX + '">KELUAR KE TAMAN</button><button type="button" disabled style="' + btnX + '">TAK DAPAT</button>';
+          h += '<button type="button" disabled style="' + btnX + '">BELUM SAMPAI MASA · ' + coachTeksMasa(15 * 60) + '</button>';
         } else if (tamanUI.dapat === k) {
           h += '<div style="font-size:0.85rem;">Sebab tak dapat:</div><button type="button" data-tm="sebab" data-k="' + k + '" data-v="HUJAN" style="' + btn + '">HUJAN</button><button type="button" data-tm="sebab" data-k="' + k + '" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
             '<button type="button" data-tm="sebab" data-k="' + k + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-tm="batal" style="' + btn + '">BATAL</button>';
@@ -14724,7 +14723,7 @@
             (st === 'ABAI' ? '<button type="button" data-mk="dapat" data-k="' + k + '" style="' + btn + '">TAK DAPAT</button>' : '') + '</div>';
         } else if (!r && st === 'AKAN' && kini < j.tidur) {
           // Belum masa: butang tetap nampak tapi tak boleh tekan
-          h += '<div><button type="button" disabled style="' + btnX + '">MINUM</button></div>';
+          h += '<div><button type="button" disabled style="' + btnX + '">BELUM SAMPAI MASA</button></div>';
         }
         h += '</div>';
       }
@@ -14926,9 +14925,7 @@
         } else if (jn !== 'tidur' && st === 'ABAI' && kini >= j.tidur) {
           h += '<div style="font-size:0.85rem;">Sudah masa tidur — tiada denda malam ini.</div>';
         } else if (kini < awal) {
-          h += '<div style="font-size:0.8rem;margin-top:2px;">Buka pukul ' + coachTeksMasa(awal) + '</div>' +
-            '<button type="button" disabled style="' + btnX + '">' + { malap: 'LAMPU DAH MALAP', sigh: 'SIAP 1 PUSINGAN', tidur: 'LAMPU DITUTUP' }[jn] + '</button>' +
-            (jn !== 'tidur' ? '<button type="button" disabled style="' + btnX + '">TAK DAPAT</button>' : '');
+          h += '<button type="button" disabled style="' + btnX + '">BELUM SAMPAI MASA · ' + coachTeksMasa(awal) + '</button>';
         } else if (bilikUI.dapat === t.kunci) {
           h += '<div style="font-size:0.85rem;">Sebab tak dapat:</div><button type="button" data-bl="sebab" data-k="' + t.kunci + '" data-v="SAKIT" style="' + btn + '">SAKIT</button>' +
             '<button type="button" data-bl="sebab" data-k="' + t.kunci + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-bl="batal" style="' + btn + '">BATAL</button>';
@@ -15125,7 +15122,7 @@
       taman: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M4.2 19.8L7 17M17 7l2.8-2.8" stroke="#fff" stroke-width="2.2"/></svg>',
       makmal: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C9 7 5 11 5 15a7 7 0 0014 0c0-4-4-8-7-13z"/></svg>',
       nutrisi: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="15" r="7"/><path d="M12 8c0-3 2-5 5-6 0 3-2 5-5 6z"/></svg>',
-      bilik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15 2a10 10 0 100 20A9 9 0 0115 2z"/></svg>',
+      bilik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
       surau: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 22V14a9 9 0 0118 0v8z"/><rect x="11" y="1" width="2" height="5"/></svg>',
       pawagam: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M10 8v8l6-4z" fill="#000"/></svg>',
       tips: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11"/><rect x="10.5" y="10" width="3" height="8" fill="#000"/><circle cx="12" cy="6.5" r="1.8" fill="#000"/></svg>'
