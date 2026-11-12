@@ -10425,29 +10425,14 @@
         if (COACH_POSPON[kb]) continue;
         kE.push(i2); nE.push(unit[kb] || 0); cE.push({ v: unit[kb] || 0, n: COACH_BIDANG[i2][1] }); cS.push({ v: set.english[kb], n: COACH_BIDANG[i2][1] });
       }
-      var pE = coachPeratus(nE), legE = '', jumE = 0, kalkL = '';
-      for (i2 = 0; i2 < nE.length; i2++) jumE += nE[i2];
+      var pE = coachPeratus(nE), legE = '';
       for (i2 = 0; i2 < kE.length; i2++) {
         var bd = COACH_BIDANG[kE[i2]], sas = set.english[bd[0]];
         legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : '') + ')</span><br>';
-        // KALKULATOR LISTENING (12 Nov): berapa minit lagi supaya Listening = sasaran %.
-        //   (L + x) / (J + x) = s/100  →  x = (s·J − 100·L) / (100 − s)   · L = minit listening, J = jumlah semua bidang
-        if (bd[0] === 'listening') {
-          var L = nE[i2], perlu;
-          if (sas >= 100) perlu = jumE - L > 0 ? -1 : 0;
-          else perlu = Math.ceil((sas * jumE - 100 * L) / (100 - sas));
-          if (!jumE && sas > 0) perlu = 1;
-          kalkL = '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;">' +
-            '<b>KALKULATOR LISTENING</b><br>' +
-            (perlu === -1 ? 'Sasaran 100% hanya boleh dicapai jika bidang lain 0.'
-              : perlu > 0 ? 'Awak perlukan <b>' + perlu + ' minit</b> lagi listening untuk capai <b>' + sas + '%</b>.'
-              : 'Listening dah capai sasaran <b>' + sas + '%</b>. Bagus!') +
-            '<div style="font-size:0.75rem;margin-top:2px;">Kira ikut jumlah sekarang (' + jumE + '). Kalau awak tambah bidang lain, minit perlu ikut naik.</div></div>';
-        }
       }
       isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
         coachPie(cS, '(c) ENGLISH SASARAN') +
-        '<div style="font-size:0.8rem;">Bandingkan pai (b) dengan (c): hirisan yang sama nama patut sama besar.</div>' + kalkL +
+        '<div style="font-size:0.8rem;">Bandingkan pai (b) dengan (c): hirisan yang sama nama patut sama besar.</div>' +
         '<div style="margin:5px 0;font-size:0.85rem;border-top:1px solid #000;padding-top:4px;"><b>Solat</b> · ' + (solat ? 'purata ' + solat.purata + '/5 (7 hari) · <b>' + solat.st + '</b>' : 'belum direkod') + '</div>';
       h += coachKotakPai('PAI 2 · USAHA · seimbang ' + hijau + '/' + dinilaiU, isi2);
       // PAI 3 · KESEIMBANGAN: Kesihatan /10 (% SIAP Pai 1 ÷ 10) + Usaha /10 (bahagian HIJAU Pai 2 ÷ 10) → jumlah = 100% pai. Seimbang = 50:50.
@@ -12981,6 +12966,38 @@
       var p = jumlah / bil;
       return { purata: Math.round(p * 10) / 10, hari: bil, st: p >= 4.5 ? 'HIJAU' : (p >= 3.5 ? 'KUNING' : 'MERAH') };
     }
+    // PAWAGAM (12 Nov): pai Listening — SATU sektor (bahagian Listening dalam English) bermula pukul 12 · jejari putus-putus = SASARAN %
+    //   + KALKULATOR: berapa minit lagi listening untuk capai sasaran.  (L + x) / (J + x) = s/100  →  x = (s·J − 100·L) / (100 − s)
+    function pawagamPaiListening() {
+      var d = coachDataAkhir || {}, musim = COACH_MUSIM[d.musim] ? d.musim : 'CUTI', sas = COACH_MUSIM[musim].english.listening || 0;
+      var unit = { listening: d.listening || 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
+      var J = 0, i, L = unit.listening;
+      for (i = 0; i < COACH_BIDANG.length; i++) if (!COACH_POSPON[COACH_BIDANG[i][0]]) J += unit[COACH_BIDANG[i][0]] || 0;
+      var f = J ? L / J : 0, pc = Math.round(f * 100);
+      var cx = 120, cy = 112, r = 90, s = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="3"/>';
+      function titik(fr, rr) { var a = -Math.PI / 2 + fr * 2 * Math.PI; return [(cx + rr * Math.cos(a)).toFixed(2), (cy + rr * Math.sin(a)).toFixed(2)]; }
+      if (f >= 0.999) s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#bbb" stroke="#000" stroke-width="3"/>';
+      else if (f > 0) { var p1 = titik(f, r); s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + ' A' + r + ' ' + r + ' 0 ' + (f > 0.5 ? 1 : 0) + ' 1 ' + p1[0] + ' ' + p1[1] + ' Z" fill="#bbb" stroke="#000" stroke-width="3" stroke-linejoin="round"/>'; }
+      s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + '" stroke="#000" stroke-width="4"/>';
+      // Tag SASARAN: jejari putus-putus + label di luar bulatan
+      var ps = titik(sas / 100, r + 4), pl = titik(sas / 100, r + 16);
+      s += '<path d="M' + cx + ' ' + cy + ' L' + ps[0] + ' ' + ps[1] + '" stroke="#000" stroke-width="3" stroke-dasharray="6 4"/>' +
+        '<text x="' + pl[0] + '" y="' + (+pl[1] + 5) + '" font-size="15" font-weight="bold" text-anchor="' + (sas < 50 ? 'start' : 'end') + '" fill="#000">' + sas + '%</text>';
+      s += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#000"/>';
+      if (f > 0) { var pt = titik(f / 2, r * 0.55); s += '<text x="' + pt[0] + '" y="' + (+pt[1] + 7) + '" font-size="20" font-weight="bold" text-anchor="middle" fill="#000">' + pc + '%</text>'; }
+      var perlu;
+      if (!J) perlu = sas > 0 ? 1 : 0;
+      else if (sas >= 100) perlu = J - L > 0 ? -1 : 0;
+      else perlu = Math.ceil((sas * J - 100 * L) / (100 - sas));
+      return '<div style="border-top:1px solid #000;margin-top:8px;padding-top:4px;font-weight:bold;">LISTENING vs ENGLISH LAIN</div>' +
+        '<div style="text-align:center;"><svg viewBox="-20 0 280 230" width="260" height="214" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>' +
+        '<div style="font-size:0.85rem;text-align:center;">Kelabu = Listening <b>' + pc + '%</b> (' + L + ' min) · Garis putus-putus = sasaran <b>' + sas + '%</b></div>' +
+        '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>KALKULATOR</b><br>' +
+        (perlu === -1 ? 'Sasaran 100% hanya boleh dicapai jika bidang lain 0.'
+          : perlu > 0 ? 'Awak perlukan <b>' + perlu + ' minit</b> lagi listening untuk capai <b>' + sas + '%</b>.'
+          : 'Listening dah capai sasaran <b>' + sas + '%</b>. Bagus!') +
+        '<div style="font-size:0.75rem;margin-top:2px;">Kira ikut jumlah English sekarang (' + J + '). Kalau bidang lain bertambah, minit perlu ikut naik.</div></div>';
+    }
     function coachLukisUsaha() {
       var box = el('coach-usaha');
       if (!box) return;
@@ -12989,6 +13006,7 @@
       h += '<div style="font-size:0.8rem;">Kuning hari ini: ' + rm((hr.pawagamUnit || 0) * (EKO.PAWAGAM_SEN || 0)) + ' (' + ((hr.pawagamUnit || 0) * 10) + ' / ' + (PAWAGAM_HAD_UNIT * 10) + ' min dibayar)</div>';
       var lsHari = hr.listening || 0, lsJumlah = (coachDataAkhir && coachDataAkhir.listening) || 0;
       h += '<div style="font-size:0.9rem;margin-top:6px;">Listening hari ini: <b>' + lsHari + ' min</b> · jumlah terkumpul: ' + lsJumlah + ' min</div>';
+      h += pawagamPaiListening();
       if (coachUIU.listening) {
         h += '<div style="margin:4px 0;">minit: <input type="text" inputmode="numeric" id="coach-ls-input" style="width:90px;font-size:1rem;padding:4px;border:2px solid #000;"> ' +
           '<button type="button" data-cu="lssimpan" style="padding:6px 8px;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;">SIMPAN</button> ' +
