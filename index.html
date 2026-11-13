@@ -10804,7 +10804,7 @@
       ['KAKI', 'KAKI', [
         ['squats', 'Squats', 'rep', 0, 0, 'C,A,B'], ['lunges', 'Lunges', 'rep', 0, 1, 'C,A,B'], ['sumoSquat', 'Sumo squat', 'rep', 0, 0, 'D,C,A'],
         ['bulgarian', 'Bulgarian split squat', 'rep', 0, 1, 'C,A,B'], ['lungeKick', 'Backward lunge with front kick', 'rep', null, 1, 'A,C,B'], ['slDeadlift', 'Single leg deadlift', 'rep', 0, 1, 'B,A,I'],
-        ['rdl', 'Dumbbell Romanian deadlift', 'rep', 5, 0, 'B,A,I'], ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'],
+        ['rdl', 'Dumbbell deadlift', 'rep', 5, 0, 'B,A,I'], ['buttBridge', 'Butt bridge', 'rep', 0, 0, 'A,B'], ['bridge', 'Bridge', 'saat', null, 0, 'A,B'],
         ['sideLegLift', 'Side-lying leg lift', 'rep', null, 1, 'A'], ['donkeyKick', 'Donkey kicks', 'rep', null, 1, 'A'], ['wallSit', 'Wall sit', 'saat', null, 0, 'C'],
         ['calfRaise', 'Calf raises', 'rep', 0, 0, 'E'], ['toeRaise', 'Toe raise', 'rep', null, 0, 'F']
       ]],
@@ -10818,8 +10818,8 @@
         ['inclinePress', 'Incline dumbbell press', 'rep', 5, 0, 'G,K,M'], ['inclineFly', 'Incline dumbbell fly', 'rep', 2.5, 0, 'G,K']
       ]],
       ['BAHU', 'BAHU', [
-        ['armRaiseAtas', 'Arm raises', 'saat', null, 0, 'K,G'], ['ohp', 'Dumbbell overhead press', 'rep', 5, 0, 'K,M'],
-        ['altShoulderPress', 'Alternating dumbbell shoulder press', 'rep', 2.5, 1, 'K,M,G'], ['arnoldPress', 'Arnold dumbbell press', 'rep', 2.5, 0, 'K,M'], ['lateral', 'Dumbbell lateral raise', 'rep', 2.5, 0, 'K'],
+        ['ohp', 'Dumbbell overhead press', 'rep', 5, 0, 'K,M'],
+        ['arnoldPress', 'Arnold dumbbell press', 'rep', 2.5, 0, 'K,M'], ['lateral', 'Dumbbell lateral raise', 'rep', 2.5, 0, 'K'],
         ['frontRaise', 'Dumbbell front raise', 'rep', 2.5, 0, 'K']
       ]],
       ['LENGAN', 'LGN', [
@@ -11074,16 +11074,6 @@
           ['Gerak tersentak / laju', 'Buat dengan lancar dan terkawal. Sentak atau laju membebankan bahu dan mudah cedera.']],
         nafas: ['Tarik dan hembus nafas dengan irama tetap sepanjang latihan.', 'Jangan tahan nafas — badan jadi tegang dan latihan lebih susah.']
       },
-      armRaiseAtas: {
-        arahan: ['Berdiri, tangan lurus ke DEPAN paras bahu.', 'Hembus nafas, angkat tangan ke atas kepala.', 'Tarik nafas, turunkan ke posisi mula. Ulang.'],
-        fokus: ['Bahu', 'Dada'],
-        silap: [['Angkat tangan terlalu tinggi', 'Membebankan bahu dan leher. Angkat setinggi yang selesa sahaja.'],
-          ['Guna momentum, bukan otot', 'Otot sasaran tak bekerja dengan betul dan mudah cedera.'],
-          ['Belakang melengkung / bahu terangkat', 'Belakang melengkung boleh sakit pinggang dan kurang berkesan untuk bahu. Bahu terangkat boleh sakit leher.'],
-          ['Siku bengkok', 'Otot bahu kurang bekerja. Tangan kekal lurus.']],
-        nafas: ['Hembus nafas dalam melalui mulut semasa angkat tangan.', 'Tarik nafas kuat melalui hidung semasa turunkan tangan.',
-          'Bernafas stabil dan berirama; fokus pada hembusan untuk ketatkan core.', 'Jangan tahan nafas atau bernafas terlalu laju — cepat penat.']
-      },
       adductorStretch: {
         arahan: ['Berdiri, kaki dibuka luas, tangan di pinggang.', 'Bengkokkan kaki KIRI dan condongkan badan ke kiri.',
           'Tahan beberapa saat, kemudian kembali ke tengah.', 'Ulang di sisi KANAN.'],
@@ -11151,16 +11141,6 @@
         silap: [['Belakang tidak lurus', 'Belakang lurus, pinggul sebaris dengan bahu — elak tegang di pinggang.'],
           ['Tangan tidak lurus sepenuhnya', 'Di atas, luruskan tangan sepenuhnya. Kalau tidak, otot bahu kurang bekerja.'],
           ['Terlalu guna momentum', 'Hayun untuk angkat beban = otot sasaran tak bekerja sepenuhnya. Angkat terkawal.'],
-          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
-        nafas: ['Tarik nafas dalam sebelum mula — sediakan badan.', 'Hembus nafas melalui mulut semasa tolak tangan ke atas.',
-          'Tarik nafas melalui hidung semasa turunkan tangan.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
-      },
-      altShoulderPress: {
-        arahan: ['Pegang satu dumbbell di setiap tangan.', 'Angkat tangan ke sisi, siku bengkok 90 darjah — lengan atas selari dengan lantai, tapak tangan menghadap ke DEPAN.',
-          'Tolak SATU tangan ke atas kepala, kemudian turunkan perlahan.', 'Ulang dengan tangan sebelah lagi. Selang-seli.'],
-        fokus: ['Bahu', 'Trisep', 'Dada'],
-        silap: [['Belakang melengkung', 'Membebankan tulang belakang dan mudah cedera. Ketatkan core, belakang lurus.'],
-          ['Tangan tidak lurus sepenuhnya', 'Di atas, luruskan tangan sepenuhnya. Kalau tidak, pergerakan tak penuh dan kurang berkesan.'],
           ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
         nafas: ['Tarik nafas dalam sebelum mula — sediakan badan.', 'Hembus nafas melalui mulut semasa tolak tangan ke atas.',
           'Tarik nafas melalui hidung semasa turunkan tangan.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
@@ -11641,16 +11621,16 @@
           ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
         nafas: ['Tarik nafas dalam semasa turunkan dumbbell ke belakang kepala.', 'Hembus nafas semasa tarik semula ke atas dada.']
       },
-      rdl: {
-        arahan: ['Berdiri, kaki selebar pinggul. Dumbbell di depan peha, lutut bengkok sedikit (kekal).',
-          'Tolak punggung ke BELAKANG (bongkok dari pinggul) — dumbbell turun rapat di depan kaki, belakang LURUS.',
-          'Turun sampai rasa tarikan di belakang peha (biasanya paras lutut / pertengahan betis).', 'Tolak pinggul ke depan untuk berdiri semula, picit punggung di atas. Ulang.'],
-        fokus: ['Hamstring', 'Glute', 'Pinggang belakang'],
+      rdl: { // app Dumbbells: "Deadlift" (kunci kekal 'rdl' supaya gambar & progres tidak hilang)
+        arahan: ['Berdiri, kaki selebar pinggul. Satu dumbbell di setiap tangan, tangan lurus di sisi badan (tapak tangan menghadap badan).',
+          'Bengkokkan pinggul DAN lutut serentak — punggung ke belakang, dumbbell turun rapat di sisi kaki sampai paras pertengahan betis. Belakang LURUS, dada terbuka.',
+          'Tolak lantai dengan tumit, luruskan lutut dan pinggul serentak untuk berdiri semula.', 'Picit punggung di atas, jangan melentik ke belakang. Ulang.'],
+        fokus: ['Glute', 'Hamstring', 'Quadriceps', 'Pinggang belakang'],
         silap: [['Belakang membongkok', 'Bahaya untuk tulang belakang. Dada terbuka, belakang lurus sepanjang masa.'],
-          ['Jadi squat', 'Lutut terlalu bengkok — hamstring kurang bekerja. Gerakan dari pinggul, bukan lutut.'],
-          ['Dumbbell jauh dari badan', 'Pinggang terbeban. Dumbbell sentiasa rapat dengan kaki.'],
-          ['Beban tidak sesuai', 'Guna beban ikut tahap kecergasan. Terlalu berat = bentuk teruk dan mudah cedera.']],
-        nafas: ['Tarik nafas semasa bongkok turun.', 'Hembus nafas semasa berdiri semula.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas — badan jadi tegang.']
+          ['Pinggul naik dulu', 'Pinggul naik lebih cepat dari bahu → pinggang tertarik. Pinggul dan bahu naik SERENTAK.'],
+          ['Dumbbell jauh dari badan', 'Pinggang terbeban. Dumbbell sentiasa rapat di sisi kaki.'],
+          ['Melentik di atas', 'Berdiri tegak sahaja — jangan condong ke belakang di hujung gerakan.']],
+        nafas: ['Tarik nafas dan ketatkan perut sebelum turun.', 'Hembus nafas semasa berdiri semula.', 'Nafas dalam dan stabil sepanjang latihan. Jangan tahan nafas terlalu lama — badan jadi tegang.']
       },
       inclinePress: {
         arahan: ['Laras bangku 30–45 darjah. Duduk bersandar, satu dumbbell di setiap tangan di sisi dada atas.',
