@@ -10814,7 +10814,6 @@
         ['superman', 'Superman', 'rep', null, 0, 'I'], ['birdDog', 'Bird dog', 'rep', null, 1, 'I']
       ]],
       ['DADA', 'DADA', [
-        ['wallPush', 'Wall push-up', 'rep', null, 0, 'G,M,K'], ['inclinePush', 'Incline push-ups', 'rep', null, 0, 'G,K,M'], ['kneePush', 'Knee push-ups', 'rep', null, 0, 'G,M,K'],
         ['pushUp', 'Push-ups', 'rep', null, 0, 'G,M,K'], ['benchPress', 'Dumbbell bench press', 'rep', 5, 0, 'G,M,K'], ['benchFly', 'Dumbbell bench fly', 'rep', 2.5, 0, 'G'],
         ['inclinePress', 'Incline dumbbell press', 'rep', 5, 0, 'G,K,M'], ['inclineFly', 'Incline dumbbell fly', 'rep', 2.5, 0, 'G,K']
       ]],
@@ -11017,15 +11016,6 @@
     }
     // ── MAKLUMAT LATIHAN (format baru): arahan = CARA BUAT · fokus = OTOT FOKUS (pertama = utama) · silap = [tajuk, huraian] · nafas = PERNAFASAN ──
     var COACH_INFO = {
-      wallPush: {
-        arahan: ['Berdiri menghadap dinding, satu langkah besar dari dinding.', 'Hulur tangan lurus ke dinding dan bersandar padanya. Angkat tumit.',
-          'Bengkokkan siku perlahan-lahan, bawa badan atas ke arah dinding.', 'Tolak semula ke posisi mula dan ulang. Badan kekal LURUS.'],
-        fokus: ['Dada', 'Trisep', 'Bahu'],
-        silap: [['Belakang membongkok', 'Kurang guna otot dada dan membebankan pinggang. Ketatkan core, tulang belakang neutral sepanjang latihan.'],
-          ['Kedudukan tangan salah', 'Tangan selebar bahu dan separas dada. Terlalu tinggi / rendah boleh menegangkan bahu.'],
-          ['Pergerakan tidak penuh', 'Turunkan badan sampai hidung hampir sentuh dinding, kemudian tolak balik ke posisi mula.']],
-        nafas: ['Tarik nafas semasa badan turun ke dinding.', 'Hembus nafas semasa tolak menjauhi dinding.', 'Bernafas dalam supaya badan cukup oksigen.']
-      },
       punches: {
         arahan: ['Berdiri dengan sebelah kaki ke depan, lutut bengkok sedikit.', 'Bengkokkan siku, genggam penumbuk di depan muka.',
           'Tumbuk sebelah tangan lurus ke depan, tapak tangan menghadap lantai.', 'Tarik tangan balik, kemudian ulang dengan tangan sebelah lagi. Selang-seli.'],
@@ -11418,24 +11408,6 @@
           ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
           ['Siku terkembang ke sisi', 'Membebankan sendi bahu dan kurang berkesan. Siku condong sedikit ke belakang (lebih kurang 45 darjah).']],
         nafas: ['Tarik nafas semasa turunkan badan.', 'Hembus nafas semasa tolak naik.', 'Ini membantu menstabilkan core dan jaga bentuk.']
-      },
-      kneePush: {
-        arahan: ['Mula dalam posisi push-up biasa.', 'Letak lutut di lantai dan angkat kaki dari lantai.', 'Tolak badan naik dan turun.'],
-        fokus: ['Dada', 'Trisep', 'Bahu'],
-        silap: [['Kedudukan tangan salah', 'Terlalu luas / rapat membebankan pergelangan dan siku. Tangan selebar bahu, tepat di bawah bahu.'],
-          ['Pinggul terangkat / belakang melendut', 'Membebankan tulang belakang dan mudah cedera. Badan lurus dari kepala ke lutut.'],
-          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
-          ['Siku terkembang ke sisi', 'Membebankan sendi bahu dan kurang berkesan. Siku condong sedikit ke belakang (lebih kurang 45 darjah).']],
-        nafas: ['Tarik nafas semasa turunkan badan.', 'Hembus nafas semasa tolak naik.', 'Ini membantu menstabilkan core dan jaga bentuk.']
-      },
-      inclinePush: {
-        arahan: ['Mula dalam posisi push-up biasa, tapi tangan di atas kerusi atau bangku (lebih tinggi).', 'Tolak badan naik dan turun guna kekuatan tangan.', 'Badan kekal LURUS.'],
-        fokus: ['Dada', 'Bahu', 'Trisep'],
-        silap: [['Kedudukan tangan salah', 'Terlalu luas / rapat membebankan pergelangan dan siku. Tangan selebar bahu, tepat di bawah bahu.'],
-          ['Pinggul terangkat / belakang melendut', 'Membebankan tulang belakang dan mudah cedera. Badan lurus dari kepala ke tumit.'],
-          ['Core tidak diketatkan', 'Core perlu ketat sepanjang latihan. Kalau tidak, bentuk jadi teruk dan latihan kurang berkesan.'],
-          ['Siku terkembang ke sisi', 'Membebankan sendi bahu dan kurang berkesan. Siku condong sedikit ke belakang (lebih kurang 45 darjah).']],
-        nafas: ['Tarik nafas semasa turunkan badan ke arah kerusi / bangku.', 'Hembus nafas semasa tolak balik ke posisi mula.']
       },
       tricepsDip: {
         arahan: ['Duduk di tepi kerusi, tangan pegang tepi kerusi.', 'Gelongsorkan punggung keluar dari kerusi.',
