@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Kindle Learning Tool (Ringan)</title>
+  <!-- PWA: boleh dipasang (install) di phone — manifest + ikon + service worker (fail sebelah index.html) -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <script>
+    // Kindle lama tiada service worker → dilangkau tanpa ralat
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() { navigator.serviceWorker.register('sw.js')['catch'](function() {}); });
+    }
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
