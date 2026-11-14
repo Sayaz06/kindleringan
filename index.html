@@ -457,6 +457,13 @@
     #menu-titik .mt { display: block; width: 34px; height: 40px; margin: 0; padding: 0; border: none; background: transparent; }
     #menu-titik .mt span { display: block; width: 16px; height: 16px; margin: 12px auto; border: 2px solid #000; border-radius: 50%; background: #fff; box-sizing: border-box; }
     #menu-titik .mt.on span { background: #000; }
+    /* USAHA BERHALAMAN (14 Nov) — titik menegak di KANAN macam MENU · titik bertanda "!" = ada bangunan TERLEPAS di page itu */
+    #ts-titik { position: fixed; right: 2px; top: 50%; z-index: 9000; }
+    #ts-titik .mt { display: block; width: 34px; height: 40px; margin: 0; padding: 0; border: none; background: transparent; }
+    #ts-titik .mt span { display: block; width: 18px; height: 18px; margin: 11px auto; border: 2px solid #000; border-radius: 50%; background: #fff; box-sizing: border-box;
+      font: bold 11px/14px sans-serif; text-align: center; color: #000; }
+    #ts-titik .mt.on span { background: #000; color: #fff; }
+    #screen-ts.active { padding-right: 40px; }
   </style>
 
 </head>
@@ -6767,7 +6774,9 @@
       <button type="button" data-gm-tab="ts" class="gm-aktif">USAHA</button>
     </div>
     <div class="jw-info" id="ts-info">Buat tugas di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).</div>
+    <div id="ts-hal-tajuk" style="font-weight:bold;font-size:1.05rem;margin:4px 0 0;border-bottom:3px solid #000;"></div>
     <div id="ts-bangunan" class="kd-pondok"></div>
+    <div id="ts-titik"></div>
     <div id="coach-tugas" style="display:none;"></div>
   </div>
   <!-- KAWASAN USAHA (tab USAHA, sebelah TAMAN SIHAT) — SURAU + PAWAGAM -->
@@ -14450,8 +14459,21 @@
       ['nutrisi', 'PUSAT NUTRISI', 'Makan buah + sayur', true],
       ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', true],
       ['surau', 'SURAU', 'Solat 5 waktu', true],
-      ['pawagam', 'PAWAGAM', 'Listening English (video)', true]
+      ['pawagam', 'PAWAGAM', 'Listening English (video)', true],
+      // Bangunan LACI (14 Nov): tekan → laci terus dibuka (ikut kunci Health First & kira minit belajar, sama macam butang MENU)
+      ['bahasa', 'LACI BAHASA', 'Ulang kaji ayat', true],
+      ['fakta', 'LACI FAKTA', 'Ulang kaji fakta', true],
+      ['reasoning', 'REASONING', 'Laci reasoning', true],
+      ['presenting', 'PRESENTING', 'Laci presenting', true]
     ];
+    // USAHA BERHALAMAN: [tajuk, senarai kunci bangunan] — tekan titik kanan / sapu atas-bawah untuk tukar page (tiada skrol)
+    var TS_HALAMAN = [
+      ['BADAN', ['gym', 'taman', 'makmal', 'nutrisi']],
+      ['REHAT & IBADAH', ['tidur', 'surau']],
+      ['BELAJAR', ['pawagam', 'bahasa', 'fakta', 'reasoning', 'presenting']]
+    ];
+    var TS_LACI = { bahasa: 'btn-go-bahasa', fakta: 'btn-go-fakta', reasoning: 'btn-go-reasoning', presenting: 'btn-go-presenting' };
+    var tsHal = 0;
     function svgBangunan(k, nama, aktif) {
       var g = aktif ? '' : ' stroke-dasharray="5 3"', s = '<svg viewBox="0 0 120 132" xmlns="http://www.w3.org/2000/svg">';
       s += '<path d="M6 52 L60 14 L114 52 Z" fill="#fff" stroke="#000" stroke-width="2.5"' + g + '/>';
@@ -14467,6 +14489,11 @@
       if (k === 'tidur') s += '<path d="M64 28 A10 10 0 1 0 66 46 A8 8 0 1 1 64 28 Z" fill="#000"/>';
       if (k === 'surau') s += '<path d="M47 47 Q47 31 60 29 Q73 31 73 47 Z" fill="#000"/><path d="M60 29 V22" stroke="#000" stroke-width="2"/><circle cx="60" cy="20" r="2.2" fill="#000"/>';
       if (k === 'pawagam') s += '<rect x="45" y="28" width="30" height="19" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M56 32 L66 37.5 L56 43 Z" fill="#000"/>';
+      // Ikon bangunan LACI: belon cakap (Bahasa) · buku terbuka (Fakta) · mentol (Reasoning) · mikrofon (Presenting)
+      if (k === 'bahasa') s += '<path d="M46 27 H74 Q76 27 76 29 V41 Q76 43 74 43 H58 L52 48 V43 H46 Q44 43 44 41 V29 Q44 27 46 27 Z" fill="#000"/><path d="M50 33 H70 M50 38 H64" stroke="#fff" stroke-width="2"/>';
+      if (k === 'fakta') s += '<path d="M60 31 Q53 27 44 28 V46 Q53 45 60 49 Q67 45 76 46 V28 Q67 27 60 31 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M60 31 V49" stroke="#000" stroke-width="2"/><path d="M48 34 H56 M48 38 H56 M64 34 H72 M64 38 H72" stroke="#000" stroke-width="1.5"/>';
+      if (k === 'reasoning') s += '<path d="M60 24 Q70 24 70 34 Q70 39 65 43 V46 H55 V43 Q50 39 50 34 Q50 24 60 24 Z" fill="#000"/><rect x="55" y="47" width="10" height="3" fill="#000"/>';
+      if (k === 'presenting') s += '<rect x="55" y="23" width="10" height="16" rx="5" fill="#000"/><path d="M51 34 Q51 44 60 44 Q69 44 69 34" fill="none" stroke="#000" stroke-width="2.5"/><path d="M60 44 V49 M54 49 H66" stroke="#000" stroke-width="2.5"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
     }
@@ -14490,10 +14517,26 @@
       }
       return abai ? abai + ' TERLEPAS' : (skrg ? 'SEKARANG' : (jum && siap === jum ? 'SIAP' : ''));
     }
+    function tsCariBangunan(k) { for (var q = 0; q < TS_BANGUNAN.length; q++) if (TS_BANGUNAN[q][0] === k) return TS_BANGUNAN[q]; return null; }
     function lukisTs() {
-      var h = '', i, b, sub;
-      for (i = 0; i < TS_BANGUNAN.length; i++) {
-        b = TS_BANGUNAN[i]; sub = b[2];
+      var h = '', i, b, sub, hp, hk, ada = [], kunciLaci = false;
+      if (tsHal >= TS_HALAMAN.length) tsHal = 0;
+      // Titik bertanda "!" = page itu ada bangunan TERLEPAS
+      for (hp = 0; hp < TS_HALAMAN.length; hp++) {
+        ada[hp] = false;
+        for (hk = 0; hk < TS_HALAMAN[hp][1].length; hk++) { try { if (tsTanda(TS_HALAMAN[hp][1][hk]).indexOf('TERLEPAS') !== -1) ada[hp] = true; } catch (e) {} }
+      }
+      try { if (currentUser && coachHariData.id === coachHariId()) kunciLaci = !coachHariData.hari.laporanAt || coachKiraKesihatan().kunci; } catch (e) {}
+      var titik = '';
+      for (hp = 0; hp < TS_HALAMAN.length; hp++) titik += '<button type="button" class="mt' + (hp === tsHal ? ' on' : '') + '" data-tshal="' + hp + '"><span>' + (ada[hp] ? '!' : '') + '</span></button>';
+      el('ts-titik').innerHTML = titik;
+      el('ts-titik').style.marginTop = (-(TS_HALAMAN.length * 40) / 2) + 'px';
+      el('ts-hal-tajuk').textContent = TS_HALAMAN[tsHal][0] + ' · ' + (tsHal + 1) + '/' + TS_HALAMAN.length;
+      var senaraiHal = TS_HALAMAN[tsHal][1];
+      for (i = 0; i < senaraiHal.length; i++) {
+        b = tsCariBangunan(senaraiHal[i]);
+        if (!b) continue;
+        sub = b[2];
         if (b[0] === 'gym') {
           try { if (coachDataAkhir && coachHariData.id === coachHariId()) { var sh = coachSenHari(); sub = sh.jenis === 'JOG' ? 'Jogging 5 ptg' + (sh.hs.jog ? ' · SIAP ' + sh.hs.jog.minit + ' min' : '') : (sh.jenis === 'REHAT' ? 'Hari rehat' : 'Senaman 5 ptg · ' + sh.g + ' ' + sh.s + (sh.hs.siapAt ? ' · SELESAI' : '')); } } catch (e) {}
         }
@@ -14512,12 +14555,21 @@
         if (b[0] === 'surau' || b[0] === 'pawagam') {
           try { if (coachHariData.id === coachHariId()) { var hu = coachHariData.hari; sub = b[0] === 'surau' ? 'Solat hari ini ' + (typeof hu.solat === 'number' ? hu.solat : 0) + '/5' : 'Listening hari ini ' + (hu.listening || 0) + ' min'; } } catch (e) {}
         }
+        if (TS_LACI[b[0]]) {
+          try {
+            var dL = coachDataAkhir || {}, mbL = (coachHariData.id === coachHariId() ? (coachHariData.hari.minitBelajar || {}) : {});
+            if (b[0] === 'bahasa') sub = 'Ayat ' + (dL.ayat || 0) + ' · ' + (mbL.bahasa || 0) + ' min hari ini';
+            if (b[0] === 'fakta') sub = 'Fakta ' + (dL.kuliah || 0) + ' · ' + (mbL.fakta || 0) + ' min hari ini';
+            if (b[0] === 'reasoning') sub = 'Reasoning ' + (dL.reasoning || 0) + ' entri';
+            if (b[0] === 'presenting') sub = 'Presenting ' + (dL.presenting || 0) + ' ayat';
+          } catch (e) {}
+        }
         var tanda = '';
-        try { tanda = tsTanda(b[0]); } catch (e) {}
+        try { tanda = TS_LACI[b[0]] ? (kunciLaci ? 'DIKUNCI' : '') : tsTanda(b[0]); } catch (e) {}
         // Tanda = cop di tengah bumbung, tutup simbol bangunan (gaya cop SOLD, 12 Nov) — tidak menolak bangunan ke bawah
         var cop = '';
         if (tanda) {
-          var copHitam = tanda.indexOf('TERLEPAS') !== -1;
+          var copHitam = tanda.indexOf('TERLEPAS') !== -1 || tanda === 'DIKUNCI';
           cop = '<span style="position:absolute;z-index:2;left:50%;top:29%;padding:2px 7px;border:3px double ' + (copHitam ? '#fff' : '#000') + ';outline:2px solid #000;' +
             'font-weight:bold;font-size:0.78rem;white-space:nowrap;letter-spacing:1px;text-transform:uppercase;' +
             '-webkit-transform:translate(-50%,-50%) rotate(-10deg);transform:translate(-50%,-50%) rotate(-10deg);' +
@@ -14551,6 +14603,7 @@
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-ts'))) t = t.parentNode;
       if (!t || t === this) return;
       var k = t.getAttribute('data-ts');
+      if (TS_LACI[k]) { var bL = el(TS_LACI[k]); if (bL) bL.click(); return; } // laci → ikut kunci Health First butang MENU
       if (k === 'gym') { bukaGym(); return; }
       if (k === 'taman') { bukaTaman(); return; }
       if (k === 'makmal') { bukaMakmal(); return; }
@@ -14560,6 +14613,31 @@
       if (k === 'pawagam') { bukaPawagam(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
+    // USAHA berhalaman: tekan titik → page itu · sapu atas / bawah → page seterusnya / sebelumnya
+    function tsPergi(i) {
+      if (i < 0 || i >= TS_HALAMAN.length || i === tsHal) return;
+      tsHal = i;
+      lukisTs();
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
+    el('ts-titik').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-tshal'))) t = t.parentNode;
+      if (!t || t === this) return;
+      tsPergi(parseInt(t.getAttribute('data-tshal'), 10));
+    };
+    (function() {
+      var sk = el('screen-ts'), y0 = null, x0 = 0, m0 = 0;
+      if (!sk || !sk.addEventListener) return;
+      sk.addEventListener('touchstart', function(e) { if (e.touches && e.touches.length === 1) { y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; m0 = Date.now(); } }, false);
+      sk.addEventListener('touchend', function(e) {
+        if (y0 === null || !e.changedTouches || !e.changedTouches.length) { y0 = null; return; }
+        var dy = y0 - e.changedTouches[0].clientY, dx = x0 - e.changedTouches[0].clientX;
+        y0 = null;
+        if (Math.abs(dy) < 50 || Math.abs(dy) < Math.abs(dx) || Date.now() - m0 > 1500) return;
+        tsPergi(tsHal + (dy > 0 ? 1 : -1)); // sapu ke atas = page seterusnya
+      }, false);
+    })();
     // ── GYM: page senaman (dipindah dari page COACH) ──
     // ══ GAMBAR LATIHAN SENDIRI (muat naik + potong ikut bingkai tetap 4:3, macam app phone) ══
     // Disimpan: users/{uid}/coach_gambar/{kunci latihan} { a: MULA (dataURL JPEG kelabu 400×300), b: AKHIR, at }.
