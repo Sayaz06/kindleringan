@@ -9784,7 +9784,9 @@
       });
     }
     function coachCacheKunci() { return 'coach_kiraan2_' + currentUser.uid; }
-    function coachMuatData(paksa) {
+    // Tunggu RESET MULA (sekali) siap dulu supaya progres GYM lama tidak dibaca dari cache
+    function coachMuatData(paksa) { return coachResetMula().then(function() { return coachMuatData0(paksa); }); }
+    function coachMuatData0(paksa) {
       if (!paksa) {
         try {
           var c = JSON.parse(localStorage.getItem(coachCacheKunci()) || 'null');
@@ -9903,10 +9905,59 @@
 
     // ── Baca laporan hari ini + semalam (2 dokumen) ──
     // Baca 7 hari coach terakhir (hari ini, semalam + purata solat) dalam SATU query ikut ID tarikh
+    // ══ RESET SEKALI "MULA HARI INI" (14 Nov 2026) ══
+    //   Rekod harian SEBELUM hari ini dibuang (tugas, air, matahari, solat, markah, laci...) — KECUALI:
+    //   listening + minitBelajar (semua hari) · tidur/lampu semalam (dari laporan pagi hari ini) · rekod HARI INI kekal penuh.
+    //   Progres GYM direset (giliran, beban, streak, pemulihan otot) — lokasi & tanda sakit kekal.
+    //   TIDAK disentuh: gambar senaman, stok listening, duit/dompet/bank, game belajar.
+    //   Berjalan SEKALI sahaja (tanda di coach/tetapan.resetMula + localStorage) — selamat dibiar dalam kod.
+    var COACH_RESET_KUNCI = 'MULA-2026-11-14';
+    var coachResetJanji = null;
+    function coachResetMula() {
+      var lk = 'coach_reset_' + currentUser.uid;
+      try { if (localStorage.getItem(lk) === COACH_RESET_KUNCI) return Promise.resolve(); } catch (e) {}
+      if (coachResetJanji) return coachResetJanji; // elak berjalan dua kali serentak (coachMuatData + coachMuatHari)
+      var id = COACH_RESET_KUNCI.slice(5), sid = coachSemalamId(id), FV = firebase.firestore.FieldValue;
+      return coachResetJanji = kol('coach').doc('tetapan').get().then(function(t) {
+        if (t.exists && t.data().resetMula === COACH_RESET_KUNCI) return null;
+        return Promise.all([
+          kol('coach_hari').where(firebase.firestore.FieldPath.documentId(), '<', id).get(),
+          kol('coach_rumusan').where(firebase.firestore.FieldPath.documentId(), '<', id).get()
+        ]).then(function(r) {
+          var ops = [];
+          r[0].forEach(function(d) {
+            var x = d.data(), simpan = {}, ada = false, k, kekal = d.id === sid ? ['listening', 'minitBelajar', 'tidur', 'lampu'] : ['listening', 'minitBelajar'];
+            for (k = 0; k < kekal.length; k++) if (x[kekal[k]] !== undefined) { simpan[kekal[k]] = x[kekal[k]]; ada = true; }
+            ops.push(ada ? [d.ref, simpan] : [d.ref, null]);
+          });
+          r[1].forEach(function(d) { ops.push([d.ref, null]); });
+          var rantai = Promise.resolve(), i;
+          for (i = 0; i < ops.length; i += 400) (function(bah) {
+            rantai = rantai.then(function() {
+              var b = db.batch();
+              bah.forEach(function(o) { if (o[1]) b.set(o[0], o[1]); else b['delete'](o[0]); });
+              return b.commit();
+            });
+          })(ops.slice(i, i + 400));
+          return rantai;
+        }).then(function() {
+          var gym = { seterus: FV['delete'](), siri: FV['delete'](), akhir: FV['delete'](), prog: FV['delete'](), otot: FV['delete'](),
+            streak: FV['delete'](), lencana: FV['delete'](), jumlahSesi: FV['delete'](), face: FV['delete']() };
+          return kol('coach').doc('senaman').set(gym, { merge: true });
+        }).then(function() {
+          return kol('coach').doc('tetapan').set({ resetMula: COACH_RESET_KUNCI, resetAt: Date.now() }, { merge: true });
+        }).then(function() {
+          try { localStorage.removeItem(coachCacheKunci()); } catch (e) {}
+          if (coachDataAkhir && coachDataAkhir.senaman) ['seterus', 'siri', 'akhir', 'prog', 'otot', 'streak', 'lencana', 'jumlahSesi', 'face'].forEach(function(k) { delete coachDataAkhir.senaman[k]; });
+        });
+      }).then(function() {
+        try { localStorage.setItem(lk, COACH_RESET_KUNCI); } catch (e) {}
+      })['catch'](function(e) { try { console.log('Reset mula gagal: ' + ((e && e.message) || e)); } catch (x) {} });
+    }
     function coachMuatHari() {
       var id = coachHariId(), sid = coachSemalamId(id), mula = id, i;
       for (i = 0; i < 6; i++) mula = coachSemalamId(mula);
-      return kol('coach_hari').where(firebase.firestore.FieldPath.documentId(), '>=', mula).get().then(function(snap) {
+      return coachResetMula().then(function() { return kol('coach_hari').where(firebase.firestore.FieldPath.documentId(), '>=', mula).get(); }).then(function(snap) {
         var minggu = {};
         snap.forEach(function(d) { if (d.id <= id) minggu[d.id] = d.data(); });
         coachHariData = {
