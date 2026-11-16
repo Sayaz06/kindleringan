@@ -12979,6 +12979,194 @@
     // Pai 3: skor keseimbangan Kesihatan (hijau/dinilai) vs Usaha (hijau/dinilai) — beza ≤ 10 mata HIJAU · ≤ 20 KUNING · > 20 MERAH.
     var coachSkorKes = { h: 0, n: 0 };
     var coachUIU = { listening: false };
+    // ══ DAILY REPETITION EXERCISE — PAWAGAM (16 Nov) ══
+    // Nota frasa penghubung (linking words) MUET Listening. TAMBAH frasa baru di HUJUNG senarai kumpulan
+    //   (ID frasa = kumpulan-nombor; ubah susunan = audio tersilap frasa).
+    // Jadual ulang kaji berjarak setiap KUMPULAN: 1, 2, 4, 7, 14, 30 hari. Satu kumpulan BARU dibuka sehari.
+    // Latihan: 5 soalan "frasa ini digunakan untuk?" (4 pilihan). Lulus ≥ 4/5 → fasa naik. Gagal → ulang esok.
+    // Data: coach/pawagam_nota { sr: { kumpulan: { fasa, due, mula } }, audio: { idFrasa: 1 } } · audio MP3: pawagam_audio/{idFrasa} { d: dataURL }
+    var PN_NOTA = [
+      { id: 'intro', t: 'To introduce a new point', ms: 'Memperkenalkan isi baru', f: ['Now ...', 'Allow me to ...', 'Right ...', 'My next point ...'] },
+      { id: 'list', t: 'To list the main points', ms: 'Menyenaraikan isi utama', f: ['Firstly ...', 'First of all, ...', "Let's start by ...", 'For a start, ...', "We'll begin by ...", 'Secondly ...', 'Next ...', 'Then ...', 'Also ...', 'Following this ...', 'Finally ...', 'Lastly ...'] },
+      { id: 'explain', t: 'To explain main points', ms: 'Menerangkan isi utama', f: ['This is what I mean by ...', "What I'm trying to say is ...", 'It means that ...', 'Let me explain / clarify ...', 'In other words ...'] },
+      { id: 'contoh', t: 'To illustrate a point / give an example', ms: 'Memberi contoh', f: ['... such as ...', '... like ...', 'For instance, ...', 'For example, ...', 'Let me show you ...'] },
+      { id: 'lain', t: 'To talk about another side of the issue', ms: 'Sudut lain / bertentangan', f: ['However, ...', '... but ...', 'On the other hand, ...', 'On the contrary, ...'] },
+      { id: 'rumus', t: 'To sum up the point / topic', ms: 'Merumuskan', f: ['Therefore, it is clear that ...', 'In conclusion, ...', 'To conclude, ...', 'Let me sum up ...'] }
+    ];
+    var PN_SELANG = [1, 2, 4, 7, 14, 30];
+    var pnData = null, pnMuat = false, pnAudio = {}, pnUI = { mod: '', grp: '', kuiz: null, mesej: '' };
+    var PN_IKON = '<svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M15 8q3 4 0 8M18 5q5 7 0 14" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+    function pnTambahHari(id, n) { var p = id.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]); d.setDate(d.getDate() + n); return coachTarikh(d); }
+    function pnGrp(id) { for (var i = 0; i < PN_NOTA.length; i++) if (PN_NOTA[i].id === id) return PN_NOTA[i]; return null; }
+    // Kumpulan yang perlu diulang hari ini: yang sudah mula & due ≤ hari ini + SATU kumpulan baru (jika belum ada yang dimulakan hari ini)
+    function pnDue() {
+      var hari = coachHariId(), sr = (pnData && pnData.sr) || {}, out = [], baruHariIni = false, i, g, s;
+      for (i = 0; i < PN_NOTA.length; i++) { s = sr[PN_NOTA[i].id]; if (s && s.mula === hari) baruHariIni = true; }
+      for (i = 0; i < PN_NOTA.length; i++) {
+        g = PN_NOTA[i]; s = sr[g.id];
+        if (s && s.due <= hari) out.push(g.id);
+      }
+      if (!baruHariIni) for (i = 0; i < PN_NOTA.length; i++) if (!sr[PN_NOTA[i].id]) { out.push(PN_NOTA[i].id); break; }
+      return out;
+    }
+    function pnButangAudio(id, boleh) {
+      var ada = pnData && pnData.audio && pnData.audio[id];
+      return '<button type="button" data-pn="main" data-v="' + id + '" style="padding:2px 6px;margin-left:4px;border:2px ' + (ada ? 'solid #000' : 'dashed #999') + ';border-radius:5px;background:#fff;color:' + (ada ? '#000' : '#999') + ';"' + (ada ? '' : ' disabled') + '>' + PN_IKON + '</button>' +
+        (boleh ? '<button type="button" data-pn="naik" data-v="' + id + '" style="padding:2px 6px;margin-left:4px;font-size:0.72rem;font-weight:bold;border:2px solid #000;border-radius:5px;background:#fff;">' + (ada ? 'TUKAR MP3' : '+ MP3') + '</button>' : '');
+    }
+    function pnSenaraiFrasa(g, boleh) {
+      var h = '', i;
+      for (i = 0; i < g.f.length; i++) h += '<div style="margin:3px 0;">- <b>' + g.f[i] + '</b>' + pnButangAudio(g.id + '-' + i, boleh) + '</div>';
+      return h;
+    }
+    function pnLukis() {
+      var btn = 'padding:5px 8px;margin:4px 4px 0 0;font-size:0.8rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+      var btnA = btn + 'background:#000;color:#fff;', h = '', i, g;
+      h += '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:10px 0 4px;">';
+      h += '<div style="font-weight:bold;font-size:1.1rem;">DAILY REPETITION EXERCISE</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 4px;">Awak perlu INGAT frasa penghubung (linking words) ni. Penutur yang baik guna frasa ni bila tukar isi — jadi awak boleh jangka apa yang akan disebut seterusnya (<i>predicting outcomes</i>).</div>';
+      h += '<div style="font-size:0.85rem;font-style:italic;margin-bottom:4px;">Don\'t worry, Coach will let you do the exercise according to the time.</div>';
+      if (!pnData) {
+        if (!pnMuat && currentUser) {
+          pnMuat = true;
+          kol('coach').doc('pawagam_nota').get().then(function(d) { pnData = d.exists ? d.data() : {}; pnData.sr = pnData.sr || {}; pnData.audio = pnData.audio || {}; coachLukisUsaha(); })
+            .catch(function() { pnData = { sr: {}, audio: {} }; coachLukisUsaha(); });
+        }
+        return h + '<div style="font-size:0.85rem;">Memuatkan nota...</div></div>';
+      }
+      if (pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
+      // ── MOD LATIHAN (kuiz) ──
+      if (pnUI.mod === 'kuiz' && pnUI.kuiz) {
+        var q = pnUI.kuiz, s = q.soalan[q.i];
+        h += '<div style="font-weight:bold;">LATIHAN · ' + pnGrp(q.grp).t + ' · soalan ' + (q.i + 1) + '/' + q.soalan.length + '</div>';
+        h += '<div style="margin:6px 0;font-size:1.05rem;">"<b>' + s.frasa + '</b>" digunakan untuk...</div>';
+        for (i = 0; i < s.pilih.length; i++) {
+          var gp = pnGrp(s.pilih[i]), st = btn;
+          if (q.jawab !== null) st = s.pilih[i] === s.betul ? btnA : (s.pilih[i] === q.jawab ? btn + 'border-style:dashed;color:#777;' : btn);
+          h += '<div><button type="button" data-pn="jawab" data-v="' + s.pilih[i] + '" style="' + st + 'display:block;width:100%;text-align:left;"' + (q.jawab !== null ? ' disabled' : '') + '>' + gp.t + ' <span style="font-weight:normal;">(' + gp.ms + ')</span></button></div>';
+        }
+        if (q.jawab !== null) {
+          h += '<div style="margin-top:4px;font-weight:bold;">' + (q.jawab === s.betul ? 'BETUL!' : 'SALAH — jawapan: ' + pnGrp(s.betul).t) + '</div>';
+          h += '<button type="button" data-pn="seterus" style="' + btnA + '">' + (q.i + 1 < q.soalan.length ? 'SOALAN SETERUSNYA ›' : 'LIHAT KEPUTUSAN') + '</button>';
+        }
+        h += '<button type="button" data-pn="tutup" style="' + btn + '">BERHENTI</button>';
+        return h + '</div>';
+      }
+      // ── MOD SEMUA NOTA ──
+      if (pnUI.mod === 'semua') {
+        h += '<div style="font-weight:bold;margin-top:4px;">SEMUA NOTA</div>';
+        for (i = 0; i < PN_NOTA.length; i++) {
+          g = PN_NOTA[i];
+          var sg = pnData.sr[g.id];
+          h += '<div style="border-top:2px solid #000;margin-top:6px;padding-top:3px;"><b>' + g.t + '</b><div style="font-size:0.8rem;">' + g.ms + (sg ? ' · ulang seterusnya ' + sg.due : ' · belum dibuka') + '</div>' + pnSenaraiFrasa(g, true) + '</div>';
+        }
+        h += '<button type="button" data-pn="tutup" style="' + btn + '">TUTUP NOTA</button>';
+        return h + '</div>';
+      }
+      // ── MOD HARI INI ──
+      var due = pnDue();
+      if (!due.length) {
+        h += '<div style="font-weight:bold;margin:4px 0;">Tiada ulang kaji hari ini. Bagus!</div>';
+      } else {
+        g = pnGrp(pnUI.grp && due.indexOf(pnUI.grp) !== -1 ? pnUI.grp : due[0]);
+        pnUI.grp = g.id;
+        if (due.length > 1) {
+          h += '<div style="font-size:0.85rem;">Perlu diulang hari ini (' + due.length + '):</div><div>';
+          for (i = 0; i < due.length; i++) h += '<button type="button" data-pn="pilih" data-v="' + due[i] + '" style="' + (due[i] === g.id ? btnA : btn) + '">' + pnGrp(due[i]).t + '</button>';
+          h += '</div>';
+        }
+        var sx = pnData.sr[g.id];
+        h += '<div style="margin-top:6px;"><b>ULANG KAJI HARI INI:</b> ' + g.t + '</div><div style="font-size:0.8rem;">' + g.ms + (sx ? ' · fasa ' + (sx.fasa + 1) + '/' + PN_SELANG.length : ' · NOTA BARU') + '</div>';
+        h += '<div style="font-size:0.85rem;margin-top:4px;">1. BACA semula frasa di bawah (tekan ikon bunyi untuk dengar).</div>' + pnSenaraiFrasa(g, false);
+        h += '<div style="font-size:0.85rem;margin-top:4px;">2. Buat LATIHAN (5 soalan, lulus 4/5).</div>';
+        h += '<button type="button" data-pn="mula" style="' + btnA + '">MULA LATIHAN</button>';
+      }
+      h += '<button type="button" data-pn="semua" style="' + btn + '">LIHAT SEMUA NOTA</button>';
+      return h + '</div>';
+    }
+    function pnBinaKuiz(grpId) {
+      var g = pnGrp(grpId), soalan = [], semua = [], i, j;
+      for (i = 0; i < PN_NOTA.length; i++) for (j = 0; j < PN_NOTA[i].f.length; j++) semua.push({ frasa: PN_NOTA[i].f[j], betul: PN_NOTA[i].id });
+      var dariG = g.f.slice().sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+      for (i = 0; i < dariG.length; i++) soalan.push({ frasa: dariG[i], betul: g.id });
+      var lain = semua.filter(function(x) { return x.betul !== g.id; }).sort(function() { return Math.random() - 0.5; });
+      while (soalan.length < 5 && lain.length) soalan.push(lain.shift());
+      soalan.sort(function() { return Math.random() - 0.5; });
+      for (i = 0; i < soalan.length; i++) {
+        var ids = PN_NOTA.map(function(x) { return x.id; }).filter(function(x) { return x !== soalan[i].betul; }).sort(function() { return Math.random() - 0.5; }).slice(0, 3);
+        ids.push(soalan[i].betul);
+        soalan[i].pilih = ids.sort(function() { return Math.random() - 0.5; });
+      }
+      return { grp: grpId, soalan: soalan, i: 0, skor: 0, jawab: null };
+    }
+    function pnSimpan(medan) {
+      kol('coach').doc('pawagam_nota').set(medan, { merge: true }).catch(function(e) { alert('Gagal simpan: ' + ((e && e.message) || e)); });
+    }
+    function pnKlik(e, box) {
+      var t = e.target;
+      while (t && t !== box && !(t.getAttribute && t.getAttribute('data-pn'))) t = t.parentNode;
+      if (!t || t === box) return false;
+      var a = t.getAttribute('data-pn'), v = t.getAttribute('data-v');
+      if (a !== 'main' && a !== 'naik') pnUI.mesej = '';
+      if (a === 'semua') { pnUI.mod = 'semua'; coachLukisUsaha(); return true; }
+      if (a === 'tutup') { pnUI.mod = ''; pnUI.kuiz = null; coachLukisUsaha(); return true; }
+      if (a === 'pilih') { pnUI.grp = v; coachLukisUsaha(); return true; }
+      if (a === 'mula') { pnUI.kuiz = pnBinaKuiz(pnUI.grp); pnUI.mod = 'kuiz'; coachLukisUsaha(); return true; }
+      if (a === 'jawab' && pnUI.kuiz && pnUI.kuiz.jawab === null) {
+        pnUI.kuiz.jawab = v;
+        if (v === pnUI.kuiz.soalan[pnUI.kuiz.i].betul) pnUI.kuiz.skor++;
+        coachLukisUsaha(); return true;
+      }
+      if (a === 'seterus' && pnUI.kuiz) {
+        var q = pnUI.kuiz;
+        if (q.i + 1 < q.soalan.length) { q.i++; q.jawab = null; coachLukisUsaha(); return true; }
+        var hari = coachHariId(), s = pnData.sr[q.grp] || { fasa: -1, mula: hari }, lulus = q.skor >= 4, ubah = {};
+        if (lulus) { s.fasa = Math.min(s.fasa + 1, PN_SELANG.length - 1); s.due = pnTambahHari(hari, PN_SELANG[s.fasa]); }
+        else { s.fasa = Math.max(s.fasa, 0); s.due = pnTambahHari(hari, 1); }
+        if (!s.mula) s.mula = hari;
+        pnData.sr[q.grp] = s;
+        ubah['sr'] = {}; ubah.sr[q.grp] = s;
+        pnSimpan(ubah);
+        pnUI.mesej = 'Skor ' + q.skor + '/' + q.soalan.length + ' — ' + (lulus ? 'LULUS! Coach akan suruh ulang lagi pada ' + s.due + '.' : 'Belum lulus. Baca semula nota — ulang lagi esok (' + s.due + ').');
+        pnUI.mod = ''; pnUI.kuiz = null;
+        coachLukisUsaha(); return true;
+      }
+      if (a === 'main') {
+        var main = function(d) {
+          try { var au = new Audio(d); var p = au.play(); if (p && p['catch']) p['catch'](function() { alert('Audio tak dapat dimainkan pada peranti ini.'); }); }
+          catch (x) { alert('Audio tak dapat dimainkan pada peranti ini (Kindle biasanya tiada pembesar suara).'); }
+        };
+        if (pnAudio[v]) { main(pnAudio[v]); return true; }
+        kol('pawagam_audio').doc(v).get().then(function(d) {
+          if (!d.exists || !d.data().d) { alert('Audio belum dimuat naik.'); return; }
+          pnAudio[v] = d.data().d; main(pnAudio[v]);
+        }).catch(function(er) { alert('Gagal muat audio: ' + ((er && er.message) || er)); });
+        return true;
+      }
+      if (a === 'naik') {
+        var inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'audio/*,.mp3';
+        inp.onchange = function() {
+          var f = inp.files && inp.files[0];
+          if (!f) return;
+          if (f.size > 700 * 1024) { alert('Fail terlalu besar (had 700 KB). Potong audio supaya lebih pendek.'); return; }
+          var rd = new FileReader();
+          rd.onload = function() {
+            var d = rd.result;
+            kol('pawagam_audio').doc(v).set({ d: d, nama: f.name, at: Date.now() }).then(function() {
+              pnAudio[v] = d; pnData.audio[v] = 1;
+              var ub = { audio: {} }; ub.audio[v] = 1; pnSimpan(ub);
+              pnUI.mesej = 'Audio disimpan: ' + f.name;
+              coachLukisUsaha();
+            }).catch(function(er) { alert('Gagal simpan audio: ' + ((er && er.message) || er)); });
+          };
+          rd.readAsDataURL(f);
+        };
+        inp.click();
+        return true;
+      }
+      return true;
+    }
     function coachSolatMinggu() {
       var m = coachHariData.minggu || {}, jumlah = 0, bil = 0, k;
       for (k in m) {
@@ -13052,11 +13240,13 @@
       } else {
         h += '<button type="button" data-cu="ls" style="padding:6px 8px;margin-top:4px;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;">+ LISTENING (minit video ditonton)</button>';
       }
+      h += pnLukis(); // DAILY REPETITION EXERCISE (nota linking words + latihan ikut jadual)
       box.innerHTML = h;
       var inp = document.getElementById('coach-ls-input');
       if (inp) { try { inp.focus(); } catch (e) {} }
     }
     el('coach-usaha').onclick = function(e) {
+      if (pnKlik(e, this)) return; // butang DAILY REPETITION EXERCISE (data-pn)
       var t = e.target;
       while (t && t !== this && !t.getAttribute('data-cu')) t = t.parentNode;
       if (!t || t === this || !currentUser) return;
