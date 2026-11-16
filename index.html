@@ -16083,7 +16083,7 @@
       return ptIdx;
     }
     function ptSoalan(part, tema) { var a = [], L = ptBank().L, i; for (i = 0; i < L.length; i++) if (L[i].part === part && (!tema || L[i].tema === tema)) a.push(L[i]); return a; }
-    var ptUI = { rumah: 0, tema: '', id: '', cid: '', edit: false, mesej: '', preset: '', pukal: false, tambahS: false, tambahT: false }, ptData = null, ptMuat = false, ptKar = {};
+    var ptUI = { rumah: 0, tema: '', id: '', cid: '', edit: false, mesej: '', preset: '', pukal: false, tambahS: false, tambahT: false, tanyaSyor: false, syor: '' }, ptData = null, ptMuat = false, ptKar = {};
     var PT_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PT_BTNA = PT_BTN + 'background:#000;color:#fff;';
     function ptHenti() {}
     function ptE(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
@@ -16151,8 +16151,9 @@
       for (i = 0; i < a.length; i++) if (ptData.siap[ptKunci(a[i])]) n++;
       return n;
     }
-    function ptPreset() {
+    function ptPreset(syor) {
       var B = ptBank(), L = [], i, j, a, n = 0;
+      syor = String(syor || '').replace(/^\s+|\s+$/g, '');
       for (i = 0; i < B.T.length; i++) {
         L.push('TOPIK: ' + B.T[i]);
         a = ptSoalan(1, B.T[i]).concat(ptSoalan(2, B.T[i]));
@@ -16161,6 +16162,7 @@
       return [
         'TUGAS: Beri SOALAN SPEAKING MUET BARU sebanyak yang boleh (sekurang-kurangnya 30) yang BELUM ADA dalam senarai saya di bawah. Boleh juga cadang TOPIK BESAR baru yang sesuai dengan tema MUET.',
         'PENTING: JANGAN tulis karangan / huraian — saya tulis huraian sendiri. Beri soalan dan isi SAHAJA (frasa pendek, bukan ayat penuh).',
+        syor ? '\nPERKARA DISYORKAN: "' + syor + '"\n- MULAKAN dengan SEBANYAK MUNGKIN soalan (P1 dan P2) yang berkaitan atau hampir dengan perkara ini. Letak di bawah topik besar yang paling sesuai (atau topik besar baru).\n- SELEPAS itu, beri juga soalan lain yang TIADA kaitan dengan perkara ini seperti biasa (pelbagai topik besar).' : '',
         '',
         'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL dalam app — ikut tepat, satu soalan satu baris):',
         'TOPIK: nama topik besar',
@@ -16178,7 +16180,7 @@
       ].concat(L).join('\n');
     }
     function ptSalin(teks) {
-      var siap = function() { ptUI.mesej = 'PRESET DISALIN. Tampal ke AI bersama kod penuh app, kemudian tampal codebox jawapan AI ke app → Ganti Pukal.'; ptUI.preset = ''; lukisPentas(); };
+      var siap = function() { ptUI.mesej = 'PRESET DISALIN. Tampal ke AI → salin jawapan AI → tekan JANA PUKAL → tampal → SIMPAN.'; ptUI.preset = ''; lukisPentas(); };
       var gagal = function() {
         var ta = document.createElement('textarea'), ok = false;
         ta.value = teks; ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
@@ -16198,7 +16200,11 @@
       };
       if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan...</div>'; return; }
       var B = ptBank(), nmP = ptUI.rumah === 1 ? 'INDIVIDUAL PRESENTATION' : 'GROUP DISCUSSION';
-      var kotakPreset = ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '';
+      var kotakPreset = (ptUI.tanyaSyor ? '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ADA PERKARA YANG DISYORKAN?</div>' +
+        '<div style="font-size:0.8rem;">Contoh: focus study or meniaga. AI akan reka soalan berkaitan perkara ini dahulu, kemudian soalan lain seperti biasa. Biar kosong jika tiada.</div>' +
+        '<input id="pt-syor" type="text" value="' + ptE(ptUI.syor).replace(/"/g, '&quot;') + '" placeholder="Perkara disyorkan (pilihan)" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;">' +
+        '<div><button type="button" data-pt="presetsalin" style="' + PT_BTNA + '">SALIN PRESET</button><button type="button" data-pt="preset" style="' + PT_BTN + '">BATAL</button></div></div>' : '') +
+        (ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '');
       // ── 2 RUMAH ──
       if (!ptUI.rumah) {
         h = kepala('', '');
@@ -16404,7 +16410,8 @@
       }
       else if (a === 'soalan') { ptUI.id = v; ptUI.edit = false; }
       else if (a === 'senarai') { ptUI.id = ''; ptUI.edit = false; }
-      else if (a === 'preset') { ptSalin(ptPreset()); return; }
+      else if (a === 'preset') { ptUI.tanyaSyor = !ptUI.tanyaSyor; ptUI.preset = ''; }
+      else if (a === 'presetsalin') { ptUI.syor = (el('pt-syor').value || '').replace(/^\s+|\s+$/g, ''); ptUI.tanyaSyor = false; ptSalin(ptPreset(ptUI.syor)); return; }
       else if (a === 'edit') { ptUI.edit = true; }
       else if (a === 'batal') { ptUI.edit = false; }
       else if (a === 'simpan') {
