@@ -6850,6 +6850,18 @@
     <div id="pustaka-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div style="height:30px;"></div>
   </div>
+  <!-- DEWAN TULIS (Writing English — MUET Paper 4) — bangunan BELAJAR (17 Nov) -->
+  <div id="screen-tulis" class="screen">
+    <div class="status-bar">DEWAN TULIS</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-us-tulis-keluar" class="gm-kecil">‹ Usaha</button>
+      <span class="gm-alat-tajuk">DEWAN TULIS</span>
+      <button type="button" id="btn-us-tulis-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="tulis-info" class="jw-info"></div>
+    <div id="tulis-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
+  </div>
   <!-- SEMUA NOTA (Daily Repetition Exercise) — page berasingan dari PAWAGAM (16 Nov) -->
   <div id="screen-pn-nota" class="screen">
     <div class="status-bar">PAWAGAM · SEMUA NOTA</div>
@@ -9802,12 +9814,12 @@
     // Presenting = presenting_sr_queue · Vocab = LEVEL TERENDAH antara 5 game. Listening, Solat & pai Kesihatan = POSPON (Fasa 2).
     var COACH_MUSIM = {
       CUTI: {
-        english: { listening: 40, ayat: 25, vocab: 15, reasoning: 12, presenting: 8 },
+        english: { listening: 30, reading: 15, ayat: 20, vocab: 15, reasoning: 12, presenting: 8 }, // 17 Nov: + Reading (1 Part latihan = 1 unit)
         englishKuliah: [50, 50]
       }
     };
     var COACH_BIDANG = [
-      ['listening', 'Listening'], ['ayat', 'Ayat'], ['vocab', 'Vocab'], ['reasoning', 'Reasoning'], ['presenting', 'Presenting']
+      ['listening', 'Listening'], ['reading', 'Reading'], ['ayat', 'Ayat'], ['vocab', 'Vocab'], ['reasoning', 'Reasoning'], ['presenting', 'Presenting']
     ];
     var COACH_POSPON = {}; // Listening kini dari report minit (Fasa 2d)
     var COACH_GAME = [['padan', 'Padan'], ['jutawan', 'Jutawan'], ['memori', 'Memori'], ['duri', 'Duri'], ['betulsalah', 'Betul/Salah']];
@@ -9846,7 +9858,7 @@
       if (!paksa) {
         try {
           var c = JSON.parse(localStorage.getItem(coachCacheKunci()) || 'null');
-          if (c && c.at && c.hasOwnProperty('profil') && c.hasOwnProperty('senaman') && Date.now() - c.at < COACH_SEGAR_MS) return Promise.resolve(c);
+          if (c && c.at && c.hasOwnProperty('profil') && c.hasOwnProperty('senaman') && c.hasOwnProperty('reading') && Date.now() - c.at < COACH_SEGAR_MS) return Promise.resolve(c);
         } catch (e) {}
       }
       return Promise.all([
@@ -9855,7 +9867,8 @@
         kol('coach').doc('tetapan').get().catch(function() { return null; }),
         kol('coach').doc('stok').get().catch(function() { return null; }),
         kol('coach').doc('profil').get().catch(function() { return null; }),
-        kol('coach').doc('senaman').get().catch(function() { return null; })
+        kol('coach').doc('senaman').get().catch(function() { return null; }),
+        kol('coach').doc('pustaka').get().catch(function() { return null; })
       ]).then(function(r) {
         var t = (r[5] && r[5].exists) ? r[5].data() : {};
         var stok = (r[6] && r[6].exists) ? r[6].data() : {};
@@ -9865,6 +9878,9 @@
           profil: (r[7] && r[7].exists) ? r[7].data() : null,
           senaman: (r[8] && r[8].exists) ? r[8].data() : {}
         };
+        // Reading = jumlah Part latihan di PERPUSTAKAAN (coach/pustaka)
+        data.reading = 0;
+        try { var ph = (r[9] && r[9].exists) ? (r[9].data().hari || {}) : {}, pk; for (pk in ph) if (ph.hasOwnProperty(pk) && ph[pk]) data.reading += ph[pk].length; } catch (e) {}
         try { localStorage.setItem(coachCacheKunci(), JSON.stringify(data)); } catch (e) {}
         return data;
       });
@@ -9956,7 +9972,7 @@
       else teks = fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
       if (seterus) teks += '\nSeterusnya: ' + seterus.nama + ' — ' + coachTeksMasa(seterus.min);
       teks += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
-      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Pawagam › SALIN PRESET, tampal ke AI bersama kod penuh app.';
+      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Pawagam › SALIN PRESET → JANA PUKAL.';
       if (typeof ptPerluTambah === 'function' && ptPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah topik SPEAKING — Usaha › Pentas › SALIN PRESET.';
       return teks;
     }
@@ -10492,7 +10508,7 @@
       var musim = COACH_MUSIM[data.musim] ? data.musim : 'CUTI';
       coachMusim = musim;
       var set = COACH_MUSIM[musim];
-      var unit = { listening: data.listening || 0, ayat: data.ayat, vocab: data.vocab, reasoning: data.reasoning, presenting: data.presenting };
+      var unit = { listening: data.listening || 0, reading: data.reading || 0, ayat: data.ayat, vocab: data.vocab, reasoning: data.reasoning, presenting: data.presenting };
       var jumlahEn = 0, i, k;
       for (i = 0; i < COACH_BIDANG.length; i++) {
         k = COACH_BIDANG[i][0];
@@ -10541,7 +10557,7 @@
       var pE = coachPeratus(nE), legE = '';
       for (i2 = 0; i2 < kE.length; i2++) {
         var bd = COACH_BIDANG[kE[i2]], sas = set.english[bd[0]];
-        legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : '') + ')</span><br>';
+        legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : (bd[0] === 'reading' ? ' Part' : '')) + ')</span><br>';
       }
       isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
         coachPie(cS, '(c) ENGLISH SASARAN') +
@@ -12868,6 +12884,7 @@
     function coachFokusGo(f) {
       var m = {
         Listening: ['KE PAWAGAM → + LISTENING', function() { bukaPawagam(); }],
+        Reading: ['KE PERPUSTAKAAN → + TAMBAH LATIHAN', function() { bukaPustaka(); }],
         Ayat: ['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }],
         Vocab: ['MAIN GAME VOCAB', function() { bukaMini(); }],
         Reasoning: ['BUKA LACI REASONING', function() { el('btn-go-reasoning').click(); }],
@@ -12879,6 +12896,7 @@
     function coachFokusTeks(f) {
       return {
         Listening: 'tonton video English, kemudian report minit (+ LISTENING)',
+        Reading: 'buat latihan kertas MUET Reading, kemudian catat Part di Perpustakaan',
         Ayat: 'ulang kaji ayat di Laci Bahasa',
         Vocab: 'main game vocab (level terendah)',
         Reasoning: 'ulang kaji Laci Reasoning',
@@ -13116,46 +13134,93 @@
         } catch (x) {}
       }
     })();
-    function pnPerluTambah() { return PN_VERSI < coachHariId(); }
-    // Preset untuk ditampal ke AI (bersama kod penuh app) → AI pulangkan codebox Cari/Ganti untuk blok NOTA TAMBAHAN
-    function pnPreset() {
-      var hari = coachHariId(), i, j, S, L = [], SD = pnSetDRE();
+    // ══ JANA PUKAL (17 Nov): nota baru dari AI disimpan dalam Firebase (coach/pawagam_bank { tambah: [entri], versi }) — bukan lagi codebox ══
+    //   Entri sama bentuk dengan PN_TAMBAH: { tarikh, set, g: { id, t, ms, f } } / { tarikh, grp, f }. Item perkataan + maksud disimpan { w, m } (Firebase tak terima array bersarang).
+    function pnItem(x) { return (x && typeof x === 'object' && !(x instanceof Array) && x.w) ? [x.w, x.m || ''] : x; }
+    function pnGabung(senarai) {
+      var i, j, e, s, g, ada, f;
+      for (i = 0; i < senarai.length; i++) {
+        e = senarai[i];
+        try {
+          if (e.setBaru) { if (!pnSet(e.setBaru.id)) PN_SET.push({ id: e.setBaru.id, b: e.setBaru.b, t: e.setBaru.t, g: [] }); }
+          else if (e.set && e.g) { s = pnSet(e.set); if (s && !pnGrp(e.g.id)) s.g.push({ id: e.g.id, t: e.g.t, ms: e.g.ms, f: (e.g.f || []).map(pnItem) }); }
+          else if (e.grp && e.f) {
+            g = pnGrp(e.grp); if (!g) continue;
+            ada = {}; for (j = 0; j < g.f.length; j++) ada[JSON.stringify(g.f[j])] = 1;
+            for (j = 0; j < e.f.length; j++) { f = pnItem(e.f[j]); if (!ada[JSON.stringify(f)]) { g.f.push(f); ada[JSON.stringify(f)] = 1; } }
+          }
+        } catch (x) {}
+      }
+    }
+    var pnBank = null;
+    function pnVersi() { var v = PN_VERSI; if (pnBank && pnBank.versi && pnBank.versi > v) v = pnBank.versi; return v; }
+    // Baca teks format:  G: idSet | idKumpulanBaru | Tajuk English | Maksud Melayu | item | item ...   ·   F: idKumpulan | item | item ...
+    //   item = 'frasa' ATAU 'perkataan = maksud'. Pulang { g, f, ulang, salah }
+    function pnPukal(teks) {
+      var L = String(teks || '').split(/\r?\n/), r = { g: 0, f: 0, ulang: 0, salah: 0 }, hari = coachHariId(), baru = [], i, j, m, bh, it, sid, gid, items, gx, ada;
+      var item = function(x) { var p = x.split('='); if (p.length > 1) { var w = p.shift().replace(/^\s+|\s+$/g, ''), mk = p.join('=').replace(/^\s+|\s+$/g, ''); return w ? { w: w, m: mk } : null; } return x || null; };
+      var kunci = function(x) { return JSON.stringify(pnItem(x)); };
+      for (i = 0; i < L.length; i++) {
+        var gr = L[i].replace(/^\s*([-*•>]|\d+[.)])\s*/, '').replace(/\*\*/g, '').replace(/^\s+|\s+$/g, '');
+        if (!gr || /^```/.test(gr)) continue;
+        m = gr.match(/^([GF])\s*:\s*(.+)$/i);
+        if (!m) { r.salah++; continue; }
+        bh = m[2].split('|'); for (j = 0; j < bh.length; j++) bh[j] = bh[j].replace(/^\s+|\s+$/g, '');
+        if (m[1].toUpperCase() === 'G') {
+          sid = bh.shift(); gid = (bh.shift() || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+          var t = bh.shift() || '', ms = bh.shift() || '';
+          items = []; for (j = 0; j < bh.length; j++) { it = item(bh[j]); if (it) items.push(it); }
+          if (!pnSet(sid) || !gid || !t || !items.length) { r.salah++; continue; }
+          gx = pnGrp(gid);
+          if (gx) { // kumpulan sudah ada → anggap sebagai tambah item
+            ada = {}; for (j = 0; j < gx.f.length; j++) ada[JSON.stringify(gx.f[j])] = 1;
+            var bf = []; for (j = 0; j < items.length; j++) if (!ada[kunci(items[j])]) bf.push(items[j]);
+            if (!bf.length) { r.ulang++; continue; }
+            it = { tarikh: hari, grp: gid, f: bf }; pnGabung([it]); baru.push(it); r.f++; continue;
+          }
+          it = { tarikh: hari, set: sid, g: { id: gid, t: t, ms: ms, f: items } }; pnGabung([it]); baru.push(it); r.g++;
+        } else {
+          gid = bh.shift(); gx = pnGrp(gid);
+          if (!gx) { r.salah++; continue; }
+          ada = {}; for (j = 0; j < gx.f.length; j++) ada[JSON.stringify(gx.f[j])] = 1;
+          items = []; for (j = 0; j < bh.length; j++) { it = item(bh[j]); if (it && !ada[kunci(it)]) { items.push(it); ada[kunci(it)] = 1; } }
+          if (!items.length) { r.ulang++; continue; }
+          it = { tarikh: hari, grp: gid, f: items }; pnGabung([it]); baru.push(it); r.f++;
+        }
+      }
+      if (baru.length) { pnBank = pnBank || { tambah: [] }; pnBank.tambah = (pnBank.tambah || []).concat(baru); pnBank.versi = hari; }
+      return r;
+    }
+    function pnPerluTambah() { return pnVersi() < coachHariId(); }
+    // Preset untuk ditampal ke AI → AI pulangkan teks format JANA PUKAL (tampal dalam app → SIMPAN)
+    function pnPreset(syor) {
+      var i, j, S, g, L = [], SD = pnSetDRE();
+      syor = String(syor || '').replace(/^\s+|\s+$/g, '');
       for (i = 0; i < SD.length; i++) {
         S = SD[i];
-        L.push('- set "' + S.id + '" (' + S.t + '):');
-        for (j = 0; j < S.g.length; j++) L.push('    · kumpulan "' + S.g[j].id + '" — ' + S.g[j].t + ' (' + S.g[j].f.length + ' item, ' + (typeof S.g[j].f[0] === 'string' ? 'frasa' : 'perkataan + maksud') + ')');
+        L.push('SET "' + S.id + '" — ' + S.t + ':');
+        for (j = 0; j < S.g.length; j++) { g = S.g[j]; L.push('  · ' + g.id + ' — ' + g.t + ': ' + g.f.map(function(x) { return typeof x === 'string' ? x : x[0] + ' = ' + x[1]; }).join(' / ')); }
       }
       return [
-        'TUGAS: Tambah nota baru ke DAILY REPETITION EXERCISE (page PAWAGAM) dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
-        'Tarikh hari ini: ' + hari,
+        'TUGAS: Beri nota BARU untuk DAILY REPETITION EXERCISE (MUET Listening — useful expressions / linking words) dalam app saya, sebanyak yang boleh, yang BELUM ADA dalam senarai di bawah.',
+        syor ? '\nPERKARA DISYORKAN: "' + syor + '"\n- MULAKAN dengan SEBANYAK MUNGKIN nota yang berkaitan atau hampir dengan perkara ini.\n- SELEPAS itu, beri juga nota lain seperti biasa.' : '',
         '',
-        'BAHAN NOTA: [tampal teks / gambar nota di sini. Jika kosong, cadangkan sendiri frasa / kumpulan baru untuk SALAH SATU set kemahiran dalam senarai di bawah (MUET Listening) — jangan ulang frasa yang sudah ada.]',
+        'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL dalam app — ikut tepat, satu baris satu entri):',
+        'G: idSet | idKumpulanBaru | Tajuk English | Maksud Melayu | frasa 1 | frasa 2 | frasa 3 | frasa 4',
+        'F: idKumpulanSediaAda | frasa baru | frasa baru',
         '',
         'PERATURAN:',
-        '1. Ubah HANYA blok "NOTA TAMBAHAN" (var PN_TAMBAH dan var PN_VERSI). JANGAN ubah, buang atau susun semula PN_SET atau entri lama — ID audio bergantung pada susunan item.',
-        '2. Tambah entri baru di ATAS baris "// ◆ HUJUNG PN_TAMBAH — entri baru di ATAS baris ini ◆" dan tukar PN_VERSI kepada \'' + hari + '\'.',
-        '3. Jenis entri:',
-        '   a) Kumpulan baru dalam set sedia ada:',
-        '      { tarikh: \'' + hari + '\', set: \'ID_SET\', g: { id: \'ID_UNIK\', t: \'Tajuk English\', ms: \'Maksud Melayu\', f: [\'frasa ...\', \'frasa ...\'] } },',
-        '   b) Frasa baru ke hujung kumpulan sedia ada:',
-        '      { tarikh: \'' + hari + '\', grp: \'ID_KUMPULAN\', f: [\'frasa baru ...\'] },',
-        '   Item = \'frasa\' (soalan: frasa → fungsi kumpulan) ATAU [\'perkataan\', \'maksud Melayu\'] (soalan: perkataan → maksud). Satu jenis sahaja dalam satu kumpulan.',
-        '4. Tambah HANYA ke set dalam SENARAI NOTA SEMASA di bawah. JANGAN tambah ke set "' + PN_SET_TOPIK + '" (topic-specific vocabulary ada tab TOPIK sendiri) dan JANGAN buat set baru.',
-        '   ID kumpulan mesti unik (huruf kecil + sengkang). Kumpulan baru sekurang-kurangnya 4 item.',
-        '5. ES5 sahaja (var / function — tiada let, const, arrow, template string). Tiada emoji. Guna petikan tunggal; apostrophe ditulis \\\'.',
-        '6. Output: SATU codebox sahaja, format:',
-        'Cari:',
-        '[kod lama]',
-        'Ganti:',
-        '[kod baru]',
-        '   Blok Cari mesti DISALIN TEPAT dari kod saya — bermula baris "// ◆ HUJUNG PN_TAMBAH" hingga baris "(function pnGabungTambahan() {" (5 baris). Jangan taip semula dari ingatan.',
-        '7. Jangan terangkan panjang lebar — terus bagi codebox.',
+        '1. G = kumpulan BARU dalam set sedia ada (sekurang-kurangnya 4 item). F = tambah item ke HUJUNG kumpulan sedia ada.',
+        '2. idSet dan idKumpulan sedia ada mesti DITULIS TEPAT seperti dalam senarai. idKumpulanBaru unik: huruf kecil + sengkang.',
+        '3. Item = frasa English (cth: In my opinion, ...) ATAU "perkataan = maksud Melayu". Satu jenis sahaja dalam satu kumpulan — ikut jenis kumpulan itu.',
+        '4. JANGAN buat set baru. JANGAN ulang item yang sudah ada. Jangan guna aksara | dalam ayat. Tiada emoji, tiada nombor di depan baris.',
+        '5. Output: SATU codebox teks biasa sahaja, tanpa penerangan.',
         '',
         'SENARAI NOTA SEMASA:'
       ].concat(L).join('\n');
     }
     function pnSalin(teks) {
-      var siap = function() { pnUI.mesej = 'PRESET DISALIN. Tampal ke AI bersama kod penuh app, kemudian tampal codebox jawapan AI ke app → Ganti Pukal.'; pnUI.preset = ''; pnRender(); };
+      var siap = function() { pnUI.mesej = 'PRESET DISALIN. Tampal ke AI → salin jawapan AI → tekan JANA PUKAL → tampal → SIMPAN.'; pnUI.preset = ''; pnRender(); };
       var gagal = function() {
         var ta = document.createElement('textarea'), ok = false;
         ta.value = teks; ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
@@ -13171,16 +13236,24 @@
     function pnKotakPreset(arahan) {
       var h = '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;">';
       if (arahan) h += '<div style="font-weight:bold;">ARAHAN COACH: TAMBAH NOTA BARU HARI INI</div>' +
-        '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan bahan nota jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>Nota lama kekal — senarai bertambah setiap hari.</div>';
-      else h += '<div style="font-weight:bold;">TAMBAH NOTA DENGAN AI</div><div style="font-size:0.85rem;">Nota terakhir ditambah: ' + PN_VERSI + '. Tekan SALIN PRESET, tampal ke AI bersama kod penuh app.</div>';
-      h += '<button type="button" data-pn="preset" style="' + PN_BTNA + '">SALIN PRESET</button>';
+        '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET → tampal ke AI.<br>2. Salin jawapan AI.<br>3. Tekan JANA PUKAL → tampal → SIMPAN.<br>Nota lama kekal — senarai bertambah setiap hari.</div>';
+      else h += '<div style="font-weight:bold;">TAMBAH NOTA DENGAN AI</div><div style="font-size:0.85rem;">Nota terakhir ditambah: ' + pnVersi() + '. Tekan SALIN PRESET → tampal ke AI → JANA PUKAL.</div>';
+      h += '<button type="button" data-pn="preset" style="' + (pnUI.tanyaSyor ? PN_BTNA : PN_BTN) + '">SALIN PRESET</button><button type="button" data-pn="bukapukal" style="' + (pnUI.pukal ? PN_BTNA : PN_BTN) + '">JANA PUKAL</button>';
+      if (pnUI.tanyaSyor) h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ADA PERKARA YANG DISYORKAN?</div>' +
+        '<div style="font-size:0.8rem;">Contoh: expressions for giving advice. AI akan beri nota berkaitan perkara ini dahulu, kemudian nota lain seperti biasa. Biar kosong jika tiada.</div>' +
+        '<input id="pn-syor" type="text" value="' + String(pnUI.syor || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;') + '" placeholder="Perkara disyorkan (pilihan)" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;">' +
+        '<div><button type="button" data-pn="presetsalin" style="' + PN_BTNA + '">SALIN PRESET</button><button type="button" data-pn="preset" style="' + PN_BTN + '">BATAL</button></div></div>';
       if (pnUI.preset) h += '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + pnUI.preset.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</textarea>';
+      if (pnUI.pukal) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JANA PUKAL</div>' +
+        '<div style="font-size:0.8rem;">Tampal jawapan AI di bawah → SIMPAN. Kumpulan baru masuk ke jadual ulang kaji (satu kumpulan baru dibuka sehari). Item yang sudah ada diabaikan.</div>' +
+        '<textarea id="pn-pukal" placeholder="G: idSet | id-kumpulan | Tajuk | Maksud | frasa | frasa&#10;F: id-kumpulan | frasa baru" style="width:100%;height:170px;margin-top:6px;font-size:0.85rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+        '<div><button type="button" data-pn="simpanpukal" style="' + PN_BTNA + '">SIMPAN</button><button type="button" data-pn="bukapukal" style="' + PN_BTN + '">TUTUP</button></div></div>';
       return h + '</div>';
     }
     var PN_SELANG = [1, 2, 4, 7, 14, 30];
     var pnData = null, pnMuat = false, pnAudio = {}, pnTimer = null;
     // halaman: 'pawagam' (kotak HARI INI) / 'nota' (page SEMUA NOTA) · mod: '' | 'baca' | 'kuiz' | 'senarai' | 'set'
-    var pnUI = { halaman: 'pawagam', mod: '', set: '', grp: '', kuiz: null, baca: null, mesej: '' };
+    var pnUI = { halaman: 'pawagam', mod: '', set: '', grp: '', kuiz: null, baca: null, mesej: '', tanyaSyor: false, syor: '', pukal: false };
     var PN_IKON = '<svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:middle;" xmlns="http://www.w3.org/2000/svg"><path d="M3 9h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M15 8q3 4 0 8M18 5q5 7 0 14" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
     var PN_BTN = 'padding:5px 8px;margin:4px 4px 0 0;font-size:0.8rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
     var PN_BTNA = PN_BTN + 'background:#000;color:#fff;';
@@ -13254,8 +13327,10 @@
     function pnMuatData() {
       if (pnData || pnMuat || !currentUser) return;
       pnMuat = true;
-      kol('coach').doc('pawagam_nota').get().then(function(d) { pnData = d.exists ? d.data() : {}; pnData.sr = pnData.sr || {}; pnData.audio = pnData.audio || {}; pnRender(); })
-        .catch(function() { pnData = { sr: {}, audio: {} }; pnRender(); });
+      var siapBank = function(b) { if (!pnBank) { pnBank = b || { tambah: [] }; pnBank.tambah = pnBank.tambah || []; pnGabung(pnBank.tambah); } };
+      kol('coach').doc('pawagam_bank').get().then(function(b) { siapBank(b.exists ? b.data() : null); }).catch(function() { siapBank(null); }).then(function() {
+        return kol('coach').doc('pawagam_nota').get().then(function(d) { pnData = d.exists ? d.data() : {}; pnData.sr = pnData.sr || {}; pnData.audio = pnData.audio || {}; pnRender(); });
+      }).catch(function() { pnData = { sr: {}, audio: {} }; pnRender(); });
     }
     // Latihan dalam bentuk GAME (gaya JUTAWAN): bar status, skor, soalan besar di tengah, pilihan A/B/C/D bulat
     function pnLukisKuiz() {
@@ -13406,7 +13481,17 @@
         pnRender(); return true;
       }
       if (a === 'siapbaca') { pnMulaKuiz(); return true; }
-      if (a === 'preset') { pnSalin(pnPreset()); return true; }
+      if (a === 'preset') { pnUI.tanyaSyor = !pnUI.tanyaSyor; pnUI.preset = ''; pnRender(); return true; }
+      if (a === 'presetsalin') { pnUI.syor = ((el('pn-syor') || {}).value || '').replace(/^\s+|\s+$/g, ''); pnUI.tanyaSyor = false; pnSalin(pnPreset(pnUI.syor)); return true; }
+      if (a === 'bukapukal') { pnUI.pukal = !pnUI.pukal; pnRender(); return true; }
+      if (a === 'simpanpukal') {
+        var rp = pnPukal((el('pn-pukal') || {}).value);
+        if (!rp.g && !rp.f) { alert('Tiada nota baru dijumpai.' + (rp.ulang ? ' ' + rp.ulang + ' baris sudah ada.' : '') + (rp.salah ? ' ' + rp.salah + ' baris tidak ikut format.' : '')); return true; }
+        pnUI.pukal = false; pnUI.preset = '';
+        pnUI.mesej = 'JANA PUKAL: ' + rp.g + ' kumpulan baru, ' + rp.f + ' tambahan item' + (rp.ulang ? ' · ' + rp.ulang + ' sudah ada (diabaikan)' : '') + (rp.salah ? ' · ' + rp.salah + ' baris salah format' : '') + '.';
+        kol('coach').doc('pawagam_bank').set(pnBank).catch(function(e) { alert('Gagal simpan: ' + ((e && e.message) || e)); });
+        pnRender(); return true;
+      }
       if (a === 'latihset') { pnUI.kuiz = pnBinaKuiz(null, pnSet(v).g.map(function(x) { return x.id; }), 10); pnUI.kuiz.set = v; pnUI.kuiz.dariSet = true; pnUI.mod = 'kuiz'; pnRender(); try { window.scrollTo(0, 0); } catch (x) {} return true; }
       if (a === 'jawab' && pnUI.kuiz && pnUI.kuiz.jawab === null) {
         pnUI.kuiz.jawab = parseInt(v, 10);
@@ -13488,7 +13573,7 @@
     //   + KALKULATOR: berapa minit lagi listening untuk capai sasaran.  (L + x) / (J + x) = s/100  →  x = (s·J − 100·L) / (100 − s)
     function pawagamPaiListening() {
       var d = coachDataAkhir || {}, musim = COACH_MUSIM[d.musim] ? d.musim : 'CUTI', sas = COACH_MUSIM[musim].english.listening || 0;
-      var unit = { listening: d.listening || 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
+      var unit = { listening: d.listening || 0, reading: d.reading || 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
       var J = 0, i, L = unit.listening;
       for (i = 0; i < COACH_BIDANG.length; i++) if (!COACH_POSPON[COACH_BIDANG[i][0]]) J += unit[COACH_BIDANG[i][0]] || 0;
       var f = J ? L / J : 0, pc = Math.round(f * 100);
@@ -14975,13 +15060,15 @@
       ['reasoning', 'REASONING', 'Laci reasoning', true],
       ['presenting', 'PRESENTING', 'Laci presenting', true],
       ['pentas', 'PENTAS', 'Speaking English (MUET)', true],
-      ['pustaka', 'PERPUSTAKAAN', 'Reading English (MUET)', true]
+      ['pustaka', 'PERPUSTAKAAN', 'Reading English (MUET)', true],
+      ['tulis', 'DEWAN TULIS', 'Writing English (MUET)', true]
     ];
     // USAHA BERHALAMAN: [tajuk, senarai kunci bangunan] — tekan titik kanan / sapu atas-bawah untuk tukar page (tiada skrol)
     var TS_HALAMAN = [
       ['BADAN', ['gym', 'taman', 'makmal', 'nutrisi']],
       ['REHAT & IBADAH', ['tidur', 'surau']],
-      ['BELAJAR', ['pawagam', 'pentas', 'pustaka', 'bahasa', 'fakta', 'reasoning', 'presenting']]
+      ['ENGLISH MUET', ['pawagam', 'pentas', 'pustaka', 'tulis']],
+      ['LACI BELAJAR', ['bahasa', 'fakta', 'reasoning', 'presenting']]
     ];
     var TS_LACI = { bahasa: 'btn-go-bahasa', fakta: 'btn-go-fakta', reasoning: 'btn-go-reasoning', presenting: 'btn-go-presenting' };
     var tsHal = 0;
@@ -15007,6 +15094,7 @@
       if (k === 'presenting') s += '<rect x="55" y="23" width="10" height="16" rx="5" fill="#000"/><path d="M51 34 Q51 44 60 44 Q69 44 69 34" fill="none" stroke="#000" stroke-width="2.5"/><path d="M60 44 V49 M54 49 H66" stroke="#000" stroke-width="2.5"/>';
       if (k === 'kumpulan') s += '<circle cx="48" cy="30" r="4.5" fill="#000"/><circle cx="60" cy="27" r="4.5" fill="#000"/><circle cx="72" cy="30" r="4.5" fill="#000"/><path d="M41 47 Q41 36 48 36 Q55 36 55 47 Z M53 45 Q53 33 60 33 Q67 33 67 45 Z M65 47 Q65 36 72 36 Q79 36 79 47 Z" fill="#000"/>';
       if (k === 'pentas') s += '<path d="M46 28 H74 L71 34 H49 Z" fill="#000"/><rect x="56" y="34" width="8" height="12" fill="#000"/><path d="M48 48 H72" stroke="#000" stroke-width="3"/><path d="M60 28 V22" stroke="#000" stroke-width="2"/><circle cx="60" cy="21" r="2.5" fill="#000"/>';
+      if (k === 'tulis') s += '<path d="M48 47 L51 38 L68 21 L74 27 L57 44 Z" fill="#000"/><path d="M48 47 L51 38 L57 44 Z" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M44 49 H76" stroke="#000" stroke-width="2.5"/>';
       if (k === 'pustaka') s += '<rect x="45" y="40" width="30" height="7" fill="#000"/><rect x="48" y="33" width="26" height="6" fill="#fff" stroke="#000" stroke-width="2"/><rect x="46" y="26" width="24" height="6" fill="#000"/><path d="M50 43.5 H70" stroke="#fff" stroke-width="1.5"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
@@ -15127,6 +15215,7 @@
       if (k === 'pawagam') { bukaPawagam(); return; }
       if (k === 'pentas') { bukaPentas(); return; }
       if (k === 'pustaka') { bukaPustaka(); return; }
+      if (k === 'tulis') { bukaTulis(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // USAHA berhalaman: tekan titik → page itu · sapu atas / bawah → page seterusnya / sebelumnya
@@ -15615,7 +15704,7 @@
       var p = profilDari;
       if (p === 'screen-ts') bukaTs(); else if (p === 'screen-gym') bukaGym(); else if (p === 'screen-taman') bukaTaman(); else if (p === 'screen-makmal') bukaMakmal(); else if (p === 'screen-nutrisi') bukaNutrisi();
       else if (p === 'screen-bilik') bukaBilik();
-      else if (p === 'screen-us') bukaUs(); else if (p === 'screen-surau') bukaSurau(); else if (p === 'screen-pawagam') bukaPawagam(); else if (p === 'screen-pentas') bukaPentas(); else if (p === 'screen-pustaka') bukaPustaka();
+      else if (p === 'screen-us') bukaUs(); else if (p === 'screen-surau') bukaSurau(); else if (p === 'screen-pawagam') bukaPawagam(); else if (p === 'screen-pentas') bukaPentas(); else if (p === 'screen-pustaka') bukaPustaka(); else if (p === 'screen-tulis') bukaTulis();
       else if (p === 'screen-kd') bukaKd(); else if (p && el(p)) showScreen(p); else bukaMini();
     };
     el('btn-profil-coach').onclick = function() { bukaCoach(false); };
@@ -16453,16 +16542,119 @@
     }
     el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
     el('btn-us-pentas-coach').onclick = function() { bukaCoach(false); };
-    // ══ PERPUSTAKAAN — READING MUET Paper 3 (16 Nov): TIPS & FORMAT dulu, HARI INI dibina kemudian (bahan bacaan ditambah sendiri) ══
-    function lukisPustaka() {
-      el('pustaka-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">READING — MUET PAPER 3</div>' +
-        '<div style="border:2px dashed #000;border-radius:8px;padding:6px 8px;margin:6px 0;">HARI INI sedang dibina. Bahan bacaan nanti anda tambah sendiri.<br>Buat masa ini, baca tab <b>TIPS</b>.</div>';
+    // ══ PERPUSTAKAAN — READING MUET Paper 3 (17 Nov): HARI INI = senarai DAY 1, 2, 3 … · setiap Day = senarai latihan (tajuk kertas + Part) · 1 Part = 1 unit Reading ══
+    // Data: coach/pustaka { hari: { 'YYYY-MM-DD': [ { k: tajuk kertas, p: 1-7, m: markah (pilihan), at } ] }, kertas: [tajuk pernah ditaip] }
+    var puData = null, puMuat = false, puUI = { hari: '', part: 0, mesej: '' };
+    function puE(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+    function puHariSenarai() { var a = [], k, h = (puData && puData.hari) || {}; for (k in h) if (h.hasOwnProperty(k) && h[k] && h[k].length) a.push(k); a.sort(); return a; }
+    function puJumlah() { var n = 0, k, h = (puData && puData.hari) || {}; for (k in h) if (h.hasOwnProperty(k) && h[k]) n += h[k].length; return n; }
+    function puMuatData() {
+      if (puData || puMuat || !currentUser) return;
+      puMuat = true;
+      kol('coach').doc('pustaka').get().then(function(d) { puData = d.exists ? (d.data() || {}) : {}; puData.hari = puData.hari || {}; puData.kertas = puData.kertas || []; lukisPustaka(); })
+        .catch(function() { puData = { hari: {}, kertas: [] }; lukisPustaka(); });
     }
+    function puSimpan(mesej) {
+      kol('coach').doc('pustaka').set(puData).then(function() { if (mesej) { puUI.mesej = mesej; lukisPustaka(); } })
+        .catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
+      // Pai English: 1 Part = 1 unit Reading (kemas kini serta-merta)
+      if (coachDataAkhir) { coachDataAkhir.reading = puJumlah(); try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er) {} }
+    }
+    var PU_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PU_BTNA = PU_BTN + 'background:#000;color:#fff;';
+    function lukisPustaka() {
+      var h = '<div style="font-weight:bold;font-size:1.15rem;">READING — MUET PAPER 3</div>', i, a, hari = coachHariId();
+      if (!puData) { puMuatData(); el('pustaka-isi').innerHTML = h + '<div>Memuatkan...</div>'; return; }
+      var senarai = puHariSenarai();
+      if (puUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + puUI.mesej + '</div>';
+      // ── SATU DAY: senarai latihan + borang tambah ──
+      if (puUI.hari) {
+        var d = puUI.hari, L = puData.hari[d] || [], no = senarai.indexOf(d) + 1;
+        if (!no) no = senarai.length + 1;
+        h = '<button type="button" data-pu="balik" style="' + PU_BTN + '">‹ SENARAI HARI</button>' + h;
+        if (puUI.mesej) h += '';
+        h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">DAY ' + no + ' · ' + d + (d === hari ? ' · HARI INI' : '') + '</div>';
+        h += '<div style="font-size:0.85rem;">' + L.length + ' Part = ' + L.length + ' unit Reading</div>';
+        if (!L.length) h += '<div style="font-size:0.85rem;margin:4px 0;">Belum ada latihan. Tambah di bawah.</div>';
+        for (i = 0; i < L.length; i++) {
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 7px;margin:4px 0;display:flex;align-items:center;">' +
+            '<div style="flex:1;"><b>' + (i + 1) + '. ' + puE(L[i].k) + '</b> · Part ' + L[i].p + (L[i].m ? ' · markah <b>' + puE(L[i].m) + '</b>' : '') + '</div>' +
+            '<button type="button" data-pu="buang" data-v="' + i + '" style="' + PU_BTN + 'margin:0;padding:3px 7px;font-size:0.75rem;">BUANG</button></div>';
+        }
+        // Borang tambah
+        h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:8px 0;"><div style="font-weight:bold;">+ TAMBAH LATIHAN</div>' +
+          '<div style="font-size:0.8rem;margin-top:3px;">Tajuk kertas:</div>' +
+          '<input id="pu-kertas" type="text" placeholder="cth: Ace MUET Test 2" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">';
+        var ks = puData.kertas.slice(-6).reverse();
+        if (ks.length) {
+          h += '<div style="font-size:0.75rem;margin-top:2px;">Tekan untuk guna semula:</div><div>';
+          for (i = 0; i < ks.length; i++) h += '<button type="button" data-pu="pilihk" data-v="' + puE(ks[i]) + '" style="' + PU_BTN + 'padding:3px 7px;font-size:0.75rem;font-weight:normal;">' + puE(ks[i]) + '</button>';
+          h += '</div>';
+        }
+        h += '<div style="font-size:0.8rem;margin-top:5px;">Part:</div><div>';
+        for (i = 1; i <= 7; i++) h += '<button type="button" data-pu="part" data-v="' + i + '" style="' + (puUI.part === i ? PU_BTNA : PU_BTN) + 'min-width:34px;">' + i + '</button>';
+        h += '</div><div style="font-size:0.8rem;margin-top:5px;">Markah (pilihan, cth 5/6):</div>' +
+          '<input id="pu-markah" type="text" placeholder="boleh biar kosong" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">' +
+          '<div><button type="button" data-pu="tambah" style="' + PU_BTNA + '">TAMBAH</button></div></div>';
+        el('pustaka-isi').innerHTML = h; return;
+      }
+      // ── SENARAI HARI ──
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Reading, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = 1 unit Reading</b> dalam pai English.<br>Jumlah: <b>' + puJumlah() + ' Part</b> dalam <b>' + senarai.length + ' hari</b>.</div>';
+      if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pu="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
+      if (!senarai.length) h += '<div style="font-size:0.85rem;">Belum ada latihan.</div>';
+      for (i = senarai.length - 1; i >= 0; i--) {
+        a = puData.hari[senarai[i]];
+        h += '<button type="button" data-pu="hari" data-v="' + senarai[i] + '" style="' + (senarai[i] === hari ? PU_BTNA : PU_BTN) + 'display:block;width:100%;text-align:left;margin-bottom:4px;">DAY ' + (i + 1) +
+          '<span style="font-weight:normal;font-size:0.8rem;"> · ' + senarai[i] + (senarai[i] === hari ? ' · HARI INI' : '') + ' · ' + a.length + ' Part</span> ›</button>';
+      }
+      el('pustaka-isi').innerHTML = h;
+    }
+    el('pustaka-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pu'))) t = t.parentNode;
+      if (!t || t === this) return;
+      var a = t.getAttribute('data-pu'), v = t.getAttribute('data-v');
+      puUI.mesej = '';
+      if (a === 'hari') { puUI.hari = v; puUI.part = 0; }
+      else if (a === 'balik') { puUI.hari = ''; }
+      else if (a === 'part') { var kx = el('pu-kertas').value, mx = el('pu-markah').value; puUI.part = +v; lukisPustaka(); el('pu-kertas').value = kx; el('pu-markah').value = mx; return; }
+      else if (a === 'pilihk') { el('pu-kertas').value = v; return; }
+      else if (a === 'tambah') {
+        var k = (el('pu-kertas').value || '').replace(/^\s+|\s+$/g, ''), m = (el('pu-markah').value || '').replace(/^\s+|\s+$/g, '');
+        if (!k) { alert('Tulis tajuk kertas.'); return; }
+        if (!puUI.part) { alert('Pilih Part (1 - 7).'); return; }
+        if (!puData.hari[puUI.hari]) puData.hari[puUI.hari] = [];
+        puData.hari[puUI.hari].push({ k: k, p: puUI.part, m: m, at: Date.now() });
+        var ix = puData.kertas.indexOf(k); if (ix >= 0) puData.kertas.splice(ix, 1); puData.kertas.push(k);
+        if (puData.kertas.length > 30) puData.kertas = puData.kertas.slice(-30);
+        puUI.part = 0;
+        puSimpan('Ditambah: ' + k + ' · Part ' + puData.hari[puUI.hari][puData.hari[puUI.hari].length - 1].p + ' (+1 unit Reading).');
+      }
+      else if (a === 'buang') {
+        var L = puData.hari[puUI.hari] || [], it = L[+v];
+        if (!it || !confirm('Buang "' + it.k + ' · Part ' + it.p + '"?')) return;
+        L.splice(+v, 1);
+        if (!L.length) delete puData.hari[puUI.hari];
+        puSimpan('Dibuang.');
+      }
+      lukisPustaka();
+      try { window.scrollTo(0, 0); } catch (x) {}
+    };
     function bukaPustaka() {
+      puUI.hari = ''; puUI.part = 0; puUI.mesej = '';
       usMuat('screen-pustaka', 'pustaka-info', function() { el('pustaka-info').textContent = ''; lukisPustaka(); });
     }
     el('btn-us-pustaka-keluar').onclick = function() { bukaTs(); };
     el('btn-us-pustaka-coach').onclick = function() { bukaCoach(false); };
+    // ══ DEWAN TULIS — WRITING MUET Paper 4 (17 Nov): 3 tab (HARI INI / TIPS / FORMAT) · isi TIPS & FORMAT dari buku, HARI INI dibincang kemudian ══
+    function lukisTulis() {
+      el('tulis-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>' +
+        '<div style="border:2px dashed #000;border-radius:8px;padding:6px 8px;margin:6px 0;">HARI INI sedang dibina — kita bincang selepas TIPS &amp; FORMAT siap.<br>Buat masa ini, baca tab <b>TIPS</b>.</div>';
+    }
+    function bukaTulis() {
+      usMuat('screen-tulis', 'tulis-info', function() { el('tulis-info').textContent = ''; lukisTulis(); });
+    }
+    el('btn-us-tulis-keluar').onclick = function() { bukaTs(); };
+    el('btn-us-tulis-coach').onclick = function() { bukaCoach(false); };
     // ══ TOPBAR BANGUNAN USAHA (gaya GYM, 12 Nov): ikon HARI INI (tugas) · ikon TIPS (nota, cara, ganjaran — disorok dari page utama) ══
     var USAHA_IKON = {
       taman: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M4.2 19.8L7 17M17 7l2.8-2.8" stroke="#fff" stroke-width="2.2"/></svg>',
@@ -16475,6 +16667,7 @@
       format: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 1h10l5 5v17H5z"/><path d="M8 10h9M8 14h9M8 18h6" stroke="#000" stroke-width="2"/></svg>',
       pentas: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18l-2 4H5z"/><rect x="10" y="10" width="4" height="9"/><rect x="6" y="19" width="12" height="3"/><circle cx="12" cy="3" r="2"/></svg>',
       pustaka: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="16" width="20" height="5"/><rect x="4" y="10" width="17" height="5"/><rect x="3" y="4" width="16" height="5"/></svg>',
+      tulis: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l1.5-5L17 3.5l3.5 3.5L8 19.5z"/><rect x="2" y="21.5" width="20" height="1.5"/></svg>',
       topik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h8a3 3 0 013 3v15a2 2 0 00-2-2H2zM22 4h-6a2 2 0 00-2 2v16a2 2 0 012-2h6z"/></svg>'
     };
     function usahaSenarai(t, a) { var h = '<div style="font-weight:bold;margin-top:8px;">' + t + '</div>', i; for (i = 0; i < a.length; i++) h += '<div>' + (i + 1) + '. ' + a[i] + '</div>'; return h; }
@@ -16489,6 +16682,11 @@
         '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0 0;"><i>Macam kata orang engineering: <b>wujudkan dulu, baru memperbaik.</b></i></div></div>';
     }
     var USAHA_TIPS = {
+      tulis: function() {
+        // TIPS WRITING (17 Nov) — tip Naufal (tulis dulu, baiki kemudian) sangat sesuai untuk Writing. Isi dari buku akan ditambah.
+        return usahaTipNaufal() +
+          '<div style="border:2px dashed #000;border-radius:8px;padding:6px 8px;margin:6px 0;">Tips Writing dari buku akan ditambah di sini.</div>';
+      },
       pustaka: function() {
         // TIPS READING (16 Nov) — dalam Bahasa Melayu; istilah penting dikekalkan dalam English (tip Naufal TIDAK dipapar — tak sesuai untuk Reading)
         return '<div style="font-weight:bold;font-size:1.1rem;margin:4px 0 4px;">KATA HIKMAH</div>' +
@@ -16993,6 +17191,10 @@
     };
     // Tab FORMAT (16 Nov) — hanya bangunan yang ada kandungan di sini dapat tab ke-3
     var USAHA_FORMAT = {
+      // DEWAN TULIS — MUET Paper 4 Writing (17 Nov): format dari buku akan ditambah
+      tulis: function() {
+        return '<div style="border:2px dashed #000;border-radius:8px;padding:6px 8px;margin:6px 0;">Format MUET Paper 4 Writing dari buku akan ditambah di sini.</div>';
+      },
       // PERPUSTAKAAN — MUET Paper 3 Reading: The MUET Reading Paper (17 Nov)
       pustaka: function() {
         return '<div><b>MUET Paper 3 Reading</b> — <b>40 soalan aneka pilihan</b> (<i>multiple-choice</i>), setiap satu ada <b>3 atau 4 pilihan jawapan</b>, termasuk satu bahagian <b>teks berlompang</b> (<i>gapped text</i>).</div>' +
@@ -17069,7 +17271,7 @@
     // [kunci, screen, kandungan utama, info]
     var USAHA_BG = [['taman', 'screen-taman', 'taman-isi', 'taman-info'], ['makmal', 'screen-makmal', 'makmal-isi', 'makmal-info'], ['nutrisi', 'screen-nutrisi', 'coach-makan', 'nutrisi-info'],
       ['bilik', 'screen-bilik', 'bilik-isi', 'bilik-info'], ['surau', 'screen-surau', 'surau-isi', 'surau-info'], ['pawagam', 'screen-pawagam', 'coach-usaha', 'pawagam-info'],
-      ['pentas', 'screen-pentas', 'pentas-isi', 'pentas-info'], ['pustaka', 'screen-pustaka', 'pustaka-isi', 'pustaka-info']];
+      ['pentas', 'screen-pentas', 'pentas-isi', 'pentas-info'], ['pustaka', 'screen-pustaka', 'pustaka-isi', 'pustaka-info'], ['tulis', 'screen-tulis', 'tulis-isi', 'tulis-info']];
     function usahaTab(k, tab) {
       var i, b, tb = el('ub-tb-' + k), tp = el('ub-tips-' + k);
       for (i = 0; i < USAHA_BG.length; i++) if (USAHA_BG[i][0] === k) b = USAHA_BG[i];
@@ -17119,6 +17321,7 @@
     bukaPawagam = (function(f) { return function() { usahaTab('pawagam', 'hari'); return f.apply(this, arguments); }; })(bukaPawagam);
     bukaPentas = (function(f) { return function() { usahaTab('pentas', 'hari'); return f.apply(this, arguments); }; })(bukaPentas);
     bukaPustaka = (function(f) { return function() { usahaTab('pustaka', 'hari'); return f.apply(this, arguments); }; })(bukaPustaka);
+    bukaTulis = (function(f) { return function() { usahaTab('tulis', 'hari'); return f.apply(this, arguments); }; })(bukaTulis);
     // ── Senarai TUGAS KESIHATAN (dipindah ke TAMAN SIHAT) ──
     function bukaJadual() { bukaTs(); }
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
