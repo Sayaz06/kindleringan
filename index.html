@@ -9944,8 +9944,10 @@
       if (seterus) teks += '\nSeterusnya: ' + seterus.nama + ' — ' + coachTeksMasa(seterus.min);
       teks += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
       if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Pawagam › SALIN PRESET, tampal ke AI bersama kod penuh app.';
+      if (typeof ptPerluTambah === 'function' && ptPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah topik SPEAKING — Usaha › Pentas › SALIN PRESET.';
       return teks;
     }
+
 
 
     // ── Baca laporan hari ini + semalam (2 dokumen) ──
@@ -14989,6 +14991,7 @@
       if (k === 'fakta') s += '<path d="M60 31 Q53 27 44 28 V46 Q53 45 60 49 Q67 45 76 46 V28 Q67 27 60 31 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M60 31 V49" stroke="#000" stroke-width="2"/><path d="M48 34 H56 M48 38 H56 M64 34 H72 M64 38 H72" stroke="#000" stroke-width="1.5"/>';
       if (k === 'reasoning') s += '<path d="M60 24 Q70 24 70 34 Q70 39 65 43 V46 H55 V43 Q50 39 50 34 Q50 24 60 24 Z" fill="#000"/><rect x="55" y="47" width="10" height="3" fill="#000"/>';
       if (k === 'presenting') s += '<rect x="55" y="23" width="10" height="16" rx="5" fill="#000"/><path d="M51 34 Q51 44 60 44 Q69 44 69 34" fill="none" stroke="#000" stroke-width="2.5"/><path d="M60 44 V49 M54 49 H66" stroke="#000" stroke-width="2.5"/>';
+      if (k === 'kumpulan') s += '<circle cx="48" cy="30" r="4.5" fill="#000"/><circle cx="60" cy="27" r="4.5" fill="#000"/><circle cx="72" cy="30" r="4.5" fill="#000"/><path d="M41 47 Q41 36 48 36 Q55 36 55 47 Z M53 45 Q53 33 60 33 Q67 33 67 45 Z M65 47 Q65 36 72 36 Q79 36 79 47 Z" fill="#000"/>';
       if (k === 'pentas') s += '<path d="M46 28 H74 L71 34 H49 Z" fill="#000"/><rect x="56" y="34" width="8" height="12" fill="#000"/><path d="M48 48 H72" stroke="#000" stroke-width="3"/><path d="M60 28 V22" stroke="#000" stroke-width="2"/><circle cx="60" cy="21" r="2.5" fill="#000"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
@@ -15836,18 +15839,217 @@
     el('btn-us-pawagam-keluar').onclick = function() { bukaTs(); };
     el('btn-us-surau-coach').onclick = function() { bukaCoach(false); };
     el('btn-us-pawagam-coach').onclick = function() { bukaCoach(false); };
-    // ── PENTAS (Speaking English — MUET Paper 2) — HARI INI akan dibina berperingkat ──
-    function lukisPentas() {
-      el('pentas-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">SPEAKING — MUET PAPER 2</div>' +
-        '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;background:#eee;font-size:0.9rem;">' +
-        '<div><b>Part 1:</b> Individual Presentation</div><div><b>Part 2:</b> Group Discussion</div>' +
-        '<div style="font-size:0.85rem;margin-top:2px;">Lihat tab FORMAT untuk butiran.</div></div>' +
-        '<div style="font-size:0.9rem;">Latihan Speaking harian akan dibina di sini.</div>';
+    // ══ PENTAS — LATIHAN SPEAKING HARIAN (16 Nov): 2 RUMAH (INDIVIDUAL = Part 1 · GROUP = Part 2) ══
+    // Topik ditambah oleh AI setiap hari (SALIN PRESET) — DI ATAS baris "◆ HUJUNG PT_TOPIK". Jangan buang / susun semula topik lama.
+    // Part 1: { tarikh, id, part: 1, tajuk, situasi, calon: [A, B, C, D], nota: [{ isi, h: [huraian] } x3], contoh: 'perenggan|perenggan|...' (jawapan Calon A) }
+    // Part 2: { tarikh, id, part: 2, tajuk, situasi, soalan, pilihan: [5 idea peta minda], terbaik, nota: [{ isi: pilihan, h: [hujah] } x5], contoh: '' }
+    // Rekod siap: coach/pentas { siap: { idTopik: 'YYYY-MM-DD' } }
+    var PT_TOPIK = [
+      { tarikh: '2026-11-16', id: 't-keluarga-bahagia', part: 1, tajuk: 'Happy family',
+        situasi: 'It is important to have a happy family. Suggest some ways parents can make their children happy.',
+        calon: ['Talk about the importance of spending time together.', 'Talk about the importance of parents giving their children affection.', 'Talk about the importance of parents positively encouraging their children.', 'Talk about the importance of parents praising their children.'],
+        nota: [{ isi: 'Children feel loved and cared for', h: ['feel secured - develop positive behaviours and attitudes', 'more confident and cooperative', 'less behavioural problems such as aggressiveness, violence and substance abuse'] }, { isi: 'Enhances bond with children', h: ['better communication', 'children gain trust and share their feelings - fears, worries, excitement', 'more empathy for children', 'inculcate family values'] }, { isi: 'Improves mental health', h: ['face-to-face interaction', 'strong emotional support', 'reduces loneliness, anxiety and depression', 'less stress; can overcome frustration and anxiety'] }],
+        contoh: 'Good morning, teachers and friends. It is important to have a happy family for the physical, emotional and mental growth of children. The upbringing of children is important to create happy children. Therefore, the role of parents in creating a happy family is important. In my opinion, parents can make their children happy by spending time with their children.|My main point is that the presence of parents in their children\'s lives makes children feel loved and cared for. Children feel secured and develop positive behaviours and attitudes. At the same time, children become more confident and cooperative. For example, they are more willing to listen to their parents\' advice as they know that their parents love and care for them very much, thus wanting the best for them. This leads to less behavioural problems such as aggressiveness, violence and substance abuse. Thus, when parents spend time together with their children, the children feel contented and happy as they create happy memories together.|Secondly, parents who spend time with their children get to enhance the bond with their children. There is better communication and lesser conflicts between parents and children. This means that parents gain the trust of their children so their children are more willing to share their feelings. When children share their fears, worries, or excitement with their parents, parents develop more understanding and empathy for their children. On top of that, they inculcate strong family values whereby children will always confide in their parents whenever they face problems.|A good example is when children are being bullied in school and they share their fears of going to school when they interact with their parents either during meal times or reading times spent together. So, we can see that parents can make children happier by interacting with them and finding solutions to their problems when they spend time together on a frequent basis.|Next, I would like to point out that it is important that parents spend time with their children as it can improve the mental health of their children. Having face-to-face interaction creates a strong emotional support that is important for the well-being of their children, not only emotionally but mentally as well. This is because children who spend happy times together with their parents build a strong connection that can reduce their feelings of loneliness, anxiety, or depression. Research has shown that children with more interaction with their parents are happier and feel less stressful. As a result, they are able to overcome any frustration or anxiety that they face in their lives. They become happier children because they have parents who sacrifice their time to be with them.|In conclusion, I believe that spending time together is important in creating a happy family. The love and care shown by parents enhances the bond between parents and children, and improves the mental health of their children. The benefits of parents spending time with their children is manifold. Hence, parents can make their children happy by spending valuable time together. Thank you.' },
+      { tarikh: '2026-11-16', id: 't-reputasi-keluarga', part: 2, tajuk: 'Family reputation',
+        situasi: 'There is an increasing concern about the importance of having a good family reputation. In your group, discuss the factors that can affect a family\'s reputation.',
+        soalan: 'What factors can affect a family\'s reputation?',
+        pilihan: ['income levels', 'educational levels', 'lifestyle', 'occupations', 'behaviour'], terbaik: 'behaviour',
+        nota: [{ isi: 'income levels', h: ['Rich people who do bad things - ruined in society - wealth can\'t solve everything', 'People respect success - making money is the result of success'] }, { isi: 'educational levels', h: ['Reflects intelligence level - social status of family - respected professionals - good reputation', 'Good education doesn\'t guarantee good morals'] }, { isi: 'lifestyle', h: ['Some people spend more than they own - long-term embarrassment', 'Doesn\'t reflect true net worth - showing off is tacky'] }, { isi: 'occupations', h: ['Good education / job doesn\'t guarantee high income', 'Some occupations can result in unethical business practices - ruins reputation'] }, { isi: 'behaviour', h: ['Black sheep - embarrasses whole family', 'Bad behaviour - ethical misconduct - mars reputation', 'People with good reputation - won\'t be accused when a crime occurs'] }],
+        contoh: '' },
+      // ◆ HUJUNG PT_TOPIK — topik baru di ATAS baris ini ◆
+    ];
+    var PT_VERSI = '2026-11-16';
+    // ▲▲▲ TAMAT TOPIK SPEAKING ▲▲▲
+    function ptCari(id) { for (var i = 0; i < PT_TOPIK.length; i++) if (PT_TOPIK[i].id === id) return PT_TOPIK[i]; return null; }
+    function ptSenarai(part) { var a = [], i; for (i = PT_TOPIK.length - 1; i >= 0; i--) if (PT_TOPIK[i].part === part) a.push(PT_TOPIK[i]); return a; }
+    function ptPerluTambah() { return PT_VERSI < coachHariId(); }
+    var ptUI = { rumah: 0, id: '', calon: 0, fasa: '', mula: 0, had: 0, mesej: '', preset: '' }, ptTimer = null, ptData = null, ptMuat = false;
+    var PT_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PT_BTNA = PT_BTN + 'background:#000;color:#fff;';
+    function ptHenti() { if (ptTimer) { clearInterval(ptTimer); ptTimer = null; } }
+    function ptE(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    function ptMuatData() {
+      if (ptData || ptMuat || !currentUser) return;
+      ptMuat = true;
+      kol('coach').doc('pentas').get().then(function(d) { ptData = d.exists ? d.data() : {}; ptData.siap = ptData.siap || {}; lukisPentas(); })
+        .catch(function() { ptData = { siap: {} }; lukisPentas(); });
     }
+    function ptPreset() {
+      var hari = coachHariId(), L = [], i, p1 = 0, p2 = 0;
+      for (i = 0; i < PT_TOPIK.length; i++) { L.push('- Part ' + PT_TOPIK[i].part + ': ' + PT_TOPIK[i].tajuk + ' (' + PT_TOPIK[i].id + ')'); if (PT_TOPIK[i].part === 1) p1++; else p2++; }
+      return [
+        'TUGAS: Tambah topik latihan SPEAKING MUET ke bangunan PENTAS dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
+        'Tarikh hari ini: ' + hari,
+        '',
+        'BAHAN: [tampal soalan / situasi dari buku di sini. Jika kosong, cipta sendiri 1 topik Part 1 DAN 1 topik Part 2 gaya MUET (tema: people & culture, financial awareness & consumerism, science & technology, health & environment, education). Jangan ulang topik yang sudah ada.]',
+        '',
+        'PERATURAN:',
+        '1. Ubah HANYA tatasusunan PT_TOPIK dan var PT_VERSI. JANGAN ubah / buang / susun semula topik lama.',
+        '2. Tambah topik baru di ATAS baris "// ◆ HUJUNG PT_TOPIK — topik baru di ATAS baris ini ◆" dan tukar PT_VERSI kepada \'' + hari + '\'.',
+        '3. Bentuk Part 1 (Individual Presentation):',
+        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 1, tajuk: \'Tajuk pendek\', situasi: \'Situasi + arahan (Suggest some ways ...)\', calon: [\'Talk about ... (A)\', \'(B)\', \'(C)\', \'(D)\'], nota: [{ isi: \'isi utama\', h: [\'huraian kata kunci\', ...] }, x3], contoh: \'perenggan 1|perenggan 2|...\' },',
+        '   - calon = 4 cadangan BERBEZA untuk Calon A-D. nota & contoh = untuk Calon A (3 isi, kata kunci sahaja).',
+        '   - contoh = jawapan model 1-2 minit (180-260 patah perkataan), perenggan dipisah dengan |. Guna ungkapan berguna: sapa, nyatakan situasi, In my opinion, My main point is, For example, Secondly, This means that, Next, In conclusion, Thank you.',
+        '4. Bentuk Part 2 (Group Discussion):',
+        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 2, tajuk: \'Tajuk pendek\', situasi: \'Situasi + In your group, discuss ...\', soalan: \'Soalan peta minda?\', pilihan: [5 idea], terbaik: \'idea terbaik\', nota: [{ isi: \'idea\', h: [\'hujah menyokong / membantah\', ...] }, x5], contoh: \'\' },',
+        '5. id mesti unik (huruf kecil + sengkang, mula dengan t-). ES5 sahaja. Tiada emoji. Petikan tunggal; apostrophe ditulis \\\'.',
+        '6. Output: SATU codebox sahaja, format:',
+        'Cari:',
+        '[kod lama]',
+        'Ganti:',
+        '[kod baru]',
+        '   Blok Cari mesti DISALIN TEPAT dari kod saya — bermula baris "// ◆ HUJUNG PT_TOPIK" hingga baris "function ptCari(id) {" (5 baris). Jangan taip semula dari ingatan.',
+        '7. Jangan terangkan panjang lebar — terus bagi codebox.',
+        '',
+        'TOPIK SEDIA ADA (Part 1: ' + p1 + ', Part 2: ' + p2 + '):'
+      ].concat(L).join('\n');
+    }
+    function ptSalin(teks) {
+      var siap = function() { ptUI.mesej = 'PRESET DISALIN. Tampal ke AI bersama kod penuh app, kemudian tampal codebox jawapan AI ke app → Ganti Pukal.'; ptUI.preset = ''; lukisPentas(); };
+      var gagal = function() {
+        var ta = document.createElement('textarea'), ok = false;
+        ta.value = teks; ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { ok = document.execCommand('copy'); } catch (x) {}
+        document.body.removeChild(ta);
+        if (ok) siap(); else { ptUI.preset = teks; ptUI.mesej = 'Peranti ini tak benarkan salin automatik. Tekan lama teks di bawah → Pilih semua → Salin.'; lukisPentas(); }
+      };
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(teks).then(siap, gagal); return; } } catch (x) {}
+      gagal();
+    }
+    function ptTeksMasa(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
+    function ptNota(t) {
+      var h = '', i, j, n;
+      for (i = 0; i < t.nota.length; i++) {
+        n = t.nota[i];
+        h += '<div style="border-left:3px solid #000;margin:0 0 0 6px;padding:4px 0 2px 8px;"><div style="display:inline-block;background:#555;color:#fff;font-weight:bold;border-radius:6px;padding:2px 8px;">' + ptE(n.isi) + '</div>' +
+          (t.terbaik && n.isi === t.terbaik ? ' <span style="font-size:0.75rem;border:2px solid #000;border-radius:4px;padding:0 4px;">TERBAIK</span>' : '');
+        for (j = 0; j < n.h.length; j++) h += '<div style="border:2px solid #000;border-radius:6px;padding:2px 6px;margin:3px 0 0 10px;font-size:0.85rem;">&#8594; ' + ptE(n.h[j]) + '</div>';
+        h += '</div>';
+      }
+      return h;
+    }
+    function lukisPentas() {
+      var h = '<div style="font-weight:bold;font-size:1.15rem;">SPEAKING — MUET PAPER 2</div>', i, t, a, siap;
+      if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = h + '<div>Memuatkan...</div>'; return; }
+      if (ptUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + ptUI.mesej + '</div>';
+      // ── 2 RUMAH ──
+      if (!ptUI.rumah) {
+        if (ptPerluTambah()) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ARAHAN COACH: TAMBAH TOPIK SPEAKING HARI INI</div>' +
+          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan soalan dari buku jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>Topik lama kekal — senarai bertambah setiap hari.</div>' +
+          '<button type="button" data-pt="preset" style="' + PT_BTNA + '">SALIN PRESET</button>' +
+          (ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '') + '</div>';
+        h += '<div class="kd-pondok" style="margin-top:8px;">';
+        for (i = 1; i <= 2; i++) {
+          a = ptSenarai(i); siap = 0;
+          for (t = 0; t < a.length; t++) if (ptData.siap[a[t].id]) siap++;
+          h += '<button type="button" class="kd-pd" data-pt="rumah" data-v="' + i + '">' + svgBangunan(i === 1 ? 'pentas' : 'kumpulan', i === 1 ? 'INDIVIDUAL' : 'GROUP', true) +
+            '<small>Part ' + i + ' · ' + (i === 1 ? 'Individual Presentation' : 'Group Discussion') + '<br>' + a.length + ' topik · ' + siap + ' siap</small></button>';
+        }
+        h += '</div>';
+        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Topik terakhir ditambah: ' + PT_VERSI + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' +
+          (ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '');
+        el('pentas-isi').innerHTML = h; return;
+      }
+      // ── SENARAI TOPIK ──
+      if (!ptUI.id) {
+        a = ptSenarai(ptUI.rumah);
+        h += '<button type="button" data-pt="balik" style="' + PT_BTN + '">‹ RUMAH</button>';
+        h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">' + (ptUI.rumah === 1 ? 'PART 1: INDIVIDUAL PRESENTATION' : 'PART 2: GROUP DISCUSSION') + '</div>';
+        if (!a.length) h += '<div>Belum ada topik. Tekan SALIN PRESET di halaman rumah.</div>';
+        for (i = 0; i < a.length; i++) {
+          t = a[i];
+          h += '<button type="button" data-pt="topik" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + ptE(t.tajuk) +
+            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + (ptData.siap[t.id] ? ' · SIAP' : (t.tarikh === coachHariId() ? ' · BARU' : '')) + '</span> ›</button>';
+        }
+        el('pentas-isi').innerHTML = h; return;
+      }
+      // ── LATIHAN SATU TOPIK ──
+      t = ptCari(ptUI.id);
+      if (!t) { ptUI.id = ''; lukisPentas(); return; }
+      h += '<button type="button" data-pt="senarai" style="' + PT_BTN + '">‹ SENARAI</button>';
+      h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + ptE(t.tajuk) + '</div>';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;"><b>Situation:</b> ' + ptE(t.situasi);
+      if (t.part === 1) {
+        h += '<div style="margin-top:4px;">';
+        for (i = 0; i < t.calon.length; i++) h += '<button type="button" data-pt="calon" data-v="' + i + '" style="' + (i === ptUI.calon ? PT_BTNA : PT_BTN) + '">' + 'ABCD'.charAt(i) + '</button>';
+        h += '</div><div style="margin-top:4px;"><b>Candidate ' + 'ABCD'.charAt(ptUI.calon) + ':</b> You have to give a presentation to your class. ' + ptE(t.calon[ptUI.calon]) + '</div>';
+      } else {
+        h += '<div style="background:#000;color:#fff;font-weight:bold;text-align:center;border-radius:8px;padding:5px;margin:6px 0 4px;">' + ptE(t.soalan) + '</div><div style="text-align:center;">';
+        for (i = 0; i < t.pilihan.length; i++) h += '<span style="display:inline-block;border:2px solid #000;border-radius:6px;padding:2px 8px;margin:2px;">' + ptE(t.pilihan[i]) + '</span>';
+        h += '</div><div style="font-size:0.85rem;margin-top:4px;">Di akhir perbincangan, putuskan pilihan yang <b>PALING</b> sesuai.</div>';
+      }
+      h += '</div>';
+      var minSedia = t.part === 1 ? 2 : 3, minCakap = t.part === 1 ? 2 : 3;
+      if (!ptUI.fasa) {
+        h += '<div style="font-size:0.85rem;">Sediakan sehelai kertas. Langkah: <b>PERSEDIAAN ' + minSedia + ' minit</b> (tulis kata kunci) → <b>BERCAKAP ' + minCakap + ' minit</b> (cakap kuat-kuat' + (t.part === 2 ? ' — bentang pilihan anda dan hujah menyokong / membantah pilihan lain' : '') + ') → lihat <b>contoh nota</b>' + (t.contoh ? ' &amp; <b>jawapan model</b>' : '') + '.</div>';
+        h += '<button type="button" data-pt="sedia" style="' + PT_BTNA + '">MULA PERSEDIAAN (' + minSedia + ' MINIT)</button>';
+      } else if (ptUI.fasa === 'sedia' || ptUI.fasa === 'cakap') {
+        var baki = ptUI.had - (Date.now() - ptUI.mula) / 1000;
+        h += '<div style="border:3px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;background:#eee;text-align:center;"><div style="font-weight:bold;">' +
+          (ptUI.fasa === 'sedia' ? 'PERSEDIAAN — tulis KATA KUNCI sahaja di kertas' : 'BERCAKAP — cakap kuat-kuat, ikut nota anda') + '</div>' +
+          '<div style="font-size:2rem;font-weight:bold;" id="pt-masa">' + ptTeksMasa(baki) + '</div></div>';
+        h += '<button type="button" data-pt="lompat" style="' + PT_BTNA + '">' + (ptUI.fasa === 'sedia' ? 'SIAP → MULA BERCAKAP' : 'SELESAI BERCAKAP') + '</button>';
+      } else {
+        h += '<div style="font-weight:bold;margin-top:8px;">SEMAK DIRI</div><div style="font-size:0.85rem;">' +
+          (t.part === 1 ? '&#9744; Sapa pemeriksa &amp; calon<br>&#9744; Nyatakan situasi / tugasan<br>&#9744; Nyatakan pendapat<br>&#9744; 3 isi, setiap satu ada huraian &amp; contoh<br>&#9744; Guna linking words berbeza<br>&#9744; Rumus isi &amp; ucap terima kasih'
+            : '&#9744; Nyatakan pilihan anda dengan jelas<br>&#9744; Beri sebab &amp; contoh<br>&#9744; Hujah menyokong / membantah pilihan lain<br>&#9744; Guna ungkapan setuju / tidak setuju dengan sopan<br>&#9744; Buat keputusan: pilihan PALING sesuai') + '</div>';
+        h += '<div style="font-weight:bold;margin-top:8px;">CONTOH NOTA (kata kunci)' + (t.part === 1 ? ' — Calon A' : '') + '</div>' + ptNota(t);
+        if (t.contoh) {
+          var pr = t.contoh.split('|');
+          h += '<div style="font-weight:bold;margin-top:8px;">JAWAPAN MODEL' + (t.part === 1 ? ' — Calon A' : '') + '</div>';
+          for (i = 0; i < pr.length; i++) h += '<div style="font-size:0.9rem;margin:4px 0;">' + ptE(pr[i]) + '</div>';
+        }
+        h += '<div><button type="button" data-pt="tanda" style="' + PT_BTNA + '">' + (ptData.siap[t.id] ? 'SIAP ✓ (' + ptData.siap[t.id] + ')' : 'TANDA SIAP') + '</button>' +
+          '<button type="button" data-pt="ulang" style="' + PT_BTN + '">ULANG LATIHAN</button></div>';
+      }
+      el('pentas-isi').innerHTML = h;
+    }
+    function ptMulaFasa(fasa, minit) {
+      ptHenti();
+      ptUI.fasa = fasa; ptUI.mula = Date.now(); ptUI.had = minit * 60;
+      ptTimer = setInterval(function() {
+        var m = el('pt-masa');
+        if (!m || (ptUI.fasa !== 'sedia' && ptUI.fasa !== 'cakap')) { ptHenti(); return; }
+        var baki = ptUI.had - (Date.now() - ptUI.mula) / 1000;
+        if (baki <= 0) { ptLompat(); return; }
+        m.textContent = ptTeksMasa(baki);
+      }, 5000);
+      lukisPentas();
+    }
+    function ptLompat() {
+      var t = ptCari(ptUI.id);
+      if (ptUI.fasa === 'sedia') { ptMulaFasa('cakap', t && t.part === 2 ? 3 : 2); return; }
+      ptHenti(); ptUI.fasa = 'siap'; lukisPentas();
+    }
+    el('pentas-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pt'))) t = t.parentNode;
+      if (!t || t === this) return;
+      var a = t.getAttribute('data-pt'), v = t.getAttribute('data-v');
+      if (a !== 'preset') ptUI.mesej = '';
+      if (a === 'rumah') { ptUI.rumah = +v; ptUI.id = ''; }
+      else if (a === 'balik') { ptHenti(); ptUI.rumah = 0; ptUI.id = ''; ptUI.fasa = ''; }
+      else if (a === 'senarai') { ptHenti(); ptUI.id = ''; ptUI.fasa = ''; }
+      else if (a === 'topik') { ptUI.id = v; ptUI.fasa = ''; ptUI.calon = 0; }
+      else if (a === 'calon') { if (!ptUI.fasa) ptUI.calon = +v; }
+      else if (a === 'sedia') { var tp = ptCari(ptUI.id); ptMulaFasa('sedia', tp && tp.part === 2 ? 3 : 2); return; }
+      else if (a === 'lompat') { ptLompat(); return; }
+      else if (a === 'ulang') { ptUI.fasa = ''; }
+      else if (a === 'preset') { ptSalin(ptPreset()); return; }
+      else if (a === 'tanda') {
+        var hari = coachHariId(), ub = { siap: {} };
+        ptData.siap[ptUI.id] = hari; ub.siap[ptUI.id] = hari;
+        kol('coach').doc('pentas').set(ub, { merge: true }).catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
+        ptUI.mesej = 'Topik ditanda SIAP.';
+      }
+      lukisPentas();
+      try { window.scrollTo(0, 0); } catch (x) {}
+    };
     function bukaPentas() {
+      ptHenti(); ptUI.rumah = 0; ptUI.id = ''; ptUI.fasa = ''; ptUI.mesej = '';
       usMuat('screen-pentas', 'pentas-info', function() { el('pentas-info').textContent = ''; lukisPentas(); });
     }
-    el('btn-us-pentas-keluar').onclick = function() { bukaTs(); };
+    el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
     el('btn-us-pentas-coach').onclick = function() { bukaCoach(false); };
     // ══ TOPBAR BANGUNAN USAHA (gaya GYM, 12 Nov): ikon HARI INI (tugas) · ikon TIPS (nota, cara, ganjaran — disorok dari page utama) ══
     var USAHA_IKON = {
