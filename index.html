@@ -9931,8 +9931,10 @@
       else teks = fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
       if (seterus) teks += '\nSeterusnya: ' + seterus.nama + ' — ' + coachTeksMasa(seterus.min);
       teks += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
+      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Pawagam › SALIN PRESET, tampal ke AI bersama kod penuh app.';
       return teks;
     }
+
 
     // ── Baca laporan hari ini + semalam (2 dokumen) ──
     // Baca 7 hari coach terakhir (hari ini, semalam + purata solat) dalam SATU query ikut ID tarikh
@@ -13036,6 +13038,95 @@
           ['credit', 'kredit (pinjaman / bayar kemudian)'], ['down payment', 'bayaran pendahuluan (deposit)']] }
       ] }
     ];
+    // ▼▼▼ NOTA TAMBAHAN — nota baru ditambah DI SINI SAHAJA (setiap hari, tanpa buang nota lama) ▼▼▼
+    // Jenis entri (tambah di ATAS baris "◆ HUJUNG PN_TAMBAH"):
+    //   a) Kumpulan baru dalam set sedia ada: { tarikh: 'YYYY-MM-DD', set: 'idSet', g: { id: 'idUnik', t: 'Tajuk English', ms: 'Maksud Melayu', f: ['frasa ...', ...] } },
+    //   b) Frasa baru ke HUJUNG kumpulan sedia ada: { tarikh: 'YYYY-MM-DD', grp: 'idKumpulan', f: ['frasa ...'] },
+    //   c) Set kemahiran baru: { tarikh: 'YYYY-MM-DD', setBaru: { id: 'idSet', b: 'Develop skill on ...', t: 'Tajuk' } },
+    //   Item = 'frasa' (soalan: frasa → fungsi kumpulan) ATAU ['perkataan', 'maksud'] (soalan: perkataan → maksud). Satu jenis sahaja dalam satu kumpulan.
+    // PN_VERSI = tarikh nota terakhir ditambah. Jika lebih awal dari hari ini → Coach beri arahan "tambah nota" + butang SALIN PRESET.
+    var PN_TAMBAH = [
+      // ◆ HUJUNG PN_TAMBAH — entri baru di ATAS baris ini ◆
+    ];
+    var PN_VERSI = '2026-11-16';
+    // ▲▲▲ TAMAT NOTA TAMBAHAN ▲▲▲
+    (function pnGabungTambahan() {
+      var i, j, e, s, g, ada;
+      for (i = 0; i < PN_TAMBAH.length; i++) {
+        e = PN_TAMBAH[i];
+        try {
+          if (e.setBaru) { if (!pnSet(e.setBaru.id)) PN_SET.push({ id: e.setBaru.id, b: e.setBaru.b, t: e.setBaru.t, g: [] }); }
+          else if (e.set && e.g) { s = pnSet(e.set); if (s && !pnGrp(e.g.id)) s.g.push({ id: e.g.id, t: e.g.t, ms: e.g.ms, f: e.g.f.slice() }); }
+          else if (e.grp && e.f) {
+            g = pnGrp(e.grp); if (!g) continue;
+            ada = {}; for (j = 0; j < g.f.length; j++) ada[JSON.stringify(g.f[j])] = 1;
+            for (j = 0; j < e.f.length; j++) if (!ada[JSON.stringify(e.f[j])]) { g.f.push(e.f[j]); ada[JSON.stringify(e.f[j])] = 1; }
+          }
+        } catch (x) {}
+      }
+    })();
+    function pnPerluTambah() { return PN_VERSI < coachHariId(); }
+    // Preset untuk ditampal ke AI (bersama kod penuh app) → AI pulangkan codebox Cari/Ganti untuk blok NOTA TAMBAHAN
+    function pnPreset() {
+      var hari = coachHariId(), i, j, S, L = [];
+      for (i = 0; i < PN_SET.length; i++) {
+        S = PN_SET[i];
+        L.push('- set "' + S.id + '" (' + S.t + '):');
+        for (j = 0; j < S.g.length; j++) L.push('    · kumpulan "' + S.g[j].id + '" — ' + S.g[j].t + ' (' + S.g[j].f.length + ' item, ' + (typeof S.g[j].f[0] === 'string' ? 'frasa' : 'perkataan + maksud') + ')');
+      }
+      return [
+        'TUGAS: Tambah nota baru ke DAILY REPETITION EXERCISE (page PAWAGAM) dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
+        'Tarikh hari ini: ' + hari,
+        '',
+        'BAHAN NOTA: [tampal teks / gambar nota di sini. Jika kosong, cadangkan sendiri 1 kumpulan baru yang sesuai untuk MUET Listening (contoh: topic-specific vocabulary) — jangan ulang frasa yang sudah ada.]',
+        '',
+        'PERATURAN:',
+        '1. Ubah HANYA blok "NOTA TAMBAHAN" (var PN_TAMBAH dan var PN_VERSI). JANGAN ubah, buang atau susun semula PN_SET atau entri lama — ID audio bergantung pada susunan item.',
+        '2. Tambah entri baru di ATAS baris "// ◆ HUJUNG PN_TAMBAH — entri baru di ATAS baris ini ◆" dan tukar PN_VERSI kepada \'' + hari + '\'.',
+        '3. Jenis entri:',
+        '   a) Kumpulan baru dalam set sedia ada:',
+        '      { tarikh: \'' + hari + '\', set: \'ID_SET\', g: { id: \'ID_UNIK\', t: \'Tajuk English\', ms: \'Maksud Melayu\', f: [\'frasa ...\', \'frasa ...\'] } },',
+        '   b) Frasa baru ke hujung kumpulan sedia ada:',
+        '      { tarikh: \'' + hari + '\', grp: \'ID_KUMPULAN\', f: [\'frasa baru ...\'] },',
+        '   c) Set kemahiran baru (kemudian tambah kumpulan dengan jenis a):',
+        '      { tarikh: \'' + hari + '\', setBaru: { id: \'ID_SET_BARU\', b: \'Develop skill on ...\', t: \'Tajuk\' } },',
+        '   Item = \'frasa\' (soalan: frasa → fungsi kumpulan) ATAU [\'perkataan\', \'maksud Melayu\'] (soalan: perkataan → maksud). Satu jenis sahaja dalam satu kumpulan.',
+        '4. ID kumpulan mesti unik (huruf kecil + sengkang). Kumpulan baru sekurang-kurangnya 4 item.',
+        '5. ES5 sahaja (var / function — tiada let, const, arrow, template string). Tiada emoji. Guna petikan tunggal; apostrophe ditulis \\\'.',
+        '6. Output: SATU codebox sahaja, format:',
+        'Cari:',
+        '[kod lama]',
+        'Ganti:',
+        '[kod baru]',
+        '   Blok Cari mesti DISALIN TEPAT dari kod saya — bermula baris "// ◆ HUJUNG PN_TAMBAH" hingga baris "(function pnGabungTambahan() {" (5 baris). Jangan taip semula dari ingatan.',
+        '7. Jangan terangkan panjang lebar — terus bagi codebox.',
+        '',
+        'SENARAI NOTA SEMASA:'
+      ].concat(L).join('\n');
+    }
+    function pnSalin(teks) {
+      var siap = function() { pnUI.mesej = 'PRESET DISALIN. Tampal ke AI bersama kod penuh app, kemudian tampal codebox jawapan AI ke app → Ganti Pukal.'; pnUI.preset = ''; pnRender(); };
+      var gagal = function() {
+        var ta = document.createElement('textarea'), ok = false;
+        ta.value = teks; ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { ok = document.execCommand('copy'); } catch (x) {}
+        document.body.removeChild(ta);
+        if (ok) siap();
+        else { pnUI.preset = teks; pnUI.mesej = 'Peranti ini tak benarkan salin automatik. Tekan lama teks di bawah → Pilih semua → Salin.'; pnRender(); }
+      };
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(teks).then(siap, gagal); return; } } catch (x) {}
+      gagal();
+    }
+    function pnKotakPreset(arahan) {
+      var h = '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;">';
+      if (arahan) h += '<div style="font-weight:bold;">ARAHAN COACH: TAMBAH NOTA BARU HARI INI</div>' +
+        '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan bahan nota jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>Nota lama kekal — senarai bertambah setiap hari.</div>';
+      else h += '<div style="font-weight:bold;">TAMBAH NOTA DENGAN AI</div><div style="font-size:0.85rem;">Nota terakhir ditambah: ' + PN_VERSI + '. Tekan SALIN PRESET, tampal ke AI bersama kod penuh app.</div>';
+      h += '<button type="button" data-pn="preset" style="' + PN_BTNA + '">SALIN PRESET</button>';
+      if (pnUI.preset) h += '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + pnUI.preset.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</textarea>';
+      return h + '</div>';
+    }
     var PN_SELANG = [1, 2, 4, 7, 14, 30];
     var pnData = null, pnMuat = false, pnAudio = {}, pnTimer = null;
     // halaman: 'pawagam' (kotak HARI INI) / 'nota' (page SEMUA NOTA) · mod: '' | 'baca' | 'kuiz' | 'senarai' | 'set'
@@ -13124,6 +13215,7 @@
         '<div style="font-size:0.85rem;font-style:italic;margin-top:2px;">Don\'t worry, Coach will let you do the exercise according to the time.</div></div>';
       if (!pnData) { pnMuatData(); return h + '<div style="font-size:0.85rem;">Memuatkan nota...</div></div>'; }
       if (pnUI.halaman === 'pawagam' && pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
+      if (pnUI.halaman === 'pawagam' && !pnUI.mod && pnPerluTambah()) h += pnKotakPreset(true);
       if (pnUI.halaman === 'pawagam' && pnUI.mod === 'kuiz' && pnUI.kuiz) return h + pnLukisKuiz() + '</div>';
       var due = pnDue();
       if (!due.length) {
@@ -13173,6 +13265,7 @@
       h += '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">SENARAI NOTA</div>';
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Semua nota, termasuk yang bukan ulang kaji hari ini. Tekan untuk baca, dengar audio, muat naik MP3 atau latih bila-bila.</div>';
       for (i = 0; i < PN_SET.length; i++) h += '<button type="button" data-pn="set" data-v="' + PN_SET[i].id + '" style="' + PN_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + PN_SET[i].b + ' ›</button>';
+      h += pnKotakPreset(pnPerluTambah());
       return h;
     }
     function pnAcak(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
@@ -13238,6 +13331,7 @@
         pnRender(); return true;
       }
       if (a === 'siapbaca') { pnMulaKuiz(); return true; }
+      if (a === 'preset') { pnSalin(pnPreset()); return true; }
       if (a === 'latih') { pnUI.grp = v; pnUI.kuiz = pnBinaKuiz(v, pnSetDari(v).g.map(function(x) { return x.id; })); pnUI.kuiz.dariSet = true; pnUI.mod = 'kuiz'; pnRender(); return true; }
       if (a === 'jawab' && pnUI.kuiz && pnUI.kuiz.jawab === null) {
         pnUI.kuiz.jawab = parseInt(v, 10);
