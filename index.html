@@ -15839,14 +15839,15 @@
     el('btn-us-pawagam-keluar').onclick = function() { bukaTs(); };
     el('btn-us-surau-coach').onclick = function() { bukaCoach(false); };
     el('btn-us-pawagam-coach').onclick = function() { bukaCoach(false); };
-    // ══ PENTAS — NOTA KARANGAN SPEAKING UNTUK DIHAFAL (16 Nov): 2 RUMAH (INDIVIDUAL = Part 1 · GROUP = Part 2) ══
-    // Topik ditambah oleh AI setiap hari (SALIN PRESET) — DI ATAS baris "◆ HUJUNG PT_TOPIK". Jangan buang / susun semula topik lama.
-    // Part 1: { tarikh, id, part: 1, tajuk, situasi, calon: [A, B, C, D], nota: [{ isi, h: [huraian] } x3], contoh: 'perenggan|...' (Calon A),
-    //          notaCalon: [null, nota B, nota C, nota D], contohCalon: [null, 'karangan B', 'karangan C', 'karangan D'] }
-    // Part 2: { tarikh, id, part: 2, tajuk, situasi, soalan, pilihan: [5 idea peta minda], terbaik, nota: [{ isi: pilihan, h: [hujah] } x5], contoh: 'giliran anda dalam perbincangan|...' }
-    // Rekod sudah hafal: coach/pentas { siap: { idTopik: 'YYYY-MM-DD' } }
+    // ══ PENTAS — NOTA KARANGAN SPEAKING (16 Nov): 2 RUMAH (INDIVIDUAL = Part 1 · GROUP = Part 2) ══
+    // AI hanya reka TAJUK, SOALAN & ISI (SALIN PRESET) — karangan & huraian DITULIS SENDIRI oleh pengguna dalam app (tulis dulu, baiki kemudian).
+    // Topik baru ditambah DI ATAS baris "◆ HUJUNG PT_TOPIK". Jangan buang / susun semula topik lama.
+    // Part 1: { tarikh, id, part: 1, tajuk, situasi, calon: [tugasan A, B, C, D], isi: [[3 isi A], [3 isi B], [3 isi C], [3 isi D]] }
+    // Part 2: { tarikh, id, part: 2, tajuk, situasi, soalan, pilihan: [5 idea peta minda], terbaik, isi: [[hujah idea 1], ... x5] }
+    // Topik lama: medan nota / notaCalon / contohCalon tidak lagi dipapar · contoh (Part 1) = contoh dari buku Calon A. Karangan pengguna: pentas_karangan/{id}-{A|B|C|D|G} { teks, at } · hafal: coach/pentas { siap: { kunci: tarikh } }
     var PT_TOPIK = [
       { tarikh: '2026-11-16', id: 't-keluarga-bahagia', part: 1, tajuk: 'Happy family',
+        isi: [['Children feel loved and cared for', 'Enhances bond with children', 'Improves mental health'], ['Emotional security and self-esteem', 'Stronger relationship and trust', 'Better mental health and behaviour'], ['Builds confidence and motivation', 'Helps children face failure', 'Helps children discover their talents'], ['Boosts self-esteem', 'Reinforces good behaviour', 'Motivates children to keep trying']],
         situasi: 'It is important to have a happy family. Suggest some ways parents can make their children happy.',
         calon: ['Talk about the importance of spending time together.', 'Talk about the importance of parents giving their children affection.', 'Talk about the importance of parents positively encouraging their children.', 'Talk about the importance of parents praising their children.'],
         nota: [{ isi: 'Children feel loved and cared for', h: ['feel secured - develop positive behaviours and attitudes', 'more confident and cooperative', 'less behavioural problems such as aggressiveness, violence and substance abuse'] }, { isi: 'Enhances bond with children', h: ['better communication', 'children gain trust and share their feelings - fears, worries, excitement', 'more empathy for children', 'inculcate family values'] }, { isi: 'Improves mental health', h: ['face-to-face interaction', 'strong emotional support', 'reduces loneliness, anxiety and depression', 'less stress; can overcome frustration and anxiety'] }],
@@ -15856,6 +15857,7 @@
       { tarikh: '2026-11-16', id: 't-reputasi-keluarga', part: 2, tajuk: 'Family reputation',
         situasi: 'There is an increasing concern about the importance of having a good family reputation. In your group, discuss the factors that can affect a family\'s reputation.',
         soalan: 'What factors can affect a family\'s reputation?',
+        isi: [['Rich people who do bad things - ruined in society - wealth can\'t solve everything', 'People respect success - making money is the result of success'], ['Reflects intelligence level - social status of family - respected professionals', 'Good education doesn\'t guarantee good morals'], ['Some people spend more than they own - long-term embarrassment', 'Doesn\'t reflect true net worth - showing off is tacky'], ['Good education / job doesn\'t guarantee high income', 'Some occupations can result in unethical business practices - ruins reputation'], ['Black sheep - embarrasses whole family', 'Bad behaviour - ethical misconduct - mars reputation', 'People with good reputation - won\'t be accused when a crime occurs']],
         pilihan: ['income levels', 'educational levels', 'lifestyle', 'occupations', 'behaviour'], terbaik: 'behaviour',
         nota: [{ isi: 'income levels', h: ['Rich people who do bad things - ruined in society - wealth can\'t solve everything', 'People respect success - making money is the result of success'] }, { isi: 'educational levels', h: ['Reflects intelligence level - social status of family - respected professionals - good reputation', 'Good education doesn\'t guarantee good morals'] }, { isi: 'lifestyle', h: ['Some people spend more than they own - long-term embarrassment', 'Doesn\'t reflect true net worth - showing off is tacky'] }, { isi: 'occupations', h: ['Good education / job doesn\'t guarantee high income', 'Some occupations can result in unethical business practices - ruins reputation'] }, { isi: 'behaviour', h: ['Black sheep - embarrasses whole family', 'Bad behaviour - ethical misconduct - mars reputation', 'People with good reputation - won\'t be accused when a crime occurs'] }],
         contoh: 'Thank you, Candidate A. I would like to start our discussion by saying that, in my opinion, behaviour is the most important factor that can affect a family\'s reputation. The way each family member behaves in public reflects the values taught at home.|For example, if one child is involved in crime or bullying, people will not only blame the child, but also the parents and the whole family. As the saying goes, one black sheep can embarrass the whole family. This is because society judges a family by the actions of its members.|I agree with Candidate B that income levels can influence how people see a family. However, I believe that wealth cannot solve everything. A rich family that behaves badly will still lose the respect of society. In other words, money cannot buy a good name.|As for educational levels, I partly agree that educated families are often respected. On the other hand, good education does not guarantee good morals. There are many cases of well-educated professionals who are involved in unethical business practices, and this ruins their family\'s reputation.|Lifestyle and occupations are also important, but they are less important than behaviour. Some people show off and spend more than they own, but this is actually a form of bad behaviour too.|So, what do you think, Candidate C? Do you agree that behaviour is the most important factor?|In conclusion, I strongly believe that behaviour is the most important factor because a family with good behaviour will be respected, whatever their income, education, lifestyle or occupation.' },
@@ -15866,22 +15868,35 @@
     function ptCari(id) { for (var i = 0; i < PT_TOPIK.length; i++) if (PT_TOPIK[i].id === id) return PT_TOPIK[i]; return null; }
     function ptSenarai(part) { var a = [], i; for (i = PT_TOPIK.length - 1; i >= 0; i--) if (PT_TOPIK[i].part === part) a.push(PT_TOPIK[i]); return a; }
     function ptPerluTambah() { return PT_VERSI < coachHariId(); }
-    var ptUI = { rumah: 0, id: '', calon: 0, fasa: '', mula: 0, had: 0, mesej: '', preset: '' }, ptTimer = null, ptData = null, ptMuat = false;
+    var ptUI = { rumah: 0, id: '', calon: 0, edit: false, mesej: '', preset: '', contoh: false }, ptData = null, ptMuat = false, ptKar = {};
     var PT_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PT_BTNA = PT_BTN + 'background:#000;color:#fff;';
-    function ptHenti() { if (ptTimer) { clearInterval(ptTimer); ptTimer = null; } }
+    function ptHenti() {}
     function ptE(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    function ptKunci(t, cl) { return t.id + '-' + (t.part === 1 ? 'ABCD'.charAt(cl) : 'G'); }
     function ptMuatData() {
       if (ptData || ptMuat || !currentUser) return;
       ptMuat = true;
       kol('coach').doc('pentas').get().then(function(d) { ptData = d.exists ? d.data() : {}; ptData.siap = ptData.siap || {}; lukisPentas(); })
         .catch(function() { ptData = { siap: {} }; lukisPentas(); });
     }
+    function ptMuatKar(k) {
+      if (ptKar[k] !== undefined) return;
+      ptKar[k] = null; // sedang dimuat
+      kol('pentas_karangan').doc(k).get().then(function(d) { ptKar[k] = d.exists ? (d.data() || {}) : {}; lukisPentas(); })
+        .catch(function() { ptKar[k] = {}; lukisPentas(); });
+    }
+    function ptKiraHafal(part) {
+      var n = 0, k;
+      for (k in ptData.siap) if (ptData.siap.hasOwnProperty(k)) { var t = ptCari(k.replace(/-[ABCDG]$/, '')); if (t && t.part === part) n++; }
+      return n;
+    }
     function ptPreset() {
       var hari = coachHariId(), L = [], i, p1 = 0, p2 = 0;
       for (i = 0; i < PT_TOPIK.length; i++) { L.push('- Part ' + PT_TOPIK[i].part + ': ' + PT_TOPIK[i].tajuk + ' (' + PT_TOPIK[i].id + ')'); if (PT_TOPIK[i].part === 1) p1++; else p2++; }
       return [
-        'TUGAS: Tambah topik NOTA KARANGAN SPEAKING MUET (untuk dihafal) ke bangunan PENTAS dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
+        'TUGAS: Tambah TAJUK, SOALAN dan ISI SPEAKING MUET ke bangunan PENTAS dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
         'Tarikh hari ini: ' + hari,
+        'PENTING: JANGAN tulis karangan / huraian — saya tulis karangan sendiri dalam app. Beri tajuk, soalan dan isi SAHAJA.',
         '',
         'BAHAN: [tampal soalan / situasi dari buku di sini. Jika kosong, cipta sendiri 1 topik Part 1 DAN 1 topik Part 2 gaya MUET (tema: people & culture, financial awareness & consumerism, science & technology, health & environment, education). Jangan ulang topik yang sudah ada.]',
         '',
@@ -15889,13 +15904,11 @@
         '1. Ubah HANYA tatasusunan PT_TOPIK dan var PT_VERSI. JANGAN ubah / buang / susun semula topik lama.',
         '2. Tambah topik baru di ATAS baris "// ◆ HUJUNG PT_TOPIK — topik baru di ATAS baris ini ◆" dan tukar PT_VERSI kepada \'' + hari + '\'.',
         '3. Bentuk Part 1 (Individual Presentation):',
-        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 1, tajuk: \'Tajuk pendek\', situasi: \'Situasi + arahan (Suggest some ways ...)\', calon: [\'Talk about ... (A)\', \'(B)\', \'(C)\', \'(D)\'], nota: [{ isi: \'isi utama\', h: [\'huraian kata kunci\', ...] }, x3], contoh: \'perenggan 1|perenggan 2|...\' },',
-        '   - calon = 4 cadangan BERBEZA untuk Calon A-D. nota & contoh = untuk Calon A (3 isi, kata kunci sahaja).',
-        '   - WAJIB juga karangan Calon B, C, D: notaCalon: [null, [nota B x3], [nota C x3], [nota D x3]], contohCalon: [null, \'karangan B\', \'karangan C\', \'karangan D\'] (bentuk sama seperti nota / contoh). Guna ungkapan berbeza setiap calon.',
-        '   - contoh = jawapan model 1-2 minit (180-260 patah perkataan), perenggan dipisah dengan |. Guna ungkapan berguna: sapa, nyatakan situasi, In my opinion, My main point is, For example, Secondly, This means that, Next, In conclusion, Thank you.',
+        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 1, tajuk: \'Tajuk pendek\', situasi: \'Situasi + arahan (Suggest some ways ...)\', calon: [\'Talk about ... (A)\', \'... (B)\', \'... (C)\', \'... (D)\'], isi: [[\'isi A1\', \'isi A2\', \'isi A3\'], [B x3], [C x3], [D x3]] },',
+        '   - calon = 4 tugasan BERBEZA untuk Calon A-D. isi = 3 isi utama untuk SETIAP calon (frasa pendek, bukan ayat penuh).',
         '4. Bentuk Part 2 (Group Discussion):',
-        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 2, tajuk: \'Tajuk pendek\', situasi: \'Situasi + In your group, discuss ...\', soalan: \'Soalan peta minda?\', pilihan: [5 idea], terbaik: \'idea terbaik\', nota: [{ isi: \'idea\', h: [\'hujah menyokong / membantah\', ...] }, x5], contoh: \'perenggan 1|perenggan 2|...\' },',
-        '   - contoh Part 2 = giliran calon dalam perbincangan (200-280 patah perkataan): nyatakan pilihan terbaik, sebab & contoh, setuju / tidak setuju dengan calon lain secara sopan, tanya calon lain, dan rumus.',
+        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 2, tajuk: \'Tajuk pendek\', situasi: \'Situasi + In your group, discuss ...\', soalan: \'Soalan peta minda?\', pilihan: [5 idea], terbaik: \'idea terbaik\', isi: [[\'hujah ringkas idea 1\', ...], x5] },',
+        '   - isi Part 2 = 1-3 hujah kata kunci (menyokong / membantah) untuk setiap idea, ikut susunan pilihan.',
         '5. id mesti unik (huruf kecil + sengkang, mula dengan t-). ES5 sahaja. Tiada emoji. Petikan tunggal; apostrophe ditulis \\\'.',
         '6. Output: SATU codebox sahaja, format:',
         'Cari:',
@@ -15921,38 +15934,24 @@
       try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(teks).then(siap, gagal); return; } } catch (x) {}
       gagal();
     }
-    function ptTeksMasa(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
-    function ptNota(nota, terbaik) {
-      var h = '', i, j, n, t = { terbaik: terbaik };
-      for (i = 0; i < nota.length; i++) {
-        n = nota[i];
-        h += '<div style="border-left:3px solid #000;margin:0 0 0 6px;padding:4px 0 2px 8px;"><div style="display:inline-block;background:#555;color:#fff;font-weight:bold;border-radius:6px;padding:2px 8px;">' + ptE(n.isi) + '</div>' +
-          (t.terbaik && n.isi === t.terbaik ? ' <span style="font-size:0.75rem;border:2px solid #000;border-radius:4px;padding:0 4px;">TERBAIK</span>' : '');
-        for (j = 0; j < n.h.length; j++) h += '<div style="border:2px solid #000;border-radius:6px;padding:2px 6px;margin:3px 0 0 10px;font-size:0.85rem;">&#8594; ' + ptE(n.h[j]) + '</div>';
-        h += '</div>';
-      }
-      return h;
-    }
     function lukisPentas() {
-      var h = '<div style="font-weight:bold;font-size:1.15rem;">SPEAKING — MUET PAPER 2</div>', i, t, a, siap;
+      var h = '<div style="font-weight:bold;font-size:1.15rem;">SPEAKING — MUET PAPER 2</div>', i, j, t, a;
       if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = h + '<div>Memuatkan...</div>'; return; }
       if (ptUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + ptUI.mesej + '</div>';
+      var kotakPreset = ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '';
       // ── 2 RUMAH ──
       if (!ptUI.rumah) {
         if (ptPerluTambah()) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ARAHAN COACH: TAMBAH TOPIK SPEAKING HARI INI</div>' +
-          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan soalan dari buku jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>Topik lama kekal — senarai bertambah setiap hari.</div>' +
-          '<button type="button" data-pt="preset" style="' + PT_BTNA + '">SALIN PRESET</button>' +
-          (ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '') + '</div>';
+          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan soalan dari buku jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>AI beri tajuk, soalan &amp; isi sahaja — karangan anda tulis sendiri.</div>' +
+          '<button type="button" data-pt="preset" style="' + PT_BTNA + '">SALIN PRESET</button>' + kotakPreset + '</div>';
         h += '<div class="kd-pondok" style="margin-top:8px;">';
         for (i = 1; i <= 2; i++) {
-          a = ptSenarai(i); siap = 0;
-          for (t = 0; t < a.length; t++) if (ptData.siap[a[t].id]) siap++;
+          a = ptSenarai(i);
           h += '<button type="button" class="kd-pd" data-pt="rumah" data-v="' + i + '">' + svgBangunan(i === 1 ? 'pentas' : 'kumpulan', i === 1 ? 'INDIVIDUAL' : 'GROUP', true) +
-            '<small>Part ' + i + ' · ' + (i === 1 ? 'Individual Presentation' : 'Group Discussion') + '<br>' + a.length + ' karangan · ' + siap + ' hafal</small></button>';
+            '<small>Part ' + i + ' · ' + (i === 1 ? 'Individual Presentation' : 'Group Discussion') + '<br>' + a.length + ' topik · ' + ptKiraHafal(i) + ' karangan hafal</small></button>';
         }
         h += '</div>';
-        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Topik terakhir ditambah: ' + PT_VERSI + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' +
-          (ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '');
+        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Topik terakhir ditambah: ' + PT_VERSI + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' + kotakPreset;
         el('pentas-isi').innerHTML = h; return;
       }
       // ── SENARAI TOPIK ──
@@ -15964,38 +15963,63 @@
         for (i = 0; i < a.length; i++) {
           t = a[i];
           h += '<button type="button" data-pt="topik" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + ptE(t.tajuk) +
-            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + (ptData.siap[t.id] ? ' · HAFAL' : (t.tarikh === coachHariId() ? ' · BARU' : '')) + '</span> ›</button>';
+            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + (t.tarikh === coachHariId() ? ' · BARU' : '') + '</span> ›</button>';
         }
         el('pentas-isi').innerHTML = h; return;
       }
-      // ── LATIHAN SATU TOPIK ──
+      // ── SATU TOPIK: soalan + isi (AI) + KARANGAN SAYA (tulis sendiri) ──
       t = ptCari(ptUI.id);
       if (!t) { ptUI.id = ''; lukisPentas(); return; }
+      var cl = t.part === 1 ? ptUI.calon : 0, k = ptKunci(t, cl), isi = (t.isi && t.isi[cl]) || [];
       h += '<button type="button" data-pt="senarai" style="' + PT_BTN + '">‹ SENARAI</button>';
       h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + ptE(t.tajuk) + '</div>';
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;"><b>Situation:</b> ' + ptE(t.situasi);
       if (t.part === 1) {
         h += '<div style="margin-top:4px;">';
-        for (i = 0; i < t.calon.length; i++) h += '<button type="button" data-pt="calon" data-v="' + i + '" style="' + (i === ptUI.calon ? PT_BTNA : PT_BTN) + '">' + 'ABCD'.charAt(i) + '</button>';
-        h += '</div><div style="margin-top:4px;"><b>Candidate ' + 'ABCD'.charAt(ptUI.calon) + ':</b> You have to give a presentation to your class. ' + ptE(t.calon[ptUI.calon]) + '</div>';
+        for (i = 0; i < t.calon.length; i++) h += '<button type="button" data-pt="calon" data-v="' + i + '" style="' + (i === cl ? PT_BTNA : PT_BTN) + '">' + 'ABCD'.charAt(i) + (ptData.siap[ptKunci(t, i)] ? ' ✓' : '') + '</button>';
+        h += '</div><div style="margin-top:4px;"><b>Candidate ' + 'ABCD'.charAt(cl) + ':</b> You have to give a presentation to your class. ' + ptE(t.calon[cl]) + '</div>';
       } else {
         h += '<div style="background:#000;color:#fff;font-weight:bold;text-align:center;border-radius:8px;padding:5px;margin:6px 0 4px;">' + ptE(t.soalan) + '</div><div style="text-align:center;">';
         for (i = 0; i < t.pilihan.length; i++) h += '<span style="display:inline-block;border:2px solid #000;border-radius:6px;padding:2px 8px;margin:2px;">' + ptE(t.pilihan[i]) + '</span>';
         h += '</div><div style="font-size:0.85rem;margin-top:4px;">Di akhir perbincangan, putuskan pilihan yang <b>PALING</b> sesuai.</div>';
       }
       h += '</div>';
-      // Part 1: nota & karangan ikut calon (A = nota/contoh · B-D = notaCalon/contohCalon)
-      var cl = t.part === 1 ? ptUI.calon : 0, lbl = t.part === 1 ? ' — Calon ' + 'ABCD'.charAt(cl) : '';
-      var nt = cl ? (t.notaCalon && t.notaCalon[cl]) : t.nota, ct = cl ? (t.contohCalon && t.contohCalon[cl]) : t.contoh;
-      if (nt) h += '<div style="font-weight:bold;margin-top:8px;">NOTA KATA KUNCI' + lbl + '</div>' + ptNota(nt, t.terbaik);
-      if (!nt && !ct) h += '<div style="border:2px dashed #000;border-radius:8px;padding:5px 8px;margin:8px 0;">Belum ada karangan untuk Calon ' + 'ABCD'.charAt(cl) + '.</div>';
-      if (ct) {
-        var pr = ct.split('|');
-        h += '<div style="font-weight:bold;font-size:1.05rem;margin-top:10px;">KARANGAN UNTUK DIHAFAL' + (t.part === 1 ? lbl : ' — giliran anda') + '</div>' +
-          '<div style="font-size:0.8rem;">Ungkapan berguna ditebalkan.</div>';
-        for (i = 0; i < pr.length; i++) h += '<div style="font-size:0.95rem;margin:6px 0;line-height:1.45;">' + ptTebal(ptE(pr[i])) + '</div>';
+      // ISI (dari AI)
+      h += '<div style="font-weight:bold;margin-top:8px;">ISI' + (t.part === 1 ? ' — Calon ' + 'ABCD'.charAt(cl) : '') + '</div>';
+      if (t.part === 1) {
+        if (!isi.length) h += '<div style="font-size:0.85rem;">Belum ada isi.</div>';
+        for (i = 0; i < isi.length; i++) h += '<div style="border:2px solid #000;border-radius:6px;padding:3px 7px;margin:3px 0;"><b>' + (i + 1) + '.</b> ' + ptE(isi[i]) + '</div>';
+      } else {
+        for (i = 0; i < t.pilihan.length; i++) {
+          h += '<div style="border-left:3px solid #000;margin:0 0 4px 6px;padding:2px 0 2px 8px;"><div style="display:inline-block;background:#555;color:#fff;font-weight:bold;border-radius:6px;padding:2px 8px;">' + ptE(t.pilihan[i]) + '</div>' +
+            (t.terbaik === t.pilihan[i] ? ' <span style="font-size:0.75rem;border:2px solid #000;border-radius:4px;padding:0 4px;">TERBAIK</span>' : '');
+          var hj = (t.isi && t.isi[i]) || [];
+          for (j = 0; j < hj.length; j++) h += '<div style="font-size:0.85rem;margin:2px 0 0 8px;">&#8594; ' + ptE(hj[j]) + '</div>';
+          h += '</div>';
+        }
       }
-      h += '<div style="margin-top:6px;"><button type="button" data-pt="tanda" style="' + PT_BTNA + '">' + (ptData.siap[t.id] ? 'SUDAH HAFAL ✓ (' + ptData.siap[t.id] + ')' : 'TANDA SUDAH HAFAL') + '</button></div>';
+      // KARANGAN SAYA (tulis sendiri)
+      ptMuatKar(k);
+      var kr = ptKar[k];
+      h += '<div style="font-weight:bold;font-size:1.05rem;margin-top:10px;">KARANGAN SAYA' + (t.part === 1 ? ' — Calon ' + 'ABCD'.charAt(cl) : ' — giliran saya') + '</div>';
+      if (kr === null || kr === undefined) h += '<div>Memuatkan karangan...</div>';
+      else if (ptUI.edit || !kr.teks) {
+        h += '<div style="font-size:0.8rem;">Tulis sendiri ikut isi di atas: sapa → nyatakan situasi &amp; pendapat → isi 1, 2, 3 (huraian + contoh) → rumus → terima kasih. Pisahkan perenggan dengan baris kosong. Tak reti? Tanya AI anda, kemudian tulis semula dengan ayat sendiri.</div>' +
+          '<textarea id="pt-teks" style="width:100%;height:260px;margin-top:4px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:6px;box-sizing:border-box;">' + ptE(kr.teks || '') + '</textarea>' +
+          '<div><button type="button" data-pt="simpan" style="' + PT_BTNA + '">SIMPAN KARANGAN</button>' + (kr.teks ? '<button type="button" data-pt="batal" style="' + PT_BTN + '">BATAL</button>' : '') + '</div>';
+      } else {
+        var pr = kr.teks.split(/\n\s*\n/), nk = kr.teks.split(/\s+/).filter(function(x) { return x; }).length;
+        h += '<div style="font-size:0.8rem;">' + nk + ' patah perkataan · disimpan ' + (kr.tarikh || '') + ' · ungkapan berguna ditebalkan</div>';
+        for (i = 0; i < pr.length; i++) h += '<div style="font-size:0.95rem;margin:6px 0;line-height:1.45;">' + ptTebal(ptE(pr[i])).replace(/\n/g, '<br>') + '</div>';
+        h += '<div><button type="button" data-pt="edit" style="' + PT_BTN + '">BAIKI KARANGAN</button>' +
+          '<button type="button" data-pt="tanda" style="' + PT_BTNA + '">' + (ptData.siap[k] ? 'SUDAH HAFAL ✓ (' + ptData.siap[k] + ')' : 'TANDA SUDAH HAFAL') + '</button></div>' +
+          '<div style="font-size:0.8rem;margin-top:4px;">Tip Naufal: setiap kali ulang kaji, baca semula — jumpa ayat lebih baik? Tekan BAIKI KARANGAN.</div>';
+      }
+      // Contoh dari buku (jika ada) — sorok dulu supaya tulis sendiri
+      if (t.part === 1 && t.contoh && cl === 0) {
+        h += '<div style="margin-top:8px;"><button type="button" data-pt="contoh" style="' + PT_BTN + '">' + (ptUI.contoh ? 'SOROK CONTOH BUKU' : 'LIHAT CONTOH DARI BUKU') + '</button></div>';
+        if (ptUI.contoh) { var cb = t.contoh.split('|'); for (i = 0; i < cb.length; i++) h += '<div style="font-size:0.9rem;margin:4px 0;border-left:3px solid #999;padding-left:6px;">' + ptTebal(ptE(cb[i])) + '</div>'; }
+      }
       el('pentas-isi').innerHTML = h;
     }
     // Tebalkan ungkapan berguna (dari nota DAILY REPETITION) dalam karangan — satu laluan, frasa panjang dahulu
@@ -16017,17 +16041,28 @@
       var t = e.target;
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pt'))) t = t.parentNode;
       if (!t || t === this) return;
-      var a = t.getAttribute('data-pt'), v = t.getAttribute('data-v');
+      var a = t.getAttribute('data-pt'), v = t.getAttribute('data-v'), tp = ptCari(ptUI.id), k = tp ? ptKunci(tp, tp.part === 1 ? ptUI.calon : 0) : '';
       if (a !== 'preset') ptUI.mesej = '';
       if (a === 'rumah') { ptUI.rumah = +v; ptUI.id = ''; }
-      else if (a === 'balik') { ptHenti(); ptUI.rumah = 0; ptUI.id = ''; ptUI.fasa = ''; }
-      else if (a === 'senarai') { ptHenti(); ptUI.id = ''; ptUI.fasa = ''; }
-      else if (a === 'topik') { ptUI.id = v; ptUI.fasa = ''; ptUI.calon = 0; }
-      else if (a === 'calon') { ptUI.calon = +v; }
+      else if (a === 'balik') { ptUI.rumah = 0; ptUI.id = ''; }
+      else if (a === 'senarai') { ptUI.id = ''; ptUI.edit = false; ptUI.contoh = false; }
+      else if (a === 'topik') { ptUI.id = v; ptUI.calon = 0; ptUI.edit = false; ptUI.contoh = false; }
+      else if (a === 'calon') { ptUI.calon = +v; ptUI.edit = false; ptUI.contoh = false; }
       else if (a === 'preset') { ptSalin(ptPreset()); return; }
+      else if (a === 'edit') { ptUI.edit = true; }
+      else if (a === 'batal') { ptUI.edit = false; }
+      else if (a === 'contoh') { ptUI.contoh = !ptUI.contoh; lukisPentas(); return; }
+      else if (a === 'simpan') {
+        var teks = (el('pt-teks').value || '').replace(/\s+$/, '');
+        if (!teks) { alert('Karangan masih kosong.'); return; }
+        var rek = { teks: teks, at: Date.now(), tarikh: coachHariId() };
+        kol('pentas_karangan').doc(k).set(rek).then(function() { ptKar[k] = rek; ptUI.edit = false; ptUI.mesej = 'Karangan disimpan.'; lukisPentas(); })
+          .catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
+        return;
+      }
       else if (a === 'tanda') {
         var hari = coachHariId(), ub = { siap: {} };
-        ptData.siap[ptUI.id] = hari; ub.siap[ptUI.id] = hari;
+        ptData.siap[k] = hari; ub.siap[k] = hari;
         kol('coach').doc('pentas').set(ub, { merge: true }).catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
         ptUI.mesej = 'Karangan ditanda SUDAH HAFAL.';
       }
@@ -16035,7 +16070,7 @@
       try { window.scrollTo(0, 0); } catch (x) {}
     };
     function bukaPentas() {
-      ptHenti(); ptUI.rumah = 0; ptUI.id = ''; ptUI.fasa = ''; ptUI.mesej = '';
+      ptUI.rumah = 0; ptUI.id = ''; ptUI.edit = false; ptUI.mesej = '';
       usMuat('screen-pentas', 'pentas-info', function() { el('pentas-info').textContent = ''; lukisPentas(); });
     }
     el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
