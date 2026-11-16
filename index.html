@@ -16049,9 +16049,9 @@
     var PT_VERSI = '2026-11-16';
     // ▲▲▲ TAMAT TOPIK SPEAKING ▲▲▲
     function ptCari(id) { for (var i = 0; i < PT_TOPIK.length; i++) if (PT_TOPIK[i].id === id) return PT_TOPIK[i]; return null; }
-    function ptPerluTambah() { return PT_VERSI < coachHariId(); }
-    // Bina indeks PT_BANK: soalan ikut tema; isi tambahan ({ isiUntuk }) disambung di hujung (indeks lama kekal)
-    var ptIdx = null;
+    function ptPerluTambah() { var t = (ptU && ptU.tambah) || PT_VERSI; return t < coachHariId(); }
+    // Bina indeks PT_BANK + bank pengguna (coach/pentas_bank: tema & soalan ditambah sendiri / JANA PUKAL, buang = disorok)
+    var ptIdx = null, ptU = null;
     function ptBank() {
       if (ptIdx) return ptIdx;
       var S = {}, L = [], T = [], i, j, b, s, p;
@@ -16068,11 +16068,21 @@
           for (j = 0; j < (b.isi || []).length; j++) s.isi.push({ p: p, t: b.isi[j], baru: b.tarikh });
         }
       }
-      ptIdx = { S: S, L: L, T: T };
+      var U = ptU || {}, bg = U.buang || {}, us = U.soalan || [], ut = U.tema || [];
+      for (i = 0; i < us.length; i++) {
+        b = us[i]; if (!b || !b.id || S[b.id]) continue;
+        s = { id: b.id, tema: b.tema || 'Lain-lain', part: b.part === 2 ? 2 : 1, soalan: b.soalan, tarikh: b.tarikh, pilihan: (b.pilihan || []).slice(0), terbaik: b.terbaik || '', isi: (b.isi || []).slice(0), milik: 1 };
+        S[s.id] = s; L.push(s); if (T.indexOf(s.tema) < 0) T.push(s.tema);
+      }
+      for (i = 0; i < ut.length; i++) if (T.indexOf(ut[i]) < 0) T.push(ut[i]);
+      var L2 = [], T2 = [];
+      for (i = 0; i < T.length; i++) if (!bg['tema:' + T[i]]) T2.push(T[i]);
+      for (i = 0; i < L.length; i++) if (!bg[L[i].id] && !bg['tema:' + L[i].tema]) L2.push(L[i]);
+      ptIdx = { S: S, L: L2, T: T2 };
       return ptIdx;
     }
     function ptSoalan(part, tema) { var a = [], L = ptBank().L, i; for (i = 0; i < L.length; i++) if (L[i].part === part && (!tema || L[i].tema === tema)) a.push(L[i]); return a; }
-    var ptUI = { rumah: 0, tema: '', id: '', cid: '', edit: false, mesej: '', preset: '' }, ptData = null, ptMuat = false, ptKar = {};
+    var ptUI = { rumah: 0, tema: '', id: '', cid: '', edit: false, mesej: '', preset: '', pukal: false, tambahS: false, tambahT: false }, ptData = null, ptMuat = false, ptKar = {};
     var PT_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PT_BTNA = PT_BTN + 'background:#000;color:#fff;';
     function ptHenti() {}
     function ptE(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
@@ -16080,8 +16090,54 @@
     function ptMuatData() {
       if (ptData || ptMuat || !currentUser) return;
       ptMuat = true;
-      kol('coach').doc('pentas').get().then(function(d) { ptData = d.exists ? d.data() : {}; ptData.siap = ptData.siap || {}; lukisPentas(); })
-        .catch(function() { ptData = { siap: {} }; lukisPentas(); });
+      var siap = function(dt, ub) { ptData = dt; ptData.siap = ptData.siap || {}; ptU = ub || {}; ptU.soalan = ptU.soalan || []; ptU.tema = ptU.tema || []; ptU.buang = ptU.buang || {}; ptIdx = null; lukisPentas(); };
+      kol('coach').doc('pentas').get().then(function(d) {
+        var dt = d.exists ? (d.data() || {}) : {};
+        kol('coach').doc('pentas_bank').get().then(function(b) { siap(dt, b.exists ? b.data() : {}); }).catch(function() { siap(dt, {}); });
+      }).catch(function() { siap({}, {}); });
+    }
+    function ptSimpanU(mesej) {
+      ptIdx = null;
+      kol('coach').doc('pentas_bank').set(ptU).then(function() { if (mesej) { ptUI.mesej = mesej; lukisPentas(); } })
+        .catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
+    }
+    // JANA PUKAL: baca teks format TOPIK: / P1: / P2: → tambah ke bank pengguna. Pulang { n, t, ulang, salah }
+    function ptPukal(teks, temaAsal, partAsal) {
+      var B = ptBank(), ada = {}, x, r = { n: 0, t: 0, ulang: 0, salah: 0 }, tema = temaAsal || '', L = String(teks || '').split(/\r?\n/), i, j, m, bh, it, ps, nm, hj, q, hari = coachHariId();
+      for (x in B.S) if (B.S.hasOwnProperty(x)) ada[B.S[x].soalan.toLowerCase().replace(/\s+/g, ' ')] = 1;
+      for (i = 0; i < L.length; i++) {
+        var gr = L[i].replace(/^\s*([-*•>]|\d+[.)])\s*/, '').replace(/\*\*/g, '').replace(/^\s+|\s+$/g, '');
+        if (!gr || /^```/.test(gr)) continue;
+        m = gr.match(/^(TOPIK|TOPIC)\s*:\s*(.+)$/i);
+        if (m) {
+          tema = m[2].replace(/\s+$/, '');
+          if (ptU.buang['tema:' + tema]) delete ptU.buang['tema:' + tema];
+          if (B.T.indexOf(tema) < 0 && ptU.tema.indexOf(tema) < 0) { ptU.tema.push(tema); r.t++; }
+          continue;
+        }
+        m = gr.match(/^P\s*([12])\s*:\s*(.+)$/i);
+        if (!m && partAsal) m = [gr, String(partAsal), gr];
+        if (!m) { r.salah++; continue; }
+        bh = m[2].split('|'); for (j = 0; j < bh.length; j++) bh[j] = bh[j].replace(/^\s+|\s+$/g, '');
+        q = bh.shift(); if (!q) { r.salah++; continue; }
+        if (ada[q.toLowerCase().replace(/\s+/g, ' ')]) { r.ulang++; continue; }
+        it = { id: 'u' + Date.now().toString(36) + r.n + Math.floor(Math.random() * 1000), tema: tema || 'Lain-lain', part: +m[1], soalan: q, tarikh: hari, pilihan: [], terbaik: '', isi: [] };
+        if (!tema && ptU.tema.indexOf('Lain-lain') < 0 && B.T.indexOf('Lain-lain') < 0) { ptU.tema.push('Lain-lain'); r.t++; }
+        for (j = 0; j < bh.length; j++) {
+          if (!bh[j]) continue;
+          if (it.part === 1) { it.isi.push({ p: -1, t: bh[j] }); continue; }
+          ps = bh[j].split('='); nm = ps.shift().replace(/^\s+|\s+$/g, ''); hj = ps.join('=');
+          if (/\*/.test(nm)) { nm = nm.replace(/\*/g, '').replace(/^\s+|\s+$/g, ''); it.terbaik = nm; }
+          if (!nm) continue;
+          it.pilihan.push(nm);
+          ps = hj.split(';');
+          for (var k2 = 0; k2 < ps.length; k2++) { x = ps[k2].replace(/^\s+|\s+$/g, ''); if (x) it.isi.push({ p: it.pilihan.length - 1, t: x }); }
+        }
+        ada[q.toLowerCase().replace(/\s+/g, ' ')] = 1;
+        ptU.soalan.push(it); r.n++;
+      }
+      if (r.n || r.t) { ptU.tambah = hari; ptIdx = null; }
+      return r;
     }
     function ptMuatKar(k) {
       if (ptKar[k] !== undefined) return;
@@ -16095,39 +16151,29 @@
       return n;
     }
     function ptPreset() {
-      var hari = coachHariId(), B = ptBank(), L = [], i, s, n1 = 0, n2 = 0;
+      var B = ptBank(), L = [], i, j, a, n = 0;
       for (i = 0; i < B.T.length; i++) {
-        L.push('TOPIK BESAR: ' + B.T[i]);
-        var a = ptSoalan(1, B.T[i]).concat(ptSoalan(2, B.T[i]));
-        for (var j = 0; j < a.length; j++) { s = a[j]; L.push('- [' + s.id + '] P' + s.part + ' · ' + s.isi.length + ' isi · ' + s.soalan); if (s.part === 1) n1++; else n2++; }
+        L.push('TOPIK: ' + B.T[i]);
+        a = ptSoalan(1, B.T[i]).concat(ptSoalan(2, B.T[i]));
+        for (j = 0; j < a.length; j++) { L.push('P' + a[j].part + ': ' + a[j].soalan); n++; }
       }
       return [
-        'TUGAS: Tambah SOALAN dan ISI SPEAKING MUET ke bank soalan bangunan PENTAS dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
-        'Tarikh hari ini: ' + hari,
-        'PENTING: JANGAN tulis karangan / huraian — saya tulis huraian sendiri di bawah setiap isi dalam app. Beri soalan dan isi SAHAJA (frasa pendek, bukan ayat penuh).',
+        'TUGAS: Beri SOALAN SPEAKING MUET BARU sebanyak yang boleh (sekurang-kurangnya 30) yang BELUM ADA dalam senarai saya di bawah. Boleh juga cadang TOPIK BESAR baru yang sesuai dengan tema MUET.',
+        'PENTING: JANGAN tulis karangan / huraian — saya tulis huraian sendiri. Beri soalan dan isi SAHAJA (frasa pendek, bukan ayat penuh).',
         '',
-        'BAHAN: [tampal soalan dari buku di sini. Jika kosong: (a) tambah 5 soalan BARU gaya MUET di bawah topik besar sedia ada atau topik besar baru yang sesuai, campur Part 1 dan Part 2; DAN (b) tambah 2-3 isi BARU untuk 3 soalan sedia ada yang paling sedikit isi. Jangan ulang soalan yang sudah ada.]',
+        'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL dalam app — ikut tepat, satu soalan satu baris):',
+        'TOPIK: nama topik besar',
+        'P1: Soalan individual presentation? | isi 1 | isi 2 | isi 3',
+        'P2: Soalan group discussion? | pilihan 1* = hujah; hujah | pilihan 2 = hujah; hujah | pilihan 3 = hujah | pilihan 4 = hujah',
         '',
         'PERATURAN:',
-        '1. Ubah HANYA tatasusunan PT_BANK dan var PT_VERSI. JANGAN ubah / buang / susun semula entri lama (huraian saya disimpan ikut susunan isi).',
-        '2. Tambah entri baru di ATAS baris "// ◆ HUJUNG PT_BANK — soalan / isi baru di ATAS baris ini ◆" dan tukar PT_VERSI kepada \'' + hari + '\'.',
-        '3. Soalan Part 1 (Individual Presentation — soalan terbuka, 3 isi):',
-        '   { tarikh: \'' + hari + '\', tema: \'Topik besar\', id: \'xx-unik\', part: 1, soalan: \'Soalan?\', isi: [\'isi 1\', \'isi 2\', \'isi 3\'] },',
-        '4. Soalan Part 2 (Group Discussion — pilih yang PALING sesuai daripada 4-5 pilihan):',
-        '   { tarikh: \'' + hari + '\', tema: \'Topik besar\', id: \'xx-unik\', part: 2, soalan: \'Soalan?\', pilihan: [4-5 pilihan], terbaik: \'pilihan terbaik\', isi: [[\'hujah pilihan 1\', ...], ... ikut susunan pilihan] },',
-        '5. Isi tambahan untuk soalan SEDIA ADA (jangan ubah entri asal — tambah entri baru):',
-        '   Part 1: { tarikh: \'' + hari + '\', isiUntuk: \'id-soalan\', isi: [\'isi baru\', ...] },',
-        '   Part 2: { tarikh: \'' + hari + '\', isiUntuk: \'id-soalan\', p: \'nama pilihan (tepat)\', isi: [\'hujah baru\', ...] },',
-        '6. tema mesti DITULIS TEPAT seperti topik besar sedia ada (atau topik besar baru). id unik: huruf kecil + sengkang, awalan ikut tema (pc-, fa-, st-, he-, ed-). ES5 sahaja. Tiada emoji. Petikan tunggal; apostrophe ditulis \\\'.',
-        '7. Output: SATU codebox sahaja, format:',
-        'Cari:',
-        '[kod lama]',
-        'Ganti:',
-        '[kod baru]',
-        '   Blok Cari mesti DISALIN TEPAT dari kod saya — bermula baris "// ◆ HUJUNG PT_BANK" hingga baris "function ptCari(id) {" (5 baris). Jangan taip semula dari ingatan.',
-        '8. Jangan terangkan panjang lebar — terus bagi codebox.',
+        '1. Tulis baris TOPIK: sebelum soalan topik itu. Nama topik sedia ada mesti ditulis TEPAT seperti dalam senarai.',
+        '2. P1 = soalan terbuka (Individual Presentation), 3 isi.',
+        '3. P2 = soalan pilih yang PALING sesuai (Group Discussion), 4-5 pilihan; tanda * pada SATU pilihan terbaik; 1-2 hujah setiap pilihan dipisah ;',
+        '4. Campur P1 dan P2. Jangan ulang / ubah sedikit soalan yang sudah ada. Jangan guna aksara | = ; dalam ayat. Tiada emoji, tiada nombor di depan baris.',
+        '5. Output: SATU codebox teks biasa sahaja, tanpa penerangan.',
         '',
-        'SOALAN SEDIA ADA (Part 1: ' + n1 + ', Part 2: ' + n2 + '):'
+        'SENARAI SAYA (' + B.T.length + ' topik, ' + n + ' soalan):'
       ].concat(L).join('\n');
     }
     function ptSalin(teks) {
@@ -16156,7 +16202,7 @@
       if (!ptUI.rumah) {
         h = kepala('', '');
         if (ptPerluTambah()) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ARAHAN COACH: TAMBAH SOALAN &amp; ISI SPEAKING HARI INI</div>' +
-          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan soalan dari buku jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>AI beri soalan &amp; isi sahaja — huraian anda tulis sendiri.</div>' +
+          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET → tampal ke AI.<br>2. Salin jawapan AI.<br>3. Masuk rumah INDIVIDUAL / GROUP → JANA PUKAL → tampal → SIMPAN.<br>AI beri soalan &amp; isi sahaja — huraian anda tulis sendiri.</div>' +
           '<button type="button" data-pt="preset" style="' + PT_BTNA + '">SALIN PRESET</button>' + kotakPreset + '</div>';
         h += '<div class="kd-pondok" style="margin-top:8px;">';
         for (i = 1; i <= 2; i++) {
@@ -16164,7 +16210,7 @@
             '<small>Part ' + i + ' · ' + (i === 1 ? 'Individual Presentation' : 'Group Discussion') + '<br>' + ptSoalan(i).length + ' soalan · ' + ptKiraHafal(i) + ' hafal</small></button>';
         }
         h += '</div>';
-        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Soalan terakhir ditambah: ' + PT_VERSI + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' + kotakPreset;
+        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Soalan terakhir ditambah: ' + ((ptU && ptU.tambah) || PT_VERSI) + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' + kotakPreset;
         el('pentas-isi').innerHTML = h; return;
       }
       // ── CONTOH (nota + karangan dari buku) ──
@@ -16210,9 +16256,18 @@
           h += '<button type="button" data-pt="lihatcontoh" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;background:#eee;">' + ptE(t.tajuk) +
             '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + ' · contoh</span> ›</button>';
         }
-        h += '<div style="font-weight:bold;margin:10px 0 2px;">SENARAI TOPIK BESAR</div>';
+        h += '<div style="font-weight:bold;margin:10px 0 2px;">SENARAI TOPIK BESAR</div>' +
+          '<div><button type="button" data-pt="bukapukal" style="' + (ptUI.pukal ? PT_BTN : PT_BTNA) + '">JANA PUKAL</button><button type="button" data-pt="bukatopik" style="' + PT_BTN + '">+ TOPIK</button></div>';
+        if (ptUI.pukal) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JANA PUKAL</div>' +
+          '<div style="font-size:0.8rem;">Tekan SALIN PRESET → tampal ke AI → salin jawapan AI → tampal di bawah → SIMPAN. Soalan P1 masuk INDIVIDUAL, P2 masuk GROUP. Soalan yang sudah ada diabaikan.</div>' +
+          '<button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button>' + kotakPreset +
+          '<textarea id="pt-pukal" placeholder="TOPIK: Science and technology&#10;P1: Soalan? | isi 1 | isi 2 | isi 3&#10;P2: Soalan? | pilihan* = hujah; hujah | pilihan = hujah" style="width:100%;height:180px;margin-top:6px;font-size:0.85rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+          '<div><button type="button" data-pt="simpanpukal" style="' + PT_BTNA + '">SIMPAN</button><button type="button" data-pt="bukapukal" style="' + PT_BTN + '">TUTUP</button></div></div>';
+        if (ptUI.tambahT) h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">TOPIK BESAR BARU</div>' +
+          '<input id="pt-topik" type="text" placeholder="cth: Sports and recreation" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">' +
+          '<div><button type="button" data-pt="simpantopik" style="' + PT_BTNA + '">TAMBAH</button><button type="button" data-pt="bukatopik" style="' + PT_BTN + '">BATAL</button></div></div>';
         for (i = 0; i < B.T.length; i++) {
-          a = ptSoalan(ptUI.rumah, B.T[i]); if (!a.length) continue;
+          a = ptSoalan(ptUI.rumah, B.T[i]);
           h += '<button type="button" data-pt="tema" data-v="' + ptE(B.T[i]).replace(/"/g, '&quot;') + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + ptE(B.T[i]) +
             '<span style="font-weight:normal;font-size:0.75rem;"> · ' + a.length + ' soalan · ' + ptKiraHafal(ptUI.rumah, B.T[i]) + ' hafal</span> ›</button>';
         }
@@ -16223,6 +16278,12 @@
         a = ptSoalan(ptUI.rumah, ptUI.tema);
         h = kepala('senaraitema', 'TOPIK BESAR');
         h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">PART ' + ptUI.rumah + ' · ' + ptE(ptUI.tema).toUpperCase() + '</div>';
+        h += '<div><button type="button" data-pt="bukasoalan" style="' + (ptUI.tambahS ? PT_BTN : PT_BTNA) + '">+ SOALAN</button><button type="button" data-pt="buangtopik" style="' + PT_BTN + '">BUANG TOPIK</button></div>';
+        if (ptUI.tambahS) h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">SOALAN BARU (Part ' + ptUI.rumah + ')</div>' +
+          '<textarea id="pt-sq" placeholder="Soalan?" style="width:100%;height:60px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+          '<div style="font-size:0.8rem;margin-top:4px;">' + (ptUI.rumah === 1 ? 'Isi — satu baris satu isi:' : 'Pilihan — satu baris satu pilihan, format: pilihan = hujah; hujah (tanda * pada pilihan terbaik):') + '</div>' +
+          '<textarea id="pt-si" style="width:100%;height:100px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+          '<div><button type="button" data-pt="simpansoalan" style="' + PT_BTNA + '">TAMBAH</button><button type="button" data-pt="bukasoalan" style="' + PT_BTN + '">BATAL</button></div></div>';
         if (!a.length) h += '<div>Belum ada soalan.</div>';
         for (i = 0; i < a.length; i++) {
           s = a[i];
@@ -16276,6 +16337,7 @@
           '<button type="button" data-pt="tanda" style="' + PT_BTNA + '">' + (ptData.siap[k] ? 'SUDAH HAFAL ✓ (' + ptData.siap[k] + ')' : 'TANDA SUDAH HAFAL') + '</button></div>' +
           '<div style="font-size:0.8rem;margin-top:4px;">Tip Naufal: setiap kali ulang kaji, baca semula — jumpa ayat lebih baik? Tekan BAIKI HURAIAN.</div>';
       }
+      h += '<div style="border-top:2px solid #000;margin-top:10px;padding-top:4px;"><button type="button" data-pt="buangsoalan" style="' + PT_BTN + '">BUANG SOALAN INI</button></div>';
       el('pentas-isi').innerHTML = h;
     }
     // Tebalkan ungkapan berguna (dari nota DAILY REPETITION) dalam karangan — satu laluan, frasa panjang dahulu
@@ -16303,8 +16365,42 @@
       else if (a === 'balik') { ptUI.rumah = 0; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; }
       else if (a === 'lihatcontoh') { ptUI.cid = v; }
       else if (a === 'tutupcontoh') { ptUI.cid = ''; }
-      else if (a === 'tema') { ptUI.tema = v; ptUI.id = ''; }
+      else if (a === 'tema') { ptUI.tema = v; ptUI.id = ''; ptUI.tambahS = false; }
       else if (a === 'senaraitema') { ptUI.tema = ''; ptUI.id = ''; }
+      else if (a === 'bukapukal') { ptUI.pukal = !ptUI.pukal; ptUI.tambahT = false; ptUI.preset = ''; }
+      else if (a === 'bukatopik') { ptUI.tambahT = !ptUI.tambahT; ptUI.pukal = false; }
+      else if (a === 'bukasoalan') { ptUI.tambahS = !ptUI.tambahS; }
+      else if (a === 'simpanpukal') {
+        var rp = ptPukal(el('pt-pukal').value);
+        if (!rp.n && !rp.t) { alert('Tiada soalan baru dijumpai.' + (rp.ulang ? ' ' + rp.ulang + ' soalan sudah ada.' : '') + (rp.salah ? ' ' + rp.salah + ' baris tidak ikut format.' : '')); return; }
+        ptUI.pukal = false; ptUI.preset = '';
+        ptSimpanU('JANA PUKAL: ' + rp.n + ' soalan baru' + (rp.t ? ', ' + rp.t + ' topik baru' : '') + (rp.ulang ? ' · ' + rp.ulang + ' sudah ada (diabaikan)' : '') + (rp.salah ? ' · ' + rp.salah + ' baris salah format' : '') + '.');
+      }
+      else if (a === 'simpantopik') {
+        var nt = (el('pt-topik').value || '').replace(/^\s+|\s+$/g, '');
+        if (!nt) { alert('Tulis nama topik.'); return; }
+        if (ptBank().T.indexOf(nt) >= 0) { alert('Topik sudah ada.'); return; }
+        if (ptU.buang['tema:' + nt]) delete ptU.buang['tema:' + nt];
+        if (ptU.tema.indexOf(nt) < 0) ptU.tema.push(nt);
+        ptUI.tambahT = false; ptSimpanU('Topik "' + nt + '" ditambah.');
+      }
+      else if (a === 'simpansoalan') {
+        var sq2 = (el('pt-sq').value || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''), si2 = (el('pt-si').value || '').split(/\r?\n/), bs = [];
+        if (!sq2) { alert('Tulis soalan.'); return; }
+        for (var w = 0; w < si2.length; w++) { var y = si2[w].replace(/\|/g, '/').replace(/^\s+|\s+$/g, ''); if (y) bs.push(y); }
+        var rs = ptPukal('P' + ptUI.rumah + ': ' + sq2.replace(/\|/g, '/') + (bs.length ? ' | ' + bs.join(' | ') : ''), ptUI.tema);
+        if (!rs.n) { alert(rs.ulang ? 'Soalan ini sudah ada.' : 'Gagal tambah.'); return; }
+        ptUI.tambahS = false; ptSimpanU('Soalan ditambah.');
+      }
+      else if (a === 'buangtopik') {
+        var nq = ptSoalan(1, ptUI.tema).length + ptSoalan(2, ptUI.tema).length;
+        if (!confirm('Buang topik "' + ptUI.tema + '"' + (nq ? ' dan ' + nq + ' soalannya (Part 1 & 2)' : '') + '?')) return;
+        ptU.buang['tema:' + ptUI.tema] = 1; ptUI.tema = ''; ptSimpanU('Topik dibuang.');
+      }
+      else if (a === 'buangsoalan') {
+        if (!sq || !confirm('Buang soalan ini?\n' + sq.soalan)) return;
+        ptU.buang[sq.id] = 1; ptUI.id = ''; ptSimpanU('Soalan dibuang.');
+      }
       else if (a === 'soalan') { ptUI.id = v; ptUI.edit = false; }
       else if (a === 'senarai') { ptUI.id = ''; ptUI.edit = false; }
       else if (a === 'preset') { ptSalin(ptPreset()); return; }
@@ -16329,7 +16425,7 @@
       try { window.scrollTo(0, 0); } catch (x) {}
     };
     function bukaPentas() {
-      ptUI.rumah = 0; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; ptUI.edit = false; ptUI.mesej = '';
+      ptUI.rumah = 0; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; ptUI.edit = false; ptUI.mesej = ''; ptUI.pukal = false; ptUI.tambahS = false; ptUI.tambahT = false;
       usMuat('screen-pentas', 'pentas-info', function() { el('pentas-info').textContent = ''; lukisPentas(); });
     }
     el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
