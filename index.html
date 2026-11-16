@@ -448,6 +448,7 @@
     #kb-sendiri.kb-nombor .kb-k { height: 52px; font-size: 1.4rem; }
     #kb-sendiri.kb-nombor .kb-k.kb-lebar { font-size: 0.9rem; }
     #kb-sendiri .kb-k.kb-lebar[data-k="DEL"] { font-size: 0.85rem; }
+    #kb-sendiri .kb-k.kb-lebar[data-k="TAMPAL"] { font-size: 0.75rem; }
     /* Delete All — tulisan kecil 2 baris, saiz butang kekal */
     #kb-sendiri .kb-k.kb-lebar[data-k="PADAMSEMUA"] { font-size: 0.6rem; line-height: 1.15; white-space: pre-line; }
     /* Butang anak panah alih kursor */
@@ -17996,13 +17997,13 @@
         ['q','w','e','r','t','y','u','i','o','p'],
         ['SELA','a','s','d','f','g','h','j','k','l','SELA'],
         ['SHIFT','z','x','c','v','b','n','m','DEL'],
-        ['L:simbol',',','KIRI','SPACE','KANAN','.']
+        ['L:simbol',',','KIRI','SPACE','KANAN','.','TAMPAL']
       ],
       simbol: [
         ['1','2','3','4','5','6','7','8','9','0'],
         ['SELA','@','#','&','-','+','(',')','/','*','SELA'],
         ['SELA','=','"',"'",':',';','!','?','_','DEL'],
-        ['L:huruf',',','KIRI','SPACE','KANAN','.']
+        ['L:huruf',',','KIRI','SPACE','KANAN','.','TAMPAL']
       ],
       nombor: [
         ['1','2','3'],
@@ -18020,7 +18021,7 @@
       ]
     };
     var LABEL = { SHIFT: 'Aa', DEL: 'Padam', SPACE: 'ruang', ENTER: 'Enter', TUTUP: 'Tutup', ASAL: 'Kindle',
-                  PADAMSEMUA: 'Delete\nAll', KIRI: '\u2190', KANAN: '\u2192',
+                  PADAMSEMUA: 'Delete\nAll', KIRI: '\u2190', KANAN: '\u2192', TAMPAL: 'Paste',
                   'L:simbol': '?123', 'L:huruf': 'ABC', 'L:nombor': '123' };
     var elAktif = null, lapisan = 'huruf', shift = false, caps = false, shiftMasa = 0;
     var tUlang = null, iUlang = null, masaSentuh = 0, _naik = null;
@@ -18653,6 +18654,7 @@
         return;
       }
       if (k === 'SPACE') { kilat(btn); taipAksara(el, ' '); return; }
+      if (k === 'TAMPAL') { _tampalEl = el; return; } // dibaca semasa jari diangkat (touchend = izin pelayar untuk papan klip)
       if (k === 'ENTER') { kilat(btn); tekanEnter(el); return; }
       if (k === 'PADAMSEMUA') {
         // Tekan 2 kali dalam 2 saat baru padam semua — elak terpadam tak sengaja
@@ -18697,8 +18699,24 @@
     }
     kb.addEventListener('touchstart', onTekan, { passive: false });
     kb.addEventListener('mousedown', onTekan);
+    // PASTE: tampal teks dari papan klip (clipboard) di kedudukan kursor
+    var _tampalEl = null;
+    function tampalSekarang(el) {
+      var gagal = function() { alert('Peranti / pelayar ini tak benarkan Paste dari papan kekunci app.\nCara lain: Menu → KEYBOARD SENDIRI: OFF, kemudian tekan lama dalam kotak → Paste.'); };
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.readText) { gagal(); return; }
+        navigator.clipboard.readText().then(function(t) {
+          if (!t) { alert('Papan klip kosong.'); return; }
+          t = String(t).replace(/\r\n?/g, '\n');
+          if (el.tagName !== 'TEXTAREA') t = t.replace(/\n+/g, ' ');
+          if (el.maxLength > 0 && el.value.length + t.length > el.maxLength) t = t.slice(0, Math.max(0, el.maxLength - el.value.length));
+          if (t) sisip(el, t);
+        }, gagal);
+      } catch (x) { gagal(); }
+    }
     ['touchend', 'touchcancel', 'mouseup'].forEach(function(n) {
       document.addEventListener(n, function() {
+        if (_tampalEl) { var et = _tampalEl; _tampalEl = null; if (n !== 'touchcancel') tampalSekarang(et); }
         hentiUlang();
         if (_tekanButang) { _tekanButang = false; _kursorX = ''; if (elAktif) lukisKursor(); }
       }, true);
