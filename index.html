@@ -15358,7 +15358,8 @@
       bilik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
       surau: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 22V14a9 9 0 0118 0v8z"/><rect x="11" y="1" width="2" height="5"/></svg>',
       pawagam: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M10 8v8l6-4z" fill="#000"/></svg>',
-      tips: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11"/><rect x="10.5" y="10" width="3" height="8" fill="#000"/><circle cx="12" cy="6.5" r="1.8" fill="#000"/></svg>'
+      tips: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11"/><rect x="10.5" y="10" width="3" height="8" fill="#000"/><circle cx="12" cy="6.5" r="1.8" fill="#000"/></svg>',
+      format: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 1h10l5 5v17H5z"/><path d="M8 10h9M8 14h9M8 18h6" stroke="#000" stroke-width="2"/></svg>'
     };
     function usahaSenarai(t, a) { var h = '<div style="font-weight:bold;margin-top:8px;">' + t + '</div>', i; for (i = 0; i < a.length; i++) h += '<div>' + (i + 1) + '. ' + a[i] + '</div>'; return h; }
     var USAHA_TIPS = {
@@ -15414,6 +15415,24 @@
         '<div>- Ikut pertuturan panjang tentang topik abstrak di luar bidang pengajian.</div><div>- Faham MESEJ TERSIRAT.</div><div>- Faham simpulan bahasa (idiom), bahasa basahan & variasi bahasa.</div>' +
         '<div style="margin-top:4px;"><b>Untuk latihan:</b> makin tinggi Part, makin panjang audio & makin banyak makna tersirat. Untuk Part 5, video santai (vlog, podcast) pun berguna — penuh idiom & bahasa basahan.</div>'; }
     };
+    // Tab FORMAT (16 Nov) — hanya bangunan yang ada kandungan di sini dapat tab ke-3
+    var USAHA_FORMAT = {
+      pawagam: function() {
+        return '<div><b>MUET Paper 1 Listening (800/1)</b> — 5 bahagian. Setiap bahagian ialah sama ada MONOLOG atau DIALOG.</div>' +
+          '<table style="width:100%;border-collapse:collapse;margin:6px 0;font-size:0.9rem;">' +
+          '<tr><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">PART</th><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">BENTUK</th></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>1</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu dialog</td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>2</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu monolog</td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>3</b></td><td style="border:2px solid #000;padding:3px 6px;">Tiga monolog oleh tiga penutur berbeza</td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>4</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu dialog</td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>5</b></td><td style="border:2px solid #000;padding:3px 6px;">Tiga dialog pendek</td></tr></table>' +
+          '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">SOALAN & PERATURAN</div>' +
+          '<div>- <b>30 soalan</b> semuanya.</div>' +
+          '<div>- Jenis: <b>aneka pilihan</b> (multiple-choice) & <b>padanan aneka pilihan</b> (multiple-matching).</div>' +
+          '<div>- <b>15 – 30 saat</b> untuk baca soalan sebelum setiap audio dimainkan.</div>' +
+          '<div>- Setiap audio dimainkan <b>DUA KALI</b>.</div>';
+      }
+    };
     // [kunci, screen, kandungan utama, info]
     var USAHA_BG = [['taman', 'screen-taman', 'taman-isi', 'taman-info'], ['makmal', 'screen-makmal', 'makmal-isi', 'makmal-info'], ['nutrisi', 'screen-nutrisi', 'coach-makan', 'nutrisi-info'],
       ['bilik', 'screen-bilik', 'bilik-isi', 'bilik-info'], ['surau', 'screen-surau', 'surau-isi', 'surau-info'], ['pawagam', 'screen-pawagam', 'coach-usaha', 'pawagam-info']];
@@ -15421,12 +15440,14 @@
       var i, b, tb = el('ub-tb-' + k), tp = el('ub-tips-' + k);
       for (i = 0; i < USAHA_BG.length; i++) if (USAHA_BG[i][0] === k) b = USAHA_BG[i];
       if (!b || !tb || !tp) return;
-      tb.children[0].className = tab === 'tips' ? '' : 'gym-aktif';
-      tb.children[1].className = tab === 'tips' ? 'gym-aktif' : '';
-      el(b[2]).style.display = tab === 'tips' ? 'none' : '';
-      el(b[3]).style.display = tab === 'tips' ? 'none' : '';
-      tp.style.display = tab === 'tips' ? '' : 'none';
+      if (tab === 'format' && !USAHA_FORMAT[k]) tab = 'hari';
+      for (i = 0; i < tb.children.length; i++) tb.children[i].className = tb.children[i].getAttribute('data-ub') === tab ? 'gym-aktif' : '';
+      var lain = tab !== 'hari'; // TIPS / FORMAT → sorok kandungan HARI INI
+      el(b[2]).style.display = lain ? 'none' : '';
+      el(b[3]).style.display = lain ? 'none' : '';
+      tp.style.display = lain ? '' : 'none';
       if (tab === 'tips') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TIPS</div>' + USAHA_TIPS[k](); } catch (e) { tp.textContent = 'Tips tidak dapat dipapar.'; } }
+      if (tab === 'format') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">FORMAT</div>' + USAHA_FORMAT[k](); } catch (e) { tp.textContent = 'Format tidak dapat dipapar.'; } }
     }
     (function() {
       var i, b, sc, alat, tb, tp;
@@ -15434,7 +15455,8 @@
         b = USAHA_BG[i]; sc = el(b[1]); if (!sc) continue;
         alat = sc.querySelector('.gm-alat');
         tb = document.createElement('div'); tb.className = 'gym-topbar'; tb.id = 'ub-tb-' + b[0];
-        tb.innerHTML = '<button type="button" data-ub="hari" class="gym-aktif">' + USAHA_IKON[b[0]] + 'HARI INI</button><button type="button" data-ub="tips">' + USAHA_IKON.tips + 'TIPS</button>';
+        tb.innerHTML = '<button type="button" data-ub="hari" class="gym-aktif">' + USAHA_IKON[b[0]] + 'HARI INI</button><button type="button" data-ub="tips">' + USAHA_IKON.tips + 'TIPS</button>' +
+          (USAHA_FORMAT[b[0]] ? '<button type="button" data-ub="format">' + USAHA_IKON.format + 'FORMAT</button>' : '');
         tb.setAttribute('data-k', b[0]);
         tb.onclick = function(e) {
           var t = e.target;
