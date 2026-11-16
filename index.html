@@ -13017,6 +13017,11 @@
       { id: 'fakta', b: 'Develop skill on recognising facts and opinions', t: 'Recognising Facts and Opinions', g: [
         { id: 'fo-fakta', t: 'Facts', ms: 'Fakta — boleh dibuktikan', f: ['It has been demonstrated that ...', 'Research shows ...'] },
         { id: 'fo-pendapat', t: 'Opinions', ms: 'Pendapat — perasaan seseorang', f: ['I think ...', 'I feel ...'] }
+      ] },
+      // Kosa kata khusus TOPIK (teks complex) — tambah topik baru sebagai kumpulan baru di hujung senarai
+      { id: 'vocab', b: 'Develop skill on topic-specific vocabulary', t: 'Topic-specific Vocabulary', g: [
+        { id: 'v-simpan', t: 'Saving Money', ms: 'Menyimpan wang', f: [['interest', 'faedah (bayaran atas simpanan / pinjaman)'], ['account', 'akaun (bank)'], ['capital', 'modal'],
+          ['credit', 'kredit (pinjaman / bayar kemudian)'], ['down payment', 'bayaran pendahuluan (deposit)']] }
       ] }
     ];
     var PN_SELANG = [1, 2, 4, 7, 14, 30];
@@ -15681,6 +15686,25 @@
         '<div>- Inferens = bentuk pendapat / kesimpulan BERDASARKAN fakta yang penutur beri.</div>' +
         '<div>- Cth: kasut Yong basah, kotor & berlumpur → dia mungkin berjalan melalui lopak lumpur.</div>' +
         '<div>- Soalan inferens: "Tommy\'s story makes us realise that it is important to ..." atau cari GIST daripada siri arahan / peristiwa.</div>' +
+        // TEKS SIMPLE vs COMPLEX + STRATEGI TOPIK TAK BIASA (16 Nov)
+        '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">TEKS SIMPLE vs COMPLEX</div>' +
+        '<div><b>Simple / standard</b> (Part 1): monolog / dialog terus-terang, topik harian, ungkapan biasa & bahasa santai — idiom mudah & bahasa basahan selalu muncul.</div>' +
+        '<div style="font-size:0.85rem;">Cth: <i>A: I heard you went on a holiday to Spain. Did you have fun? B: It wasn\'t actually a holiday, but I had so much fun.</i></div>' +
+        '<div>- <b>Tip:</b> teks simple TAK SEMESTINYA pendek — teks panjang pun boleh jadi simple.</div>' +
+        '<div style="margin-top:4px;"><b>Complex</b> (Part 2 – 5) mungkin ada:</div>' +
+        '<div>- Pelbagai jenis ayat — simple, compound & complex.</div>' +
+        '<div>- Kosa kata KHUSUS topik yang jarang dalam perbualan harian.</div>' +
+        '<div>- Mesej TERSIRAT, bukan disebut terus.</div>' +
+        '<div style="margin-top:4px;"><b>Jenis ayat:</b></div>' +
+        '<div>- <b>Simple:</b> <i>We ate the oranges. They were tasty.</i></div>' +
+        '<div>- <b>Compound:</b> <i>We ate the oranges <b>and</b> they were tasty.</i> — 2 ayat dicantum dengan "and"; buang "and", kedua-dua ayat masih boleh berdiri sendiri.</div>' +
+        '<div>- <b>Complex:</b> <i>We ate the oranges <b>because</b> they were tasty.</i> — kata hubung "because" tunjuk kaitan antara 2 bahagian.</div>' +
+        '<div>- Teks complex perlukan kemahiran lebih tinggi — contohnya buat inferens guna petunjuk konteks. Calon yang dapat ikut alur hujah boleh ambil isi daripada teks complex.</div>' +
+        '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">STRATEGI TOPIK TAK BIASA</div>' +
+        '<div>1. <b>Baca rubrik</b> — ia beri maklumat tentang latar & konteks.</div>' +
+        '<div>2. <b>Baca soalan</b> — beri maklumat konteks topik & tunjuk apa yang perlu dicari.</div>' +
+        '<div>3. <b>Fokus pada APA penutur cakap & BAGAIMANA dia cakap</b> — penutur selalu beri petunjuk / rangka apa yang akan dibincang. Linking words = "papan tanda" yang bantu jangka apa yang akan disebut seterusnya.</div>' +
+        '<div>4. <b>Ikut susunan isi</b> — soalan biasanya ikut susunan audio. Jawapan soalan pertama biasanya di AWAL dialog / monolog, bukan di akhir.</div>' +
         // KATA HIKMAH tentang mendengar (16 Nov) — tajuk saiz sama dengan TIPS
         '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">KATA HIKMAH</div>' +
         '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0;"><i>"So when you are listening to somebody, completely, attentively, then you are listening not only to the words, but also to the feeling of what is being conveyed, to the whole of it, not part of it."</i>' +
@@ -15723,12 +15747,19 @@
       pawagam: function() {
         return '<div><b>MUET Paper 1 Listening (800/1)</b> — 5 bahagian. Setiap bahagian ialah sama ada MONOLOG atau DIALOG.</div>' +
           '<table style="width:100%;border-collapse:collapse;margin:6px 0;font-size:0.9rem;">' +
-          '<tr><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">PART</th><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">BENTUK</th></tr>' +
-          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>1</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu dialog</td></tr>' +
-          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>2</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu monolog</td></tr>' +
-          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>3</b></td><td style="border:2px solid #000;padding:3px 6px;">Tiga monolog oleh tiga penutur berbeza</td></tr>' +
-          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>4</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu dialog</td></tr>' +
-          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>5</b></td><td style="border:2px solid #000;padding:3px 6px;">Tiga dialog pendek</td></tr></table>' +
+          '<tr><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">PART</th><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">BENTUK</th><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">SOALAN</th><th style="border:2px solid #000;padding:3px 6px;background:#000;color:#fff;text-align:left;">JENIS TEKS</th></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>1</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu dialog</td><td style="border:2px solid #000;padding:3px 6px;">1 – 7</td><td style="border:2px solid #000;padding:3px 6px;"><b>Simple / standard</b></td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>2</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu monolog</td><td style="border:2px solid #000;padding:3px 6px;">8 – 14</td><td style="border:2px solid #000;padding:3px 6px;"><b>Complex</b></td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>3</b></td><td style="border:2px solid #000;padding:3px 6px;">Tiga monolog oleh tiga penutur berbeza</td><td style="border:2px solid #000;padding:3px 6px;">15 – 17</td><td style="border:2px solid #000;padding:3px 6px;"><b>Complex</b></td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>4</b></td><td style="border:2px solid #000;padding:3px 6px;">Satu dialog</td><td style="border:2px solid #000;padding:3px 6px;">18 – 24</td><td style="border:2px solid #000;padding:3px 6px;"><b>Complex</b></td></tr>' +
+          '<tr><td style="border:2px solid #000;padding:3px 6px;"><b>5</b></td><td style="border:2px solid #000;padding:3px 6px;">Tiga dialog pendek</td><td style="border:2px solid #000;padding:3px 6px;">25 – 30</td><td style="border:2px solid #000;padding:3px 6px;"><b>Complex</b></td></tr></table>' +
+          '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">TOPIK BIASA vs TAK BIASA</div>' +
+          '<div>Kemahiran mendengar yang mantap = boleh faham APA SAHAJA teks — simple / complex, konkrit / abstrak, topik biasa / tak biasa.</div>' +
+          '<div style="margin-top:4px;"><b>Topik BIASA</b> (hidup peribadi & belajar pelajar):</div>' +
+          '<div>- Studies · Family · Friendship · Projects · Pets · Hobbies</div>' +
+          '<div style="margin-top:4px;"><b>Topik TAK BIASA</b> (luar hidup pelajar — kerja, pelaburan, luar bidang pengajian):</div>' +
+          '<div>- Work · Raising children · Training programmes · Extreme sports · Adult learning courses · Advice from an expert</div>' +
+          '<div style="font-size:0.85rem;margin-top:2px;">Contoh: temu bual radio antara hos & doktor tentang menjaga kanak-kanak autisme.</div>' +
           '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">SOALAN & PERATURAN</div>' +
           '<div>- <b>30 soalan</b> semuanya.</div>' +
           '<div>- Jenis: <b>aneka pilihan</b> (multiple-choice) & <b>padanan aneka pilihan</b> (multiple-matching).</div>' +
