@@ -13192,7 +13192,7 @@
     // Latihan dalam bentuk GAME (gaya JUTAWAN): bar status, skor, soalan besar di tengah, pilihan A/B/C/D bulat
     function pnLukisKuiz() {
       var q = pnUI.kuiz, s = q.soalan[q.i], h = '', i, kls, n = s.pilih.length;
-      h += '<div class="status-bar" style="font-size:0.75rem;">LATIHAN · Soalan ' + (q.i + 1) + '/' + q.soalan.length + ' · ' + pnSetDari(q.grp).t + '</div>';
+      h += '<div class="status-bar" style="font-size:0.75rem;">LATIHAN · Soalan ' + (q.i + 1) + '/' + q.soalan.length + ' · ' + (q.set ? pnSet(q.set) : pnSetDari(q.grp)).t + '</div>';
       h += '<div class="jw-hadiah">SKOR ' + q.skor + '/' + q.soalan.length + '</div>';
       h += '<div class="jw-soalan" style="margin:12px 0 2px;">' + s.frasa + '</div>';
       h += '<div style="text-align:center;font-size:0.9rem;margin-bottom:10px;">' + (s.makna ? 'Apakah maksudnya?' : 'Digunakan untuk...?') + '</div>';
@@ -13256,11 +13256,12 @@
       if (pnUI.mod === 'set' && pnSet(pnUI.set)) {
         var S = pnSet(pnUI.set);
         h += '<div style="font-weight:bold;font-size:1.05rem;">' + S.t.toUpperCase() + '</div>';
+        if (S.g.length) h += '<button type="button" data-pn="latihset" data-v="' + S.id + '" style="' + PN_BTNA + 'display:block;width:100%;margin:6px 0;">LATIH SEMUA NOTA DALAM SET INI (10 soalan)</button>';
         for (i = 0; i < S.g.length; i++) {
           g = S.g[i];
           var sg = pnData.sr[g.id];
           h += '<div style="border-top:2px solid #000;margin-top:6px;padding-top:3px;"><b>' + g.t + '</b><div style="font-size:0.8rem;">' + g.ms + (sg ? ' · ulang seterusnya ' + sg.due : ' · belum dibuka') + '</div>' +
-            pnSenaraiFrasa(g) + '<button type="button" data-pn="latih" data-v="' + g.id + '" style="' + PN_BTN + '">LATIH KUMPULAN INI</button></div>';
+            pnSenaraiFrasa(g) + '</div>';
         }
         h += '<button type="button" data-pn="senarai" style="' + PN_BTNA + '">‹ SENARAI NOTA</button>';
         return h;
@@ -13273,14 +13274,16 @@
     }
     function pnAcak(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
     // Kuiz: soalan & pilihan jawapan HANYA dari kumpulan yang dibaca (grps). Maks 3 soalan dari nota hari ini + baki dari kumpulan lain yang dibaca.
-    function pnBinaKuiz(grpId, grps) {
+    // grpId = null → soalan rawak dari SEMUA kumpulan dalam grps · n = bilangan soalan (asal 5)
+    function pnBinaKuiz(grpId, grps, n) {
       var semua = [], i, j, k, out = [], G = [];
+      n = n || 5;
       grps = grps && grps.length ? grps : [grpId];
       for (i = 0; i < grps.length; i++) { G.push(pnGrp(grps[i])); for (j = 0; j < G[i].f.length; j++) semua.push({ it: G[i].f[j], gid: G[i].id }); }
       var dariG = pnAcak(semua.filter(function(x) { return x.gid === grpId; }));
       var lain = pnAcak(semua.filter(function(x) { return x.gid !== grpId; }));
-      var ambilG = Math.min(dariG.length, Math.max(3, 5 - lain.length));
-      var soalan = pnAcak(dariG.slice(0, ambilG).concat(lain.slice(0, 5 - ambilG)));
+      var ambilG = Math.min(dariG.length, Math.max(3, n - lain.length));
+      var soalan = pnAcak(dariG.slice(0, ambilG).concat(lain.slice(0, n - ambilG)));
       for (i = 0; i < soalan.length; i++) {
         var it = soalan[i].it, frasa = typeof it === 'string' ? it : it[0], betulTeks;
         if (typeof it !== 'string') {
@@ -13335,7 +13338,7 @@
       }
       if (a === 'siapbaca') { pnMulaKuiz(); return true; }
       if (a === 'preset') { pnSalin(pnPreset()); return true; }
-      if (a === 'latih') { pnUI.grp = v; pnUI.kuiz = pnBinaKuiz(v, pnSetDari(v).g.map(function(x) { return x.id; })); pnUI.kuiz.dariSet = true; pnUI.mod = 'kuiz'; pnRender(); return true; }
+      if (a === 'latihset') { pnUI.kuiz = pnBinaKuiz(null, pnSet(v).g.map(function(x) { return x.id; }), 10); pnUI.kuiz.set = v; pnUI.kuiz.dariSet = true; pnUI.mod = 'kuiz'; pnRender(); try { window.scrollTo(0, 0); } catch (x) {} return true; }
       if (a === 'jawab' && pnUI.kuiz && pnUI.kuiz.jawab === null) {
         pnUI.kuiz.jawab = parseInt(v, 10);
         if (pnUI.kuiz.jawab === pnUI.kuiz.soalan[pnUI.kuiz.i].betul) pnUI.kuiz.skor++;
@@ -13345,8 +13348,8 @@
         var q = pnUI.kuiz;
         if (q.i + 1 < q.soalan.length) { q.i++; q.jawab = null; pnRender(); return true; }
         var hari = coachHariId(), s = pnData.sr[q.grp], lulus = q.skor >= Math.ceil(q.soalan.length * 0.8), ubah = {}; // 80%
-        // Latihan dari SEMUA NOTA untuk kumpulan yang BELUM sampai masa / belum dibuka → latihan bebas, jadual tidak berubah
-        if (q.dariSet && (!s || s.due > hari) && pnDue().indexOf(q.grp) === -1) {
+        // Latihan SEMUA NOTA dalam set (page SEMUA NOTA) → latihan bebas, jadual ulang kaji tidak berubah
+        if (q.dariSet) {
           pnUI.mesej = 'Skor ' + q.skor + '/' + q.soalan.length + ' (latihan bebas — jadual ulang kaji tidak berubah).';
           pnUI.mod = 'set'; pnUI.kuiz = null; pnRender(); return true;
         }
