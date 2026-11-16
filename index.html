@@ -13046,6 +13046,8 @@
     //   Item = 'frasa' (soalan: frasa → fungsi kumpulan) ATAU ['perkataan', 'maksud'] (soalan: perkataan → maksud). Satu jenis sahaja dalam satu kumpulan.
     // PN_VERSI = tarikh nota terakhir ditambah. Jika lebih awal dari hari ini → Coach beri arahan "tambah nota" + butang SALIN PRESET.
     var PN_TAMBAH = [
+      { tarikh: '2026-11-16', set: 'vocab', g: { id: 'v-belanja', t: 'Spending Money', ms: 'Membelanjakan wang', f: [['budget', 'bajet (rancangan perbelanjaan)'], ['expenses', 'perbelanjaan'],
+        ['debt', 'hutang'], ['loan', 'pinjaman'], ['instalment', 'ansuran (bayaran berperingkat)'], ['discount', 'diskaun (potongan harga)']] } },
       // ◆ HUJUNG PN_TAMBAH — entri baru di ATAS baris ini ◆
     ];
     var PN_VERSI = '2026-11-16';
@@ -13068,9 +13070,9 @@
     function pnPerluTambah() { return PN_VERSI < coachHariId(); }
     // Preset untuk ditampal ke AI (bersama kod penuh app) → AI pulangkan codebox Cari/Ganti untuk blok NOTA TAMBAHAN
     function pnPreset() {
-      var hari = coachHariId(), i, j, S, L = [];
-      for (i = 0; i < PN_SET.length; i++) {
-        S = PN_SET[i];
+      var hari = coachHariId(), i, j, S, L = [], SD = pnSetDRE();
+      for (i = 0; i < SD.length; i++) {
+        S = SD[i];
         L.push('- set "' + S.id + '" (' + S.t + '):');
         for (j = 0; j < S.g.length; j++) L.push('    · kumpulan "' + S.g[j].id + '" — ' + S.g[j].t + ' (' + S.g[j].f.length + ' item, ' + (typeof S.g[j].f[0] === 'string' ? 'frasa' : 'perkataan + maksud') + ')');
       }
@@ -13078,7 +13080,7 @@
         'TUGAS: Tambah nota baru ke DAILY REPETITION EXERCISE (page PAWAGAM) dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
         'Tarikh hari ini: ' + hari,
         '',
-        'BAHAN NOTA: [tampal teks / gambar nota di sini. Jika kosong, cadangkan sendiri 1 kumpulan baru yang sesuai untuk MUET Listening (contoh: topic-specific vocabulary) — jangan ulang frasa yang sudah ada.]',
+        'BAHAN NOTA: [tampal teks / gambar nota di sini. Jika kosong, cadangkan sendiri frasa / kumpulan baru untuk SALAH SATU set kemahiran dalam senarai di bawah (MUET Listening) — jangan ulang frasa yang sudah ada.]',
         '',
         'PERATURAN:',
         '1. Ubah HANYA blok "NOTA TAMBAHAN" (var PN_TAMBAH dan var PN_VERSI). JANGAN ubah, buang atau susun semula PN_SET atau entri lama — ID audio bergantung pada susunan item.',
@@ -13088,10 +13090,9 @@
         '      { tarikh: \'' + hari + '\', set: \'ID_SET\', g: { id: \'ID_UNIK\', t: \'Tajuk English\', ms: \'Maksud Melayu\', f: [\'frasa ...\', \'frasa ...\'] } },',
         '   b) Frasa baru ke hujung kumpulan sedia ada:',
         '      { tarikh: \'' + hari + '\', grp: \'ID_KUMPULAN\', f: [\'frasa baru ...\'] },',
-        '   c) Set kemahiran baru (kemudian tambah kumpulan dengan jenis a):',
-        '      { tarikh: \'' + hari + '\', setBaru: { id: \'ID_SET_BARU\', b: \'Develop skill on ...\', t: \'Tajuk\' } },',
         '   Item = \'frasa\' (soalan: frasa → fungsi kumpulan) ATAU [\'perkataan\', \'maksud Melayu\'] (soalan: perkataan → maksud). Satu jenis sahaja dalam satu kumpulan.',
-        '4. ID kumpulan mesti unik (huruf kecil + sengkang). Kumpulan baru sekurang-kurangnya 4 item.',
+        '4. Tambah HANYA ke set dalam SENARAI NOTA SEMASA di bawah. JANGAN tambah ke set "' + PN_SET_TOPIK + '" (topic-specific vocabulary ada tab TOPIK sendiri) dan JANGAN buat set baru.',
+        '   ID kumpulan mesti unik (huruf kecil + sengkang). Kumpulan baru sekurang-kurangnya 4 item.',
         '5. ES5 sahaja (var / function — tiada let, const, arrow, template string). Tiada emoji. Guna petikan tunggal; apostrophe ditulis \\\'.',
         '6. Output: SATU codebox sahaja, format:',
         'Cari:',
@@ -13138,7 +13139,10 @@
     function pnSet(id) { for (var i = 0; i < PN_SET.length; i++) if (PN_SET[i].id === id) return PN_SET[i]; return null; }
     function pnSetDari(gid) { for (var i = 0; i < PN_SET.length; i++) for (var j = 0; j < PN_SET[i].g.length; j++) if (PN_SET[i].g[j].id === gid) return PN_SET[i]; return null; }
     function pnGrp(id) { var s = pnSetDari(id); if (!s) return null; for (var j = 0; j < s.g.length; j++) if (s.g[j].id === id) return s.g[j]; return null; }
-    function pnSemuaGrp() { var a = [], i; for (i = 0; i < PN_SET.length; i++) a = a.concat(PN_SET[i].g); return a; }
+    // Set TOPIK (topic-specific vocabulary) dipisah ke tab TOPIK — bukan sebahagian DAILY REPETITION / SALIN PRESET
+    var PN_SET_TOPIK = 'vocab';
+    function pnSetDRE() { var a = [], i; for (i = 0; i < PN_SET.length; i++) if (PN_SET[i].id !== PN_SET_TOPIK) a.push(PN_SET[i]); return a; }
+    function pnSemuaGrp() { var a = [], i, S = pnSetDRE(); for (i = 0; i < S.length; i++) a = a.concat(S[i].g); return a; }
     function pnTeks(it) { return typeof it === 'string' ? it : it[0] + ' — <i>' + it[1] + '</i>'; }
     // Kumpulan yang perlu diulang hari ini: sudah mula & due ≤ hari ini + SATU kumpulan baru (jika belum ada yang dimulakan hari ini)
     function pnDue() {
@@ -13182,6 +13186,21 @@
     function pnRender() {
       if (pnUI.halaman === 'nota') { var b = el('pn-nota-isi'); if (b) b.innerHTML = pnLukisNota(); }
       else coachLukisUsaha();
+      if (pnTopikBuka) { var t = el('ub-tips-pawagam'); if (t) t.innerHTML = pnLukisTopik(); }
+    }
+    // ── Tab TOPIK (PAWAGAM): topic-specific vocabulary — senarai topik akan disusun kemudian ──
+    var pnTopikBuka = false;
+    function pnLukisTopik() {
+      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TOPIC-SPECIFIC VOCABULARY</div>', S = pnSet(PN_SET_TOPIK), i, g;
+      if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
+      if (pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
+      h += '<div style="font-size:0.85rem;margin-bottom:4px;">Perkataan ikut topik. Tekan ikon bunyi untuk dengar · + MP3 untuk muat naik audio.</div>';
+      if (!S || !S.g.length) return h + '<div>Belum ada topik.</div>';
+      for (i = 0; i < S.g.length; i++) {
+        g = S.g[i];
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 7px;margin:6px 0;"><div style="font-weight:bold;font-size:1.05rem;">' + g.t + '</div><div style="font-size:0.8rem;">' + g.ms + '</div>' + pnSenaraiFrasa(g) + '</div>';
+      }
+      return h;
     }
     function pnMuatData() {
       if (pnData || pnMuat || !currentUser) return;
@@ -13268,7 +13287,8 @@
       }
       h += '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">SENARAI NOTA</div>';
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Semua nota, termasuk yang bukan ulang kaji hari ini. Tekan untuk baca, dengar audio, muat naik MP3 atau latih bila-bila.</div>';
-      for (i = 0; i < PN_SET.length; i++) h += '<button type="button" data-pn="set" data-v="' + PN_SET[i].id + '" style="' + PN_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + PN_SET[i].b + ' ›</button>';
+      var SD = pnSetDRE();
+      for (i = 0; i < SD.length; i++) h += '<button type="button" data-pn="set" data-v="' + SD[i].id + '" style="' + PN_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + SD[i].b + ' ›</button>';
       h += pnKotakPreset(pnPerluTambah());
       return h;
     }
@@ -15788,7 +15808,8 @@
       surau: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 22V14a9 9 0 0118 0v8z"/><rect x="11" y="1" width="2" height="5"/></svg>',
       pawagam: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M10 8v8l6-4z" fill="#000"/></svg>',
       tips: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11"/><rect x="10.5" y="10" width="3" height="8" fill="#000"/><circle cx="12" cy="6.5" r="1.8" fill="#000"/></svg>',
-      format: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 1h10l5 5v17H5z"/><path d="M8 10h9M8 14h9M8 18h6" stroke="#000" stroke-width="2"/></svg>'
+      format: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 1h10l5 5v17H5z"/><path d="M8 10h9M8 14h9M8 18h6" stroke="#000" stroke-width="2"/></svg>',
+      topik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h8a3 3 0 013 3v15a2 2 0 00-2-2H2zM22 4h-6a2 2 0 00-2 2v16a2 2 0 012-2h6z"/></svg>'
     };
     function usahaSenarai(t, a) { var h = '<div style="font-weight:bold;margin-top:8px;">' + t + '</div>', i; for (i = 0; i < a.length; i++) h += '<div>' + (i + 1) + '. ' + a[i] + '</div>'; return h; }
     var USAHA_TIPS = {
@@ -15975,6 +15996,8 @@
       for (i = 0; i < USAHA_BG.length; i++) if (USAHA_BG[i][0] === k) b = USAHA_BG[i];
       if (!b || !tb || !tp) return;
       if (tab === 'format' && !USAHA_FORMAT[k]) tab = 'hari';
+      if (tab === 'topik' && k !== 'pawagam') tab = 'hari';
+      if (k === 'pawagam') pnTopikBuka = tab === 'topik';
       for (i = 0; i < tb.children.length; i++) tb.children[i].className = tb.children[i].getAttribute('data-ub') === tab ? 'gym-aktif' : '';
       var lain = tab !== 'hari'; // TIPS / FORMAT → sorok kandungan HARI INI
       el(b[2]).style.display = lain ? 'none' : '';
@@ -15982,6 +16005,7 @@
       tp.style.display = lain ? '' : 'none';
       if (tab === 'tips') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TIPS</div>' + USAHA_TIPS[k](); } catch (e) { tp.textContent = 'Tips tidak dapat dipapar.'; } }
       if (tab === 'format') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">FORMAT</div>' + USAHA_FORMAT[k](); } catch (e) { tp.textContent = 'Format tidak dapat dipapar.'; } }
+      if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
     }
     (function() {
       var i, b, sc, alat, tb, tp;
@@ -15989,7 +16013,9 @@
         b = USAHA_BG[i]; sc = el(b[1]); if (!sc) continue;
         alat = sc.querySelector('.gm-alat');
         tb = document.createElement('div'); tb.className = 'gym-topbar'; tb.id = 'ub-tb-' + b[0];
-        tb.innerHTML = '<button type="button" data-ub="hari" class="gym-aktif">' + USAHA_IKON[b[0]] + 'HARI INI</button><button type="button" data-ub="tips">' + USAHA_IKON.tips + 'TIPS</button>' +
+        tb.innerHTML = '<button type="button" data-ub="hari" class="gym-aktif">' + USAHA_IKON[b[0]] + 'HARI INI</button>' +
+          (b[0] === 'pawagam' ? '<button type="button" data-ub="topik">' + USAHA_IKON.topik + 'TOPIK</button>' : '') +
+          '<button type="button" data-ub="tips">' + USAHA_IKON.tips + 'TIPS</button>' +
           (USAHA_FORMAT[b[0]] ? '<button type="button" data-ub="format">' + USAHA_IKON.format + 'FORMAT</button>' : '');
         tb.setAttribute('data-k', b[0]);
         tb.onclick = function(e) {
@@ -16004,6 +16030,7 @@
         el(b[2]).parentNode.insertBefore(tp, el(b[2]).nextSibling);
       }
     })();
+    el('ub-tips-pawagam').onclick = function(e) { if (pnTopikBuka) pnKlik(e, this); }; // audio / + MP3 dalam tab TOPIK
     // Setiap kali bangunan dibuka → kembali ke tab HARI INI
     bukaTaman = (function(f) { return function() { usahaTab('taman', 'hari'); return f.apply(this, arguments); }; })(bukaTaman);
     bukaMakmal = (function(f) { return function() { usahaTab('makmal', 'hari'); return f.apply(this, arguments); }; })(bukaMakmal);
