@@ -13189,20 +13189,23 @@
       kol('coach').doc('pawagam_nota').get().then(function(d) { pnData = d.exists ? d.data() : {}; pnData.sr = pnData.sr || {}; pnData.audio = pnData.audio || {}; pnRender(); })
         .catch(function() { pnData = { sr: {}, audio: {} }; pnRender(); });
     }
+    // Latihan dalam bentuk GAME (gaya JUTAWAN): bar status, skor, soalan besar di tengah, pilihan A/B/C/D bulat
     function pnLukisKuiz() {
-      var q = pnUI.kuiz, s = q.soalan[q.i], h = '', i, st;
-      h += '<div style="font-weight:bold;">LATIHAN · ' + pnGrp(q.grp).t + ' · soalan ' + (q.i + 1) + '/' + q.soalan.length + '</div>';
-      h += '<div style="margin:6px 0;font-size:1.05rem;">' + (s.makna ? 'Maksud "<b>' + s.frasa + '</b>"?' : '"<b>' + s.frasa + '</b>" digunakan untuk...') + '</div>';
-      for (i = 0; i < s.pilih.length; i++) {
-        st = PN_BTN;
-        if (q.jawab !== null) st = i === s.betul ? PN_BTNA : (i === q.jawab ? PN_BTN + 'border-style:dashed;color:#777;' : PN_BTN);
-        h += '<div><button type="button" data-pn="jawab" data-v="' + i + '" style="' + st + 'display:block;width:100%;text-align:left;"' + (q.jawab !== null ? ' disabled' : '') + '>' + s.pilih[i] + '</button></div>';
+      var q = pnUI.kuiz, s = q.soalan[q.i], h = '', i, kls, n = s.pilih.length;
+      h += '<div class="status-bar" style="font-size:0.75rem;">LATIHAN · Soalan ' + (q.i + 1) + '/' + q.soalan.length + ' · ' + pnSetDari(q.grp).t + '</div>';
+      h += '<div class="jw-hadiah">SKOR ' + q.skor + '/' + q.soalan.length + '</div>';
+      h += '<div class="jw-soalan" style="margin:12px 0 2px;">' + s.frasa + '</div>';
+      h += '<div style="text-align:center;font-size:0.9rem;margin-bottom:10px;">' + (s.makna ? 'Apakah maksudnya?' : 'Digunakan untuk...?') + '</div>';
+      for (i = 0; i < n; i++) {
+        kls = 'jw-p';
+        if (q.jawab !== null) { if (i === s.betul) kls += ' jw-betul'; else if (i === q.jawab) kls += ' jw-salah'; }
+        h += '<button type="button" class="' + kls + '" data-pn="jawab" data-v="' + i + '"' + (q.jawab !== null ? ' disabled' : '') + '><b>' + 'ABCD'.charAt(i) + ':</b>' +
+          s.pilih[i].replace('<span style="font-weight:normal;">', '<span style="font-weight:normal;font-size:0.85rem;display:block;margin-left:26px;">') + '</button>';
       }
-      if (q.jawab !== null) {
-        h += '<div style="margin-top:4px;font-weight:bold;">' + (q.jawab === s.betul ? 'BETUL!' : 'SALAH — jawapan: ' + s.pilih[s.betul].replace(/<[^>]+>/g, '')) + '</div>';
-        h += '<button type="button" data-pn="seterus" style="' + PN_BTNA + '">' + (q.i + 1 < q.soalan.length ? 'SOALAN SETERUSNYA ›' : 'LIHAT KEPUTUSAN') + '</button>';
-      }
-      h += '<button type="button" data-pn="tutup" style="' + PN_BTN + '">BERHENTI</button>';
+      if (q.jawab !== null) h += '<div style="text-align:center;font-weight:bold;font-size:1.1rem;margin:4px 0;">' + (q.jawab === s.betul ? 'BETUL!' : 'SALAH — jawapan ' + 'ABCD'.charAt(s.betul)) + '</div>';
+      h += '<div class="gp-baris">';
+      if (q.jawab !== null) h += '<button type="button" class="btn btn-primary" data-pn="seterus">' + (q.i + 1 < q.soalan.length ? 'Seterusnya ›' : 'Keputusan') + '</button>';
+      h += '<button type="button" class="btn" data-pn="tutup">Berhenti</button></div>';
       return h;
     }
     // ── Kotak di tab HARI INI (Pawagam) ──
