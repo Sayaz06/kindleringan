@@ -9814,14 +9814,18 @@
     // Presenting = presenting_sr_queue · Vocab = LEVEL TERENDAH antara 5 game. Listening, Solat & pai Kesihatan = POSPON (Fasa 2).
     var COACH_MUSIM = {
       CUTI: {
-        english: { listening: 30, reading: 15, ayat: 20, vocab: 15, reasoning: 12, presenting: 8 }, // 17 Nov: + Reading (1 Part latihan = 1 unit)
+        // 17 Nov (dipersetujui): 4 kemahiran MUET + sokongan. Unit: Listening 1 min · Speaking 1 huraian isi (Pentas) · Presenting 1 ayat · Reading 1 Part = 10 unit · Ayat 1 ayat · Vocab level · Reasoning 1 entri · Writing (POSPON — unit ditetapkan bila HARI INI Dewan Tulis siap)
+        english: { listening: 20, pentas: 10, presenting: 5, reading: 15, tulis: 15, ayat: 15, vocab: 10, reasoning: 10 },
         englishKuliah: [50, 50]
       }
     };
     var COACH_BIDANG = [
-      ['listening', 'Listening'], ['reading', 'Reading'], ['ayat', 'Ayat'], ['vocab', 'Vocab'], ['reasoning', 'Reasoning'], ['presenting', 'Presenting']
+      ['listening', 'Listening'], ['pentas', 'Speaking'], ['presenting', 'Presenting'], ['reading', 'Reading'], ['tulis', 'Writing'], ['ayat', 'Ayat'], ['vocab', 'Vocab'], ['reasoning', 'Reasoning']
     ];
-    var COACH_POSPON = {}; // Listening kini dari report minit (Fasa 2d)
+    var COACH_POSPON = { tulis: true }; // Writing POSPON sehingga HARI INI Dewan Tulis siap
+    var COACH_UNIT_READING = 10; // 1 Part latihan Reading = 10 unit (≈ 10 min usaha)
+    // Kira huraian isi yang sudah ditulis di PENTAS (1 huraian = 1 unit Speaking)
+    function coachKiraHuraian(x) { var n = 0, k, h = x && x.h; if (!h) return x && x.teks ? 1 : 0; for (k in h) if (h.hasOwnProperty(k) && h[k] && String(h[k]).replace(/\s+/g, '')) n++; return n; }
     var COACH_GAME = [['padan', 'Padan'], ['jutawan', 'Jutawan'], ['memori', 'Memori'], ['duri', 'Duri'], ['betulsalah', 'Betul/Salah']];
     var COACH_SEGAR_MS = 15 * 60 * 1000;
     var coachMusim = 'CUTI';
@@ -9858,7 +9862,7 @@
       if (!paksa) {
         try {
           var c = JSON.parse(localStorage.getItem(coachCacheKunci()) || 'null');
-          if (c && c.at && c.hasOwnProperty('profil') && c.hasOwnProperty('senaman') && c.hasOwnProperty('reading') && Date.now() - c.at < COACH_SEGAR_MS) return Promise.resolve(c);
+          if (c && c.at && c.hasOwnProperty('profil') && c.hasOwnProperty('senaman') && c.hasOwnProperty('reading') && c.hasOwnProperty('pentas') && Date.now() - c.at < COACH_SEGAR_MS) return Promise.resolve(c);
         } catch (e) {}
       }
       return Promise.all([
@@ -9868,7 +9872,8 @@
         kol('coach').doc('stok').get().catch(function() { return null; }),
         kol('coach').doc('profil').get().catch(function() { return null; }),
         kol('coach').doc('senaman').get().catch(function() { return null; }),
-        kol('coach').doc('pustaka').get().catch(function() { return null; })
+        kol('coach').doc('pustaka').get().catch(function() { return null; }),
+        kol('pentas_karangan').get().catch(function() { return null; })
       ]).then(function(r) {
         var t = (r[5] && r[5].exists) ? r[5].data() : {};
         var stok = (r[6] && r[6].exists) ? r[6].data() : {};
@@ -9880,7 +9885,10 @@
         };
         // Reading = jumlah Part latihan di PERPUSTAKAAN (coach/pustaka)
         data.reading = 0;
-        try { var ph = (r[9] && r[9].exists) ? (r[9].data().hari || {}) : {}, pk; for (pk in ph) if (ph.hasOwnProperty(pk) && ph[pk]) data.reading += ph[pk].length; } catch (e) {}
+        try { var ph = (r[9] && r[9].exists) ? (r[9].data().hari || {}) : {}, pk; for (pk in ph) if (ph.hasOwnProperty(pk) && ph[pk]) data.reading += ph[pk].length * COACH_UNIT_READING; } catch (e) {}
+        // Speaking = jumlah huraian isi yang ditulis di PENTAS (pentas_karangan)
+        data.pentas = 0;
+        try { if (r[10]) r[10].forEach(function(dk) { data.pentas += coachKiraHuraian(dk.data()); }); } catch (e) {}
         try { localStorage.setItem(coachCacheKunci(), JSON.stringify(data)); } catch (e) {}
         return data;
       });
@@ -10508,7 +10516,7 @@
       var musim = COACH_MUSIM[data.musim] ? data.musim : 'CUTI';
       coachMusim = musim;
       var set = COACH_MUSIM[musim];
-      var unit = { listening: data.listening || 0, reading: data.reading || 0, ayat: data.ayat, vocab: data.vocab, reasoning: data.reasoning, presenting: data.presenting };
+      var unit = { listening: data.listening || 0, pentas: data.pentas || 0, reading: data.reading || 0, tulis: 0, ayat: data.ayat, vocab: data.vocab, reasoning: data.reasoning, presenting: data.presenting };
       var jumlahEn = 0, i, k;
       for (i = 0; i < COACH_BIDANG.length; i++) {
         k = COACH_BIDANG[i][0];
@@ -10557,7 +10565,7 @@
       var pE = coachPeratus(nE), legE = '';
       for (i2 = 0; i2 < kE.length; i2++) {
         var bd = COACH_BIDANG[kE[i2]], sas = set.english[bd[0]];
-        legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : (bd[0] === 'reading' ? ' Part' : '')) + ')</span><br>';
+        legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : (bd[0] === 'reading' ? ' unit = ' + Math.round(nE[i2] / COACH_UNIT_READING) + ' Part' : (bd[0] === 'pentas' ? ' huraian' : ''))) + ')</span><br>';
       }
       isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
         coachPie(cS, '(c) ENGLISH SASARAN') +
@@ -12885,6 +12893,8 @@
       var m = {
         Listening: ['KE PAWAGAM → + LISTENING', function() { bukaPawagam(); }],
         Reading: ['KE PERPUSTAKAAN → + TAMBAH LATIHAN', function() { bukaPustaka(); }],
+        Speaking: ['KE PENTAS → TULIS HURAIAN', function() { bukaPentas(); }],
+        Writing: ['KE DEWAN TULIS', function() { bukaTulis(); }],
         Ayat: ['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }],
         Vocab: ['MAIN GAME VOCAB', function() { bukaMini(); }],
         Reasoning: ['BUKA LACI REASONING', function() { el('btn-go-reasoning').click(); }],
@@ -12897,6 +12907,8 @@
       return {
         Listening: 'tonton video English, kemudian report minit (+ LISTENING)',
         Reading: 'buat latihan kertas MUET Reading, kemudian catat Part di Perpustakaan',
+        Speaking: 'tulis huraian isi di Pentas (Individual / Group)',
+        Writing: 'latihan menulis di Dewan Tulis',
         Ayat: 'ulang kaji ayat di Laci Bahasa',
         Vocab: 'main game vocab (level terendah)',
         Reasoning: 'ulang kaji Laci Reasoning',
@@ -13573,7 +13585,7 @@
     //   + KALKULATOR: berapa minit lagi listening untuk capai sasaran.  (L + x) / (J + x) = s/100  →  x = (s·J − 100·L) / (100 − s)
     function pawagamPaiListening() {
       var d = coachDataAkhir || {}, musim = COACH_MUSIM[d.musim] ? d.musim : 'CUTI', sas = COACH_MUSIM[musim].english.listening || 0;
-      var unit = { listening: d.listening || 0, reading: d.reading || 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
+      var unit = { listening: d.listening || 0, pentas: d.pentas || 0, reading: d.reading || 0, tulis: 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
       var J = 0, i, L = unit.listening;
       for (i = 0; i < COACH_BIDANG.length; i++) if (!COACH_POSPON[COACH_BIDANG[i][0]]) J += unit[COACH_BIDANG[i][0]] || 0;
       var f = J ? L / J : 0, pc = Math.round(f * 100);
@@ -16523,7 +16535,12 @@
         for (q = 0; q < tx.length; q++) { if (!tx[q].getAttribute('data-k')) continue; x = (tx[q].value || '').replace(/\s+$/, ''); hs[tx[q].getAttribute('data-k')] = x; if (x) n++; }
         if (!n) { alert('Huraian masih kosong.'); return; }
         var rek = { h: hs, at: Date.now(), tarikh: coachHariId() };
-        kol('pentas_karangan').doc(k).set(rek).then(function() { ptKar[k] = rek; ptUI.edit = false; ptUI.mesej = 'Huraian disimpan.'; lukisPentas(); })
+        var lamaN = coachKiraHuraian(ptKar[k]);
+        kol('pentas_karangan').doc(k).set(rek).then(function() {
+          ptKar[k] = rek; ptUI.edit = false; ptUI.mesej = 'Huraian disimpan.'; lukisPentas();
+          // Pai English: 1 huraian isi = 1 unit Speaking
+          if (coachDataAkhir) { coachDataAkhir.pentas = Math.max(0, (coachDataAkhir.pentas || 0) + coachKiraHuraian(rek) - lamaN); try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er) {} }
+        })
           .catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
         return;
       }
@@ -16542,7 +16559,7 @@
     }
     el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
     el('btn-us-pentas-coach').onclick = function() { bukaCoach(false); };
-    // ══ PERPUSTAKAAN — READING MUET Paper 3 (17 Nov): HARI INI = senarai DAY 1, 2, 3 … · setiap Day = senarai latihan (tajuk kertas + Part) · 1 Part = 1 unit Reading ══
+    // ══ PERPUSTAKAAN — READING MUET Paper 3 (17 Nov): HARI INI = senarai DAY 1, 2, 3 … · setiap Day = senarai latihan (tajuk kertas + Part) · 1 Part = 10 unit Reading (COACH_UNIT_READING) ══
     // Data: coach/pustaka { hari: { 'YYYY-MM-DD': [ { k: tajuk kertas, p: 1-7, m: markah (pilihan), at } ] }, kertas: [tajuk pernah ditaip] }
     var puData = null, puMuat = false, puUI = { hari: '', part: 0, mesej: '' };
     function puE(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
@@ -16557,8 +16574,8 @@
     function puSimpan(mesej) {
       kol('coach').doc('pustaka').set(puData).then(function() { if (mesej) { puUI.mesej = mesej; lukisPustaka(); } })
         .catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
-      // Pai English: 1 Part = 1 unit Reading (kemas kini serta-merta)
-      if (coachDataAkhir) { coachDataAkhir.reading = puJumlah(); try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er) {} }
+      // Pai English: 1 Part = 10 unit Reading (kemas kini serta-merta)
+      if (coachDataAkhir) { coachDataAkhir.reading = puJumlah() * COACH_UNIT_READING; try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er) {} }
     }
     var PU_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PU_BTNA = PU_BTN + 'background:#000;color:#fff;';
     function lukisPustaka() {
@@ -16573,7 +16590,7 @@
         h = '<button type="button" data-pu="balik" style="' + PU_BTN + '">‹ SENARAI HARI</button>' + h;
         if (puUI.mesej) h += '';
         h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">DAY ' + no + ' · ' + d + (d === hari ? ' · HARI INI' : '') + '</div>';
-        h += '<div style="font-size:0.85rem;">' + L.length + ' Part = ' + L.length + ' unit Reading</div>';
+        h += '<div style="font-size:0.85rem;">' + L.length + ' Part = ' + (L.length * COACH_UNIT_READING) + ' unit Reading</div>';
         if (!L.length) h += '<div style="font-size:0.85rem;margin:4px 0;">Belum ada latihan. Tambah di bawah.</div>';
         for (i = 0; i < L.length; i++) {
           h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 7px;margin:4px 0;display:flex;align-items:center;">' +
@@ -16598,7 +16615,7 @@
         el('pustaka-isi').innerHTML = h; return;
       }
       // ── SENARAI HARI ──
-      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Reading, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = 1 unit Reading</b> dalam pai English.<br>Jumlah: <b>' + puJumlah() + ' Part</b> dalam <b>' + senarai.length + ' hari</b>.</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Reading, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = ' + COACH_UNIT_READING + ' unit Reading</b> dalam pai English.<br>Jumlah: <b>' + puJumlah() + ' Part</b> dalam <b>' + senarai.length + ' hari</b>.</div>';
       if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pu="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
       if (!senarai.length) h += '<div style="font-size:0.85rem;">Belum ada latihan.</div>';
       for (i = senarai.length - 1; i >= 0; i--) {
@@ -16627,7 +16644,7 @@
         var ix = puData.kertas.indexOf(k); if (ix >= 0) puData.kertas.splice(ix, 1); puData.kertas.push(k);
         if (puData.kertas.length > 30) puData.kertas = puData.kertas.slice(-30);
         puUI.part = 0;
-        puSimpan('Ditambah: ' + k + ' · Part ' + puData.hari[puUI.hari][puData.hari[puUI.hari].length - 1].p + ' (+1 unit Reading).');
+        puSimpan('Ditambah: ' + k + ' · Part ' + puData.hari[puUI.hari][puData.hari[puUI.hari].length - 1].p + ' (+' + COACH_UNIT_READING + ' unit Reading).');
       }
       else if (a === 'buang') {
         var L = puData.hari[puUI.hari] || [], it = L[+v];
