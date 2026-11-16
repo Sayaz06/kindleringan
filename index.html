@@ -15846,10 +15846,20 @@
       topik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h8a3 3 0 013 3v15a2 2 0 00-2-2H2zM22 4h-6a2 2 0 00-2 2v16a2 2 0 012-2h6z"/></svg>'
     };
     function usahaSenarai(t, a) { var h = '<div style="font-weight:bold;margin-top:8px;">' + t + '</div>', i; for (i = 0; i < a.length; i++) h += '<div>' + (i + 1) + '. ' + a[i] + '</div>'; return h; }
+    // TIP TERPENTING untuk SEMUA bangunan English (16 Nov) — dipapar paling atas tab TIPS
+    function usahaTipNaufal() {
+      return '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:4px 0 10px;">' +
+        '<div style="background:#000;color:#fff;font-weight:bold;border-radius:6px;padding:3px 8px;margin-bottom:5px;">TIP TERPENTING — TULIS DULU, BAIKI KEMUDIAN</div>' +
+        '<div>Tip daripada kawan, <b>Naufal</b> (Speaking &amp; Listening):</div>' +
+        '<div style="margin-top:3px;">1. Kali pertama buat nota atau karangan, ikut <b>FORMAT</b> dulu.</div>' +
+        '<div>2. Setiap kali ulang kaji, <b>baca semula</b> ayat yang sudah ditulis.</div>' +
+        '<div>3. Fikir — ada tak ayat yang <b>lebih baik</b>? Kalau ada, <b>tukar</b>.</div>' +
+        '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0 0;"><i>Macam kata orang engineering: <b>wujudkan dulu, baru memperbaik.</b></i></div></div>';
+    }
     var USAHA_TIPS = {
       pentas: function() {
         // TIPS SPEAKING (16 Nov) — dalam Bahasa Melayu; istilah penting dikekalkan dalam English
-        return '' +
+        return usahaTipNaufal() +
           '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">KATA HIKMAH</div>' +
           '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0;"><i>"The difference between a smart man and a wise man is that a smart man knows what to say, a wise man knows whether or not to say it."</i>' +
           '<div style="font-size:0.85rem;margin-top:2px;">Maksud: orang pandai tahu APA yang hendak dikatakan; orang bijaksana tahu SAMA ADA perlu mengatakannya atau tidak.</div>' +
@@ -15976,7 +15986,7 @@
         '<div style="margin-top:8px;"><b>GANJARAN:</b> +' + rm(EKO.TIDUR_SEN || 0) + ' Ringgit Kuning setiap tugas tepat masa.</div>'; },
       surau: function() { return '<div>Tekan nama waktu selepas solat.</div><div>Tersilap tekan? Tekan sekali lagi untuk batal (Kuning waktu itu ditarik balik).</div>' +
         '<div><b>GANJARAN:</b> +' + rm(EKO.SURAU_SEN || 0) + ' Ringgit Kuning setiap waktu.</div>'; },
-      pawagam: function() { return '<div>Tonton video English, kemudian tekan + LISTENING dan masukkan minit.</div><div><b>GANJARAN:</b> setiap 10 min = +' + rm(EKO.PAWAGAM_SEN || 0) +
+      pawagam: function() { return usahaTipNaufal() + '<div>Tonton video English, kemudian tekan + LISTENING dan masukkan minit.</div><div><b>GANJARAN:</b> setiap 10 min = +' + rm(EKO.PAWAGAM_SEN || 0) +
         ' Ringgit Kuning (had ' + (PAWAGAM_HAD_UNIT * 10) + ' min sehari).</div>' +
         // PANDUAN MENJAWAB — Exam Task Guide MUET Listening (16 Nov) — 3 langkah + tips
         '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">PANDUAN MENJAWAB</div>' +
