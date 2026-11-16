@@ -6838,6 +6838,18 @@
     <div id="pentas-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div style="height:30px;"></div>
   </div>
+  <!-- PERPUSTAKAAN (Reading English — MUET Paper 3) — bangunan BELAJAR (16 Nov) -->
+  <div id="screen-pustaka" class="screen">
+    <div class="status-bar">PERPUSTAKAAN</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-us-pustaka-keluar" class="gm-kecil">‹ Usaha</button>
+      <span class="gm-alat-tajuk">PERPUSTAKAAN</span>
+      <button type="button" id="btn-us-pustaka-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="pustaka-info" class="jw-info"></div>
+    <div id="pustaka-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
+  </div>
   <!-- SEMUA NOTA (Daily Repetition Exercise) — page berasingan dari PAWAGAM (16 Nov) -->
   <div id="screen-pn-nota" class="screen">
     <div class="status-bar">PAWAGAM · SEMUA NOTA</div>
@@ -14962,13 +14974,14 @@
       ['fakta', 'LACI FAKTA', 'Ulang kaji fakta', true],
       ['reasoning', 'REASONING', 'Laci reasoning', true],
       ['presenting', 'PRESENTING', 'Laci presenting', true],
-      ['pentas', 'PENTAS', 'Speaking English (MUET)', true]
+      ['pentas', 'PENTAS', 'Speaking English (MUET)', true],
+      ['pustaka', 'PERPUSTAKAAN', 'Reading English (MUET)', true]
     ];
     // USAHA BERHALAMAN: [tajuk, senarai kunci bangunan] — tekan titik kanan / sapu atas-bawah untuk tukar page (tiada skrol)
     var TS_HALAMAN = [
       ['BADAN', ['gym', 'taman', 'makmal', 'nutrisi']],
       ['REHAT & IBADAH', ['tidur', 'surau']],
-      ['BELAJAR', ['pawagam', 'pentas', 'bahasa', 'fakta', 'reasoning', 'presenting']]
+      ['BELAJAR', ['pawagam', 'pentas', 'pustaka', 'bahasa', 'fakta', 'reasoning', 'presenting']]
     ];
     var TS_LACI = { bahasa: 'btn-go-bahasa', fakta: 'btn-go-fakta', reasoning: 'btn-go-reasoning', presenting: 'btn-go-presenting' };
     var tsHal = 0;
@@ -14994,6 +15007,7 @@
       if (k === 'presenting') s += '<rect x="55" y="23" width="10" height="16" rx="5" fill="#000"/><path d="M51 34 Q51 44 60 44 Q69 44 69 34" fill="none" stroke="#000" stroke-width="2.5"/><path d="M60 44 V49 M54 49 H66" stroke="#000" stroke-width="2.5"/>';
       if (k === 'kumpulan') s += '<circle cx="48" cy="30" r="4.5" fill="#000"/><circle cx="60" cy="27" r="4.5" fill="#000"/><circle cx="72" cy="30" r="4.5" fill="#000"/><path d="M41 47 Q41 36 48 36 Q55 36 55 47 Z M53 45 Q53 33 60 33 Q67 33 67 45 Z M65 47 Q65 36 72 36 Q79 36 79 47 Z" fill="#000"/>';
       if (k === 'pentas') s += '<path d="M46 28 H74 L71 34 H49 Z" fill="#000"/><rect x="56" y="34" width="8" height="12" fill="#000"/><path d="M48 48 H72" stroke="#000" stroke-width="3"/><path d="M60 28 V22" stroke="#000" stroke-width="2"/><circle cx="60" cy="21" r="2.5" fill="#000"/>';
+      if (k === 'pustaka') s += '<rect x="45" y="40" width="30" height="7" fill="#000"/><rect x="48" y="33" width="26" height="6" fill="#fff" stroke="#000" stroke-width="2"/><rect x="46" y="26" width="24" height="6" fill="#000"/><path d="M50 43.5 H70" stroke="#fff" stroke-width="1.5"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
     }
@@ -15112,6 +15126,7 @@
       if (k === 'surau') { bukaSurau(); return; }
       if (k === 'pawagam') { bukaPawagam(); return; }
       if (k === 'pentas') { bukaPentas(); return; }
+      if (k === 'pustaka') { bukaPustaka(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // USAHA berhalaman: tekan titik → page itu · sapu atas / bawah → page seterusnya / sebelumnya
@@ -15600,7 +15615,7 @@
       var p = profilDari;
       if (p === 'screen-ts') bukaTs(); else if (p === 'screen-gym') bukaGym(); else if (p === 'screen-taman') bukaTaman(); else if (p === 'screen-makmal') bukaMakmal(); else if (p === 'screen-nutrisi') bukaNutrisi();
       else if (p === 'screen-bilik') bukaBilik();
-      else if (p === 'screen-us') bukaUs(); else if (p === 'screen-surau') bukaSurau(); else if (p === 'screen-pawagam') bukaPawagam(); else if (p === 'screen-pentas') bukaPentas();
+      else if (p === 'screen-us') bukaUs(); else if (p === 'screen-surau') bukaSurau(); else if (p === 'screen-pawagam') bukaPawagam(); else if (p === 'screen-pentas') bukaPentas(); else if (p === 'screen-pustaka') bukaPustaka();
       else if (p === 'screen-kd') bukaKd(); else if (p && el(p)) showScreen(p); else bukaMini();
     };
     el('btn-profil-coach').onclick = function() { bukaCoach(false); };
@@ -16438,6 +16453,16 @@
     }
     el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
     el('btn-us-pentas-coach').onclick = function() { bukaCoach(false); };
+    // ══ PERPUSTAKAAN — READING MUET Paper 3 (16 Nov): TIPS & FORMAT dulu, HARI INI dibina kemudian (bahan bacaan ditambah sendiri) ══
+    function lukisPustaka() {
+      el('pustaka-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">READING — MUET PAPER 3</div>' +
+        '<div style="border:2px dashed #000;border-radius:8px;padding:6px 8px;margin:6px 0;">HARI INI sedang dibina. Bahan bacaan nanti anda tambah sendiri.<br>Buat masa ini, baca tab <b>TIPS</b>.</div>';
+    }
+    function bukaPustaka() {
+      usMuat('screen-pustaka', 'pustaka-info', function() { el('pustaka-info').textContent = ''; lukisPustaka(); });
+    }
+    el('btn-us-pustaka-keluar').onclick = function() { bukaTs(); };
+    el('btn-us-pustaka-coach').onclick = function() { bukaCoach(false); };
     // ══ TOPBAR BANGUNAN USAHA (gaya GYM, 12 Nov): ikon HARI INI (tugas) · ikon TIPS (nota, cara, ganjaran — disorok dari page utama) ══
     var USAHA_IKON = {
       taman: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M4.2 19.8L7 17M17 7l2.8-2.8" stroke="#fff" stroke-width="2.2"/></svg>',
@@ -16449,6 +16474,7 @@
       tips: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="11"/><rect x="10.5" y="10" width="3" height="8" fill="#000"/><circle cx="12" cy="6.5" r="1.8" fill="#000"/></svg>',
       format: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 1h10l5 5v17H5z"/><path d="M8 10h9M8 14h9M8 18h6" stroke="#000" stroke-width="2"/></svg>',
       pentas: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18l-2 4H5z"/><rect x="10" y="10" width="4" height="9"/><rect x="6" y="19" width="12" height="3"/><circle cx="12" cy="3" r="2"/></svg>',
+      pustaka: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="16" width="20" height="5"/><rect x="4" y="10" width="17" height="5"/><rect x="3" y="4" width="16" height="5"/></svg>',
       topik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h8a3 3 0 013 3v15a2 2 0 00-2-2H2zM22 4h-6a2 2 0 00-2 2v16a2 2 0 012-2h6z"/></svg>'
     };
     function usahaSenarai(t, a) { var h = '<div style="font-weight:bold;margin-top:8px;">' + t + '</div>', i; for (i = 0; i < a.length; i++) h += '<div>' + (i + 1) + '. ' + a[i] + '</div>'; return h; }
@@ -16463,6 +16489,14 @@
         '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0 0;"><i>Macam kata orang engineering: <b>wujudkan dulu, baru memperbaik.</b></i></div></div>';
     }
     var USAHA_TIPS = {
+      pustaka: function() {
+        // TIPS READING (16 Nov) — dalam Bahasa Melayu; istilah penting dikekalkan dalam English
+        return usahaTipNaufal() +
+          '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">KATA HIKMAH</div>' +
+          '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0;"><i>"Reading is to the mind what exercise is to the body. It is wholesome and bracing for the mind to have its faculties kept on the stretch."</i>' +
+          '<div style="font-size:0.85rem;margin-top:2px;">Maksud: membaca bagi minda sama seperti senaman bagi badan. Minda jadi sihat dan segar apabila kebolehannya sentiasa diregang (dilatih).</div>' +
+          '<div style="text-align:right;font-weight:bold;margin-top:2px;">— Richard Steele</div></div>';
+      },
       pentas: function() {
         // TIPS SPEAKING (16 Nov) — dalam Bahasa Melayu; istilah penting dikekalkan dalam English
         return usahaTipNaufal() +
@@ -16822,7 +16856,7 @@
     // [kunci, screen, kandungan utama, info]
     var USAHA_BG = [['taman', 'screen-taman', 'taman-isi', 'taman-info'], ['makmal', 'screen-makmal', 'makmal-isi', 'makmal-info'], ['nutrisi', 'screen-nutrisi', 'coach-makan', 'nutrisi-info'],
       ['bilik', 'screen-bilik', 'bilik-isi', 'bilik-info'], ['surau', 'screen-surau', 'surau-isi', 'surau-info'], ['pawagam', 'screen-pawagam', 'coach-usaha', 'pawagam-info'],
-      ['pentas', 'screen-pentas', 'pentas-isi', 'pentas-info']];
+      ['pentas', 'screen-pentas', 'pentas-isi', 'pentas-info'], ['pustaka', 'screen-pustaka', 'pustaka-isi', 'pustaka-info']];
     function usahaTab(k, tab) {
       var i, b, tb = el('ub-tb-' + k), tp = el('ub-tips-' + k);
       for (i = 0; i < USAHA_BG.length; i++) if (USAHA_BG[i][0] === k) b = USAHA_BG[i];
@@ -16871,6 +16905,7 @@
     bukaSurau = (function(f) { return function() { usahaTab('surau', 'hari'); return f.apply(this, arguments); }; })(bukaSurau);
     bukaPawagam = (function(f) { return function() { usahaTab('pawagam', 'hari'); return f.apply(this, arguments); }; })(bukaPawagam);
     bukaPentas = (function(f) { return function() { usahaTab('pentas', 'hari'); return f.apply(this, arguments); }; })(bukaPentas);
+    bukaPustaka = (function(f) { return function() { usahaTab('pustaka', 'hari'); return f.apply(this, arguments); }; })(bukaPustaka);
     // ── Senarai TUGAS KESIHATAN (dipindah ke TAMAN SIHAT) ──
     function bukaJadual() { bukaTs(); }
     // ── Pameran Investment: meja pameran + pelanggan orang lidi ──
