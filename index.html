@@ -15847,7 +15847,14 @@
     };
     function usahaSenarai(t, a) { var h = '<div style="font-weight:bold;margin-top:8px;">' + t + '</div>', i; for (i = 0; i < a.length; i++) h += '<div>' + (i + 1) + '. ' + a[i] + '</div>'; return h; }
     var USAHA_TIPS = {
-      pentas: function() { return '<div>Tips Speaking (MUET Paper 2) akan ditambah di sini.</div>'; },
+      pentas: function() {
+        // KATA HIKMAH tentang bercakap (16 Nov) — tajuk saiz sama dengan TIPS
+        return '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">KATA HIKMAH</div>' +
+          '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0;"><i>"The difference between a smart man and a wise man is that a smart man knows what to say, a wise man knows whether or not to say it."</i>' +
+          '<div style="text-align:right;font-weight:bold;margin-top:2px;">— Frank M. Garafola</div></div>' +
+          '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0;"><i>"The words you choose to say something are just as important as the decision to speak."</i>' +
+          '<div style="text-align:right;font-weight:bold;margin-top:2px;">— Unknown</div></div>';
+      },
       taman: function() { return usahaSenarai('MATAHARI PAGI', COACH_TAMAN_TIP.matahari) + usahaSenarai('CAHAYA PETANG', COACH_TAMAN_TIP.petang) +
         '<div style="margin-top:8px;"><b>GANJARAN:</b> +' + rm(EKO.TAMAN_SEN || 0) + ' Ringgit Kuning setiap tugas (tepat masa, cukup minit).</div>'; },
       makmal: function() {
