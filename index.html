@@ -16202,16 +16202,21 @@
       // ── 2 RUMAH ──
       if (!ptUI.rumah) {
         h = kepala('', '');
+        var btnPukal = '<button type="button" data-pt="bukapukal" style="' + (ptUI.pukal ? PT_BTNA : PT_BTN) + '">JANA PUKAL</button>';
+        var kotakPukal = !ptUI.pukal ? '' : '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JANA PUKAL</div>' +
+          '<div style="font-size:0.8rem;">Tampal jawapan AI di bawah → SIMPAN. Soalan P1 masuk INDIVIDUAL, P2 masuk GROUP. Topik baru dicipta sendiri. Soalan yang sudah ada diabaikan.</div>' +
+          '<textarea id="pt-pukal" placeholder="TOPIK: Science and technology&#10;P1: Soalan? | isi 1 | isi 2 | isi 3&#10;P2: Soalan? | pilihan* = hujah; hujah | pilihan = hujah" style="width:100%;height:180px;margin-top:6px;font-size:0.85rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+          '<div><button type="button" data-pt="simpanpukal" style="' + PT_BTNA + '">SIMPAN</button><button type="button" data-pt="bukapukal" style="' + PT_BTN + '">TUTUP</button></div></div>';
         if (ptPerluTambah()) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ARAHAN COACH: TAMBAH SOALAN &amp; ISI SPEAKING HARI INI</div>' +
-          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET → tampal ke AI.<br>2. Salin jawapan AI.<br>3. Masuk rumah INDIVIDUAL / GROUP → JANA PUKAL → tampal → SIMPAN.<br>AI beri soalan &amp; isi sahaja — huraian anda tulis sendiri.</div>' +
-          '<button type="button" data-pt="preset" style="' + PT_BTNA + '">SALIN PRESET</button>' + kotakPreset + '</div>';
+          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET → tampal ke AI.<br>2. Salin jawapan AI.<br>3. Tekan JANA PUKAL → tampal → SIMPAN.<br>AI beri soalan &amp; isi sahaja — huraian anda tulis sendiri.</div>' +
+          '<button type="button" data-pt="preset" style="' + PT_BTNA + '">SALIN PRESET</button>' + btnPukal + kotakPreset + kotakPukal + '</div>';
         h += '<div class="kd-pondok" style="margin-top:8px;">';
         for (i = 1; i <= 2; i++) {
           h += '<button type="button" class="kd-pd" data-pt="rumah" data-v="' + i + '">' + svgBangunan(i === 1 ? 'pentas' : 'kumpulan', i === 1 ? 'INDIVIDUAL' : 'GROUP', true) +
             '<small>Part ' + i + ' · ' + (i === 1 ? 'Individual Presentation' : 'Group Discussion') + '<br>' + ptSoalan(i).length + ' soalan · ' + ptKiraHafal(i) + ' hafal</small></button>';
         }
         h += '</div>';
-        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Soalan terakhir ditambah: ' + ((ptU && ptU.tambah) || PT_VERSI) + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' + kotakPreset;
+        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Soalan terakhir ditambah: ' + ((ptU && ptU.tambah) || PT_VERSI) + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button>' + btnPukal + '</div>' + kotakPreset + kotakPukal;
         el('pentas-isi').innerHTML = h; return;
       }
       // ── CONTOH (nota + karangan dari buku) ──
@@ -16258,12 +16263,7 @@
             '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + ' · contoh</span> ›</button>';
         }
         h += '<div style="font-weight:bold;margin:10px 0 2px;">SENARAI TOPIK BESAR</div>' +
-          '<div><button type="button" data-pt="bukapukal" style="' + (ptUI.pukal ? PT_BTN : PT_BTNA) + '">JANA PUKAL</button><button type="button" data-pt="bukatopik" style="' + PT_BTN + '">+ TOPIK</button></div>';
-        if (ptUI.pukal) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JANA PUKAL</div>' +
-          '<div style="font-size:0.8rem;">Tekan SALIN PRESET → tampal ke AI → salin jawapan AI → tampal di bawah → SIMPAN. Soalan P1 masuk INDIVIDUAL, P2 masuk GROUP. Soalan yang sudah ada diabaikan.</div>' +
-          '<button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button>' + kotakPreset +
-          '<textarea id="pt-pukal" placeholder="TOPIK: Science and technology&#10;P1: Soalan? | isi 1 | isi 2 | isi 3&#10;P2: Soalan? | pilihan* = hujah; hujah | pilihan = hujah" style="width:100%;height:180px;margin-top:6px;font-size:0.85rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
-          '<div><button type="button" data-pt="simpanpukal" style="' + PT_BTNA + '">SIMPAN</button><button type="button" data-pt="bukapukal" style="' + PT_BTN + '">TUTUP</button></div></div>';
+          '<div><button type="button" data-pt="bukatopik" style="' + PT_BTN + '">+ TOPIK</button></div>';
         if (ptUI.tambahT) h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">TOPIK BESAR BARU</div>' +
           '<input id="pt-topik" type="text" placeholder="cth: Sports and recreation" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">' +
           '<div><button type="button" data-pt="simpantopik" style="' + PT_BTNA + '">TAMBAH</button><button type="button" data-pt="bukatopik" style="' + PT_BTN + '">BATAL</button></div></div>';
@@ -16362,14 +16362,14 @@
       if (!t || t === this) return;
       var a = t.getAttribute('data-pt'), v = t.getAttribute('data-v'), sq = ptUI.id ? ptBank().S[ptUI.id] : null, k = sq ? ptKunci(sq) : '';
       if (a !== 'preset') ptUI.mesej = '';
-      if (a === 'rumah') { ptUI.rumah = +v; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; }
+      if (a === 'rumah') { ptUI.rumah = +v; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; ptUI.pukal = false; }
       else if (a === 'balik') { ptUI.rumah = 0; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; }
       else if (a === 'lihatcontoh') { ptUI.cid = v; }
       else if (a === 'tutupcontoh') { ptUI.cid = ''; }
       else if (a === 'tema') { ptUI.tema = v; ptUI.id = ''; ptUI.tambahS = false; }
       else if (a === 'senaraitema') { ptUI.tema = ''; ptUI.id = ''; }
-      else if (a === 'bukapukal') { ptUI.pukal = !ptUI.pukal; ptUI.tambahT = false; ptUI.preset = ''; }
-      else if (a === 'bukatopik') { ptUI.tambahT = !ptUI.tambahT; ptUI.pukal = false; }
+      else if (a === 'bukapukal') { ptUI.pukal = !ptUI.pukal; }
+      else if (a === 'bukatopik') { ptUI.tambahT = !ptUI.tambahT; }
       else if (a === 'bukasoalan') { ptUI.tambahS = !ptUI.tambahS; }
       else if (a === 'simpanpukal') {
         var rp = ptPukal(el('pt-pukal').value);
