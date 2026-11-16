@@ -15841,9 +15841,9 @@
     el('btn-us-pawagam-coach').onclick = function() { bukaCoach(false); };
     // ══ PENTAS — NOTA KARANGAN SPEAKING (16 Nov): 2 RUMAH (INDIVIDUAL = Part 1 · GROUP = Part 2) ══
     // AI hanya reka TAJUK, SOALAN & ISI (SALIN PRESET) — HURAIAN setiap isi DITULIS SENDIRI oleh pengguna (kotak di bawah setiap isi; tulis dulu, baiki kemudian).
-    // Topik baru ditambah DI ATAS baris "◆ HUJUNG PT_TOPIK". Jangan buang / susun semula topik lama.
-    // Part 1: { tarikh, id, part: 1, tajuk, situasi, calon: [tugasan A, B, C, D], isi: [[3 isi A], [3 isi B], [3 isi C], [3 isi D]] }
-    // Part 2: { tarikh, id, part: 2, tajuk, situasi, soalan, pilihan: [5 idea peta minda], terbaik, isi: [[hujah idea 1], ... x5] }
+    // PT_TOPIK = CONTOH dari buku sahaja (nota + karangan). Latihan harian = PT_BANK: SENARAI TOPIK BESAR (tema) › soalan › isi + huraian sendiri.
+    // PT_BANK: soalan baru / isi tambahan ditambah DI ATAS baris "◆ HUJUNG PT_BANK". Jangan buang / susun semula entri lama.
+    // Part 1: { tarikh, tema, id, part: 1, soalan, isi: [...] } · Part 2: { tarikh, tema, id, part: 2, soalan, pilihan: [...], terbaik, isi: [[hujah pilihan 1], ...] } · isi tambahan: { tarikh, isiUntuk: id, p (Part 2), isi: [...] }
     // Topik lama: medan nota / notaCalon / contohCalon tidak lagi dipapar · contoh (Part 1) = contoh dari buku Calon A. Huraian pengguna: pentas_karangan/{id}-{A|B|C|D|G} { h: [huraian isi 1, 2, ...], at, tarikh } · hafal: coach/pentas { siap: { kunci: tarikh } }
     var PT_TOPIK = [
       { tarikh: '2026-11-16', id: 't-keluarga-bahagia', part: 1, tajuk: 'Happy family',
@@ -15861,18 +15861,203 @@
         pilihan: ['income levels', 'educational levels', 'lifestyle', 'occupations', 'behaviour'], terbaik: 'behaviour',
         nota: [{ isi: 'income levels', h: ['Rich people who do bad things - ruined in society - wealth can\'t solve everything', 'People respect success - making money is the result of success'] }, { isi: 'educational levels', h: ['Reflects intelligence level - social status of family - respected professionals - good reputation', 'Good education doesn\'t guarantee good morals'] }, { isi: 'lifestyle', h: ['Some people spend more than they own - long-term embarrassment', 'Doesn\'t reflect true net worth - showing off is tacky'] }, { isi: 'occupations', h: ['Good education / job doesn\'t guarantee high income', 'Some occupations can result in unethical business practices - ruins reputation'] }, { isi: 'behaviour', h: ['Black sheep - embarrasses whole family', 'Bad behaviour - ethical misconduct - mars reputation', 'People with good reputation - won\'t be accused when a crime occurs'] }],
         contoh: 'Thank you, Candidate A. I would like to start our discussion by saying that, in my opinion, behaviour is the most important factor that can affect a family\'s reputation. The way each family member behaves in public reflects the values taught at home.|For example, if one child is involved in crime or bullying, people will not only blame the child, but also the parents and the whole family. As the saying goes, one black sheep can embarrass the whole family. This is because society judges a family by the actions of its members.|I agree with Candidate B that income levels can influence how people see a family. However, I believe that wealth cannot solve everything. A rich family that behaves badly will still lose the respect of society. In other words, money cannot buy a good name.|As for educational levels, I partly agree that educated families are often respected. On the other hand, good education does not guarantee good morals. There are many cases of well-educated professionals who are involved in unethical business practices, and this ruins their family\'s reputation.|Lifestyle and occupations are also important, but they are less important than behaviour. Some people show off and spend more than they own, but this is actually a form of bad behaviour too.|So, what do you think, Candidate C? Do you agree that behaviour is the most important factor?|In conclusion, I strongly believe that behaviour is the most important factor because a family with good behaviour will be respected, whatever their income, education, lifestyle or occupation.' },
-      // ◆ HUJUNG PT_TOPIK — topik baru di ATAS baris ini ◆
+      // ◆ HUJUNG PT_TOPIK (CONTOH dari buku) ◆
+    ];
+    // ══ BANK SOALAN SPEAKING: ikut TOPIK BESAR (tema MUET) — makin hari makin banyak ══
+    var PT_BANK = [
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-pengaruh', part: 2, soalan: 'Who has the greatest influence on a person\'s character?',
+        pilihan: ['parents', 'teachers', 'friends', 'famous personalities'], terbaik: 'parents',
+        isi: [['first role models - children copy values and habits at home', 'spend the most years with the child'], ['guide discipline and knowledge at school', 'but only during school hours'], ['teenagers spend a lot of time with friends - peer pressure', 'can be good or bad influence'], ['idols on social media set trends', 'influence from far - not personal']] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-jiran', part: 2, soalan: 'What makes a good neighbour?',
+        pilihan: ['polite and respectful', 'friendly and caring', 'helpful and responsible', 'tolerant and understanding'], terbaik: 'helpful and responsible',
+        isi: [['greet neighbours - respect privacy', 'avoid noise late at night'], ['visit during festivals - open house', 'check on elderly neighbours'], ['help during emergencies - fire, flood, theft', 'keep the area clean and safe'], ['accept different races and religions', 'avoid quarrels over small matters - parking, noise']] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-haiwan', part: 1, soalan: 'Why do people keep pets?',
+        isi: ['Companionship - reduces loneliness', 'Teaches children responsibility', 'Improves health - less stress, more exercise'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-kawanasing', part: 1, soalan: 'What are the benefits of having foreign friends or exchange students?',
+        isi: ['Learn a new language', 'Understand other cultures - more open-minded', 'Build a global network - study, work, travel'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-perpaduan', part: 1, soalan: 'How can we promote national unity in a multi-racial society?',
+        isi: ['Celebrate festivals together - open house', 'Mix students of all races in school activities', 'Media and campaigns that promote unity'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-teladan', part: 1, soalan: 'What are the qualities of a good role model or successful person?',
+        isi: ['Honest and has integrity', 'Hardworking and never gives up', 'Kind and helps others'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-ibubapa', part: 1, soalan: 'How can young people maintain good relationships with their parents?',
+        isi: ['Communicate openly - share problems', 'Spend time together - meals, outings', 'Respect parents and help at home'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-sahsiah', part: 2, soalan: 'What activities are suitable for young people to build character?',
+        pilihan: ['sports', 'uniformed bodies', 'volunteer work', 'debate and public speaking', 'camping'], terbaik: 'volunteer work',
+        isi: [['teamwork and discipline', 'learn to accept defeat'], ['leadership and discipline', 'follow rules and routine'], ['empathy - help the needy', 'responsibility to society'], ['confidence and critical thinking'], ['independence and survival skills', 'cooperation in a group']] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-hormatbudaya', part: 1, soalan: 'Why is it important to respect different cultures?',
+        isi: ['Prevents misunderstanding and conflict', 'Builds unity and harmony', 'Gives the country a good image - tourism, investment'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-mediasosial', part: 1, soalan: 'How does social media affect our culture and social relationships?',
+        isi: ['Foreign trends spread quickly - local culture forgotten', 'Less face-to-face time with family', 'Keeps us in touch with friends and relatives far away'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-belajarbudaya', part: 1, soalan: 'What are the advantages of learning about other cultures?',
+        isi: ['Become more open-minded', 'Easier to study or work abroad', 'Reduces prejudice and stereotypes'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-sukarela', part: 1, soalan: 'How can we encourage volunteerism and a caring society?',
+        isi: ['Schools give merit or credit for volunteer work', 'Media share inspiring stories', 'Organisations offer easy weekend programmes'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-kawanbaik', part: 2, soalan: 'What makes someone a good friend?',
+        pilihan: ['loyal', 'honest', 'supportive', 'good listener', 'fun to be with'], terbaik: 'loyal',
+        isi: [['stays with you in good and bad times'], ['tells the truth even when it hurts', 'trust'], ['encourages you to achieve your goals'], ['listens without judging'], ['makes you happy - but fun alone is not enough']] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-nilaikeluarga', part: 1, soalan: 'How has modern lifestyle changed traditional family values?',
+        isi: ['Busy working parents - less family time', 'Gadgets at meal times - less conversation', 'Nuclear families - less contact with grandparents'] },
+      { tarikh: '2026-11-16', tema: 'People and culture', id: 'pc-perayaan', part: 1, soalan: 'Why should we preserve traditional festivals and customs?',
+        isi: ['Keeps our identity and heritage', 'Brings the community together', 'Attracts tourists - helps the economy'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-kurangbelanja', part: 2, soalan: 'What is the best way for a family to reduce expenditure?',
+        pilihan: ['use public transport', 'spend only on needs', 'do own repairs', 'recycle and reuse'], terbaik: 'spend only on needs',
+        isi: [['save petrol, toll and parking', 'not convenient in rural areas'], ['avoid buying wants - list before shopping', 'saves the most money every month'], ['save workshop cost', 'need skills - risky for big repairs'], ['reuse containers, clothes', 'small savings but good for environment']] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-menabung', part: 1, soalan: 'Why is it important to save money?',
+        isi: ['Ready for emergencies - illness, job loss', 'Reach future goals - study, house, car', 'Avoid debt'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-remaja', part: 2, soalan: 'How can teenagers earn some money?',
+        pilihan: ['sell home-cooked food', 'deliveries', 'part-time work', 'tutoring'], terbaik: 'tutoring',
+        isi: [['low cost - sell to friends and online', 'learn business skills'], ['flexible hours - bicycle or motorcycle', 'risky on the road'], ['fast food, retail - steady income', 'may affect studies'], ['use own knowledge - good pay', 'revise own lessons too']] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-bajet', part: 1, soalan: 'What are the benefits of budgeting and managing money wisely?',
+        isi: ['Know where your money goes', 'Avoid overspending and debt', 'Save for future goals'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-bisnes', part: 1, soalan: 'How can young people start a small business successfully?',
+        isi: ['Start small online - low cost', 'Learn skills and study the market', 'Use social media to promote products'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-konsumerisme', part: 1, soalan: 'What are the effects of consumerism and overspending on society?',
+        isi: ['Debt and financial stress', 'More waste - harms the environment', 'Materialistic values - judge people by possessions'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-tanggungjawab', part: 1, soalan: 'How can we encourage people to be more financially responsible?',
+        isi: ['Financial education in schools', 'Public campaigns on saving', 'Parents set a good example'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-beli', part: 1, soalan: 'Why do people buy things they do not need?',
+        isi: ['Influenced by advertisements and sales', 'Peer pressure - want to show off', 'Emotional shopping - to reduce stress'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-literasi', part: 1, soalan: 'What is the importance of financial literacy among students?',
+        isi: ['Manage allowance and study loans wisely', 'Avoid scams and debt', 'Prepare for adult life'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-krisis', part: 1, soalan: 'How can families cut costs during difficult economic times?',
+        isi: ['Cook at home instead of eating out', 'Cancel unnecessary subscriptions', 'Compare prices and buy in bulk'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-online', part: 1, soalan: 'What are the advantages and disadvantages of online shopping?',
+        isi: ['Convenient - shop anytime, anywhere', 'Easy to compare prices', 'Risk of scams and impulse buying'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-iklan', part: 1, soalan: 'How does advertising influence consumer behaviour?',
+        isi: ['Creates wants that people did not have', 'Celebrity endorsements build trust', 'Repeated ads - brand stays in mind'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-hutang', part: 1, soalan: 'Why should we avoid debt and credit card overuse?',
+        isi: ['High interest - debt keeps growing', 'Bad credit record - hard to get loans later', 'Stress and risk of bankruptcy'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-berdikari', part: 1, soalan: 'What steps can young people take to achieve financial independence?',
+        isi: ['Earn early - part-time work', 'Budget and save every month', 'Learn to invest and upgrade skills'] },
+      { tarikh: '2026-11-16', tema: 'Financial awareness and consumerism', id: 'fa-berbelanja', part: 1, soalan: 'How can we promote wise spending habits among the younger generation?',
+        isi: ['Teach needs versus wants', 'Track spending with apps', 'Reward saving - parents and schools'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-ciptaan', part: 2, soalan: 'Which invention has made life the easiest?',
+        pilihan: ['mobile phone', 'computer', 'internet', 'car', 'washing machine'], terbaik: 'mobile phone',
+        isi: [['communication, banking, maps in one device', 'always with us'], ['work and study - documents, design'], ['information and services online', 'but needs a device to use'], ['travel far and fast', 'traffic and pollution'], ['saves time on housework']] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-mediaelektronik', part: 2, soalan: 'How does electronic media affect young people\'s lives the most?',
+        pilihan: ['study habits', 'daily habits', 'social relationships', 'world view'], terbaik: 'social relationships',
+        isi: [['online resources - but easily distracted'], ['less sleep, less exercise'], ['less face-to-face talk - online friends replace real ones', 'loneliness'], ['exposed to global ideas - good and bad']] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-harian', part: 2, soalan: 'How does technology help us in daily life the most?',
+        pilihan: ['housework', 'making friends', 'shopping', 'entertainment'], terbaik: 'shopping',
+        isi: [['robot vacuum, washing machine - save time'], ['social media - friends worldwide', 'but not always real friendships'], ['online shopping and e-wallet - save time and travel', 'compare prices'], ['streaming, games - relax', 'risk of addiction']] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-impakmedsos', part: 1, soalan: 'What is the biggest impact of social media on society?',
+        isi: ['Fast news and information', 'Fake news spreads quickly', 'New ways to market businesses'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-pelajar', part: 1, soalan: 'How can technology help students in their studies?',
+        isi: ['Online resources and video lessons', 'Easy communication with teachers and classmates', 'Apps to organise notes and time'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-komunikasi', part: 1, soalan: 'How has technology changed the way people communicate?',
+        isi: ['Instant messaging - fast and cheap', 'Video calls - see family far away', 'Less face-to-face conversation'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-remaja', part: 1, soalan: 'What are the positive and negative effects of social media on teenagers?',
+        isi: ['Connect with friends and express creativity', 'Cyberbullying', 'Addiction - less sleep and study time'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-ketagihan', part: 1, soalan: 'How can we use technology to improve our lives without becoming addicted?',
+        isi: ['Set screen time limits', 'Have offline hobbies - sports, reading', 'Turn off unnecessary notifications'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-pengangkutan', part: 1, soalan: 'What role does technology play in modern transportation and communication?',
+        isi: ['GPS navigation - find the fastest route', 'E-hailing - easy and safe transport', 'Real-time updates - traffic, delays'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-membaca', part: 1, soalan: 'How can digital platforms encourage reading among youth?',
+        isi: ['E-books - cheap and easy to carry', 'Reading apps with rewards and challenges', 'Online book clubs - share reviews'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-koding', part: 1, soalan: 'What are the benefits of learning coding and digital skills?',
+        isi: ['High demand in the job market', 'Improves problem-solving skills', 'Create own apps or online business'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-kesihatan', part: 1, soalan: 'How does technology affect our health and lifestyle?',
+        isi: ['Fitness apps - track exercise and diet', 'Sitting too long - obesity, eye strain', 'Online medical consultation'] },
+      { tarikh: '2026-11-16', tema: 'Science and technology', id: 'st-pelajarciptaan', part: 2, soalan: 'What is the most useful modern invention for students?',
+        pilihan: ['laptop', 'smartphone', 'internet', 'e-books', 'calculator'], terbaik: 'internet',
+        isi: [['assignments, presentations', 'expensive for some students'], ['learn anywhere', 'easily distracted'], ['unlimited information - research, online classes', 'needs good connection'], ['light and cheap'], ['only for maths']] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-gayahidup', part: 2, soalan: 'What is the most important step to maintain a healthy lifestyle?',
+        pilihan: ['balanced diet', 'exercise', 'regular check-ups', 'enough rest'], terbaik: 'balanced diet',
+        isi: [['you are what you eat - prevents diabetes, obesity', 'gives energy every day'], ['strong heart and muscles', 'needs time and discipline'], ['detect disease early', 'costly for some people'], ['better focus and mood', 'body repairs itself']] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-tekanan', part: 1, soalan: 'How can we reduce stress among students?',
+        isi: ['Manage time well - plan study', 'Exercise and hobbies', 'Talk to friends, family or counsellors'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-jerebu', part: 1, soalan: 'What can we do to keep healthy during the haze?',
+        isi: ['Stay indoors and close windows', 'Wear a suitable face mask outside', 'Drink plenty of water'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-pembakaran', part: 1, soalan: 'How can countries deal with forest fires and air pollution?',
+        isi: ['Strict laws against open burning', 'Cooperation between neighbouring countries', 'Early warning and firefighting teams'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-iklim', part: 1, soalan: 'What are the serious effects of extreme climate change and hot weather?',
+        isi: ['Heatstroke and other health problems', 'Drought - water and food shortage', 'Floods and extreme weather'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-lindungi', part: 1, soalan: 'How can we protect the environment?',
+        isi: ['Practise 3R - reduce, reuse, recycle', 'Use less plastic', 'Plant more trees'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-bandar', part: 2, soalan: 'What is the best way to encourage sustainable living in cities?',
+        pilihan: ['public transport', 'recycling', 'green buildings', 'urban gardens', 'cycling lanes'], terbaik: 'public transport',
+        isi: [['fewer cars - less pollution and traffic', 'cheaper for people'], ['less waste in landfills'], ['save energy and water', 'expensive to build'], ['fresh food, cooler city'], ['healthy - but hot weather in Malaysia']] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-kebersihan', part: 2, soalan: 'Why is cleanliness important and which area should we focus on?',
+        pilihan: ['home', 'clothes', 'food', 'body'], terbaik: 'food',
+        isi: [['prevents dengue - no stagnant water'], ['avoid skin problems and bad smell'], ['prevents food poisoning and diseases', 'affects the whole family'], ['personal hygiene - wash hands, prevent germs']] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-negarabersih', part: 1, soalan: 'What are the challenges in keeping a country clean?',
+        isi: ['Littering attitude - lack of civic awareness', 'Weak law enforcement', 'Not enough bins and facilities'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-mudasihat', part: 1, soalan: 'How can we promote a healthy lifestyle among young people?',
+        isi: ['More sports activities in schools', 'Healthy food in school canteens', 'Influencers promote healthy living'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-senaman', part: 1, soalan: 'What are the benefits of regular exercise?',
+        isi: ['Strong heart and body', 'Reduces stress', 'Better sleep and focus'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-alamburuk', part: 1, soalan: 'How does a poor environment affect our health?',
+        isi: ['Air pollution - asthma and lung problems', 'Dirty water - diseases', 'Noise - stress and poor sleep'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-pencemaran', part: 1, soalan: 'What steps can individuals take to reduce pollution?',
+        isi: ['Use public transport or carpool', 'Do not burn rubbish in the open', 'Dispose of waste properly'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-makan', part: 1, soalan: 'Why is it important to eat at regular times?',
+        isi: ['Stable energy throughout the day', 'Avoid gastric problems', 'Prevents overeating'] },
+      { tarikh: '2026-11-16', tema: 'Health and environment', id: 'he-peduli', part: 1, soalan: 'How can we encourage people to care more about the environment?',
+        isi: ['Environmental education from young', 'Campaigns and community clean-ups', 'Rewards for green actions, fines for pollution'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-pendapat', part: 2, soalan: 'Whose opinion is most important when deciding a university and course of study?',
+        pilihan: ['parents', 'friends', 'teachers', 'career counsellors'], terbaik: 'career counsellors',
+        isi: [['know you well - pay the fees', 'may force their own dreams'], ['know your interests', 'may follow friends instead of own interest'], ['know your academic strengths'], ['expert knowledge - job market, courses', 'use personality tests']] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-berjaya', part: 2, soalan: 'What are useful steps for students to be successful in their studies?',
+        pilihan: ['manage time well', 'read a lot', 'do past-year papers', 'attend all classes'], terbaik: 'manage time well',
+        isi: [['balance study, rest and activities', 'no last-minute studying'], ['wider knowledge and vocabulary'], ['know exam format - practise answering'], ['get full explanation - ask questions']] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-membaca', part: 1, soalan: 'How can we encourage reading among youth?',
+        isi: ['Make libraries attractive and comfortable', 'Reading programmes in schools', 'Parents read with children'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-kumpulan', part: 1, soalan: 'What are the benefits of studying in groups?',
+        isi: ['Share ideas and notes', 'Motivate each other', 'Explaining to others improves understanding'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-lawatan', part: 1, soalan: 'How can participation in college trips and student activities be increased?',
+        isi: ['Make them affordable', 'Choose interesting places and activities', 'Give merit or credit points'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-dalamtalian', part: 1, soalan: 'What are the benefits of online learning compared to the traditional classroom?',
+        isi: ['Flexible time and place', 'Learn at your own pace - replay lessons', 'Save travel time and cost'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-komunikasi', part: 1, soalan: 'How can students improve their communication skills?',
+        isi: ['Join debate and drama clubs', 'Read and watch English materials', 'Practise speaking with friends'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-prestasi', part: 2, soalan: 'What factors influence a student\'s academic performance the most?',
+        pilihan: ['motivation', 'family support', 'teachers', 'study habits', 'learning environment'], terbaik: 'motivation',
+        isi: [['self-driven students keep trying', 'without it, other factors do not help'], ['encouragement and resources at home'], ['good explanation makes lessons easy'], ['consistent revision'], ['quiet place to study']] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-hadir', part: 1, soalan: 'Why is attending all classes important?',
+        isi: ['Get explanation directly from lecturers', 'Can ask questions immediately', 'Builds discipline - attendance is required'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-masadepan', part: 1, soalan: 'How can schools and universities better prepare students for the future?',
+        isi: ['Teach soft skills - communication, teamwork', 'Internships and industrial training', 'Digital and technology skills'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-bahasakedua', part: 1, soalan: 'What is the importance of learning a second language?',
+        isi: ['More job opportunities', 'Easier to travel and make friends', 'Trains the brain - better memory'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-kokurikulum', part: 1, soalan: 'What are the advantages of extracurricular activities in education?',
+        isi: ['Develop leadership', 'Teamwork and new friends', 'Balance between study and activities - less stress'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-teknologi', part: 1, soalan: 'How can technology improve the quality of education?',
+        isi: ['Interactive lessons - videos, simulations', 'Learn anywhere, anytime', 'Track students\' progress easily'] },
+      { tarikh: '2026-11-16', tema: 'Education', id: 'ed-tabiat', part: 1, soalan: 'Why should students develop good study habits early?',
+        isi: ['Builds discipline', 'Less stress before exams', 'Lifelong learning habit'] },
+      // ◆ HUJUNG PT_BANK — soalan / isi baru di ATAS baris ini ◆
     ];
     var PT_VERSI = '2026-11-16';
     // ▲▲▲ TAMAT TOPIK SPEAKING ▲▲▲
     function ptCari(id) { for (var i = 0; i < PT_TOPIK.length; i++) if (PT_TOPIK[i].id === id) return PT_TOPIK[i]; return null; }
-    function ptSenarai(part) { var a = [], i; for (i = PT_TOPIK.length - 1; i >= 0; i--) if (PT_TOPIK[i].part === part) a.push(PT_TOPIK[i]); return a; }
     function ptPerluTambah() { return PT_VERSI < coachHariId(); }
-    var ptUI = { rumah: 0, id: '', calon: 0, edit: false, mesej: '', preset: '', contoh: false }, ptData = null, ptMuat = false, ptKar = {};
+    // Bina indeks PT_BANK: soalan ikut tema; isi tambahan ({ isiUntuk }) disambung di hujung (indeks lama kekal)
+    var ptIdx = null;
+    function ptBank() {
+      if (ptIdx) return ptIdx;
+      var S = {}, L = [], T = [], i, j, b, s, p;
+      for (i = 0; i < PT_BANK.length; i++) {
+        b = PT_BANK[i];
+        if (b.soalan && b.id && !S[b.id]) {
+          s = { id: b.id, tema: b.tema || 'Lain-lain', part: b.part === 2 ? 2 : 1, soalan: b.soalan, tarikh: b.tarikh, pilihan: (b.pilihan || []).slice(0), terbaik: b.terbaik || '', isi: [] };
+          if (s.part === 1) for (j = 0; j < (b.isi || []).length; j++) s.isi.push({ p: -1, t: b.isi[j] });
+          else for (p = 0; p < s.pilihan.length; p++) for (j = 0; b.isi && b.isi[p] && j < b.isi[p].length; j++) s.isi.push({ p: p, t: b.isi[p][j] });
+          S[s.id] = s; L.push(s); if (T.indexOf(s.tema) < 0) T.push(s.tema);
+        } else if (b.isiUntuk && S[b.isiUntuk]) {
+          s = S[b.isiUntuk]; p = -1;
+          if (s.part === 2) { p = s.pilihan.indexOf(b.p || ''); if (p < 0 && b.p) { s.pilihan.push(b.p); p = s.pilihan.length - 1; } if (p < 0) continue; }
+          for (j = 0; j < (b.isi || []).length; j++) s.isi.push({ p: p, t: b.isi[j], baru: b.tarikh });
+        }
+      }
+      ptIdx = { S: S, L: L, T: T };
+      return ptIdx;
+    }
+    function ptSoalan(part, tema) { var a = [], L = ptBank().L, i; for (i = 0; i < L.length; i++) if (L[i].part === part && (!tema || L[i].tema === tema)) a.push(L[i]); return a; }
+    var ptUI = { rumah: 0, tema: '', id: '', cid: '', edit: false, mesej: '', preset: '' }, ptData = null, ptMuat = false, ptKar = {};
     var PT_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PT_BTNA = PT_BTN + 'background:#000;color:#fff;';
     function ptHenti() {}
     function ptE(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
-    function ptKunci(t, cl) { return t.id + '-' + (t.part === 1 ? 'ABCD'.charAt(cl) : 'G'); }
+    function ptKunci(s) { return 'q-' + s.id; }
     function ptMuatData() {
       if (ptData || ptMuat || !currentUser) return;
       ptMuat = true;
@@ -15885,40 +16070,45 @@
       kol('pentas_karangan').doc(k).get().then(function(d) { ptKar[k] = d.exists ? (d.data() || {}) : {}; lukisPentas(); })
         .catch(function() { ptKar[k] = {}; lukisPentas(); });
     }
-    function ptKiraHafal(part) {
-      var n = 0, k;
-      for (k in ptData.siap) if (ptData.siap.hasOwnProperty(k)) { var t = ptCari(k.replace(/-[ABCDG]$/, '')); if (t && t.part === part) n++; }
+    function ptKiraHafal(part, tema) {
+      var a = ptSoalan(part, tema), n = 0, i;
+      for (i = 0; i < a.length; i++) if (ptData.siap[ptKunci(a[i])]) n++;
       return n;
     }
     function ptPreset() {
-      var hari = coachHariId(), L = [], i, p1 = 0, p2 = 0;
-      for (i = 0; i < PT_TOPIK.length; i++) { L.push('- Part ' + PT_TOPIK[i].part + ': ' + PT_TOPIK[i].tajuk + ' (' + PT_TOPIK[i].id + ')'); if (PT_TOPIK[i].part === 1) p1++; else p2++; }
+      var hari = coachHariId(), B = ptBank(), L = [], i, s, n1 = 0, n2 = 0;
+      for (i = 0; i < B.T.length; i++) {
+        L.push('TOPIK BESAR: ' + B.T[i]);
+        var a = ptSoalan(1, B.T[i]).concat(ptSoalan(2, B.T[i]));
+        for (var j = 0; j < a.length; j++) { s = a[j]; L.push('- [' + s.id + '] P' + s.part + ' · ' + s.isi.length + ' isi · ' + s.soalan); if (s.part === 1) n1++; else n2++; }
+      }
       return [
-        'TUGAS: Tambah TAJUK, SOALAN dan ISI SPEAKING MUET ke bangunan PENTAS dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
+        'TUGAS: Tambah SOALAN dan ISI SPEAKING MUET ke bank soalan bangunan PENTAS dalam app saya. Kod penuh app saya lampirkan bersama mesej ini.',
         'Tarikh hari ini: ' + hari,
-        'PENTING: JANGAN tulis karangan / huraian — saya tulis huraian sendiri di bawah setiap isi dalam app. Beri tajuk, soalan dan isi SAHAJA.',
+        'PENTING: JANGAN tulis karangan / huraian — saya tulis huraian sendiri di bawah setiap isi dalam app. Beri soalan dan isi SAHAJA (frasa pendek, bukan ayat penuh).',
         '',
-        'BAHAN: [tampal soalan / situasi dari buku di sini. Jika kosong, cipta sendiri 1 topik Part 1 DAN 1 topik Part 2 gaya MUET (tema: people & culture, financial awareness & consumerism, science & technology, health & environment, education). Jangan ulang topik yang sudah ada.]',
+        'BAHAN: [tampal soalan dari buku di sini. Jika kosong: (a) tambah 5 soalan BARU gaya MUET di bawah topik besar sedia ada atau topik besar baru yang sesuai, campur Part 1 dan Part 2; DAN (b) tambah 2-3 isi BARU untuk 3 soalan sedia ada yang paling sedikit isi. Jangan ulang soalan yang sudah ada.]',
         '',
         'PERATURAN:',
-        '1. Ubah HANYA tatasusunan PT_TOPIK dan var PT_VERSI. JANGAN ubah / buang / susun semula topik lama.',
-        '2. Tambah topik baru di ATAS baris "// ◆ HUJUNG PT_TOPIK — topik baru di ATAS baris ini ◆" dan tukar PT_VERSI kepada \'' + hari + '\'.',
-        '3. Bentuk Part 1 (Individual Presentation):',
-        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 1, tajuk: \'Tajuk pendek\', situasi: \'Situasi + arahan (Suggest some ways ...)\', calon: [\'Talk about ... (A)\', \'... (B)\', \'... (C)\', \'... (D)\'], isi: [[\'isi A1\', \'isi A2\', \'isi A3\'], [B x3], [C x3], [D x3]] },',
-        '   - calon = 4 tugasan BERBEZA untuk Calon A-D. isi = 3 isi utama untuk SETIAP calon (frasa pendek, bukan ayat penuh).',
-        '4. Bentuk Part 2 (Group Discussion):',
-        '   { tarikh: \'' + hari + '\', id: \'t-unik\', part: 2, tajuk: \'Tajuk pendek\', situasi: \'Situasi + In your group, discuss ...\', soalan: \'Soalan peta minda?\', pilihan: [5 idea], terbaik: \'idea terbaik\', isi: [[\'hujah ringkas idea 1\', ...], x5] },',
-        '   - isi Part 2 = 1-3 hujah kata kunci (menyokong / membantah) untuk setiap idea, ikut susunan pilihan.',
-        '5. id mesti unik (huruf kecil + sengkang, mula dengan t-). ES5 sahaja. Tiada emoji. Petikan tunggal; apostrophe ditulis \\\'.',
-        '6. Output: SATU codebox sahaja, format:',
+        '1. Ubah HANYA tatasusunan PT_BANK dan var PT_VERSI. JANGAN ubah / buang / susun semula entri lama (huraian saya disimpan ikut susunan isi).',
+        '2. Tambah entri baru di ATAS baris "// ◆ HUJUNG PT_BANK — soalan / isi baru di ATAS baris ini ◆" dan tukar PT_VERSI kepada \'' + hari + '\'.',
+        '3. Soalan Part 1 (Individual Presentation — soalan terbuka, 3 isi):',
+        '   { tarikh: \'' + hari + '\', tema: \'Topik besar\', id: \'xx-unik\', part: 1, soalan: \'Soalan?\', isi: [\'isi 1\', \'isi 2\', \'isi 3\'] },',
+        '4. Soalan Part 2 (Group Discussion — pilih yang PALING sesuai daripada 4-5 pilihan):',
+        '   { tarikh: \'' + hari + '\', tema: \'Topik besar\', id: \'xx-unik\', part: 2, soalan: \'Soalan?\', pilihan: [4-5 pilihan], terbaik: \'pilihan terbaik\', isi: [[\'hujah pilihan 1\', ...], ... ikut susunan pilihan] },',
+        '5. Isi tambahan untuk soalan SEDIA ADA (jangan ubah entri asal — tambah entri baru):',
+        '   Part 1: { tarikh: \'' + hari + '\', isiUntuk: \'id-soalan\', isi: [\'isi baru\', ...] },',
+        '   Part 2: { tarikh: \'' + hari + '\', isiUntuk: \'id-soalan\', p: \'nama pilihan (tepat)\', isi: [\'hujah baru\', ...] },',
+        '6. tema mesti DITULIS TEPAT seperti topik besar sedia ada (atau topik besar baru). id unik: huruf kecil + sengkang, awalan ikut tema (pc-, fa-, st-, he-, ed-). ES5 sahaja. Tiada emoji. Petikan tunggal; apostrophe ditulis \\\'.',
+        '7. Output: SATU codebox sahaja, format:',
         'Cari:',
         '[kod lama]',
         'Ganti:',
         '[kod baru]',
-        '   Blok Cari mesti DISALIN TEPAT dari kod saya — bermula baris "// ◆ HUJUNG PT_TOPIK" hingga baris "function ptCari(id) {" (5 baris). Jangan taip semula dari ingatan.',
-        '7. Jangan terangkan panjang lebar — terus bagi codebox.',
+        '   Blok Cari mesti DISALIN TEPAT dari kod saya — bermula baris "// ◆ HUJUNG PT_BANK" hingga baris "function ptCari(id) {" (5 baris). Jangan taip semula dari ingatan.',
+        '8. Jangan terangkan panjang lebar — terus bagi codebox.',
         '',
-        'TOPIK SEDIA ADA (Part 1: ' + p1 + ', Part 2: ' + p2 + '):'
+        'SOALAN SEDIA ADA (Part 1: ' + n1 + ', Part 2: ' + n2 + '):'
       ].concat(L).join('\n');
     }
     function ptSalin(teks) {
@@ -15935,50 +16125,34 @@
       gagal();
     }
     function lukisPentas() {
-      var h = '<div style="font-weight:bold;font-size:1.15rem;">SPEAKING — MUET PAPER 2</div>', i, j, t, a;
-      if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = h + '<div>Memuatkan...</div>'; return; }
-      if (ptUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + ptUI.mesej + '</div>';
+      var TJ = '<div style="font-weight:bold;font-size:1.15rem;margin-top:4px;">SPEAKING — MUET PAPER 2</div>', h = '', i, j, t, a, s;
+      var kepala = function(aksi, label) {
+        return (aksi ? '<button type="button" data-pt="' + aksi + '" style="' + PT_BTN + '">‹ ' + label + '</button>' : '') + TJ +
+          (ptUI.mesej ? '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + ptUI.mesej + '</div>' : '');
+      };
+      if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan...</div>'; return; }
+      var B = ptBank(), nmP = ptUI.rumah === 1 ? 'INDIVIDUAL PRESENTATION' : 'GROUP DISCUSSION';
       var kotakPreset = ptUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + ptE(ptUI.preset) + '</textarea>' : '';
       // ── 2 RUMAH ──
       if (!ptUI.rumah) {
-        if (ptPerluTambah()) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ARAHAN COACH: TAMBAH TOPIK SPEAKING HARI INI</div>' +
-          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan soalan dari buku jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>AI beri tajuk, soalan &amp; isi sahaja — karangan anda tulis sendiri.</div>' +
+        h = kepala('', '');
+        if (ptPerluTambah()) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ARAHAN COACH: TAMBAH SOALAN &amp; ISI SPEAKING HARI INI</div>' +
+          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET.<br>2. Tampal ke AI bersama kod penuh app (dan soalan dari buku jika ada).<br>3. Tampal codebox jawapan AI ke app → Ganti Pukal.<br>AI beri soalan &amp; isi sahaja — huraian anda tulis sendiri.</div>' +
           '<button type="button" data-pt="preset" style="' + PT_BTNA + '">SALIN PRESET</button>' + kotakPreset + '</div>';
         h += '<div class="kd-pondok" style="margin-top:8px;">';
         for (i = 1; i <= 2; i++) {
-          a = ptSenarai(i);
           h += '<button type="button" class="kd-pd" data-pt="rumah" data-v="' + i + '">' + svgBangunan(i === 1 ? 'pentas' : 'kumpulan', i === 1 ? 'INDIVIDUAL' : 'GROUP', true) +
-            '<small>Part ' + i + ' · ' + (i === 1 ? 'Individual Presentation' : 'Group Discussion') + '<br>' + a.length + ' topik · ' + ptKiraHafal(i) + ' hafal</small></button>';
+            '<small>Part ' + i + ' · ' + (i === 1 ? 'Individual Presentation' : 'Group Discussion') + '<br>' + ptSoalan(i).length + ' soalan · ' + ptKiraHafal(i) + ' hafal</small></button>';
         }
         h += '</div>';
-        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Topik terakhir ditambah: ' + PT_VERSI + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' + kotakPreset;
+        if (!ptPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Soalan terakhir ditambah: ' + PT_VERSI + '. <button type="button" data-pt="preset" style="' + PT_BTN + '">SALIN PRESET</button></div>' + kotakPreset;
         el('pentas-isi').innerHTML = h; return;
       }
-      // ── SENARAI TOPIK ──
-      if (!ptUI.id) {
-        a = ptSenarai(ptUI.rumah);
-        h += '<button type="button" data-pt="balik" style="' + PT_BTN + '">‹ RUMAH</button>';
-        var nmP = ptUI.rumah === 1 ? 'INDIVIDUAL PRESENTATION' : 'GROUP DISCUSSION', adaC = false;
-        for (i = 0; i < a.length; i++) {
-          t = a[i]; if (!t.contoh && !t.nota) continue;
-          if (!adaC) { h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">CONTOH : ' + nmP + '</div>'; adaC = true; }
-          h += '<button type="button" data-pt="lihatcontoh" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;background:#eee;">' + ptE(t.tajuk) +
-            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + ' · contoh</span> ›</button>';
-        }
-        h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">' + (ptUI.rumah === 1 ? 'PART 1: ' : 'PART 2: ') + nmP + '</div>';
-        if (!a.length) h += '<div>Belum ada topik. Tekan SALIN PRESET di halaman rumah.</div>';
-        for (i = 0; i < a.length; i++) {
-          t = a[i];
-          h += '<button type="button" data-pt="topik" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + ptE(t.tajuk) +
-            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + (t.tarikh === coachHariId() ? ' · BARU' : '') + '</span> ›</button>';
-        }
-        el('pentas-isi').innerHTML = h; return;
-      }
-      // ── SATU TOPIK: soalan + isi (AI) + KARANGAN SAYA (tulis sendiri) ──
-      t = ptCari(ptUI.id);
-      if (!t) { ptUI.id = ''; lukisPentas(); return; }
-      if (ptUI.contoh) {
-        h += '<button type="button" data-pt="senarai" style="' + PT_BTN + '">‹ SENARAI</button>';
+      // ── CONTOH (nota + karangan dari buku) ──
+      if (ptUI.cid) {
+        t = ptCari(ptUI.cid);
+        if (!t) { ptUI.cid = ''; lukisPentas(); return; }
+        h = kepala('tutupcontoh', 'TOPIK BESAR');
         h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">CONTOH: ' + ptE(t.tajuk) + '</div>';
         h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;"><b>Situation:</b> ' + ptE(t.situasi);
         if (t.part === 1) h += '<div style="margin-top:4px;"><b>Candidate A:</b> You have to give a presentation to your class. ' + ptE(t.calon[0]) + '</div>';
@@ -16006,50 +16180,83 @@
         }
         el('pentas-isi').innerHTML = h; return;
       }
-      var cl = t.part === 1 ? ptUI.calon : 0, k = ptKunci(t, cl), isi = (t.isi && t.isi[cl]) || [];
-      h += '<button type="button" data-pt="senarai" style="' + PT_BTN + '">‹ SENARAI</button>';
-      h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + ptE(t.tajuk) + '</div>';
-      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;"><b>Situation:</b> ' + ptE(t.situasi);
-      if (t.part === 1) {
-        h += '<div style="margin-top:4px;">';
-        for (i = 0; i < t.calon.length; i++) h += '<button type="button" data-pt="calon" data-v="' + i + '" style="' + (i === cl ? PT_BTNA : PT_BTN) + '">' + 'ABCD'.charAt(i) + (ptData.siap[ptKunci(t, i)] ? ' ✓' : '') + '</button>';
-        h += '</div><div style="margin-top:4px;"><b>Candidate ' + 'ABCD'.charAt(cl) + ':</b> You have to give a presentation to your class. ' + ptE(t.calon[cl]) + '</div>';
-      } else {
-        h += '<div style="background:#000;color:#fff;font-weight:bold;text-align:center;border-radius:8px;padding:5px;margin:6px 0 4px;">' + ptE(t.soalan) + '</div><div style="text-align:center;">';
-        for (i = 0; i < t.pilihan.length; i++) h += '<span style="display:inline-block;border:2px solid #000;border-radius:6px;padding:2px 8px;margin:2px;">' + ptE(t.pilihan[i]) + '</span>';
+      // ── SENARAI TOPIK BESAR ──
+      if (!ptUI.tema) {
+        h = kepala('balik', 'RUMAH');
+        h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">PART ' + ptUI.rumah + ': ' + nmP + '</div>';
+        var adaC = false;
+        for (i = PT_TOPIK.length - 1; i >= 0; i--) {
+          t = PT_TOPIK[i]; if (t.part !== ptUI.rumah || (!t.contoh && !t.nota)) continue;
+          if (!adaC) { h += '<div style="font-weight:bold;margin:8px 0 2px;">CONTOH : ' + nmP + '</div>'; adaC = true; }
+          h += '<button type="button" data-pt="lihatcontoh" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;background:#eee;">' + ptE(t.tajuk) +
+            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + t.tarikh + ' · contoh</span> ›</button>';
+        }
+        h += '<div style="font-weight:bold;margin:10px 0 2px;">SENARAI TOPIK BESAR</div>';
+        for (i = 0; i < B.T.length; i++) {
+          a = ptSoalan(ptUI.rumah, B.T[i]); if (!a.length) continue;
+          h += '<button type="button" data-pt="tema" data-v="' + ptE(B.T[i]).replace(/"/g, '&quot;') + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + ptE(B.T[i]) +
+            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + a.length + ' soalan · ' + ptKiraHafal(ptUI.rumah, B.T[i]) + ' hafal</span> ›</button>';
+        }
+        el('pentas-isi').innerHTML = h; return;
+      }
+      // ── SENARAI SOALAN DALAM TOPIK BESAR ──
+      if (!ptUI.id) {
+        a = ptSoalan(ptUI.rumah, ptUI.tema);
+        h = kepala('senaraitema', 'TOPIK BESAR');
+        h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">PART ' + ptUI.rumah + ' · ' + ptE(ptUI.tema).toUpperCase() + '</div>';
+        if (!a.length) h += '<div>Belum ada soalan.</div>';
+        for (i = 0; i < a.length; i++) {
+          s = a[i];
+          h += '<button type="button" data-pt="soalan" data-v="' + s.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + (i + 1) + '. ' + ptE(s.soalan) +
+            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + s.isi.length + ' isi' + (ptData.siap[ptKunci(s)] ? ' · HAFAL ✓' : '') + (s.tarikh === coachHariId() ? ' · BARU' : '') + '</span> ›</button>';
+        }
+        el('pentas-isi').innerHTML = h; return;
+      }
+      // ── SATU SOALAN: isi (AI) + huraian saya di bawah setiap isi ──
+      s = B.S[ptUI.id];
+      if (!s) { ptUI.id = ''; lukisPentas(); return; }
+      var k = ptKunci(s);
+      h = kepala('senarai', 'SENARAI SOALAN');
+      h += '<div style="font-size:0.8rem;margin-top:6px;">PART ' + s.part + ' · ' + ptE(s.tema) + '</div>';
+      h += '<div style="background:#000;color:#fff;font-weight:bold;border-radius:8px;padding:6px 8px;margin:4px 0;">' + ptE(s.soalan) + '</div>';
+      if (s.part === 2) {
+        h += '<div style="text-align:center;">';
+        for (i = 0; i < s.pilihan.length; i++) h += '<span style="display:inline-block;border:2px solid #000;border-radius:6px;padding:2px 8px;margin:2px;">' + ptE(s.pilihan[i]) + '</span>';
         h += '</div><div style="font-size:0.85rem;margin-top:4px;">Di akhir perbincangan, putuskan pilihan yang <b>PALING</b> sesuai.</div>';
       }
-      h += '</div>';
-      // ISI (dari AI) + HURAIAN SAYA di bawah setiap isi (pengguna tulis sendiri)
-      var senIsi = [], hint = [];
-      if (t.part === 1) senIsi = isi;
-      else for (i = 0; i < t.pilihan.length; i++) { senIsi.push(t.pilihan[i]); hint.push((t.isi && t.isi[i]) || []); }
       ptMuatKar(k);
-      var kr = ptKar[k], hs = (kr && kr.h) || [], ada = false;
-      for (i = 0; i < hs.length; i++) if (hs[i]) ada = true;
+      var kr = ptKar[k], hs = (kr && kr.h && typeof kr.h === 'object') ? kr.h : {}, ada = false, x;
+      for (x in hs) if (hs.hasOwnProperty(x) && hs[x]) ada = true;
       var mEdit = kr && (ptUI.edit || !ada);
-      h += '<div style="font-weight:bold;margin-top:8px;">ISI &amp; HURAIAN' + (t.part === 1 ? ' — Calon ' + 'ABCD'.charAt(cl) : '') + '</div>' +
-        '<div style="font-size:0.8rem;">AI beri isi · anda tulis huraian sendiri di bawah setiap isi (sebab, contoh, kesan). Tak reti? Tanya AI anda, kemudian tulis semula dengan ayat sendiri.</div>';
-      if (!senIsi.length) h += '<div style="font-size:0.85rem;">Belum ada isi.</div>';
+      var kotak = function(kunci) {
+        if (mEdit) return '<textarea data-k="' + kunci + '" placeholder="Huraian saya..." style="width:100%;height:110px;margin-top:4px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">' + ptE(hs[kunci] || '') + '</textarea>';
+        return '<div style="font-size:0.95rem;margin-top:4px;line-height:1.45;border-left:3px solid #000;padding-left:6px;">' + (hs[kunci] ? ptTebal(ptE(hs[kunci])).replace(/\n/g, '<br>') : '<i>(belum ditulis)</i>') + '</div>';
+      };
+      h += '<div style="font-weight:bold;margin-top:8px;">ISI &amp; HURAIAN</div>' +
+        '<div style="font-size:0.8rem;">App beri isi · anda tulis huraian sendiri di bawah setiap isi (sebab, contoh, kesan). Tak reti? Tanya AI anda, kemudian tulis semula dengan ayat sendiri.</div>';
       if (!kr) h += '<div>Memuatkan huraian...</div>';
-      for (i = 0; kr && i < senIsi.length; i++) {
-        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;">' +
-          '<div><span style="display:inline-block;background:#000;color:#fff;font-weight:bold;border-radius:6px;padding:2px 8px;">' + (t.part === 1 ? 'ISI ' + (i + 1) : ptE(senIsi[i])) + '</span>' +
-          (t.part === 2 && t.terbaik === senIsi[i] ? ' <span style="font-size:0.75rem;border:2px solid #000;border-radius:4px;padding:0 4px;">TERBAIK</span>' : '') + '</div>' +
-          (t.part === 1 ? '<div style="font-weight:bold;margin:3px 0;">' + ptE(senIsi[i]) + '</div>' : '');
-        if (t.part === 2) for (j = 0; j < hint[i].length; j++) h += '<div style="font-size:0.8rem;margin:2px 0 0 4px;">&#8594; ' + ptE(hint[i][j]) + '</div>';
-        if (mEdit) h += '<textarea id="pt-h-' + i + '" placeholder="Huraian saya..." style="width:100%;height:110px;margin-top:4px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">' + ptE(hs[i] || '') + '</textarea>';
-        else h += '<div style="font-size:0.95rem;margin-top:4px;line-height:1.45;border-left:3px solid #000;padding-left:6px;">' + (hs[i] ? ptTebal(ptE(hs[i])).replace(/\n/g, '<br>') : '<i>(belum ditulis)</i>') + '</div>';
-        h += '</div>';
+      else if (s.part === 1) {
+        if (!s.isi.length) h += '<div style="font-size:0.85rem;">Belum ada isi.</div>';
+        for (i = 0; i < s.isi.length; i++) {
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><span style="display:inline-block;background:#000;color:#fff;font-weight:bold;border-radius:6px;padding:2px 8px;">ISI ' + (i + 1) + '</span>' +
+            (s.isi[i].baru ? ' <span style="font-size:0.7rem;">tambahan ' + s.isi[i].baru + '</span>' : '') +
+            '<div style="font-weight:bold;margin:3px 0;">' + ptE(s.isi[i].t) + '</div>' + kotak(String(i)) + '</div>';
+        }
+      } else {
+        for (i = 0; i < s.pilihan.length; i++) {
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><span style="display:inline-block;background:#000;color:#fff;font-weight:bold;border-radius:6px;padding:2px 8px;">' + ptE(s.pilihan[i]) + '</span>' +
+            (s.terbaik === s.pilihan[i] ? ' <span style="font-size:0.75rem;border:2px solid #000;border-radius:4px;padding:0 4px;">TERBAIK</span>' : '');
+          for (j = 0; j < s.isi.length; j++) if (s.isi[j].p === i) h += '<div style="font-size:0.85rem;margin:2px 0 0 4px;">&#8594; ' + ptE(s.isi[j].t) + '</div>';
+          h += kotak('p' + i) + '</div>';
+        }
       }
-      if (kr && senIsi.length) {
+      if (kr) {
         if (mEdit) h += '<div><button type="button" data-pt="simpan" style="' + PT_BTNA + '">SIMPAN HURAIAN</button>' + (ada ? '<button type="button" data-pt="batal" style="' + PT_BTN + '">BATAL</button>' : '') + '</div>';
         else h += '<div style="font-size:0.8rem;">Disimpan ' + (kr.tarikh || '') + ' · ungkapan berguna ditebalkan</div>' +
           '<div><button type="button" data-pt="edit" style="' + PT_BTN + '">BAIKI HURAIAN</button>' +
           '<button type="button" data-pt="tanda" style="' + PT_BTNA + '">' + (ptData.siap[k] ? 'SUDAH HAFAL ✓ (' + ptData.siap[k] + ')' : 'TANDA SUDAH HAFAL') + '</button></div>' +
           '<div style="font-size:0.8rem;margin-top:4px;">Tip Naufal: setiap kali ulang kaji, baca semula — jumpa ayat lebih baik? Tekan BAIKI HURAIAN.</div>';
       }
-      // Contoh (nota + karangan) kini di seksyen CONTOH dalam senarai topik
       el('pentas-isi').innerHTML = h;
     }
     // Tebalkan ungkapan berguna (dari nota DAILY REPETITION) dalam karangan — satu laluan, frasa panjang dahulu
@@ -16071,20 +16278,22 @@
       var t = e.target;
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pt'))) t = t.parentNode;
       if (!t || t === this) return;
-      var a = t.getAttribute('data-pt'), v = t.getAttribute('data-v'), tp = ptCari(ptUI.id), k = tp ? ptKunci(tp, tp.part === 1 ? ptUI.calon : 0) : '';
+      var a = t.getAttribute('data-pt'), v = t.getAttribute('data-v'), sq = ptUI.id ? ptBank().S[ptUI.id] : null, k = sq ? ptKunci(sq) : '';
       if (a !== 'preset') ptUI.mesej = '';
-      if (a === 'rumah') { ptUI.rumah = +v; ptUI.id = ''; }
-      else if (a === 'balik') { ptUI.rumah = 0; ptUI.id = ''; }
-      else if (a === 'senarai') { ptUI.id = ''; ptUI.edit = false; ptUI.contoh = false; }
-      else if (a === 'topik') { ptUI.id = v; ptUI.calon = 0; ptUI.edit = false; ptUI.contoh = false; }
-      else if (a === 'calon') { ptUI.calon = +v; ptUI.edit = false; ptUI.contoh = false; }
+      if (a === 'rumah') { ptUI.rumah = +v; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; }
+      else if (a === 'balik') { ptUI.rumah = 0; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; }
+      else if (a === 'lihatcontoh') { ptUI.cid = v; }
+      else if (a === 'tutupcontoh') { ptUI.cid = ''; }
+      else if (a === 'tema') { ptUI.tema = v; ptUI.id = ''; }
+      else if (a === 'senaraitema') { ptUI.tema = ''; ptUI.id = ''; }
+      else if (a === 'soalan') { ptUI.id = v; ptUI.edit = false; }
+      else if (a === 'senarai') { ptUI.id = ''; ptUI.edit = false; }
       else if (a === 'preset') { ptSalin(ptPreset()); return; }
       else if (a === 'edit') { ptUI.edit = true; }
       else if (a === 'batal') { ptUI.edit = false; }
-      else if (a === 'lihatcontoh') { ptUI.id = v; ptUI.calon = 0; ptUI.edit = false; ptUI.contoh = true; }
       else if (a === 'simpan') {
-        var hs = [], n = 0, x;
-        for (var q = 0; el('pt-h-' + q); q++) { x = (el('pt-h-' + q).value || '').replace(/\s+$/, ''); hs.push(x); if (x) n++; }
+        var tx = el('pentas-isi').getElementsByTagName('textarea'), hs = {}, n = 0, x, q;
+        for (q = 0; q < tx.length; q++) { if (!tx[q].getAttribute('data-k')) continue; x = (tx[q].value || '').replace(/\s+$/, ''); hs[tx[q].getAttribute('data-k')] = x; if (x) n++; }
         if (!n) { alert('Huraian masih kosong.'); return; }
         var rek = { h: hs, at: Date.now(), tarikh: coachHariId() };
         kol('pentas_karangan').doc(k).set(rek).then(function() { ptKar[k] = rek; ptUI.edit = false; ptUI.mesej = 'Huraian disimpan.'; lukisPentas(); })
@@ -16101,7 +16310,7 @@
       try { window.scrollTo(0, 0); } catch (x) {}
     };
     function bukaPentas() {
-      ptUI.rumah = 0; ptUI.id = ''; ptUI.edit = false; ptUI.mesej = '';
+      ptUI.rumah = 0; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; ptUI.edit = false; ptUI.mesej = '';
       usMuat('screen-pentas', 'pentas-info', function() { el('pentas-info').textContent = ''; lukisPentas(); });
     }
     el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
