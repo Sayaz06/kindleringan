@@ -13067,7 +13067,24 @@
       for (i = 0; i < g.f.length; i++) h += '<div style="margin:3px 0;">- <b>' + pnTeks(g.f[i]) + '</b>' + pnButangAudio(g.id + '-' + i) + '</div>';
       return h;
     }
-    function pnBacaSaat(g) { return Math.max(60, Math.min(180, g.f.length * 20)); }
+    // Bacaan = kumpulan HARI INI + maks 3 kumpulan lain dari set yang sama (supaya SEMUA pilihan jawapan latihan ada dalam bacaan)
+    function pnBacaGrp(gid) {
+      var S = pnSetDari(gid), lain = pnAcak(S.g.filter(function(x) { return x.id !== gid; })).slice(0, 3), out = [gid], i;
+      for (i = 0; i < S.g.length; i++) if (lain.indexOf(S.g[i]) !== -1) out.push(S.g[i].id); // ikut susunan nota
+      return out;
+    }
+    function pnBacaSaat(ids) { var n = 0, i; for (i = 0; i < ids.length; i++) n += pnGrp(ids[i]).f.length; return Math.max(60, Math.min(240, n * 12)); }
+    function pnSenaraiBaca(ids) {
+      var h = '', i, g, pasang;
+      for (i = 0; i < ids.length; i++) {
+        g = pnGrp(ids[i]); pasang = typeof g.f[0] !== 'string';
+        h += '<div style="border:2px ' + (i === 0 ? 'solid' : 'dashed') + ' #000;border-radius:8px;padding:4px 7px;margin:6px 0;">' +
+          (i === 0 ? '<div style="font-size:0.75rem;font-weight:bold;">NOTA HARI INI</div>' : '') +
+          (pasang ? '<div><b>' + g.t + '</b> — ' + g.ms + '</div>' : '<div>Digunakan untuk: <b>' + g.t + '</b> <span style="font-size:0.85rem;">(' + g.ms + ')</span></div>') +
+          pnSenaraiFrasa(g) + '</div>';
+      }
+      return h;
+    }
     function pnTeksMasa(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
     function pnHentiMasa() { if (pnTimer) { clearInterval(pnTimer); pnTimer = null; } }
     // Lukis semula bahagian yang sedang dibuka (kotak HARI INI di Pawagam atau page SEMUA NOTA)
@@ -13124,11 +13141,11 @@
         h += '<div style="margin-top:4px;"><b>' + g.t + '</b></div><div style="font-size:0.8rem;">' + pnSetDari(g.id).t + ' · ' + g.ms + (sx ? ' · fasa ' + (sx.fasa + 1) + '/' + PN_SELANG.length : ' · NOTA BARU') + '</div>';
         if (pnUI.mod === 'baca' && pnUI.baca) {
           var baki = pnUI.baca.had - (Date.now() - pnUI.baca.mula) / 1000;
-          h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 7px;margin:6px 0;"><b>BACA DULU</b> — semua jawapan latihan ada dalam senarai ini. Masa baca: <b id="pn-masa">' + pnTeksMasa(baki) + '</b></div>';
-          h += pnSenaraiFrasa(g);
+          h += '<div style="border:3px solid #000;border-radius:8px;padding:4px 7px;margin:6px 0;background:#eee;"><b>BACA DULU</b> — ingat setiap frasa digunakan untuk apa. Semua soalan dan jawapan latihan ada dalam senarai ini. Masa baca: <b id="pn-masa">' + pnTeksMasa(baki) + '</b></div>';
+          h += pnSenaraiBaca(pnUI.baca.grps);
           h += '<button type="button" data-pn="siapbaca" style="' + PN_BTNA + '">SIAP BACA → MULA LATIHAN</button>';
         } else {
-          h += '<div style="font-size:0.85rem;margin-top:4px;">Tekan MULA: BACA senarai dulu (' + pnTeksMasa(pnBacaSaat(g)) + ' minit), kemudian LATIHAN ' + Math.min(5, g.f.length) + ' soalan (lulus 80%). Semua jawapan ada dalam bacaan.</div>';
+          h += '<div style="font-size:0.85rem;margin-top:4px;">Tekan MULA: BACA nota hari ini bersama beberapa kumpulan lain sebagai perbandingan (1 – 4 minit), kemudian LATIHAN 5 soalan (lulus 80%). Semua jawapan ada dalam bacaan.</div>';
           h += '<button type="button" data-pn="mula" style="' + PN_BTNA + '">MULA ULANG KAJI</button>';
         }
       }
@@ -13159,11 +13176,15 @@
       return h;
     }
     function pnAcak(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
-    // Kuiz: soalan HANYA dari item kumpulan yang dibaca (maks 5). Pilihan salah dari kumpulan / maksud lain dalam SET yang sama.
-    function pnBinaKuiz(grpId) {
-      var S = pnSetDari(grpId), g = pnGrp(grpId), semua = [], i, j, k, out = [];
-      for (i = 0; i < S.g.length; i++) for (j = 0; j < S.g[i].f.length; j++) semua.push({ it: S.g[i].f[j], gid: S.g[i].id });
-      var soalan = pnAcak(semua.filter(function(x) { return x.gid === g.id; })).slice(0, 5);
+    // Kuiz: soalan & pilihan jawapan HANYA dari kumpulan yang dibaca (grps). Maks 3 soalan dari nota hari ini + baki dari kumpulan lain yang dibaca.
+    function pnBinaKuiz(grpId, grps) {
+      var semua = [], i, j, k, out = [], G = [];
+      grps = grps && grps.length ? grps : [grpId];
+      for (i = 0; i < grps.length; i++) { G.push(pnGrp(grps[i])); for (j = 0; j < G[i].f.length; j++) semua.push({ it: G[i].f[j], gid: G[i].id }); }
+      var dariG = pnAcak(semua.filter(function(x) { return x.gid === grpId; }));
+      var lain = pnAcak(semua.filter(function(x) { return x.gid !== grpId; }));
+      var ambilG = Math.min(dariG.length, Math.max(3, 5 - lain.length));
+      var soalan = pnAcak(dariG.slice(0, ambilG).concat(lain.slice(0, 5 - ambilG)));
       for (i = 0; i < soalan.length; i++) {
         var it = soalan[i].it, frasa = typeof it === 'string' ? it : it[0], betulTeks;
         if (typeof it !== 'string') {
@@ -13173,8 +13194,9 @@
         } else {
           var punya = {}; // kumpulan lain yang ada frasa sama (cth 'because') → bukan pilihan salah
           for (k = 0; k < semua.length; k++) if (semua[k].it === it) punya[semua[k].gid] = 1;
-          betulTeks = '<b>' + g.t + '</b> <span style="font-weight:normal;">(' + g.ms + ')</span>';
-          var salah = pnAcak(S.g.filter(function(x) { return !punya[x.id]; })).slice(0, 3).map(function(x) { return '<b>' + x.t + '</b> <span style="font-weight:normal;">(' + x.ms + ')</span>'; });
+          var gp = pnGrp(soalan[i].gid);
+          betulTeks = '<b>' + gp.t + '</b> <span style="font-weight:normal;">(' + gp.ms + ')</span>';
+          var salah = pnAcak(G.filter(function(x) { return !punya[x.id]; })).slice(0, 3).map(function(x) { return '<b>' + x.t + '</b> <span style="font-weight:normal;">(' + x.ms + ')</span>'; });
           out.push({ frasa: frasa, makna: false, pilih: pnAcak(salah.concat([betulTeks])), betulTeks: betulTeks });
         }
         out[i].betul = out[i].pilih.indexOf(out[i].betulTeks);
@@ -13183,7 +13205,8 @@
     }
     function pnMulaKuiz() {
       pnHentiMasa();
-      pnUI.baca = null; pnUI.kuiz = pnBinaKuiz(pnUI.grp); pnUI.mod = 'kuiz';
+      var grps = pnUI.baca && pnUI.baca.grps; pnUI.baca = null;
+      pnUI.kuiz = pnBinaKuiz(pnUI.grp, grps); pnUI.mod = 'kuiz';
       pnRender();
     }
     function pnSimpan(medan) {
@@ -13202,7 +13225,8 @@
       if (a === 'pilih') { pnUI.grp = v; pnRender(); return true; }
       if (a === 'mula') {
         var g = pnGrp(pnUI.grp); if (!g) return true;
-        pnUI.mod = 'baca'; pnUI.baca = { mula: Date.now(), had: pnBacaSaat(g) };
+        var grps = pnBacaGrp(g.id);
+        pnUI.mod = 'baca'; pnUI.baca = { mula: Date.now(), had: pnBacaSaat(grps), grps: grps };
         pnHentiMasa();
         pnTimer = setInterval(function() {
           var m = el('pn-masa');
@@ -13214,7 +13238,7 @@
         pnRender(); return true;
       }
       if (a === 'siapbaca') { pnMulaKuiz(); return true; }
-      if (a === 'latih') { pnUI.grp = v; pnUI.kuiz = pnBinaKuiz(v); pnUI.kuiz.dariSet = true; pnUI.mod = 'kuiz'; pnRender(); return true; }
+      if (a === 'latih') { pnUI.grp = v; pnUI.kuiz = pnBinaKuiz(v, pnSetDari(v).g.map(function(x) { return x.id; })); pnUI.kuiz.dariSet = true; pnUI.mod = 'kuiz'; pnRender(); return true; }
       if (a === 'jawab' && pnUI.kuiz && pnUI.kuiz.jawab === null) {
         pnUI.kuiz.jawab = parseInt(v, 10);
         if (pnUI.kuiz.jawab === pnUI.kuiz.soalan[pnUI.kuiz.i].betul) pnUI.kuiz.skor++;
