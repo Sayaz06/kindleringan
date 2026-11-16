@@ -13111,8 +13111,8 @@
         }
         var sx = pnData.sr[g.id];
         h += '<div style="margin-top:6px;"><b>ULANG KAJI HARI INI:</b> ' + g.t + '</div><div style="font-size:0.8rem;">' + pnSetDari(g.id).t + ' · ' + g.ms + (sx ? ' · fasa ' + (sx.fasa + 1) + '/' + PN_SELANG.length : ' · NOTA BARU') + '</div>';
-        h += '<div style="font-size:0.85rem;margin-top:4px;">1. BACA semula senarai di bawah (tekan ikon bunyi untuk dengar).</div>' + pnSenaraiFrasa(g, false);
-        h += '<div style="font-size:0.85rem;margin-top:4px;">2. Buat LATIHAN (5 soalan, lulus 80%).</div>';
+        h += '<div style="font-weight:bold;margin-top:6px;">1. READING LISTENING VOCAB</div><div style="font-size:0.8rem;">Baca semula senarai di bawah (tekan ikon bunyi untuk dengar · + MP3 untuk muat naik audio).</div>' + pnSenaraiFrasa(g, true);
+        h += '<div style="font-weight:bold;margin-top:6px;">2. EXERCISE LISTENING VOCAB</div><div style="font-size:0.8rem;">5 soalan, lulus 80%.</div>';
         h += '<button type="button" data-pn="mula" style="' + btnA + '">MULA LATIHAN</button>';
       }
       // Butang set kemahiran
