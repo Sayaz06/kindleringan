@@ -19059,7 +19059,7 @@
       }).catch(function() { cb([]); });
     }
     // ── DALAM KAPAL: terjemah setiap ayat sepanjang pelayaran ke dermaga ──
-    var GK = { l: null, id: '', soalan: null, ayat: [], bm: {}, mesej: '' };
+    var GK = { l: null, id: '', soalan: null, ayat: [], bm: {}, ok: {}, salah: -1, mesej: '' }; // ok[i] = ayat sudah DISIMPAN (turun ke bawah)
     var GK_PEMANDU = '<svg viewBox="0 0 120 90" width="120" height="90" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#000" stroke-width="3" stroke-linecap="round">' +
       '<circle cx="40" cy="18" r="8" fill="#fff"/><path d="M40 26 V54 M40 54 L32 76 M40 54 L48 76 M40 34 L66 42 M40 34 L64 50"/>' +
       '<circle cx="80" cy="46" r="18"/><circle cx="80" cy="46" r="4" fill="#000"/><path d="M80 22 V70 M56 46 H104 M63 29 L97 63 M97 29 L63 63"/>' +
@@ -19072,16 +19072,17 @@
       el('gk-info').textContent = 'Kapal belayar... memuatkan karangan.';
       Promise.all([kol('writing_soalan').doc(GK.id).get(), kol('writing_kapal').doc(GK.id).get()]).then(function(r) {
         var s = r[0].exists ? (r[0].data() || {}) : {}, k = r[1].exists ? (r[1].data() || {}) : {}, lama = {}, i;
-        GK.soalan = s; GK.ayat = lwPecah(s.karangan); GK.bm = {};
-        for (i = 0; i < (k.ayat || []).length; i++) lama[lwNorm(k.ayat[i].en)] = k.ayat[i].bm || '';
-        for (i = 0; i < GK.ayat.length; i++) GK.bm[i] = lama[lwNorm(GK.ayat[i])] || '';
+        GK.soalan = s; GK.ayat = lwPecah(s.karangan); GK.bm = {}; GK.ok = {}; GK.salah = -1;
+        var lamaOk = {};
+        for (i = 0; i < (k.ayat || []).length; i++) { lama[lwNorm(k.ayat[i].en)] = k.ayat[i].bm || ''; if (k.ayat[i].ok) lamaOk[lwNorm(k.ayat[i].en)] = 1; }
+        for (i = 0; i < GK.ayat.length; i++) { GK.bm[i] = lama[lwNorm(GK.ayat[i])] || ''; if (lamaOk[lwNorm(GK.ayat[i])] && GK.bm[i]) GK.ok[i] = 1; }
         el('gk-info').textContent = '';
         gkLukis();
       }).catch(function(e) { el('gk-info').textContent = 'Gagal memuat: ' + ((e && e.message) || e); });
     }
     function gkBaca() { var t = el('gk-isi').querySelectorAll('textarea[data-gk]'), i; for (i = 0; i < t.length; i++) GK.bm[+t[i].getAttribute('data-gk')] = t[i].value; }
     // Pemandangan DALAM KAPAL (17 Nov): laut + pelabuhan (kiri) + kren dermaga (kanan) · kapal bergerak ikut bilangan ayat yang sudah diterjemah
-    function gkSiap() { var n = 0, i; for (i = 0; i < GK.ayat.length; i++) if (String(GK.bm[i] || '').replace(/\s+/g, '')) n++; return n; }
+    function gkSiap() { var n = 0, i; for (i = 0; i < GK.ayat.length; i++) if (GK.ok[i]) n++; return n; } // kapal bergerak ikut ayat yang DISIMPAN
     function gkX(n) { return GK.ayat.length ? Math.round(n / GK.ayat.length * 230) : 0; }
     function gkLaut() {
       var s = '<svg viewBox="0 0 360 96" style="display:block;width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round">';
@@ -19102,13 +19103,21 @@
       h += '<div style="border:3px solid #000;border-radius:12px;padding:4px 6px 2px;margin:0 0 6px;">' + gkLaut() +
         '<div id="gk-kira" style="text-align:center;font-weight:bold;font-size:0.95rem;margin:2px 0;"></div></div>';
       h += '<div style="font-size:0.85rem;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;"><b>TASK ' + (s.task === 2 ? 2 : 1) + '</b> · ' + lwEsc(lwTeks(s.soalan)) + '</div>' +
-        '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;background:#eee;font-size:0.9rem;">Anda di <b>DALAM KAPAL</b>. Setiap ayat yang diterjemah ke BM membawa kapal lebih dekat ke dermaga. Tulis sendiri terjemahan penuh setiap ayat — disimpan sendiri bila keluar dari kotak. Siap semua → tekan <b>PEMANDU</b>.</div>';
+        '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;background:#eee;font-size:0.9rem;">Anda di <b>DALAM KAPAL</b>. Tulis sendiri terjemahan BM penuh setiap ayat, kemudian tekan <b>SIMPAN</b> — ayat itu turun ke bawah &amp; kapal makin dekat ke dermaga. Semua disimpan → tekan <b>PEMANDU</b>.</div>';
       if (!GK.ayat.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;">Karangan ini kosong. Tulis dulu di app phone (Laci Writing).</div>';
-      for (i = 0; i < GK.ayat.length; i++) {
-        // Kad ayat = KABIN (tingkap bulat bernombor)
-        h += '<div style="display:flex;gap:8px;border:2px solid #000;border-radius:10px;padding:6px 7px;margin:8px 0;"><div style="flex:0 0 34px;height:34px;border:3px double #000;border-radius:50%;text-align:center;font-weight:bold;line-height:28px;font-size:0.9rem;">' + (i + 1) + '</div>' +
+      // Susunan: ayat BELUM disimpan ikut nombor (1, 2, 3 ...) di atas → ayat DISIMPAN ikut nombor di bawah
+      var urut = [], k2;
+      for (i = 0; i < GK.ayat.length; i++) if (!GK.ok[i]) urut.push(i);
+      for (i = 0; i < GK.ayat.length; i++) if (GK.ok[i]) urut.push(i);
+      for (k2 = 0; k2 < urut.length; k2++) {
+        i = urut[k2];
+        if (GK.ok[i] && (k2 === 0 || !GK.ok[urut[k2 - 1]])) h += '<div style="font-weight:bold;border-bottom:3px solid #000;margin:12px 0 4px;">DISIMPAN (' + gkSiap() + ')</div>';
+        // Kad ayat = KABIN (tingkap bulat bernombor) · butang SIMPAN / BATAL SIMPAN di dalam kad, kanan bawah
+        h += '<div style="display:flex;gap:8px;border:2px ' + (GK.ok[i] ? 'dashed' : 'solid') + ' #000;border-radius:10px;padding:6px 7px;margin:8px 0;"><div style="flex:0 0 34px;height:34px;border:3px double #000;border-radius:50%;text-align:center;font-weight:bold;line-height:28px;font-size:0.9rem;' + (GK.ok[i] ? 'background:#000;color:#fff;' : '') + '">' + (i + 1) + '</div>' +
           '<div style="flex:1 1 auto;min-width:0;"><div style="font-size:1rem;">' + lwEsc(GK.ayat[i]) + '</div>' +
-          '<textarea data-gk="' + i + '" rows="2" placeholder="Terjemahan BM ayat ini" style="width:100%;box-sizing:border-box;margin-top:4px;font-size:0.95rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;">' + lwEsc(GK.bm[i] || '') + '</textarea></div></div>';
+          '<textarea data-gk="' + i + '" rows="2" placeholder="Terjemahan BM ayat ini"' + (GK.ok[i] ? ' readonly' : '') + ' style="width:100%;box-sizing:border-box;margin-top:4px;font-size:0.95rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;' + (GK.ok[i] ? 'background:#eee;' : '') + '">' + lwEsc(GK.bm[i] || '') + '</textarea>' +
+          (GK.salah === i ? '<div style="font-size:0.8rem;font-weight:bold;">Tulis terjemahan dulu, baru SIMPAN.</div>' : '') +
+          '<div style="text-align:right;margin-top:4px;"><button type="button" data-gk-ok="' + i + '" style="' + (GK.ok[i] ? PN_BTN : PN_BTNA) + 'margin:0;">' + (GK.ok[i] ? '✓ DISIMPAN · BATAL' : 'SIMPAN') + '</button></div></div></div>';
       }
       if (GK.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + lwEsc(GK.mesej) + '</div>';
       if (GK.ayat.length) h += '<button type="button" data-gk-pemandu="1" style="display:block;width:100%;margin:10px 0;padding:6px;border:3px solid #000;border-radius:10px;background:#fff;color:#000;font-family:inherit;">' +
@@ -19119,20 +19128,29 @@
     // Kemas kini kiraan + kedudukan kapal TANPA lukis semula (kotak taip tidak hilang fokus)
     function gkKemas() {
       var n = gkSiap(), k = el('gk-kira'), kp = el('gk-kapal');
-      if (k) k.textContent = n + ' / ' + GK.ayat.length + ' ayat diterjemah' + (n === GK.ayat.length && n ? ' · DERMAGA SUDAH DEKAT!' : ' · ' + (GK.ayat.length ? Math.round(n / GK.ayat.length * 100) : 0) + '% pelayaran');
+      if (k) k.textContent = n + ' / ' + GK.ayat.length + ' ayat disimpan' + (n === GK.ayat.length && n ? ' · DERMAGA SUDAH DEKAT!' : ' · ' + (GK.ayat.length ? Math.round(n / GK.ayat.length * 100) : 0) + '% pelayaran');
       if (kp) kp.setAttribute('transform', 'translate(' + gkX(n) + ',0)');
     }
     function gkSimpan(cb) {
       var ay = [], i;
-      for (i = 0; i < GK.ayat.length; i++) ay.push({ en: GK.ayat[i], bm: String(GK.bm[i] || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '') });
+      for (i = 0; i < GK.ayat.length; i++) ay.push({ en: GK.ayat[i], bm: String(GK.bm[i] || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''), ok: !!GK.ok[i] });
       kol('writing_kapal').doc(GK.id).set({ ayat: ay, updatedAt: Date.now() }).then(function() { cb(true); }).catch(function(e) { GK.mesej = 'Gagal simpan: ' + ((e && e.message) || e); gkLukis(); cb(false); });
     }
     el('gk-isi').onclick = function(e) {
+      var ok = hlCari(e.target, this, 'data-gk-ok');
+      if (ok !== null) { // SIMPAN ayat → turun ke bawah · BATAL → naik semula ikut nombor
+        gkBaca(); ok = +ok;
+        if (!GK.ok[ok] && !String(GK.bm[ok] || '').replace(/\s+/g, '')) { GK.salah = ok; gkLukis(); return; }
+        GK.salah = -1; GK.mesej = '';
+        if (GK.ok[ok]) delete GK.ok[ok]; else GK.ok[ok] = 1;
+        gkLukis(); gkSimpan(function() {});
+        return;
+      }
       if (hlCari(e.target, this, 'data-gk-pemandu') === null) return;
       gkBaca();
       var kosong = [], i;
-      for (i = 0; i < GK.ayat.length; i++) if (!String(GK.bm[i] || '').replace(/\s+/g, '')) kosong.push(i + 1);
-      if (kosong.length) { GK.mesej = 'Pemandu: "Terjemah dulu ayat ' + kosong.join(', ') + ' sebelum kita sampai ke dermaga!"'; gkLukis(); return; }
+      for (i = 0; i < GK.ayat.length; i++) if (!GK.ok[i]) kosong.push(i + 1);
+      if (kosong.length) { GK.mesej = 'Pemandu: "Simpan dulu ayat ' + kosong.join(', ') + ' sebelum kita sampai ke dermaga!"'; gkLukis(); return; }
       GK.mesej = 'Belayar ke dermaga...'; gkLukis();
       gkSimpan(function(ok) { if (ok) bukaLaci(GK.l); });
     };
