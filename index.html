@@ -10839,7 +10839,7 @@
         coachPie([{ v: minBahasa, n: 'Bahasa' }, { v: minFakta, n: 'Fakta' }], '(a) BAHASA vs FAKTA · minit hari ini') +
         '<div style="font-size:0.85rem;line-height:1.5;"><b>Bahasa ' + pEK[0] + '%</b> · ' + minBahasa + ' min (sasaran ' + sasBF[0] + '%)' + (stEn ? ' · <b>' + stEn + '</b>' : (fokusBF === 'fakta' ? ' · tidak dinilai' : '')) + '<br>' +
         '<b>Fakta ' + pEK[1] + '%</b> · ' + minFakta + ' min (sasaran ' + sasBF[1] + '%)' + (stKu ? ' · <b>' + stKu + '</b>' : (fokusBF === 'bahasa' ? ' · tidak dinilai' : '')) + '</div>' +
-        '<div style="font-size:0.8rem;">Minit dicatat sendiri. Bahasa = Laci Bahasa, SR Bebas, Reasoning, ARKED + Pelabuhan (game) + Listening (PAWAGAM). Fakta = Laci Fakta. Presenting tidak dikira. Bermula semula setiap hari.</div>';
+        '<div style="font-size:0.8rem;">Minit dicatat sendiri. Bahasa = Laci Bahasa, SR Bebas, Reasoning, Writing, ARKED + Pelabuhan (game) + Listening (PAWAGAM). Fakta = Laci Fakta. Presenting tidak dikira. Bermula semula setiap hari.</div>';
       var nE = [], cE = [], cS = [], kE = [];
       for (i2 = 0; i2 < COACH_BIDANG.length; i2++) {
         var kb = COACH_BIDANG[i2][0];
@@ -10885,8 +10885,12 @@
           (kk.lepasTidur ? 'Sudah masa tidur — kunci kekal sampai esok. Rehat.\n' : 'Buka kunci: tanda SIAP (lewat) atau GANTI pada tugas DIABAIKAN (bangunan bertanda TERLEPAS di USAHA).\n');
       }
       if (coachKunciMesej && !kk.kunci && coachHariData.hari.laporanAt) coachKunciMesej = ''; // mesej hilang bila kunci dibuka
-      // Fokus usaha: Kuliah jika Kuliah di bawah sasaran (tidak HIJAU), jika tidak bidang English paling jauh di bawah sasaran
-      var fokusUtama = (stKu !== 'HIJAU' && pctKu < set.englishKuliah[1]) ? 'Fakta' : fokus;
+      // Fokus usaha ikut BUTANG FOKUS (17 Nov):
+      //   BAHASA SAHAJA → bidang English paling jauh di bawah sasaran (Fakta TIDAK disebut langsung)
+      //   FAKTA SAHAJA  → Fakta
+      //   SEIMBANG      → Fakta jika Fakta di bawah sasaran musim, jika tidak bidang English paling jauh di bawah sasaran
+      var fokusUtama = fokusBF === 'fakta' ? 'Fakta' : (fokusBF === 'bahasa' ? fokus : ((stKu !== 'HIJAU' && pctKu < sasBF[1]) ? 'Fakta' : fokus));
+      coachBF = { fokus: fokusBF, sas: sasBF, english: fokus };
       coachLukisHari();
       coachLukisTugas();
       coachLukisMakan();
@@ -13175,12 +13179,13 @@
       }
     }
     var coachGoFn = null;
+    var coachBF = { fokus: 'seimbang', sas: [50, 50], english: '' }; // diisi coachLukis — dipakai bubble (butang FOKUS Pai 2)
     function coachFokusGo(f) {
       var m = {
         Listening: ['KE PAWAGAM → + LISTENING', function() { bukaPawagam(); }],
         Reading: ['KE PERPUSTAKAAN → + TAMBAH LATIHAN', function() { bukaPustaka(); }],
         Speaking: ['KE PENTAS → TULIS HURAIAN', function() { bukaPentas(); }],
-        Writing: ['KE DEWAN TULIS', function() { bukaTulis(); }],
+        Writing: ['BUKA LACI WRITING', function() { el('btn-go-laci-writing').click(); }],
         Ayat: ['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }],
         Vocab: ['MAIN GAME VOCAB', function() { bukaMini(); }],
         Reasoning: ['BUKA LACI REASONING', function() { el('btn-go-reasoning').click(); }],
@@ -13194,11 +13199,11 @@
         Listening: 'tonton video English, kemudian report minit (+ LISTENING)',
         Reading: 'buat latihan kertas MUET Reading, kemudian catat Part di Perpustakaan',
         Speaking: 'tulis huraian isi di Pentas (Individual / Group)',
-        Writing: 'latihan menulis di Dewan Tulis',
+        Writing: 'baca karangan (LATIHAN WRITING), terjemah ayat di DALAM KAPAL (Pelabuhan Writing), kemudian ulang kaji Laci Writing',
         Ayat: 'ulang kaji ayat di Laci Bahasa',
         Vocab: 'main game vocab (level terendah)',
-        Reasoning: 'ulang kaji Laci Reasoning',
-        Presenting: 'ulang kaji Laci Presenting',
+        Reasoning: 'baca karangan & terjemah ayat di Pelabuhan Reasoning, kemudian ulang kaji Laci Reasoning',
+        Presenting: 'baca karangan & terjemah ayat di Pelabuhan Presenting, kemudian ulang kaji Laci Presenting',
         Fakta: 'ulang kaji di Laci Fakta'
       }[f] || 'teruskan usaha';
     }
@@ -13307,13 +13312,36 @@
         }
         var mb = coachHariData.hari.minitBelajar || {}, mBa = (mb.bahasa || 0) + (coachHariData.hari.listening || 0), mFa = mb.fakta || 0;
         if (kini < j.tidur) {
-          var tUsaha = 'Belajar hari ni: Bahasa ' + mBa + ' min, Fakta ' + mFa + ' min.';
-          if (mBa + mFa === 0) tUsaha += '\nBelum mula lagi. Sikit pun jadi!';
-          else if (mFa < mBa) tUsaha += '\nFakta ketinggalan ' + (mBa - mFa) + ' min. Seimbangkan sikit.';
-          else if (mBa < mFa) tUsaha += '\nBahasa ketinggalan ' + (mFa - mBa) + ' min. Seimbangkan sikit.';
-          else tUsaha += '\nSeimbang. Cantik!';
-          babak(tUsaha, mBa + mFa && Math.abs(mBa - mFa) <= 10 ? 'gembira' : 'diam',
-            mFa < mBa ? [['BUKA LACI FAKTA', function() { el('btn-go-fakta').click(); }]] : (mBa < mFa ? [['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }]] : []));
+          // 17 Nov: ikut BUTANG FOKUS di Pai 2 — coach seimbangkan ke arah SASARAN yang user pilih, bukan paksa 50:50
+          var bf = coachBF.fokus, sas = coachBF.sas, goEn = coachFokusGo(coachBF.english), tUsaha, aksiU = 'diam', btnU = [];
+          if (bf === 'bahasa') {
+            tUsaha = 'Hari ni awak pilih BAHASA SAHAJA — Fakta saya tak kira.\nBahasa hari ni: ' + mBa + ' min.';
+            if (!mBa) tUsaha += '\nBelum mula lagi. Sikit pun jadi!';
+            else { tUsaha += '\nTeruskan.'; aksiU = 'gembira'; }
+            if (coachBF.english) tUsaha += '\nDalam English, yang paling jauh dari sasaran: ' + coachBF.english + '.';
+            if (goEn) btnU = [goEn];
+          } else if (bf === 'fakta') {
+            tUsaha = 'Hari ni awak pilih FAKTA SAHAJA — Bahasa saya tak kira.\nFakta hari ni: ' + mFa + ' min.';
+            if (!mFa) tUsaha += '\nBelum mula lagi. Sikit pun jadi!';
+            else { tUsaha += '\nTeruskan.'; aksiU = 'gembira'; }
+            btnU = [['BUKA LACI FAKTA', function() { el('btn-go-fakta').click(); }]];
+          } else {
+            var jm = mBa + mFa, pBa = jm ? Math.round(mBa * 100 / jm) : 0;
+            tUsaha = 'Belajar hari ni: Bahasa ' + mBa + ' min, Fakta ' + mFa + ' min (sasaran ' + sas[0] + ':' + sas[1] + ').';
+            if (!jm) tUsaha += '\nBelum mula lagi. Sikit pun jadi!';
+            else if (coachStatus(pBa - sas[0]) === 'HIJAU') { tUsaha += '\nSeimbang. Cantik!'; aksiU = 'gembira'; }
+            else if (pBa > sas[0]) {
+              var perluF = sas[0] ? Math.ceil(mBa * sas[1] / sas[0]) - mFa : 0;
+              tUsaha += '\nFakta ketinggalan' + (perluF > 0 ? ' — lebih kurang ' + perluF + ' min lagi untuk seimbang' : '') + '.';
+              btnU = [['BUKA LACI FAKTA', function() { el('btn-go-fakta').click(); }]];
+            } else {
+              var perluB = sas[1] ? Math.ceil(mFa * sas[0] / sas[1]) - mBa : 0;
+              tUsaha += '\nBahasa ketinggalan' + (perluB > 0 ? ' — lebih kurang ' + perluB + ' min lagi untuk seimbang' : '') + '.';
+              if (goEn) btnU = [goEn];
+            }
+            tUsaha += '\n(Tak nak Fakta / Bahasa hari ni? Tekan BAHASA SAHAJA atau FAKTA SAHAJA kat Pai 2.)';
+          }
+          babak(tUsaha, aksiU, btnU);
         }
         babak((seterus ? 'Lepas ni: ' + seterus.nama.split(' — ')[0].toLowerCase() + ', pukul ' + coachTeksMasa(seterus.min) + '.\n' : '') + 'Sasaran tidur malam ni: ' + coachTeksMasa(j.tidur) + '.\nItu je dari saya. Pai awak ada kat bawah.', 'masuk');
       }
