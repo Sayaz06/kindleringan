@@ -877,6 +877,8 @@
     var QURAN_AYAT_PER_SESI = 10;
 
     function showScreen(id) {
+      // 17 Nov: SUPLEMEN (KETAT) terlepas → semua laci, ARKED, game, Pawagam, Pentas, Perpustakaan, Dewan Tulis DIKUNCI
+      if (window.supHalang && window.supHalang(id)) return;
       var screens = document.querySelectorAll('.screen');
       for (var i = 0; i < screens.length; i++) {
         screens[i].className = 'screen';
@@ -13267,7 +13269,10 @@
       var now = new Date(), kk = coachKiraKesihatan(), j = coachJadualKini(), B = [], jamTeks = coachTeksMasa(now.getHours() * 60 + now.getMinutes());
       function babak(c, aksi, butang) { B.push({ c: c, aksi: aksi, b: butang || [] }); }
       var goF = coachFokusGo(fokus);
-      if (coachKunciMesej) babak(coachKunciMesej, 'marah');
+      var supT = supTerlepas(), supK = supSekarang();
+      if (coachKunciMesej && !(supT.length && coachKunciMesej === supMesejKunci())) babak(coachKunciMesej, 'marah');
+      if (supT.length) babak(supMesejKunci(), 'marah', [['MAKAN SEKARANG · SUPLEMEN', function() { bukaSuplemen(); }]]);
+      else if (supK.length) babak('Masa SUPLEMEN: ' + supK.map(function(x) { return x.nama; }).join(', ') + '.\nMakan sekarang, lepas tu tanda SUDAH MAKAN. Terlepas = semua laci & game dikunci.', 'masuk', [['KE SUPLEMEN', function() { bukaSuplemen(); }]]);
       if (!coachHariData.hari.laporanAt || !j) {
         babak(salam + ' Dah ' + jamTeks + ' ni.\nSebelum mula, bagitahu saya dulu: pukul berapa awak bangun tadi, dan pukul berapa tidur semalam?', 'masuk', [['ISI LAPORAN PAGI', function() { coachMulaLaporan(); }]]);
       } else {
@@ -14121,6 +14126,7 @@
           bukaCoach(false);
           return;
         }
+        if (supTerlepas().length) { coachKunciMesej = supMesejKunci(); bukaCoach(false); return; }
         coachKunciMesej = '';
         teruskan();
       }).catch(function() { teruskan(); });
@@ -16118,6 +16124,154 @@
       dpLog(b, 'nutrisi', 'Buah + sayur ' + COACH_SASARAN_BUAH_G + ' g: +' + rm(sen) + ' Kuning');
       b.commit().then(function() { DP.kuningSen = (DP.kuningSen || 0) + sen; if (info) info.textContent += ' +' + rm(sen) + ' Ringgit Kuning!'; }).catch(function() {});
     }
+    // ══ SUPLEMEN (KETAT) — 17 Nov ══
+    // Senarai: coach/suplemen { senarai: [{ id, nama, slot: [minit selepas bangun, ...], habis }] } — user tambah sendiri.
+    // Rekod harian: coach_hari/{hari}.suplemen { '<id>_<n>': { at, lewat } }.
+    // Masa slot = waktu BANGUN + offset (macam air). Tenggang 30 min. Terlepas SATU slot → SEMUA laci, ARKED, game (Pelabuhan, Kedai, Drawer),
+    // Pawagam, Pentas, Perpustakaan, Dewan Tulis DIKUNCI sampai suplemen itu dimakan (lewat pun buka serta-merta).
+    // HABIS (out of stock) → slot suplemen itu tidak dikira (tiada kunci) sampai tekan ADA STOK semula.
+    var SUP = { senarai: [], dimuat: false, buka: false, mesej: '', baru: 60, sah: '' };
+    var SUP_TENGGANG = 30;
+    var SUP_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|pawagam|pentas|pustaka|tulis|pn-nota|hj|bp|ul-|gb-kapal|gbank)/;
+    function supMuat() {
+      if (!currentUser) return Promise.resolve();
+      return kol('coach').doc('suplemen').get().then(function(s) {
+        SUP.senarai = (s.exists && (s.data() || {}).senarai) || [];
+        SUP.dimuat = true;
+      }).catch(function() {});
+    }
+    function supSimpanSenarai(mesej) {
+      SUP.mesej = mesej || '';
+      supLukis();
+      return kol('coach').doc('suplemen').set({ senarai: SUP.senarai, updatedAt: Date.now() }).catch(function(e) { SUP.mesej = 'Gagal simpan: ' + ((e && e.message) || e); supLukis(); });
+    }
+    function supBangun() {
+      if (coachHariData.id !== coachHariId()) return null;
+      var b = coachKeMinit(coachHariData.hari.bangun);
+      if (b === null && coachHariData.hari.laporanAt) { var la = new Date(coachHariData.hari.laporanAt); b = la.getHours() * 60 + la.getMinutes(); }
+      return b;
+    }
+    // Semua slot hari ini: { kunci, id, nama, n, min, st: SUDAH / SEKARANG / AKAN / TERLEPAS / HABIS }
+    function supSlotHari() {
+      var b = supBangun(), out = [], i, j, s, k, rek = coachHariData.hari.suplemen || {}, kini = coachMinitKini();
+      if (b === null) return out;
+      for (i = 0; i < SUP.senarai.length; i++) {
+        s = SUP.senarai[i];
+        for (j = 0; j < (s.slot || []).length; j++) {
+          k = s.id + '_' + j;
+          var m = b + s.slot[j], st;
+          if (rek[k]) st = 'SUDAH';
+          else if (s.habis) st = 'HABIS';
+          else if (kini >= m + SUP_TENGGANG) st = 'TERLEPAS';
+          else if (kini >= m) st = 'SEKARANG';
+          else st = 'AKAN';
+          out.push({ kunci: k, id: s.id, nama: s.nama + ((s.slot || []).length > 1 ? ' (' + (j + 1) + ')' : ''), n: j, min: m, st: st, rek: rek[k] });
+        }
+      }
+      out.sort(function(x, y) { return x.min - y.min; });
+      return out;
+    }
+    function supTerlepas() { if (!SUP.dimuat) return []; return supSlotHari().filter(function(x) { return x.st === 'TERLEPAS'; }); }
+    function supSekarang() { if (!SUP.dimuat) return []; return supSlotHari().filter(function(x) { return x.st === 'SEKARANG'; }); }
+    function supMesejKunci() {
+      var t = supTerlepas();
+      return 'SUPLEMEN TERLEPAS: ' + t.map(function(x) { return x.nama + ' (' + coachTeksMasa(x.min) + ')'; }).join(', ') +
+        '.\nSemua laci, ARKED, game, Pawagam, Pentas, Perpustakaan & Dewan Tulis DIKUNCI.\nMakan sekarang (lewat pun tak apa) → tekan SUDAH MAKAN di NUTRISI › SUPLEMEN → kunci terus dibuka.';
+    }
+    window.supHalang = function(id) {
+      if (!SUP_SKRIN_KUNCI.test(id || '') || !supTerlepas().length) return false;
+      coachKunciMesej = supMesejKunci();
+      setTimeout(function() { bukaCoach(false); }, 0);
+      return true;
+    };
+    function bukaSuplemen() { bukaNutrisi(); usahaTab('nutrisi', 'sup'); }
+    function supJam(m) { var h = Math.floor(m / 60), mm = m % 60; return '+' + h + ' jam' + (mm ? ' ' + mm + ' min' : ''); }
+    function supLukis() {
+      var tp = el('ub-tips-nutrisi');
+      if (!tp || !SUP.buka) return;
+      if (!SUP.dimuat) { tp.innerHTML = 'Memuatkan suplemen...'; supMuat().then(supLukis); return; }
+      var btn = 'padding:4px 8px;margin:2px 2px;border:2px solid #000;border-radius:8px;background:#fff;color:#000;font-family:inherit;font-size:0.8rem;font-weight:bold;cursor:pointer;';
+      var btnA = btn + 'background:#000;color:#fff;';
+      var h = '<div style="font-weight:bold;font-size:1.1rem;">SUPLEMEN (KETAT)</div>' +
+        '<div style="font-size:0.8rem;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;">Lebih ketat dari buah: terlepas SATU slot (lepas ' + SUP_TENGGANG + ' min) → semua laci, ARKED, game, Pawagam, Pentas, Perpustakaan & Dewan Tulis DIKUNCI sampai dimakan. Masa ikut waktu BANGUN.</div>';
+      if (SUP.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;font-weight:bold;">' + escKapal(SUP.mesej) + '</div>';
+      // HARI INI
+      var b = supBangun(), sl = supSlotHari(), i, j, x, s;
+      h += '<div style="font-weight:bold;margin-top:6px;border-bottom:2px solid #000;">HARI INI</div>';
+      if (b === null) h += '<div style="font-size:0.85rem;margin:4px 0;">Isi LAPORAN PAGI dulu — masa suplemen ikut waktu bangun.</div>';
+      else if (!sl.length) h += '<div style="font-size:0.85rem;margin:4px 0;">Belum ada suplemen. Tambah di bawah.</div>';
+      for (i = 0; i < sl.length; i++) {
+        x = sl[i];
+        var lbl = { SUDAH: 'SUDAH' + (x.rek && x.rek.lewat ? ' (lewat)' : ''), SEKARANG: 'SEKARANG', AKAN: 'AKAN DATANG', TERLEPAS: 'TERLEPAS · KUNCI', HABIS: 'OUT OF STOCK' }[x.st];
+        h += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #000;">' +
+          '<div style="flex:1;"><b>' + escKapal(x.nama) + '</b><br><span style="font-size:0.8rem;">' + coachTeksMasa(x.min) + ' · ' +
+          (x.st === 'TERLEPAS' ? '<b style="background:#000;color:#fff;padding:0 4px;">' + lbl + '</b>' : '<b>' + lbl + '</b>') + '</span></div>' +
+          (x.st === 'SEKARANG' || x.st === 'TERLEPAS' || x.st === 'AKAN' ? '<button type="button" data-sp="makan" data-v="' + x.kunci + '" style="' + (x.st === 'AKAN' ? btn : btnA) + '">SUDAH MAKAN</button>' : '') +
+          (x.st === 'SUDAH' ? '<button type="button" data-sp="batal" data-v="' + x.kunci + '" style="' + btn + '">BATAL</button>' : '') + '</div>';
+      }
+      // SENARAI (urus)
+      h += '<div style="font-weight:bold;margin-top:12px;border-bottom:2px solid #000;">SENARAI SUPLEMEN</div>';
+      for (i = 0; i < SUP.senarai.length; i++) {
+        s = SUP.senarai[i];
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;' + (s.habis ? 'border-style:dashed;' : '') + '">' +
+          '<div><b>' + escKapal(s.nama) + '</b>' + (s.habis ? ' <b style="background:#000;color:#fff;padding:0 4px;">OUT OF STOCK</b>' : '') + '</div>';
+        for (j = 0; j < (s.slot || []).length; j++) {
+          h += '<div style="font-size:0.85rem;margin:2px 0;">Slot ' + (j + 1) + ': bangun <b>' + supJam(s.slot[j]) + '</b>' + (b !== null ? ' (' + coachTeksMasa(b + s.slot[j]) + ')' : '') + ' ' +
+            '<button type="button" data-sp="kurang" data-i="' + i + '" data-j="' + j + '" style="' + btn + '">-30 min</button>' +
+            '<button type="button" data-sp="tambah" data-i="' + i + '" data-j="' + j + '" style="' + btn + '">+30 min</button>' +
+            ((s.slot || []).length > 1 ? '<button type="button" data-sp="buangslot" data-i="' + i + '" data-j="' + j + '" style="' + btn + '">BUANG SLOT</button>' : '') + '</div>';
+        }
+        h += '<div style="margin-top:4px;"><button type="button" data-sp="slot" data-i="' + i + '" style="' + btn + '">+ SLOT</button>' +
+          '<button type="button" data-sp="habis" data-i="' + i + '" style="' + (s.habis ? btn : btnA) + '">' + (s.habis ? 'ADA STOK' : 'HABIS') + '</button>' +
+          (SUP.sah === s.id ? '<button type="button" data-sp="padamya" data-i="' + i + '" style="' + btnA + '">YA, PADAM</button><button type="button" data-sp="padamtak" style="' + btn + '">TAK</button>'
+            : '<button type="button" data-sp="padam" data-i="' + i + '" style="' + btn + '">PADAM</button>') + '</div></div>';
+      }
+      h += '<div style="border:2px dashed #000;border-radius:8px;padding:6px 7px;margin:8px 0;"><b>+ TAMBAH SUPLEMEN</b><br>' +
+        'Nama: <input type="text" id="sup-nama" style="width:60%;font-size:1rem;padding:4px;border:2px solid #000;"><br>' +
+        '<div style="margin:4px 0;">Slot 1: bangun <b>' + supJam(SUP.baru) + '</b>' + (b !== null ? ' (' + coachTeksMasa(b + SUP.baru) + ')' : '') + ' ' +
+        '<button type="button" data-sp="barukurang" style="' + btn + '">-30 min</button><button type="button" data-sp="barutambah" style="' + btn + '">+30 min</button></div>' +
+        '<button type="button" data-sp="baru" style="' + btnA + '">SIMPAN SUPLEMEN</button>' +
+        '<div style="font-size:0.75rem;">Makan lebih dari sekali sehari (contoh Vitamin C 2x)? Lepas simpan, tekan + SLOT.</div></div>';
+      tp.innerHTML = h;
+    }
+    function supKlik(e) {
+      var t = e.target, tp = el('ub-tips-nutrisi');
+      while (t && t !== tp && !(t.getAttribute && t.getAttribute('data-sp'))) t = t.parentNode;
+      if (!t || t === tp) return;
+      var a = t.getAttribute('data-sp'), i = +t.getAttribute('data-i'), j = +t.getAttribute('data-j'), v = t.getAttribute('data-v'), s = SUP.senarai[i], o;
+      if (a === 'makan' || a === 'batal') {
+        var x = null, sl = supSlotHari(), q;
+        for (q = 0; q < sl.length; q++) if (sl[q].kunci === v) x = sl[q];
+        if (!x) return;
+        o = {}; o[v] = a === 'makan' ? { at: Date.now(), lewat: x.st === 'TERLEPAS' } : firebase.firestore.FieldValue.delete();
+        coachSimpanHari({ suplemen: o }, function() {
+          var r = coachHariData.hari.suplemen || (coachHariData.hari.suplemen = {});
+          if (a === 'makan') r[v] = { at: Date.now(), lewat: x.st === 'TERLEPAS' }; else delete r[v];
+        });
+        SUP.mesej = a === 'makan' ? (x.nama + ' — SUDAH MAKAN.' + (supTerlepas().length ? '' : (x.st === 'TERLEPAS' ? ' Kunci dibuka.' : ''))) : '';
+        if (!supTerlepas().length && coachKunciMesej.indexOf('SUPLEMEN TERLEPAS') === 0) coachKunciMesej = '';
+        supLukis();
+        return;
+      }
+      if (a === 'barukurang' || a === 'barutambah') { SUP.baru = Math.max(0, Math.min(16 * 60, SUP.baru + (a === 'barutambah' ? 30 : -30))); supLukis(); return; }
+      if (a === 'baru') {
+        var nm = String((el('sup-nama') || {}).value || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+        if (!nm) { SUP.mesej = 'Tulis nama suplemen dulu.'; supLukis(); return; }
+        SUP.senarai.push({ id: 's' + Date.now().toString(36), nama: nm, slot: [SUP.baru], habis: false });
+        supSimpanSenarai(nm + ' ditambah.');
+        return;
+      }
+      if (a === 'padamtak') { SUP.sah = ''; supLukis(); return; }
+      if (!s) return;
+      if (a === 'kurang' || a === 'tambah') { s.slot[j] = Math.max(0, Math.min(16 * 60, s.slot[j] + (a === 'tambah' ? 30 : -30))); supSimpanSenarai(''); return; }
+      if (a === 'slot') { var akhir = s.slot.length ? s.slot[s.slot.length - 1] : 0; s.slot.push(Math.min(16 * 60, akhir + 6 * 60)); supSimpanSenarai('Slot ' + s.slot.length + ' ditambah untuk ' + s.nama + '.'); return; }
+      if (a === 'buangslot') { s.slot.splice(j, 1); supSimpanSenarai(''); return; }
+      if (a === 'habis') { s.habis = !s.habis; supSimpanSenarai(s.nama + (s.habis ? ' ditanda OUT OF STOCK — tidak dikira sampai ADA STOK.' : ' ADA STOK semula.')); return; }
+      if (a === 'padam') { SUP.sah = s.id; supLukis(); return; }
+      if (a === 'padamya') { SUP.senarai.splice(i, 1); SUP.sah = ''; supSimpanSenarai(s.nama + ' dipadam.'); return; }
+    }
+    // Senarai suplemen dimuat bersama data hari (coach / nutrisi / semakan kunci)
+    coachMuatHari = (function(f) { return function() { return Promise.all([f.apply(this, arguments), supMuat()]).then(function(r) { return r[0]; }); }; })(coachMuatHari);
     el('btn-nutrisi-keluar').onclick = function() { bukaTs(); };
     el('btn-nutrisi-coach').onclick = function() { bukaCoach(false); };
     // ══ PROFIL (butang di bar atas game, sebelah MENU): semua maklumat diri — profil + monitor zat + ringkasan ══
@@ -17482,7 +17636,8 @@
       pentas: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18l-2 4H5z"/><rect x="10" y="10" width="4" height="9"/><rect x="6" y="19" width="12" height="3"/><circle cx="12" cy="3" r="2"/></svg>',
       pustaka: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="16" width="20" height="5"/><rect x="4" y="10" width="17" height="5"/><rect x="3" y="4" width="16" height="5"/></svg>',
       tulis: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 21l1.5-5L17 3.5l3.5 3.5L8 19.5z"/><rect x="2" y="21.5" width="20" height="1.5"/></svg>',
-      topik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h8a3 3 0 013 3v15a2 2 0 00-2-2H2zM22 4h-6a2 2 0 00-2 2v16a2 2 0 012-2h6z"/></svg>'
+      topik: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h8a3 3 0 013 3v15a2 2 0 00-2-2H2zM22 4h-6a2 2 0 00-2 2v16a2 2 0 012-2h6z"/></svg>',
+      sup: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="8" width="20" height="8" rx="4" transform="rotate(-35 12 12)"/><path d="M12 5.5l-3.6 10.5" stroke="#000" stroke-width="2" transform="rotate(0)"/></svg>'
     };
     function usahaSenarai(t, a) { var h = '<div style="font-weight:bold;margin-top:8px;">' + t + '</div>', i; for (i = 0; i < a.length; i++) h += '<div>' + (i + 1) + '. ' + a[i] + '</div>'; return h; }
     // TIP TERPENTING untuk SEMUA bangunan English (16 Nov) — dipapar paling atas tab TIPS
@@ -18216,7 +18371,9 @@
       if (!b || !tb || !tp) return;
       if (tab === 'format' && !USAHA_FORMAT[k]) tab = 'hari';
       if (tab === 'topik' && k !== 'pawagam') tab = 'hari';
+      if (tab === 'sup' && k !== 'nutrisi') tab = 'hari';
       if (k === 'pawagam') pnTopikBuka = tab === 'topik';
+      if (k === 'nutrisi') SUP.buka = tab === 'sup';
       for (i = 0; i < tb.children.length; i++) tb.children[i].className = tb.children[i].getAttribute('data-ub') === tab ? 'gym-aktif' : '';
       var lain = tab !== 'hari'; // TIPS / FORMAT → sorok kandungan HARI INI
       el(b[2]).style.display = lain ? 'none' : '';
@@ -18225,6 +18382,7 @@
       if (tab === 'tips') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TIPS</div>' + USAHA_TIPS[k](); } catch (e) { tp.textContent = 'Tips tidak dapat dipapar.'; } }
       if (tab === 'format') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">FORMAT</div>' + USAHA_FORMAT[k](); } catch (e) { tp.textContent = 'Format tidak dapat dipapar.'; } }
       if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
+      if (tab === 'sup') supLukis();
     }
     (function() {
       var i, b, sc, alat, tb, tp;
@@ -18233,6 +18391,7 @@
         alat = sc.querySelector('.gm-alat');
         tb = document.createElement('div'); tb.className = 'gym-topbar'; tb.id = 'ub-tb-' + b[0];
         tb.innerHTML = '<button type="button" data-ub="hari" class="gym-aktif">' + USAHA_IKON[b[0]] + 'HARI INI</button>' +
+          (b[0] === 'nutrisi' ? '<button type="button" data-ub="sup">' + USAHA_IKON.sup + 'SUPLEMEN</button>' : '') +
           (b[0] === 'pawagam' ? '<button type="button" data-ub="topik">' + USAHA_IKON.topik + 'TOPIK</button>' : '') +
           '<button type="button" data-ub="tips">' + USAHA_IKON.tips + 'TIPS</button>' +
           (USAHA_FORMAT[b[0]] ? '<button type="button" data-ub="format">' + USAHA_IKON.format + 'FORMAT</button>' : '');
@@ -18250,6 +18409,7 @@
       }
     })();
     el('ub-tips-pawagam').onclick = function(e) { if (pnTopikBuka) pnKlik(e, this); }; // audio / + MP3 dalam tab TOPIK
+    el('ub-tips-nutrisi').onclick = function(e) { if (SUP.buka) supKlik(e); }; // tab SUPLEMEN
     // Setiap kali bangunan dibuka → kembali ke tab HARI INI
     bukaTaman = (function(f) { return function() { usahaTab('taman', 'hari'); return f.apply(this, arguments); }; })(bukaTaman);
     bukaMakmal = (function(f) { return function() { usahaTab('makmal', 'hari'); return f.apply(this, arguments); }; })(bukaMakmal);
