@@ -13279,6 +13279,25 @@
       return r;
     }
     function pnPerluTambah() { return pnVersi() < coachHariId(); }
+    // 17 Nov: TAMBAH NOTA dipindah ke APP PHONE. Kindle terbitkan senarai nota semasa (kod + Firebase) ke coach/dre_senarai
+    //   { sets: [{ id, r, t, b, g: [{ id, t, ms, f: [frasa | { w, m }] }] }], versi: { pawagam, tulis }, kunci, at } → phone guna untuk SALIN PRESET & semak JANA PUKAL.
+    //   Ditulis hanya bila berubah (banding kunci).
+    function pnTerbit() {
+      if (!currentUser) return;
+      var sets = [], i, S, lama = pnRumah, v = {}, k, h = 5381;
+      for (i = 0; i < PN_SET.length; i++) {
+        S = PN_SET[i]; if (S.id === PN_SET_TOPIK) continue;
+        sets.push({ id: S.id, r: S.r || 'pawagam', t: S.t || '', b: S.b || '', g: S.g.map(function(g) { return { id: g.id, t: g.t || '', ms: g.ms || '', f: g.f.map(function(x) { return typeof x === 'string' ? x : { w: x[0], m: x[1] || '' }; }) }; }) });
+      }
+      pnRumah = 'pawagam'; v.pawagam = pnVersi(); pnRumah = 'tulis'; v.tulis = pnVersi(); pnRumah = lama;
+      k = JSON.stringify({ sets: sets, versi: v });
+      for (i = 0; i < k.length; i++) h = ((h << 5) + h + k.charCodeAt(i)) | 0;
+      h = String(h) + ':' + k.length;
+      kol('coach').doc('dre_senarai').get().then(function(d) {
+        if (d.exists && (d.data() || {}).kunci === h) return;
+        return kol('coach').doc('dre_senarai').set({ sets: sets, versi: v, kunci: h, at: Date.now() });
+      }).catch(function() {});
+    }
     // Preset untuk ditampal ke AI → AI pulangkan teks format JANA PUKAL (tampal dalam app → SIMPAN)
     function pnPreset(syor) {
       var i, j, S, g, L = [], SD = pnSetDRE();
@@ -13425,7 +13444,7 @@
       pnMuat = true;
       var siapBank = function(b) { if (!pnBank) { pnBank = b || { tambah: [] }; pnBank.tambah = pnBank.tambah || []; pnGabung(pnBank.tambah); } };
       kol('coach').doc('pawagam_bank').get().then(function(b) { siapBank(b.exists ? b.data() : null); }).catch(function() { siapBank(null); }).then(function() {
-        return kol('coach').doc('pawagam_nota').get().then(function(d) { pnData = d.exists ? d.data() : {}; pnData.sr = pnData.sr || {}; pnData.audio = pnData.audio || {}; pnRender(); });
+        return kol('coach').doc('pawagam_nota').get().then(function(d) { pnData = d.exists ? d.data() : {}; pnData.sr = pnData.sr || {}; pnData.audio = pnData.audio || {}; pnTerbit(); pnRender(); });
       }).catch(function() { pnData = { sr: {}, audio: {} }; pnRender(); });
     }
     // Latihan dalam bentuk GAME (gaya JUTAWAN): bar status, skor, soalan besar di tengah, pilihan A/B/C/D bulat
@@ -13458,7 +13477,8 @@
         '<div style="font-size:0.85rem;font-style:italic;margin-top:2px;">Don\'t worry, Coach will let you do the exercise according to the time.</div></div>';
       if (!pnData) { pnMuatData(); return h + '<div style="font-size:0.85rem;">Memuatkan nota...</div></div>'; }
       if (pnUI.halaman === 'pawagam' && pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
-      if (pnUI.halaman === 'pawagam' && !pnUI.mod && pnPerluTambah()) h += pnKotakPreset(true);
+      // 17 Nov: TAMBAH NOTA (SALIN PRESET / JANA PUKAL) dipindah ke APP PHONE → Daily Repetition
+      if (pnUI.halaman === 'pawagam' && !pnUI.mod && pnPerluTambah()) h += '<div style="border:2px dashed #000;border-radius:8px;padding:5px 7px;margin:6px 0;font-size:0.85rem;"><b>COACH:</b> tambah nota baru hari ini di <b>app phone → Daily Repetition</b>.</div>';
       if (pnUI.halaman === 'pawagam' && pnUI.mod === 'kuiz' && pnUI.kuiz) return h + pnLukisKuiz() + '</div>';
       var due = pnDue();
       if (!due.length) {
@@ -13510,7 +13530,7 @@
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Semua nota, termasuk yang bukan ulang kaji hari ini. Tekan untuk baca' + (pnRumah === 'tulis' ? '' : ', dengar audio, muat naik MP3') + ' atau latih bila-bila.</div>';
       var SD = pnSetDRE();
       for (i = 0; i < SD.length; i++) h += '<button type="button" data-pn="set" data-v="' + SD[i].id + '" style="' + PN_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + SD[i].b + ' ›</button>';
-      h += pnKotakPreset(pnPerluTambah());
+      h += '<div style="font-size:0.85rem;margin-top:6px;border-top:2px solid #000;padding-top:4px;">Nota terakhir ditambah: ' + pnVersi() + '. Tambah nota baru di <b>app phone → Daily Repetition</b>.</div>';
       return h;
     }
     function pnAcak(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
