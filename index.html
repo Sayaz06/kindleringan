@@ -494,7 +494,7 @@
     <style>
       #menu-atas { position: fixed; top: 0; left: 0; right: 0; z-index: 9500; background: #fff; border-bottom: 2px solid #000; padding: 6px 10px 0; }
       #menu-atas .gm-alat { margin: 0 0 6px; }
-      #menu-atas-ruang { height: 48px; }
+      #menu-atas-ruang { height: 60px; }
       #bd-titik { text-align: center; margin: 2px 0 4px; }
       #bd-titik .bdt { display: inline-block; width: 30px; height: 34px; margin: 0 2px; padding: 0; border: 0; background: transparent; }
       #bd-titik .bdt span { display: block; width: 16px; height: 16px; margin: 9px auto; border: 2px solid #000; border-radius: 50%; background: #fff; box-sizing: border-box; }
@@ -503,7 +503,9 @@
     <div id="menu-atas">
     <div class="gm-alat" id="menu-topbar">
       <button type="button" id="btn-logout" class="gm-kecil">Logout</button>
-      <span class="gm-alat-tajuk"></span>
+      <!-- COACH di top bar (17 Nov): diutamakan — imbangkan masa antara Kilang, Gudang, Arked, kesihatan & ibadah -->
+      <button type="button" id="btn-tb-coach" class="gm-kecil" style="background:#000;color:#fff;">Coach</button>
+      <span class="gm-alat-tajuk" style="text-align:center;font-size:0.95rem;line-height:1.15;letter-spacing:0;">KINDLE RINGAN<span id="menu-user" style="display:block;font-size:0.68rem;font-weight:normal;">—</span></span>
       <button type="button" id="btn-tb-azan" class="gm-kecil">Waktu Azan</button>
       <button type="button" id="btn-tb-layout" class="gm-kecil">Layout</button>
     </div>
@@ -516,12 +518,10 @@
     </div>
     </div>
     <div id="menu-atas-ruang"></div>
-    <h1>Kindle Learning Tool (Ringan)</h1>
-    <div class="sub" id="menu-user">—</div>
     <!-- Titik halaman menu (menegak, kiri) — tekan titik untuk ke halaman menu seterusnya -->
     <div id="menu-titik"></div>
     <!-- BANDAR (17 Nov): jalan raya — KILANG → PEMBORONG → GUDANG → PELABUHAN → ARKED + MASJID + COACH (dilukis oleh JS) -->
-    <div id="menu-bandar" class="kd-pondok"></div>
+    <div id="menu-bandar" class="kd-pondok" style="width:100%;align-self:stretch;"></div>
     <!-- Butang lama — DISOROK tapi KEKAL (bangunan bandar tekan butang ini → kunci Health First & masa belajar ikut asal) -->
     <div id="menu-lama" style="display:none;">
     <button id="btn-go-ib-tasbih" class="btn btn-primary">[ COUNTDOWN TASBIH ]</button>
@@ -18956,8 +18956,7 @@
       ['gudang', 'GUDANG', 'Laci: hafal ayat (SR)'],
       ['pelabuhan', 'PELABUHAN', 'Ayat → kosa kata'],
       ['arked', 'ARKED', 'Game & latihan'],
-      ['masjid', 'MASJID', 'Tasbih · Quran'],
-      ['coach', 'COACH', 'Pantau Kilang → Arked']
+      ['masjid', 'MASJID', 'Tasbih · Quran']
     ];
     function bdTekan(id) { return function() { var b = el(id); if (b) b.click(); }; }
     // Kawasan: [tajuk, info, [[ikon, nama, keterangan, fungsi], ...]]
@@ -19020,7 +19019,8 @@
       return s;
     }
     function bdJalanSvg() {
-      var n = BD_UTAMA.length, W = n * BD_S, s = '<svg width="' + W + '" height="' + BD_H + '" viewBox="0 0 ' + W + ' ' + BD_H + '" xmlns="http://www.w3.org/2000/svg">', i, x, atas = 'M0 190', b;
+      // Jalan raya dipanjangkan BD_S ke kiri & kanan (bangunan pertama / terakhir tidak nampak terputus)
+      var n = BD_UTAMA.length, W = n * BD_S, s = '<svg width="' + (W + 2 * BD_S) + '" height="' + BD_H + '" viewBox="0 0 ' + (W + 2 * BD_S) + ' ' + BD_H + '" xmlns="http://www.w3.org/2000/svg"><g transform="translate(' + BD_S + ',0)">', i, x, atas = 'M' + (-BD_S) + ' 190', b;
       for (i = 0; i < n; i++) {
         x = i * BD_S;
         // Lorong menegak: pintu rumah → jalan raya
@@ -19030,13 +19030,13 @@
         s += '<g data-bdu="' + i + '">' + b + '</g>';
       }
       // Jalan raya melintang: tepi atas (terbuka di setiap lorong), tepi bawah, garisan tengah putus-putus
-      s += '<path d="' + atas + ' H' + W + ' M0 244 H' + W + '" stroke="#000" stroke-width="3" fill="none"/>';
-      s += '<path d="M0 217 H' + W + '" stroke="#000" stroke-width="2" stroke-dasharray="14 10" fill="none"/>';
-      return s + bdOrang() + '</svg>';
+      s += '<path d="' + atas + ' H' + (W + BD_S) + ' M' + (-BD_S) + ' 244 H' + (W + BD_S) + '" stroke="#000" stroke-width="3" fill="none"/>';
+      s += '<path d="M' + (-BD_S) + ' 217 H' + (W + BD_S) + '" stroke="#000" stroke-width="2" stroke-dasharray="14 10" fill="none"/>';
+      return s + bdOrang() + '</g></svg>';
     }
     function bdKemas() {
       var i, o, h = '', b = BD_UTAMA[bdSasar];
-      el('bd-geser').style.marginLeft = (-bdX) + 'px';
+      el('bd-geser').style.marginLeft = (-(bdX + BD_S)) + 'px';
       for (i = 0; i < 3; i++) { o = el('bd-o' + i); if (o) { o.setAttribute('transform', 'translate(' + bdX + ',232)'); o.setAttribute('display', i === bdKaki ? 'inline' : 'none'); } }
       for (i = 0; i < BD_UTAMA.length; i++) h += '<button type="button" class="bdt' + (i === bdSasar ? ' on' : '') + '" data-bdt="' + i + '"><span></span></button>';
       el('bd-titik').innerHTML = h;
@@ -19142,6 +19142,7 @@
       try { window.dispatchEvent(new Event('resize')); } catch (x) {}
     };
     el('btn-tb-layout').onclick = function() { showScreen('screen-layout'); try { window.scrollTo(0, 0); } catch (e) {} };
+    el('btn-tb-coach').onclick = function() { bdDari = ''; bukaCoach(false); };
     el('btn-layout-balik').onclick = function() { showScreen('screen-menu'); };
     el('btn-gb-bandar').onclick = function() { bukaBandar('pelabuhan'); };
 
