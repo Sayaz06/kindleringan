@@ -502,6 +502,8 @@
     <!-- REASONING / PRESENTING — salinan Laci Fakta (koleksi reasoning_* / presenting_* dari app phone) -->
     <button id="btn-go-reasoning" class="btn">Laci Reasoning</button>
     <button id="btn-go-presenting" class="btn">Laci Presenting</button>
+    <!-- LACI WRITING — ayat karangan yang sudah DISIMPAN di DALAM KAPAL (enjin Laci Bahasa) -->
+    <button id="btn-go-laci-writing" class="btn">Laci Writing</button>
     <!-- QURAN — sesi Quran (kemajuan kindle_quran/current), pusing 10 ayat setiap sesi -->
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
     <!-- GAME — Pelabuhan (bank perkataan) + mini game (Padan, Jutawan) + Exchange -->
@@ -1663,7 +1665,7 @@
         srColl = kolF('fakta_sr_queue');
       } else {
         drawer = allBahasaDrawers.filter(function(d) { return d.id === drawerId; })[0];
-        srColl = 'bahasa_sr_queue';
+        srColl = kolB('bahasa_sr_queue');
       }
       if (!drawer) return Promise.resolve();
 
@@ -1736,7 +1738,7 @@
     }
 
     function selesaiSRUlangan(srDocId, modeName) {
-      var srColl = modeName === 'fakta' ? kolF('fakta_sr_queue') : 'bahasa_sr_queue';
+      var srColl = modeName === 'fakta' ? kolF('fakta_sr_queue') : kolB('bahasa_sr_queue');
       var docId = srDocId || '';
       var ref = db.collection('users').doc(currentUser.uid).collection(srColl).doc(docId);
       return ref.get().then(function(snap) {
@@ -1758,7 +1760,7 @@
     function syncIndex(newIndex) {
       if (!currentUser) return;
       if (mode === 'bahasa' && activePerkataan) {
-        db.collection('users').doc(currentUser.uid).collection('bahasa_perkataan').doc(activePerkataan.id)
+        db.collection('users').doc(currentUser.uid).collection(kolB('bahasa_perkataan')).doc(activePerkataan.id)
           .update({ lastIndex: newIndex }).catch(function() {});
         activePerkataan.lastIndex = newIndex;
       } else if (mode === 'fakta' && activeTopic) {
@@ -1775,7 +1777,7 @@
     function simpanLastDrawer(drawerId, itemIndex) {
       if (!currentUser) return;
       if (mode === 'bahasa' && activePerkataan) {
-        db.collection('users').doc(currentUser.uid).collection('bahasa_perkataan').doc(activePerkataan.id)
+        db.collection('users').doc(currentUser.uid).collection(kolB('bahasa_perkataan')).doc(activePerkataan.id)
           .update({ lastDrawerId: drawerId || null }).catch(function() {});
         activePerkataan.lastDrawerId = drawerId || null;
       } else if (mode === 'fakta' && activeTopic) {
@@ -1792,7 +1794,7 @@
     function resetLastDrawer() {
       if (!currentUser) return;
       if (mode === 'bahasa' && activePerkataan) {
-        db.collection('users').doc(currentUser.uid).collection('bahasa_perkataan').doc(activePerkataan.id)
+        db.collection('users').doc(currentUser.uid).collection(kolB('bahasa_perkataan')).doc(activePerkataan.id)
           .update({ lastDrawerId: null }).catch(function() {});
         activePerkataan.lastDrawerId = null;
       } else if (mode === 'fakta' && activeTopic) {
@@ -1866,7 +1868,7 @@
       }
       var uid = currentUser.uid;
       var perkId = activePerkataan.id;
-      db.collection('users').doc(uid).collection('bahasa_drawers')
+      db.collection('users').doc(uid).collection(kolB('bahasa_drawers'))
         .where('perkataanId', '==', perkId).get()
         .then(function(snap) {
           allBahasaDrawers = allBahasaDrawers.filter(function(d) { return d.perkataanId !== perkId; });
@@ -1965,7 +1967,7 @@
             var d = snap.data(); d.id = snap.id;
             _prefetchCache[drawerId] = d;
             // Kemas kini cache utama juga
-            if (colName === 'bahasa_drawers') {
+            if (colName === kolB('bahasa_drawers')) {
               var ib = -1;
               for (var i = 0; i < allBahasaDrawers.length; i++) {
                 if (allBahasaDrawers[i].id === drawerId) { ib = i; break; }
@@ -1984,7 +1986,7 @@
 
     function loadSRIntoCards(srData, modeName, cb) {
       var drawerId = srData.drawerId || srData.id;
-      var colName = modeName === 'bahasa' ? 'bahasa_drawers' : kolF('drawer');
+      var colName = modeName === 'bahasa' ? kolB('bahasa_drawers') : kolF('drawer');
       delete _prefetchCache[drawerId]; // buang cache lama, paksa fetch semula
       db.collection('users').doc(currentUser.uid).collection(colName).doc(drawerId)
         .get().then(function(snap) {
@@ -2036,7 +2038,7 @@
       loadCollections(function() {
         // ── JQ DULU sebelum SR (hanya kalau jqAktif) ──
         function _terusKeSR() {
-          loadSROverdue('bahasa_sr_queue').then(function(overdue) {
+          loadSROverdue(kolB('bahasa_sr_queue')).then(function(overdue) {
           // Ambil SATU SR sahaja
           srQueue = overdue;
           if (srQueue.length) {
@@ -2093,7 +2095,7 @@
                   secondDrawerId = cards[si].drawerId; break;
                 }
               }
-              if (secondDrawerId) prefetchDrawer(secondDrawerId, 'bahasa_drawers');
+              if (secondDrawerId) prefetchDrawer(secondDrawerId, kolB('bahasa_drawers'));
               if (firstDrawer) {
                 var firstIssues = checkTipsBlock(firstDrawer);
                 if (firstIssues.length) {
@@ -2144,7 +2146,7 @@
           }
         }
       }
-      if (target) prefetchDrawer(target.id, 'bahasa_drawers');
+      if (target) prefetchDrawer(target.id, kolB('bahasa_drawers'));
     }
 
     function startFakta() {
@@ -3052,7 +3054,7 @@
       var isSR = c.isSR || srModeAktif;
       var nextIdx = findNextDrawerStart(cardIndex);
       var isLast = nextIdx >= cards.length;
-      var srCol = mode === 'fakta' ? kolF('fakta_sr_queue') : 'bahasa_sr_queue';
+      var srCol = mode === 'fakta' ? kolF('fakta_sr_queue') : kolB('bahasa_sr_queue');
 
       // isTamat fakta: SR sudah didaftar per-baris; jangan daftar semula whole-laci
       var srId = (srLaciSemasa && (srLaciSemasa.srDocId || srLaciSemasa.id)) || drawerId;
@@ -3530,14 +3532,14 @@
               // Dalam laci biasa → prefetch ikut ada SR atau tidak (_srAdaCache)
               if (_srAdaCache) {
                 // Ada SR akan datang → prefetch SR seterusnya dari srQueue
-                if (srQueue.length) prefetchDrawer(srQueue[0].drawerId, mode === 'bahasa' ? 'bahasa_drawers' : 'drawer');
+                if (srQueue.length) prefetchDrawer(srQueue[0].drawerId, mode === 'bahasa' ? kolB('bahasa_drawers') : 'drawer');
               } else {
                 // Tiada SR → prefetch laci biasa seterusnya
                 var nextLaciId = null;
                 for (var ni = cardIndex + 1; ni < cards.length; ni++) {
                   if (cards[ni].drawerId && cards[ni].drawerId !== c.drawerId) { nextLaciId = cards[ni].drawerId; break; }
                 }
-                if (nextLaciId) prefetchDrawer(nextLaciId, mode === 'bahasa' ? 'bahasa_drawers' : 'drawer');
+                if (nextLaciId) prefetchDrawer(nextLaciId, mode === 'bahasa' ? kolB('bahasa_drawers') : 'drawer');
               }
             }
           }
@@ -4088,7 +4090,7 @@
       if (e.key === 'Enter') cubaLoginPin();
     };
     document.getElementById('btn-logout').onclick = function() { auth.signOut(); };
-    document.getElementById('btn-go-bahasa').onclick = function() { faktaJenis = 'fakta'; srBebas = false; startBahasa(); };
+    document.getElementById('btn-go-bahasa').onclick = function() { faktaJenis = 'fakta'; srBebas = false; bahasaSumber = 'bahasa'; startBahasa(); };
     document.getElementById('btn-go-fakta').onclick = function() {
       // SOALAN FAKTA ON → mod soalan (tiada SR, tiada fasa) · OFF → Laci Fakta biasa
       faktaJenis = 'fakta';
@@ -4220,7 +4222,142 @@
     };
     document.getElementById('btn-sf-back').onclick = function() { showScreen('screen-menu'); };
 
-    document.getElementById('btn-go-sr-bebas').onclick = function() { startSRBebas(); };
+    document.getElementById('btn-go-sr-bebas').onclick = function() { bahasaSumber = 'bahasa'; startSRBebas(); };
+
+    // ══ LACI WRITING (17 Nov) — enjin Laci Bahasa yang SAMA (fasa, SR, RECAP, JQ, TAIP, MONITOR, keyboard ikut tetapan semasa) ══
+    // Sumber: ayat yang sudah DISIMPAN (terjemahan BM) di DALAM KAPAL (Pelabuhan Writing) → writing_kapal/{soalanId}.ayat[{en, bm, ok}]
+    // Setiap 5 ayat karangan = SATU laci (writing_drawers/{soalanId}_{n}, notes "en = bm" macam Laci Bahasa) — laci wujud bila
+    // kelima-lima ayat (atau baki ayat terakhir) sudah DISIMPAN. Tiada tick: app pilih sendiri laci yang BELUM masuk SR (writing_sr_queue).
+    var bahasaSumber = 'bahasa';
+    function kolB(n) {
+      if (bahasaSumber !== 'writing') return n;
+      if (n === 'bahasa_drawers') return 'writing_drawers';
+      if (n === 'bahasa_sr_queue') return 'writing_sr_queue';
+      if (n === 'bahasa_perkataan') return 'writing_perkataan';
+      return n;
+    }
+    var LWL_PERK = { id: 'writing', name: 'LACI WRITING', isActive: true };
+    var LWL_SAIZ = 5;
+    function lwlSedia() { allBahasaPerkataan = [LWL_PERK]; activePerkataan = LWL_PERK; }
+    function lwlBersih(x) { return String(x || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
+    function lwlTeksSoalan(x) { return lwlBersih(String(x || '').replace(/<[^>]*>/g, ' ').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')); }
+    // Bina / kemas kini laci writing dari ayat DISIMPAN di DALAM KAPAL
+    function lwlSegerak() {
+      var u = db.collection('users').doc(currentUser.uid);
+      return Promise.all([u.collection('writing_kapal').get(), u.collection('writing_soalan').get(),
+        u.collection('writing_drawers').get(), u.collection('writing_perkataan').doc('writing').get()]).then(function(r) {
+        var soal = {}, mahu = {}, ada = {}, kerja = [], id;
+        r[1].forEach(function(d) { soal[d.id] = d.data() || {}; });
+        r[2].forEach(function(d) { ada[d.id] = d.data() || {}; });
+        r[0].forEach(function(d) {
+          var ay = (d.data() || {}).ayat || [], so = soal[d.id] || {}, k, i, bah, ok, baris, t = lwlTeksSoalan(so.soalan);
+          var tajuk = 'T' + (so.task === 2 ? 2 : 1) + ' · ' + (t.length > 30 ? t.slice(0, 30) + '...' : (t || '(tanpa soalan)'));
+          for (k = 0; k * LWL_SAIZ < ay.length; k++) {
+            bah = ay.slice(k * LWL_SAIZ, k * LWL_SAIZ + LWL_SAIZ); ok = true; baris = [];
+            for (i = 0; i < bah.length; i++) {
+              if (!bah[i] || !bah[i].ok || !lwlBersih(bah[i].bm) || !lwlBersih(bah[i].en)) { ok = false; break; }
+              baris.push(lwlBersih(bah[i].en).replace(/=/g, '-') + ' = ' + lwlBersih(bah[i].bm));
+            }
+            if (!ok || !baris.length) continue;
+            mahu[d.id + '_' + (k + 1)] = {
+              perkataanId: 'writing', soalanId: d.id, bahagian: k + 1,
+              title: tajuk + ' · Bahagian ' + (k < 9 ? '0' : '') + (k + 1),
+              notes: baris.join('\n'), imageUrl: '',
+              tipsFasa0: 'Baca soalan karangan ini. Ingat semula isi bahagian ini sebelum mula.',
+              tips: 'Baca ayat, sebut terjemahannya dalam hati, kemudian Flip untuk semak.'
+            };
+          }
+        });
+        for (id in mahu) {
+          if (!ada[id] || ada[id].notes !== mahu[id].notes || ada[id].title !== mahu[id].title) kerja.push(u.collection('writing_drawers').doc(id).set(mahu[id]));
+        }
+        for (id in ada) { if (!mahu[id]) kerja.push(u.collection('writing_drawers').doc(id).delete()); }
+        var p = r[3].exists ? (r[3].data() || {}) : null;
+        LWL_PERK.lastDrawerId = (p && p.lastDrawerId) || null;
+        LWL_PERK.lastIndex = (p && p.lastIndex) || 0;
+        if (!p) kerja.push(u.collection('writing_perkataan').doc('writing').set({ name: 'LACI WRITING', isActive: true, createdAt: Date.now() }));
+        return Promise.all(kerja);
+      });
+    }
+    // Kad akhir: semua laci writing sudah masuk SR → SETERUSNYA = semak semula (ada ayat baru disimpan?)
+    function lwlKadSelesai() {
+      srModeAktif = false; srLaciSemasa = null;
+      cards = [{
+        front: 'Semua laci writing sudah masuk SR.\nSimpan lagi terjemahan ayat di DALAM KAPAL (Pelabuhan Writing), kemudian tekan SETERUSNYA.',
+        back: '', tips: '', imageUrl: '', title: '', drawerId: null,
+        isF0: false, isTamat: false, isSR: false, isKadSelesai: true, lwlSelesai: true
+      }];
+      cardIndex = 0;
+    }
+    function lwlPaparSelesai() {
+      lwlKadSelesai();
+      isBusy = false; isFlipped = false; showTips = false;
+      setText('play-status', 'LACI WRITING · Selesai');
+      setText('play-mode', 'TAMAT SEMUA');
+      setText('side-label', '');
+      setText('main-text', cards[0].front);
+      var m = document.getElementById('main-text');
+      if (m) m.className = 'big-text tips-mode';
+      setText('play-progress', ''); setText('play-meta', ''); setText('play-err', '');
+      setCardImage(''); clearBlockCard();
+    }
+    // Laci writing: kad = laci yang BELUM masuk SR sahaja (susun ikut tajuk), mula dari laci pertama
+    var _lwlRebuildAsal = rebuildBahasaCards;
+    rebuildBahasaCards = function(cb) {
+      if (bahasaSumber !== 'writing') return _lwlRebuildAsal.apply(this, arguments);
+      lwlSedia();
+      _lwlRebuildAsal(function(ok) {
+        db.collection('users').doc(currentUser.uid).collection('writing_sr_queue').get().then(function(snap) {
+          var dlmSR = {};
+          snap.forEach(function(d) { dlmSR[(d.data() || {}).drawerId || d.id] = 1; });
+          cards = cards.filter(function(c) { return !dlmSR[c.drawerId]; });
+          cardIndex = 0; srModeAktif = false; srLaciSemasa = null;
+          if (!cards.length) lwlKadSelesai();
+          cb && cb(true);
+        }).catch(function(e) { setText('play-err', 'Gagal semak SR writing: ' + ((e && e.message) || e)); cb && cb(ok); });
+      });
+      return true;
+    };
+    var _lwlRenderAsal = renderCard;
+    renderCard = function() {
+      if (bahasaSumber === 'writing' && mode === 'bahasa' && cards[cardIndex] && cards[cardIndex].lwlSelesai) { lwlPaparSelesai(); return; }
+      return _lwlRenderAsal.apply(this, arguments);
+    };
+    var _lwlMuatAsal = muatAktifRingan;
+    muatAktifRingan = function() {
+      if (bahasaSumber !== 'writing') return _lwlMuatAsal.apply(this, arguments);
+      lwlSedia();
+      return Promise.resolve();
+    };
+    var _lwlLompatAsal = lompatPerkataanSeterusnya;
+    lompatPerkataanSeterusnya = function() {
+      if (bahasaSumber !== 'writing') return _lwlLompatAsal.apply(this, arguments);
+      lwlPaparSelesai();
+      return Promise.resolve(true);
+    };
+    var _lwlResetAsal = resetBahasaKePerkataanPertama;
+    resetBahasaKePerkataanPertama = function() {
+      if (bahasaSumber !== 'writing') return _lwlResetAsal.apply(this, arguments);
+      isBusy = false; isLoading = false;
+      startLaciWriting();
+    };
+    function startLaciWriting() {
+      if (isLoading || !currentUser) return;
+      faktaJenis = 'fakta'; srBebas = false; bahasaSumber = 'writing';
+      var bf = document.getElementById('btn-jenis-seterusnya-float');
+      if (bf) bf.className = '';
+      showScreen('screen-play');
+      setText('play-status', 'LACI WRITING · Menyusun laci...');
+      setText('play-mode', ''); setText('side-label', ''); setText('play-err', '');
+      setText('play-progress', ''); setText('play-meta', '');
+      setText('main-text', 'Menyusun laci writing dari ayat DALAM KAPAL...');
+      setCardImage('');
+      lwlSegerak().then(function() { lwlSedia(); startBahasa(); }).catch(function(e) {
+        setText('play-err', 'Gagal susun laci writing: ' + ((e && e.message) || e));
+      });
+    }
+    var _btnLaciWriting = document.getElementById('btn-go-laci-writing');
+    if (_btnLaciWriting) _btnLaciWriting.onclick = function() { startLaciWriting(); };
     document.getElementById('btn-back-menu').onclick = function() {
       isLoading = false;
       showScreen('screen-menu');
@@ -5824,7 +5961,7 @@
     /* NAVIGASI GAME: tab tetap di atas (kedudukan sama setiap skrin) + butang kecil untuk benda bukan rutin */
     .gm-tab { display: flex; border: 2px solid #000; border-radius: 8px; overflow: hidden; margin: 2px 0 8px; }
     .gm-tab button { flex: 1 1 0; min-width: 0; padding: 10px 2px; border: 0; border-right: 2px solid #000; background: #fff; color: #000;
-      font-family: inherit; font-size: 0.78rem; font-weight: bold; cursor: pointer; }
+      font-family: inherit; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
     .gm-tab button:last-child { border-right: 0; }
     .gm-tab button.gm-aktif { background: #000; color: #fff; }
     .gm-alat { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; }
@@ -6792,6 +6929,18 @@
     <div id="ts-bangunan" class="kd-pondok"></div>
     <div id="ts-titik"></div>
     <div id="coach-tugas" style="display:none;"></div>
+  </div>
+  <!-- TAB LACI (17 Nov) — senarai laci macam MENU -->
+  <div id="screen-lc" class="screen">
+    <div class="status-bar">LACI</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+      <button type="button" data-gm-tab="kd">KEDAI</button>
+      <button type="button" data-gm-tab="ts">USAHA</button>
+      <button type="button" data-gm-tab="lc" class="gm-aktif">LACI</button>
+    </div>
+    <div id="lc-senarai"></div>
   </div>
   <!-- KAWASAN USAHA (tab USAHA, sebelah TAMAN SIHAT) — SURAU + PAWAGAM -->
   <div id="screen-us" class="screen">
@@ -13850,7 +13999,7 @@
         teruskan();
       }).catch(function() { teruskan(); });
     }
-    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting'].forEach(function(id) {
+    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting', 'btn-go-laci-writing'].forEach(function(id) {
       var b = el(id);
       if (!b || !b.onclick) return;
       var asal = b.onclick;
@@ -13925,6 +14074,7 @@
       else if (k === 'mx') bukaMx();
       else if (k === 'kd') bukaKd();
       else if (k === 'ts') bukaTs();
+      else if (k === 'lc') bukaLc();
       else if (k === 'us') bukaUs();
       else if (k === 'atur') { showScreen('screen-atur'); try { window.scrollTo(0, 0); } catch (e2) {} }
     });
@@ -15220,9 +15370,25 @@
     var TS_HALAMAN = [
       ['BADAN', ['gym', 'taman', 'makmal', 'nutrisi']],
       ['REHAT & IBADAH', ['tidur', 'surau']],
-      ['ENGLISH MUET', ['pawagam', 'pentas', 'pustaka', 'tulis']],
-      ['LACI BELAJAR', ['bahasa', 'fakta', 'reasoning', 'presenting']]
+      ['ENGLISH MUET', ['pawagam', 'pentas', 'pustaka', 'tulis']]
     ];
+    // ══ TAB LACI (17 Nov) — senarai butang macam MENU · tekan → laci terus dibuka (kunci Health First & kira minit sama macam MENU) ══
+    var LC_SENARAI = [['btn-go-bahasa', 'Laci Bahasa'], ['btn-go-sr-bebas', 'SR Bebas (Bahasa)'], ['btn-go-fakta', 'Laci Fakta'],
+      ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing']];
+    function bukaLc() {
+      var h = '', i;
+      for (i = 0; i < LC_SENARAI.length; i++) h += '<button type="button" class="btn" data-lc="' + LC_SENARAI[i][0] + '">' + LC_SENARAI[i][1] + '</button>';
+      el('lc-senarai').innerHTML = h;
+      showScreen('screen-lc');
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
+    el('lc-senarai').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-lc'))) t = t.parentNode;
+      if (!t || t === this) return;
+      var b = el(t.getAttribute('data-lc'));
+      if (b) b.click();
+    };
     var TS_LACI = { bahasa: 'btn-go-bahasa', fakta: 'btn-go-fakta', reasoning: 'btn-go-reasoning', presenting: 'btn-go-presenting' };
     var tsHal = 0;
     function svgBangunan(k, nama, aktif) {
@@ -18440,6 +18606,12 @@
         if (!t[i].querySelector('[data-gm-tab="ts"]')) {
           b = document.createElement('button');
           b.type = 'button'; b.setAttribute('data-gm-tab', 'ts'); b.textContent = 'USAHA';
+          t[i].appendChild(b);
+        }
+        // Tab LACI (17 Nov) selepas USAHA
+        if (!t[i].querySelector('[data-gm-tab="lc"]')) {
+          b = document.createElement('button');
+          b.type = 'button'; b.setAttribute('data-gm-tab', 'lc'); b.textContent = 'LACI';
           t[i].appendChild(b);
         }
         // Tab USAHA lama (kawasan SURAU + PAWAGAM) dibuang — bangunannya kini dalam tab USAHA di atas
