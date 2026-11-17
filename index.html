@@ -13384,6 +13384,7 @@
     // Lukis semula bahagian yang sedang dibuka (kotak HARI INI di Pawagam atau page SEMUA NOTA)
     function pnRender() {
       if (pnUI.halaman === 'nota') { var b = el('pn-nota-isi'); if (b) b.innerHTML = pnLukisNota(); }
+      else if (arkAktif()) { if (arkHal) arkLukis(); else arkLukisTitik(); } // Daily Repetition kini di ARKED (17 Nov)
       else if (pnRumah === 'tulis') lukisTulis();
       else coachLukisUsaha();
       if (pnTopikBuka && pnRumah === 'pawagam') { var t = el('ub-tips-pawagam'); if (t) t.innerHTML = pnLukisTopik(); }
@@ -13644,6 +13645,7 @@
     el('pn-nota-isi').onclick = function(e) { pnKlik(e, this); };
     el('btn-pn-nota-keluar').onclick = function() {
       pnHentiMasa(); pnUI.halaman = 'pawagam'; pnUI.mod = ''; pnUI.kuiz = null; pnUI.mesej = '';
+      if (arkDariNota) { arkDariNota = false; bukaArked(arkHal); return; }
       if (pnRumah === 'tulis') { showScreen('screen-tulis'); try { window.scrollTo(0, 0); } catch (x) {} lukisTulis(); return; }
       showScreen('screen-pawagam'); try { window.scrollTo(0, 0); } catch (x) {}
       coachLukisUsaha();
@@ -13721,7 +13723,8 @@
       } else {
         h += '<button type="button" data-cu="ls" style="padding:6px 8px;margin-top:4px;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;">+ LISTENING (minit video ditonton)</button>';
       }
-      if (pnRumah === 'pawagam') h += pnLukis(); // DAILY REPETITION EXERCISE (nota linking words + latihan ikut jadual) — dilukis bila Pawagam dibuka
+      // 17 Nov: DAILY REPETITION dipindah ke ARKED (titik 2) — di sini latihan sahaja
+      h += '<button type="button" data-ark="1" style="display:block;width:100%;text-align:left;margin-top:10px;padding:8px;font-size:0.95rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#fff;color:#000;">DAILY REPETITION → ARKED LISTENING ›</button>';
       box.innerHTML = h;
       var inp = document.getElementById('coach-ls-input');
       if (inp) { try { inp.focus(); } catch (e) {} }
@@ -17101,8 +17104,17 @@
     function lukisTulis() {
       if (pnRumah !== 'tulis') pnTukarRumah('tulis');
       var TJ = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>';
-      el('tulis-isi').innerHTML = tlUI.rumah ? TJ + tlLukis() : TJ + pnLukis() + tlLukis();
-      tlPasang();
+      // 17 Nov: HARI INI = ULANG KAJI sahaja · tulis karangan → PELABUHAN WRITING · Daily Repetition → ARKED WRITING
+      var BK = 'display:block;width:100%;text-align:left;margin:8px 0 0;padding:8px;font-size:0.95rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#fff;color:#000;';
+      el('tulis-isi').innerHTML = TJ +
+        '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:10px 0 4px;"><div style="font-weight:bold;font-size:1.15rem;">LACI WRITING</div>' +
+        '<div style="font-size:0.85rem;">Ayat dari karangan anda sendiri (PELABUHAN WRITING) + terjemahan BM — hafal satu-satu macam Laci Bahasa.</div>' +
+        '<button type="button" disabled style="' + BK + 'border-style:dashed;color:#777;">BUKA LACI WRITING · AKAN DATANG</button></div>' +
+        '<button type="button" data-gbh="1" style="' + BK + '">TULIS KARANGAN → PELABUHAN WRITING ›</button>' +
+        '<button type="button" data-ark="2" style="' + BK + '">DAILY REPETITION → ARKED WRITING ›</button>';
+      // LATIHAN MENULIS (rumah Task 1 / Task 2) dilukis di PELABUHAN WRITING
+      var gt = el('gb-tulis-isi');
+      if (gt) { gt.innerHTML = tlLukis(); tlPasang(); }
     }
     el('tulis-isi').onclick = function(e) { if (pnRumah !== 'tulis') { pnTukarRumah('tulis'); lukisTulis(); return; } if (tlKlik(e, this)) return; pnKlik(e, this); };
     function bukaTulis() {
@@ -18857,6 +18869,134 @@
       if (Date.now() >= MESIN.at + MESIN.jam * PAPAN_JAM) mesinSewa(lukisCx); else lukisMesin();
     }, 30000);
     el('btn-cx-balik').onclick = function() { el('btn-mx-balik').onclick(); };
+    // ══════════ ARKED & PELABUHAN BERHALAMAN (17 Nov) — titik MELINTANG di bawah tab, atas tajuk ══════════
+    // ARKED:     1 MINI GAME · 2 LISTENING (Daily Repetition) · 3 WRITING (Daily Repetition) · 4–5 AKAN DATANG. Titik "!" = ulang kaji hari ini belum siap.
+    // PELABUHAN: 1 PELABUHAN BAHASA (kapal kargo) · 2 PELABUHAN WRITING (tulis karangan Task 1 / Task 2).
+    // USAHA (LATIHAN LISTENING / WRITING) tidak lagi ada Daily Repetition — ada butang ke ARKED / PELABUHAN.
+    (function() {
+      var st = document.createElement('style');
+      st.textContent = '.hl-titik { text-align: center; margin: 0 0 6px; }' +
+        '.hl-titik .hlt { display: inline-block; vertical-align: top; width: 36px; height: 34px; margin: 0 3px; padding: 0; border: 0; background: transparent; }' +
+        '.hl-titik .hlt span { display: block; width: 20px; height: 20px; margin: 7px auto; border: 2px solid #000; border-radius: 50%; background: #fff; color: #000; box-sizing: border-box; font: bold 12px/16px sans-serif; text-align: center; }' +
+        '.hl-titik .hlt.on span { background: #000; color: #fff; }';
+      document.getElementsByTagName('head')[0].appendChild(st);
+    })();
+    // Pecah skrin: titik di atas .gm-alat, kandungan asal (selepas .gm-alat) → halaman 0, halaman lain kosong
+    function hlSediakan(sid, idT, idH, n) {
+      var sc = el(sid), alat = sc.querySelector('.gm-alat'), t = document.createElement('div'), h0 = document.createElement('div'), i, nx, d;
+      t.id = idT; t.className = 'hl-titik';
+      sc.insertBefore(t, alat);
+      h0.id = idH + '0';
+      while (alat.nextSibling) { nx = alat.nextSibling; h0.appendChild(nx); }
+      sc.appendChild(h0);
+      for (i = 1; i < n; i++) { d = document.createElement('div'); d.id = idH + i; d.style.display = 'none'; sc.appendChild(d); }
+    }
+    function hlTitik(idT, n, kini, seru) {
+      var h = '', i;
+      for (i = 0; i < n; i++) h += '<button type="button" class="hlt' + (i === kini ? ' on' : '') + '" data-hl="' + i + '"><span>' + (seru && seru[i] ? '!' : '') + '</span></button>';
+      el(idT).innerHTML = h;
+    }
+    function hlCari(t, box, attr) {
+      while (t && t !== box && !(t.getAttribute && t.getAttribute(attr) !== null)) t = t.parentNode;
+      return (!t || t === box) ? null : t.getAttribute(attr);
+    }
+
+    // ── ARKED ──
+    var ARK_HAL = [['MINI GAME', ''], ['ARKED LISTENING', 'pawagam'], ['ARKED WRITING', 'tulis'], ['AKAN DATANG', ''], ['AKAN DATANG', '']];
+    var arkHal = 0, arkDreBuka = false, arkDariNota = false;
+    hlSediakan('screen-mini', 'ark-titik', 'ark-hal-', ARK_HAL.length);
+    var ARK_IKON = {
+      pawagam: '<svg viewBox="0 0 64 56" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="56" height="40" rx="4" fill="#fff" stroke="#000" stroke-width="3"/><path d="M14 22h7l9-7v26l-9-7h-7z" fill="#000"/><path d="M36 20q5 8 0 16M42 15q9 13 0 26" fill="none" stroke="#000" stroke-width="3"/></svg>',
+      tulis: '<svg viewBox="0 0 64 56" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="56" height="40" rx="4" fill="#fff" stroke="#000" stroke-width="3"/><path d="M12 20h24M12 28h24M12 36h16" stroke="#000" stroke-width="3"/><path d="M40 40l2-8 12-12 6 6-12 12z" fill="#000"/></svg>'
+    };
+    // Bilangan kumpulan Daily Repetition yang belum siap hari ini untuk rumah r ('pawagam' / 'tulis')
+    function arkPerlu(r) {
+      if (!pnData) return 0;
+      var lama = pnRumah, n;
+      pnRumah = r; n = pnDue().length; pnRumah = lama;
+      return n;
+    }
+    function arkAktif() { return el('screen-mini').className.indexOf('active') !== -1; }
+    function arkLukisTitik() { hlTitik('ark-titik', ARK_HAL.length, arkHal, [0, arkPerlu('pawagam'), arkPerlu('tulis'), 0, 0]); }
+    function arkLukis() {
+      var p = ARK_HAL[arkHal], box = el('ark-hal-' + arkHal), h = '', n;
+      arkLukisTitik();
+      if (!arkHal || !box) return;
+      if (!p[1]) { box.innerHTML = '<div style="border:2px dashed #000;border-radius:10px;padding:20px 10px;text-align:center;font-weight:bold;font-size:1.1rem;">AKAN DATANG</div>'; return; }
+      if (pnRumah !== p[1]) pnTukarRumah(p[1]);
+      if (!pnData) { pnMuatData(); box.innerHTML = '<div class="jw-info">Memuatkan...</div>'; return; }
+      if (arkDreBuka) {
+        box.innerHTML = '<button type="button" data-ark-senarai="1" style="' + PN_BTN + '">‹ SENARAI LATIHAN</button>' + pnLukis();
+        return;
+      }
+      n = arkPerlu(p[1]);
+      h += '<button type="button" class="mini-kad" data-ark-kad="1"><span class="mini-kedai">' + ARK_IKON[p[1]] + '</span><span class="mini-teks">DAILY REPETITION' +
+        '<span class="gb-sub">' + (p[1] === 'tulis' ? 'Useful expressions &amp; cohesive devices (Task 1 / Task 2)' : 'Developing effective listening skills') + '</span>' +
+        '<span class="gb-sub" style="font-weight:bold;">' + (n ? n + ' kumpulan perlu diulang hari ini' : 'SIAP hari ini') + '</span></span></button>';
+      h += '<div class="jw-info">Latihan lain untuk ' + (p[1] === 'tulis' ? 'Writing' : 'Listening') + ' akan ditambah di senarai ini.</div>';
+      box.innerHTML = h;
+    }
+    function arkPergi(i) {
+      var k;
+      if (i < 0 || i >= ARK_HAL.length) return;
+      if (i !== arkHal) { pnHentiMasa(); arkDreBuka = false; }
+      arkHal = i;
+      for (k = 0; k < ARK_HAL.length; k++) el('ark-hal-' + k).style.display = k === i ? '' : 'none';
+      el('screen-mini').querySelector('.gm-alat-tajuk').textContent = ARK_HAL[i][0];
+      var sb = el('screen-mini').querySelector('.status-bar'); if (sb) sb.textContent = ARK_HAL[i][0];
+      var pd = el('screen-mini').querySelector('[data-panduan]'); if (pd) pd.style.display = i ? 'none' : '';
+      if (ARK_HAL[i][1] && pnRumah !== ARK_HAL[i][1]) pnTukarRumah(ARK_HAL[i][1]);
+      if (!pnData) pnMuatData();
+      arkLukis();
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
+    el('ark-titik').onclick = function(e) { var v = hlCari(e.target, this, 'data-hl'); if (v !== null) arkPergi(+v); };
+    for (var arkI = 1; arkI < ARK_HAL.length; arkI++) {
+      el('ark-hal-' + arkI).onclick = function(e) {
+        if (hlCari(e.target, this, 'data-ark-kad') !== null) { arkDreBuka = true; arkLukis(); return; }
+        if (hlCari(e.target, this, 'data-ark-senarai') !== null) { pnHentiMasa(); arkDreBuka = false; pnUI.mod = ''; pnUI.kuiz = null; pnUI.baca = null; arkLukis(); return; }
+        var nota = hlCari(e.target, this, 'data-pn') === 'nota';
+        pnKlik(e, this);
+        if (nota) { arkDariNota = true; el('btn-pn-nota-keluar').textContent = '‹ Arked'; }
+      };
+    }
+    bukaMini = (function(f) { return function() { var r = f.apply(this, arguments); arkPergi(arkHal); return r; }; })(bukaMini);
+    // Buka ARKED terus ke halaman tertentu (butang di LATIHAN LISTENING / WRITING)
+    function bukaArked(i) { arkHal = i; arkDreBuka = true; bukaMini(); }
+
+    // ── PELABUHAN ──
+    var GB_HAL = [['PEJABAT PELABUHAN'], ['PELABUHAN WRITING']];
+    var gbHal = 0;
+    hlSediakan('screen-gbank', 'gb-titik', 'gb-hal-', GB_HAL.length);
+    el('gb-hal-1').innerHTML = '<div id="gb-tulis-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div><div style="height:30px;"></div>';
+    function gbPergi(i) {
+      if (i < 0 || i >= GB_HAL.length) return;
+      gbHal = i;
+      for (var k = 0; k < GB_HAL.length; k++) el('gb-hal-' + k).style.display = k === i ? '' : 'none';
+      hlTitik('gb-titik', GB_HAL.length, i);
+      var sc = el('screen-gbank'), b;
+      sc.querySelector('.gm-alat-tajuk').textContent = GB_HAL[i][0];
+      b = sc.querySelector('[data-panduan]'); if (b) b.style.display = i ? 'none' : '';
+      b = el('btn-gb-segar'); if (b) b.style.display = i ? 'none' : '';
+      if (i === 1) {
+        if (pnRumah !== 'tulis') pnTukarRumah('tulis');
+        tlUI.rumah = 0; tlUI.tema = ''; tlUI.id = ''; tlUI.edit = false; tlUI.mesej = ''; tlUI.pukal = false; tlUI.tambahS = false; tlUI.tambahT = false; tlUI.tanyaSyor = false; tlUI.preset = '';
+        lukisTulis();
+      }
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
+    el('gb-titik').onclick = function(e) { var v = hlCari(e.target, this, 'data-hl'); if (v !== null) gbPergi(+v); };
+    el('gb-tulis-isi').onclick = function(e) { if (pnRumah !== 'tulis') pnTukarRumah('tulis'); tlKlik(e, this); };
+    bukaBank = (function(f) { return function() { var r = f.apply(this, arguments); gbPergi(gbHal); return r; }; })(bukaBank);
+    function bukaPelabuhanWriting() { gbHal = 1; bukaBank(false); }
+
+    // Butang pintasan (dalam LATIHAN LISTENING / LATIHAN WRITING): data-ark = halaman ARKED · data-gbh = halaman PELABUHAN
+    document.addEventListener('click', function(e) {
+      var v = hlCari(e.target, document, 'data-ark');
+      if (v !== null) { bukaArked(+v); return; }
+      v = hlCari(e.target, document, 'data-gbh');
+      if (v !== null) { gbHal = +v; bukaBank(false); }
+    });
   })();
   </script>
 
