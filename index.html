@@ -13434,7 +13434,7 @@
       h += '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:10px 0 4px;">';
       h += '<div style="font-weight:bold;font-size:1.15rem;margin-bottom:4px;">DAILY REPETITION EXERCISE</div>';
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin-bottom:6px;background:#eee;">' +
-        (pnRumah === 'tulis' ? '<div style="font-size:0.85rem;">Senarai <b>useful expressions</b> yang perlu DIINGAT untuk <b>Task 1 — membalas e-mel / surat</b>.</div>'
+        (pnRumah === 'tulis' ? '<div style="font-size:0.85rem;">Senarai <b>useful expressions</b> &amp; <b>cohesive devices</b> yang perlu DIINGAT untuk <b>Task 1 (e-mel / surat)</b> dan <b>Task 2 (esei)</b>.</div>'
           : '<div style="font-size:0.85rem;">Senarai yang perlu DIINGAT untuk <b>developing effective listening skills</b>.</div>') +
         '<div style="font-size:0.85rem;font-style:italic;margin-top:2px;">Don\'t worry, Coach will let you do the exercise according to the time.</div></div>';
       if (!pnData) { pnMuatData(); return h + '<div style="font-size:0.85rem;">Memuatkan nota...</div></div>'; }
@@ -15182,6 +15182,8 @@
       if (k === 'presenting') s += '<rect x="55" y="23" width="10" height="16" rx="5" fill="#000"/><path d="M51 34 Q51 44 60 44 Q69 44 69 34" fill="none" stroke="#000" stroke-width="2.5"/><path d="M60 44 V49 M54 49 H66" stroke="#000" stroke-width="2.5"/>';
       if (k === 'kumpulan') s += '<circle cx="48" cy="30" r="4.5" fill="#000"/><circle cx="60" cy="27" r="4.5" fill="#000"/><circle cx="72" cy="30" r="4.5" fill="#000"/><path d="M41 47 Q41 36 48 36 Q55 36 55 47 Z M53 45 Q53 33 60 33 Q67 33 67 45 Z M65 47 Q65 36 72 36 Q79 36 79 47 Z" fill="#000"/>';
       if (k === 'pentas') s += '<path d="M46 28 H74 L71 34 H49 Z" fill="#000"/><rect x="56" y="34" width="8" height="12" fill="#000"/><path d="M48 48 H72" stroke="#000" stroke-width="3"/><path d="M60 28 V22" stroke="#000" stroke-width="2"/><circle cx="60" cy="21" r="2.5" fill="#000"/>';
+      if (k === 'emel') s += '<rect x="44" y="27" width="32" height="21" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M44 27 L60 40 L76 27" fill="none" stroke="#000" stroke-width="2.5"/>';
+      if (k === 'esei') s += '<path d="M47 23 H67 L73 29 V49 H47 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M51 31 H69 M51 36 H69 M51 41 H69 M51 46 H63" stroke="#000" stroke-width="2"/>';
       if (k === 'tulis') s += '<path d="M48 47 L51 38 L68 21 L74 27 L57 44 Z" fill="#000"/><path d="M48 47 L51 38 L57 44 Z" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M44 49 H76" stroke="#000" stroke-width="2.5"/>';
       if (k === 'pustaka') s += '<rect x="45" y="40" width="30" height="7" fill="#000"/><rect x="48" y="33" width="26" height="6" fill="#fff" stroke="#000" stroke-width="2"/><rect x="46" y="26" width="24" height="6" fill="#000"/><path d="M50 43.5 H70" stroke="#fff" stroke-width="1.5"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
@@ -16740,14 +16742,371 @@
     el('btn-us-pustaka-keluar').onclick = function() { bukaTs(); };
     el('btn-us-pustaka-coach').onclick = function() { bukaCoach(false); };
     // ══ DEWAN TULIS — WRITING MUET Paper 4 (17 Nov): 3 tab (HARI INI / TIPS / FORMAT) · isi TIPS & FORMAT dari buku, HARI INI dibincang kemudian ══
-    // HARI INI (17 Nov) = DAILY REPETITION EXERCISE useful expressions Task 1 (enjin sama dengan Pawagam, set r: 'tulis')
+
+    // ══ DEWAN TULIS — LATIHAN MENULIS (17 Nov): 2 rumah TASK 1 (e-mel / surat) & TASK 2 (esei) — corak sama PENTAS ══
+    // AI beri soalan + FAKTA sahaja (frasa pendek) · pengguna tulis jawapan sendiri (pengira perkataan)
+    // Data: coach/tulis_bank { soalan: [{ id, tema, task, soalan, jenis, nota: [{ n, f: [] }], fakta: [] }], tema: [], buang: {}, tambah } · coach/tulis { siap: { q-id: { t: tarikh, n: perkataan } } } · tulis_karangan/q-{id} { j, n, at, tarikh }
+    var TL_BANK = [
+      { id: 't1-bengkel', task: 1, tema: 'Education and school life', tarikh: '2026-11-17', soalan: 'Your friend, Lynn, was not in school because she was not feeling well. Reply to her email asking about the Creative Writing Workshop she missed. (E-mel, informal)',
+        nota: [{ n: 'Excellent! ...', f: ['the workshop was excellent', 'all of us had a great time'] }, { n: 'Describe', f: ['shadow play: compose a short poem', 'perform the poem using shadows and voice-overs', 'Dr Aisah gave commendable feedback'] },
+          { n: 'Yes, because ...', f: ['Mala related her presentation to real-life experiences'] }, { n: 'Tell Lynn', f: ['will join the next workshop', 'held next month', 'fun and enjoyable to learn new things'] }] },
+      { id: 't1-kimsongbok', task: 1, tema: 'Travel and tourism', tarikh: '2026-11-17', soalan: 'Your pen friend in Korea, Kim Song Bok, is visiting you in Kuala Lumpur during the December school break. Reply to his letter asking for some information. (Surat, informal)',
+        nota: [{ n: 'Fantastic! ...', f: ['excited he is finally visiting Malaysia', 'cannot wait to meet him'] }, { n: 'Suggest two places', f: ['Twin Towers: world&#39;s tallest twin towers, double-decker skybridge', 'Batu Caves: one of the oldest limestone caves, more than 200 steps'] },
+          { n: 'Certainly, don&#39;t worry ...', f: ['help him to book a room', 'cousin in the hospitality industry can get a good price'] }, { n: 'Tell Kim Song Bok', f: ['Korean food is popular in Malaysia', 'many restaurants serve authentic Korean food'] }] },
+      { id: 't1-ryan', task: 1, tema: 'Family and relationships', tarikh: '2026-11-17', soalan: 'Your friend, Ryan, is thinking of a suitable birthday present for his youngest brother, Rick. Reply to his email asking for your advice. You are also invited to the party. (E-mel, informal)',
+        nota: [{ n: 'Glad to hear', f: ['glad they want to get Rick something special', 'shopping for brothers can be hard'] }, { n: 'Tell Ryan', f: ['a backpack is better than a smartphone', 'practical gift, many purposes', 'he can save up for a smartphone'] },
+          { n: 'Certainly ... because', f: ['a surprise party will be enjoyable', 'plenty of food and games', 'his wish comes true: a memorable birthday'] }, { n: 'Suggest two', f: ['Name in the Hat: easy to learn, gets everyone laughing', 'Sardines: like hide-and-seek, one person hides, the rest seek'] }] },
+      { id: 't2-materialistik', task: 2, jenis: 'discursive', tema: 'Society and values', tarikh: '2026-11-17', soalan: 'You attended a talk by a famous counsellor, organised by your school&#39;s Interact Club. The speaker said: There is nothing wrong with being materialistic. Write an essay expressing your opinion on the statement.',
+        fakta: ['drives people to work harder: a better, financially secure lifestyle', 'hawkers made their way up through sheer determination', 'people spend more on expensive products: good for the economy', 'retail sector keeps developing new products', '(other side) people become selfish and inconsiderate', '(other side) wealthy owners may exploit labour in Third-World countries'] },
+      { id: 't2-muzik', task: 2, jenis: 'argumentative', tema: 'Education and school life', tarikh: '2026-11-17', soalan: 'A teacher said during a school assembly: Students should spend less time listening to music. Write an essay expressing your viewpoint on the statement.',
+        fakta: ['music relieves the stress of studying: gives the mind something to focus on', 'keeps students alert, does not pull focus away like television', 'helps the mind analyse and think better: absorb information faster', 'favourite songs make difficult tasks easier, more motivated', '(counterargument) music can distract like other hobbies: but top students use music to study'] },
+      { id: 't2-alamsekitar', task: 2, jenis: 'problem-solution', tema: 'Environment', tarikh: '2026-11-17', soalan: 'At an Earth Day talk organised by an NGO, the speaker said: There are still many detrimental environmental issues for us to address. Write an essay on the environmental issues faced and the possible solutions.',
+        fakta: ['(problem) deforestation for agriculture and urban development: climate change', '(problem) mass consumption: natural resources dwindle', '(solution) sustainable development: restrict land clearing, replant trees', '(solution) mindful consumption: cycle, shop wisely, avoid single-use items, recycle', '(solution) stricter laws: heavier fines and jail for companies that pollute rivers'] },
+      { id: 't2-internet', task: 2, jenis: 'discursive', tema: 'Science and technology', tarikh: '2026-11-17', soalan: 'At a talk during your school IT Festival, the speaker said: The Internet has many advantages. Write an essay expressing your opinion on the statement.',
+        fakta: ['communication: easy and inexpensive (email, messenger, teleconferencing)', 'saves time: messages delivered in seconds', 'wealth of information 24/7 at little cost: helps students learn', 'entertainment: songs, films, virtual tours from home', '(other side) distraction: social media and games affect grades'] }
+      // ◆ HUJUNG TL_BANK ◆
+    ];
+    var TL_VERSI_SOALAN = '2026-11-17';
+    var TL_JENIS = { 'discursive': 'Discursive (membincang)', 'argumentative': 'Argumentative (berhujah)', 'problem-solution': 'Problem-solution (masalah-penyelesaian)' };
+    var tlUI = { rumah: 0, tema: '', id: '', edit: false, mesej: '', preset: '', pukal: false, tambahS: false, tambahT: false, tanyaSyor: false, syor: '' }, tlData = null, tlMuat = false, tlU = null, tlIdx = null, tlKar = {};
+    function tlE(x) { return String(x).replace(/&(?!#?\w+;)/g, '&amp;').replace(/</g, '&lt;'); }
+    function tlKunci(s) { return 'q-' + s.id; }
+    function tlKira(t) { var m = String(t || '').match(/[A-Za-z0-9À-ɏ]+(['’-][A-Za-z0-9]+)*/g); return m ? m.length : 0; }
+    function tlMin(task) { return task === 1 ? 100 : 250; }
+    function tlPerluTambah() { var t = (tlU && tlU.tambah) || TL_VERSI_SOALAN; return t < coachHariId(); }
+    function tlBank() {
+      if (tlIdx) return tlIdx;
+      var S = {}, L = [], T = [], i, b, s, U = tlU || {}, bg = U.buang || {}, sm = TL_BANK.concat(U.soalan || []);
+      for (i = 0; i < sm.length; i++) {
+        b = sm[i]; if (!b || !b.id || !b.soalan || S[b.id]) continue;
+        s = { id: b.id, tema: b.tema || 'Lain-lain', task: b.task === 2 ? 2 : 1, soalan: b.soalan, jenis: b.jenis || '', nota: b.nota || [], fakta: b.fakta || [], tarikh: b.tarikh || '', milik: i >= TL_BANK.length };
+        S[s.id] = s; L.push(s); if (T.indexOf(s.tema) < 0) T.push(s.tema);
+      }
+      var ut = U.tema || [];
+      for (i = 0; i < ut.length; i++) if (T.indexOf(ut[i]) < 0) T.push(ut[i]);
+      var L2 = [], T2 = [];
+      for (i = 0; i < T.length; i++) if (!bg['tema:' + T[i]]) T2.push(T[i]);
+      for (i = 0; i < L.length; i++) if (!bg[L[i].id] && !bg['tema:' + L[i].tema]) L2.push(L[i]);
+      tlIdx = { S: S, L: L2, T: T2 };
+      return tlIdx;
+    }
+    function tlSoalan(task, tema) { var a = [], L = tlBank().L, i; for (i = 0; i < L.length; i++) if (L[i].task === task && (!tema || L[i].tema === tema)) a.push(L[i]); return a; }
+    function tlKiraSiap(task, tema) { var a = tlSoalan(task, tema), n = 0, i; for (i = 0; i < a.length; i++) if (tlData.siap[tlKunci(a[i])]) n++; return n; }
+    function tlMuatData() {
+      if (tlData || tlMuat || !currentUser) return;
+      tlMuat = true;
+      var siap = function(dt, ub) { tlData = dt; tlData.siap = tlData.siap || {}; tlU = ub || {}; tlU.soalan = tlU.soalan || []; tlU.tema = tlU.tema || []; tlU.buang = tlU.buang || {}; tlIdx = null; lukisTulis(); };
+      kol('coach').doc('tulis').get().then(function(d) {
+        var dt = d.exists ? (d.data() || {}) : {};
+        kol('coach').doc('tulis_bank').get().then(function(b) { siap(dt, b.exists ? b.data() : {}); }).catch(function() { siap(dt, {}); });
+      }).catch(function() { siap({}, {}); });
+    }
+    function tlSimpanU(mesej) {
+      tlIdx = null;
+      kol('coach').doc('tulis_bank').set(tlU).then(function() { if (mesej) { tlUI.mesej = mesej; lukisTulis(); } })
+        .catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
+    }
+    function tlJenis(x) {
+      x = String(x || '').toLowerCase().replace(/[^a-z]/g, '');
+      if (x === 'd' || x.indexOf('discurs') === 0) return 'discursive';
+      if (x === 'a' || x.indexOf('argument') === 0) return 'argumentative';
+      if (x === 'p' || x === 'ps' || x.indexOf('problem') === 0) return 'problem-solution';
+      return '';
+    }
+    // JANA PUKAL: TOPIK: x · T1: situasi | nota = fakta; fakta | ... · T2: jenis | soalan | fakta | fakta ... Pulang { n, t, ulang, salah }
+    function tlPukal(teks, temaAsal, taskAsal) {
+      var B = tlBank(), ada = {}, x, r = { n: 0, t: 0, ulang: 0, salah: 0 }, tema = temaAsal || '', L = String(teks || '').split(/\r?\n/), i, j, m, bh, it, ps, nm, q, hari = coachHariId();
+      var kunci = function(t) { return String(t).toLowerCase().replace(/\s+/g, ' '); };
+      for (x in B.S) if (B.S.hasOwnProperty(x)) ada[kunci(B.S[x].soalan)] = 1;
+      for (i = 0; i < L.length; i++) {
+        var gr = L[i].replace(/^\s*([-*•>]|\d+[.)])\s*/, '').replace(/\*\*/g, '').replace(/^\s+|\s+$/g, '');
+        if (!gr || /^```/.test(gr)) continue;
+        m = gr.match(/^(TOPIK|TOPIC)\s*:\s*(.+)$/i);
+        if (m) {
+          tema = m[2].replace(/\s+$/, '');
+          if (tlU.buang['tema:' + tema]) delete tlU.buang['tema:' + tema];
+          if (B.T.indexOf(tema) < 0 && tlU.tema.indexOf(tema) < 0) { tlU.tema.push(tema); r.t++; }
+          continue;
+        }
+        m = gr.match(/^T(?:ASK)?\s*([12])\s*:\s*(.+)$/i);
+        if (!m && taskAsal) m = [gr, String(taskAsal), gr];
+        if (!m) { r.salah++; continue; }
+        bh = m[2].split('|'); for (j = 0; j < bh.length; j++) bh[j] = bh[j].replace(/^\s+|\s+$/g, '');
+        it = { id: 'w' + Date.now().toString(36) + r.n + Math.floor(Math.random() * 1000), tema: tema || 'Lain-lain', task: +m[1], soalan: '', tarikh: hari };
+        if (it.task === 2) {
+          it.jenis = tlJenis(bh[0]);
+          if (it.jenis) bh.shift();
+          q = bh.shift(); if (!q || !it.jenis) { r.salah++; continue; }
+          it.fakta = []; for (j = 0; j < bh.length; j++) if (bh[j]) it.fakta.push(bh[j]);
+        } else {
+          q = bh.shift(); if (!q) { r.salah++; continue; }
+          it.nota = [];
+          for (j = 0; j < bh.length; j++) {
+            if (!bh[j]) continue;
+            ps = bh[j].split('='); nm = ps.shift().replace(/^\s+|\s+$/g, '');
+            var f = [], fs = ps.join('=').split(';');
+            for (var k2 = 0; k2 < fs.length; k2++) { x = fs[k2].replace(/^\s+|\s+$/g, ''); if (x) f.push(x); }
+            if (nm) it.nota.push({ n: nm, f: f });
+          }
+        }
+        it.soalan = q;
+        if (ada[kunci(q)]) { r.ulang++; continue; }
+        if (!tema && tlU.tema.indexOf('Lain-lain') < 0 && B.T.indexOf('Lain-lain') < 0) { tlU.tema.push('Lain-lain'); r.t++; }
+        ada[kunci(q)] = 1; tlU.soalan.push(it); r.n++;
+      }
+      if (r.n || r.t) { tlU.tambah = hari; tlIdx = null; }
+      return r;
+    }
+    function tlPreset(syor) {
+      var B = tlBank(), L = [], i, j, a, n = 0;
+      syor = String(syor || '').replace(/^\s+|\s+$/g, '');
+      for (i = 0; i < B.T.length; i++) {
+        L.push('TOPIK: ' + B.T[i]);
+        a = tlSoalan(1, B.T[i]).concat(tlSoalan(2, B.T[i]));
+        for (j = 0; j < a.length; j++) { L.push('T' + a[j].task + ': ' + (a[j].task === 2 ? a[j].jenis + ' | ' : '') + String(a[j].soalan).replace(/&#39;/g, "'")); n++; }
+      }
+      return [
+        'TUGAS: Beri SOALAN WRITING MUET (Paper 4) BARU sebanyak yang boleh (sekurang-kurangnya 20) yang BELUM ADA dalam senarai saya di bawah. Boleh juga cadang TOPIK BESAR baru yang sesuai dengan tema MUET.',
+        'PENTING: JANGAN tulis jawapan / karangan — saya tulis sendiri. Beri soalan dan FAKTA SAHAJA (frasa pendek, bukan ayat penuh). Contoh fakta untuk "cara jaga keselamatan elektrik": tutup suis utama seterika selepas guna; jangan sentuh suis dengan tangan basah.',
+        syor ? '\nPERKARA DISYORKAN: "' + syor + '"\n- MULAKAN dengan SEBANYAK MUNGKIN soalan (T1 dan T2) yang berkaitan atau hampir dengan perkara ini. Letak di bawah topik besar yang paling sesuai (atau topik besar baru).\n- SELEPAS itu, beri juga soalan lain yang TIADA kaitan dengan perkara ini seperti biasa (pelbagai topik besar).' : '',
+        '',
+        'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL dalam app — ikut tepat, satu soalan satu baris):',
+        'TOPIK: nama topik besar',
+        'T1: situasi + e-mel/surat yang perlu dibalas (siapa pengirim, tentang apa, nyatakan E-mel/Surat dan formal/informal) | nota 1 = fakta; fakta | nota 2 = fakta; fakta | nota 3 = fakta; fakta | nota 4 = fakta; fakta',
+        'T2: jenis | soalan (siapa penutur, pernyataan, arahan esei) | fakta | fakta | fakta | fakta | fakta',
+        '',
+        'PERATURAN:',
+        '1. Tulis baris TOPIK: sebelum soalan topik itu. Nama topik sedia ada mesti ditulis TEPAT seperti dalam senarai.',
+        '2. T1 = Task 1 Guided Writing (balas e-mel / surat, sekurang-kurangnya 100 perkataan). Tepat 4 nota ala MUET, cth: Excellent! ... / Describe / Yes, because ... / Tell Lynn / Suggest two places / Certainly, don\'t worry ... Setiap nota 2-3 fakta dipisah ;',
+        '3. Campur T1 e-mel & surat, formal (kepada pengurus, pengetua, pensyarah) & informal (kepada kawan, keluarga).',
+        '4. T2 = Task 2 Extended Writing (esei, sekurang-kurangnya 250 perkataan). jenis MESTI salah satu: discursive / argumentative / problem-solution. Beri 5-6 fakta; tanda (other side), (counterargument), (problem) atau (solution) jika sesuai.',
+        '5. Campur T1 dan T2, dan ketiga-tiga jenis esei. Jangan ulang / ubah sedikit soalan yang sudah ada. Jangan guna aksara | = ; dalam ayat soalan / fakta. Tiada emoji, tiada nombor di depan baris.',
+        '6. Output: SATU codebox teks biasa sahaja, tanpa penerangan.',
+        '',
+        'SENARAI SAYA (' + B.T.length + ' topik, ' + n + ' soalan):'
+      ].concat(L).join('\n');
+    }
+    function tlSalin(teks) {
+      var siap = function() { tlUI.mesej = 'PRESET DISALIN. Tampal ke AI → salin jawapan AI → tekan JANA PUKAL → tampal → SIMPAN.'; tlUI.preset = ''; lukisTulis(); };
+      var gagal = function() {
+        var ta = document.createElement('textarea'), ok = false;
+        ta.value = teks; ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { ok = document.execCommand('copy'); } catch (x) {}
+        document.body.removeChild(ta);
+        if (ok) siap(); else { tlUI.preset = teks; tlUI.mesej = 'Peranti ini tak benarkan salin automatik. Tekan lama teks di bawah → Pilih semua → Salin.'; lukisTulis(); }
+      };
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(teks).then(siap, gagal); return; } } catch (x) {}
+      gagal();
+    }
+    function tlMuatKar(k) {
+      if (tlKar[k] !== undefined) return;
+      tlKar[k] = null;
+      kol('tulis_karangan').doc(k).get().then(function(d) { tlKar[k] = d.exists ? (d.data() || {}) : {}; lukisTulis(); })
+        .catch(function() { tlKar[k] = {}; lukisTulis(); });
+    }
+    // Pulang HTML bahagian LATIHAN MENULIS (rumah 0 = di bawah DAILY REPETITION; rumah 1/2 = skrin penuh)
+    function tlLukis() {
+      var h = '', i, j, a, s, t;
+      var BTN = PT_BTN, BTNA = PT_BTNA;
+      var mesej = tlUI.mesej ? '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + tlUI.mesej + '</div>' : '';
+      var kepala = function(aksi, label) { return '<button type="button" data-tl="' + aksi + '" style="' + BTN + '">‹ ' + label + '</button>' + mesej; };
+      if (!tlData) { tlMuatData(); return '<div style="margin-top:10px;">Memuatkan latihan menulis...</div>'; }
+      var B = tlBank();
+      if (!tlUI.rumah) {
+        var kotakPreset = (tlUI.tanyaSyor ? '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ADA PERKARA YANG DISYORKAN?</div>' +
+          '<div style="font-size:0.8rem;">Contoh: keselamatan elektrik. AI akan reka soalan berkaitan perkara ini dahulu, kemudian soalan lain seperti biasa. Biar kosong jika tiada.</div>' +
+          '<input id="tl-syor" type="text" value="' + tlE(tlUI.syor).replace(/"/g, '&quot;') + '" placeholder="Perkara disyorkan (pilihan)" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;">' +
+          '<div><button type="button" data-tl="presetsalin" style="' + BTNA + '">SALIN PRESET</button><button type="button" data-tl="preset" style="' + BTN + '">BATAL</button></div></div>' : '') +
+          (tlUI.preset ? '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + tlE(tlUI.preset) + '</textarea>' : '');
+        var btnPukal = '<button type="button" data-tl="bukapukal" style="' + (tlUI.pukal ? BTNA : BTN) + '">JANA PUKAL</button>';
+        var kotakPukal = !tlUI.pukal ? '' : '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JANA PUKAL</div>' +
+          '<div style="font-size:0.8rem;">Tampal jawapan AI di bawah → SIMPAN. Soalan T1 masuk TASK 1, T2 masuk TASK 2. Topik baru dicipta sendiri. Soalan yang sudah ada diabaikan.</div>' +
+          '<textarea id="tl-pukal" placeholder="TOPIK: Environment&#10;T1: Situasi (E-mel, informal) | Excellent! ... = fakta; fakta | Describe = fakta; fakta&#10;T2: argumentative | Soalan esei | fakta | fakta" style="width:100%;height:180px;margin-top:6px;font-size:0.85rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+          '<div><button type="button" data-tl="simpanpukal" style="' + BTNA + '">SIMPAN</button><button type="button" data-tl="bukapukal" style="' + BTN + '">TUTUP</button></div></div>';
+        h += '<div style="border:2px solid #000;border-radius:10px;padding:6px 8px;margin-top:12px;"><div style="font-weight:bold;font-size:1.15rem;margin-bottom:4px;">LATIHAN MENULIS</div>' + mesej +
+          '<div style="font-size:0.85rem;">AI beri soalan &amp; fakta · anda tulis jawapan sendiri. Task 1: balas e-mel / surat (&#8805; 100 perkataan) · Task 2: esei (&#8805; 250 perkataan).</div>';
+        if (tlPerluTambah()) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ARAHAN COACH: TAMBAH SOALAN &amp; FAKTA WRITING HARI INI</div>' +
+          '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET → tampal ke AI.<br>2. Salin jawapan AI.<br>3. Tekan JANA PUKAL → tampal → SIMPAN.<br>AI beri soalan &amp; fakta sahaja — jawapan anda tulis sendiri.</div>' +
+          '<button type="button" data-tl="preset" style="' + BTNA + '">SALIN PRESET</button>' + btnPukal + kotakPreset + kotakPukal + '</div>';
+        h += '<div class="kd-pondok" style="margin-top:8px;">';
+        for (i = 1; i <= 2; i++) {
+          h += '<button type="button" class="kd-pd" data-tl="rumah" data-v="' + i + '">' + svgBangunan(i === 1 ? 'emel' : 'esei', i === 1 ? 'TASK 1' : 'TASK 2', true) +
+            '<small>' + (i === 1 ? 'E-mel / Surat' : 'Esei') + '<br>' + tlSoalan(i).length + ' soalan · ' + tlKiraSiap(i) + ' ditulis</small></button>';
+        }
+        h += '</div>';
+        if (!tlPerluTambah()) h += '<div style="font-size:0.85rem;border-top:2px solid #000;padding-top:4px;">Soalan terakhir ditambah: ' + ((tlU && tlU.tambah) || TL_VERSI_SOALAN) + '. <button type="button" data-tl="preset" style="' + BTN + '">SALIN PRESET</button>' + btnPukal + '</div>' + kotakPreset + kotakPukal;
+        return h + '</div>';
+      }
+      var nmR = tlUI.rumah === 1 ? 'TASK 1: GUIDED WRITING (E-MEL / SURAT)' : 'TASK 2: EXTENDED WRITING (ESEI)';
+      // ── SENARAI TOPIK BESAR ──
+      if (!tlUI.tema) {
+        h = kepala('balik', 'HARI INI');
+        h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">' + nmR + '</div>';
+        h += '<div style="font-weight:bold;margin:8px 0 2px;">SENARAI TOPIK BESAR</div><div><button type="button" data-tl="bukatopik" style="' + BTN + '">+ TOPIK</button></div>';
+        if (tlUI.tambahT) h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">TOPIK BESAR BARU</div>' +
+          '<input id="tl-topik" type="text" placeholder="cth: Health and lifestyle" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">' +
+          '<div><button type="button" data-tl="simpantopik" style="' + BTNA + '">TAMBAH</button><button type="button" data-tl="bukatopik" style="' + BTN + '">BATAL</button></div></div>';
+        for (i = 0; i < B.T.length; i++) {
+          a = tlSoalan(tlUI.rumah, B.T[i]);
+          h += '<button type="button" data-tl="tema" data-v="' + tlE(B.T[i]).replace(/"/g, '&quot;') + '" style="' + BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + tlE(B.T[i]) +
+            '<span style="font-weight:normal;font-size:0.75rem;"> · ' + a.length + ' soalan · ' + tlKiraSiap(tlUI.rumah, B.T[i]) + ' ditulis</span> ›</button>';
+        }
+        return h;
+      }
+      // ── SENARAI SOALAN DALAM TOPIK ──
+      if (!tlUI.id) {
+        a = tlSoalan(tlUI.rumah, tlUI.tema);
+        h = kepala('senaraitema', 'TOPIK BESAR');
+        h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 4px;">TASK ' + tlUI.rumah + ' · ' + tlE(tlUI.tema).toUpperCase() + '</div>';
+        h += '<div><button type="button" data-tl="bukasoalan" style="' + (tlUI.tambahS ? BTN : BTNA) + '">+ SOALAN</button><button type="button" data-tl="buangtopik" style="' + BTN + '">BUANG TOPIK</button></div>';
+        if (tlUI.tambahS) {
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">SOALAN BARU (Task ' + tlUI.rumah + ')</div>';
+          if (tlUI.rumah === 2) {
+            h += '<div style="font-size:0.8rem;">Jenis esei:</div><select id="tl-sj" style="font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:4px;">';
+            for (t in TL_JENIS) if (TL_JENIS.hasOwnProperty(t)) h += '<option value="' + t + '">' + TL_JENIS[t] + '</option>';
+            h += '</select>';
+          }
+          h += '<textarea id="tl-sq" placeholder="' + (tlUI.rumah === 1 ? 'Situasi + e-mel / surat yang perlu dibalas (E-mel / Surat, formal / informal)' : 'Soalan esei (pernyataan + arahan)') + '" style="width:100%;height:70px;margin-top:4px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+            '<div style="font-size:0.8rem;margin-top:4px;">' + (tlUI.rumah === 1 ? 'Nota — satu baris satu nota, format: nota = fakta; fakta' : 'Fakta — satu baris satu fakta:') + '</div>' +
+            '<textarea id="tl-si" style="width:100%;height:100px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+            '<div><button type="button" data-tl="simpansoalan" style="' + BTNA + '">TAMBAH</button><button type="button" data-tl="bukasoalan" style="' + BTN + '">BATAL</button></div></div>';
+        }
+        if (!a.length) h += '<div>Belum ada soalan.</div>';
+        for (i = 0; i < a.length; i++) {
+          s = a[i]; var sp = tlData.siap[tlKunci(s)];
+          h += '<button type="button" data-tl="soalan" data-v="' + s.id + '" style="' + BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + (i + 1) + '. ' + tlE(s.soalan) +
+            '<span style="font-weight:normal;font-size:0.75rem;">' + (s.task === 2 ? ' · ' + s.jenis : '') + (sp ? ' · DITULIS ✓ ' + sp.n + ' perkataan' : '') + (s.tarikh === coachHariId() ? ' · BARU' : '') + '</span> ›</button>';
+        }
+        return h;
+      }
+      // ── SATU SOALAN: soalan + fakta (AI) + jawapan saya ──
+      s = B.S[tlUI.id];
+      if (!s) { tlUI.id = ''; return tlLukis(); }
+      var k = tlKunci(s), min = tlMin(s.task);
+      h = kepala('senarai', 'SENARAI SOALAN');
+      h += '<div style="font-size:0.8rem;margin-top:6px;">TASK ' + s.task + ' · ' + tlE(s.tema) + (s.task === 2 ? ' · <b>' + (TL_JENIS[s.jenis] || s.jenis) + '</b>' : '') + '</div>';
+      h += '<div style="background:#000;color:#fff;font-weight:bold;border-radius:8px;padding:6px 8px;margin:4px 0;">' + tlE(s.soalan) + '</div>';
+      h += '<div style="font-size:0.8rem;">' + (s.task === 1 ? 'Guna <b>SEMUA nota</b> · balas kepada orang yang betul · laras bahasa ikut penerima · &#8805; 100 perkataan · &#177; 25 minit.' :
+        'Pendahuluan (tesis) · 3 perenggan isi (TEEEL) · penutup · &#8805; 250 perkataan · &#177; 50 minit.') + '</div>';
+      h += '<div style="font-weight:bold;margin-top:8px;">FAKTA (AI)</div><div style="font-size:0.8rem;">Fakta ringkas sahaja — kembangkan dengan ayat anda sendiri.</div>';
+      if (s.task === 1) {
+        if (!s.nota.length) h += '<div style="font-size:0.85rem;">Belum ada nota.</div>';
+        for (i = 0; i < s.nota.length; i++) {
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><span style="display:inline-block;background:#000;color:#fff;font-weight:bold;border-radius:6px;padding:2px 8px;">NOTA ' + (i + 1) + ': ' + tlE(s.nota[i].n) + '</span>';
+          for (j = 0; j < (s.nota[i].f || []).length; j++) h += '<div style="font-size:0.9rem;margin:2px 0 0 4px;">&#8594; ' + tlE(s.nota[i].f[j]) + '</div>';
+          h += '</div>';
+        }
+      } else {
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;">';
+        if (!s.fakta.length) h += '<div style="font-size:0.85rem;">Belum ada fakta.</div>';
+        for (i = 0; i < s.fakta.length; i++) h += '<div style="font-size:0.9rem;margin:2px 0;">&#8594; ' + tlE(s.fakta[i]) + '</div>';
+        h += '</div>';
+      }
+      tlMuatKar(k);
+      var kr = tlKar[k], ada = kr && kr.j && String(kr.j).replace(/\s+/g, '');
+      var mEdit = kr && (tlUI.edit || !ada);
+      h += '<div style="font-weight:bold;margin-top:8px;">JAWAPAN SAYA</div>';
+      if (!kr) h += '<div>Memuatkan jawapan...</div>';
+      else if (mEdit) {
+        var n0 = tlKira(kr.j || '');
+        h += '<textarea id="tl-jawab" placeholder="' + (s.task === 1 ? 'Hi ...,&#10;&#10;...' : 'Pendahuluan...') + '" style="width:100%;height:260px;margin-top:4px;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;">' + tlE(kr.j || '') + '</textarea>' +
+          '<div id="tl-kira" style="font-weight:bold;font-size:0.9rem;">' + n0 + ' / ' + min + ' perkataan' + (n0 >= min ? ' ✓' : '') + '</div>' +
+          '<div><button type="button" data-tl="simpan" style="' + BTNA + '">SIMPAN JAWAPAN</button>' + (ada ? '<button type="button" data-tl="batal" style="' + BTN + '">BATAL</button>' : '') + '</div>';
+      } else {
+        var nn = tlKira(kr.j);
+        h += '<div style="font-size:0.95rem;margin-top:4px;line-height:1.45;border-left:3px solid #000;padding-left:6px;">' + ptTebal(tlE(kr.j)).replace(/\n/g, '<br>') + '</div>' +
+          '<div style="font-size:0.8rem;margin-top:4px;"><b>' + nn + ' / ' + min + ' perkataan' + (nn >= min ? ' ✓' : ' — belum cukup') + '</b> · disimpan ' + (kr.tarikh || '') + ' · ungkapan berguna ditebalkan</div>' +
+          '<div><button type="button" data-tl="edit" style="' + BTN + '">BAIKI JAWAPAN</button></div>';
+      }
+      h += '<div style="border-top:2px solid #000;margin-top:10px;padding-top:4px;"><button type="button" data-tl="buangsoalan" style="' + BTN + '">BUANG SOALAN INI</button></div>';
+      return h;
+    }
+    // Pengira perkataan langsung (keyboard sendiri juga picu 'input')
+    function tlPasang() {
+      var ta = el('tl-jawab'); if (!ta) return;
+      var s = tlBank().S[tlUI.id], min = s ? tlMin(s.task) : 100;
+      ta.oninput = function() { var n = tlKira(ta.value), d = el('tl-kira'); if (d) d.textContent = n + ' / ' + min + ' perkataan' + (n >= min ? ' ✓' : ''); };
+    }
+    function tlKlik(e, box) {
+      var t = e.target;
+      while (t && t !== box && !(t.getAttribute && t.getAttribute('data-tl'))) t = t.parentNode;
+      if (!t || t === box) return false;
+      var a = t.getAttribute('data-tl'), v = t.getAttribute('data-v'), sq = tlUI.id ? tlBank().S[tlUI.id] : null, k = sq ? tlKunci(sq) : '', atas = true;
+      if (a !== 'preset') tlUI.mesej = '';
+      if (a === 'rumah') { tlUI.rumah = +v; tlUI.tema = ''; tlUI.id = ''; tlUI.pukal = false; tlUI.tanyaSyor = false; tlUI.preset = ''; }
+      else if (a === 'balik') { tlUI.rumah = 0; tlUI.tema = ''; tlUI.id = ''; }
+      else if (a === 'tema') { tlUI.tema = v; tlUI.id = ''; tlUI.tambahS = false; }
+      else if (a === 'senaraitema') { tlUI.tema = ''; tlUI.id = ''; }
+      else if (a === 'bukapukal') { tlUI.pukal = !tlUI.pukal; atas = false; }
+      else if (a === 'bukatopik') { tlUI.tambahT = !tlUI.tambahT; atas = false; }
+      else if (a === 'bukasoalan') { tlUI.tambahS = !tlUI.tambahS; atas = false; }
+      else if (a === 'preset') { tlUI.tanyaSyor = !tlUI.tanyaSyor; tlUI.preset = ''; atas = false; }
+      else if (a === 'presetsalin') { tlUI.syor = (el('tl-syor').value || '').replace(/^\s+|\s+$/g, ''); tlUI.tanyaSyor = false; tlSalin(tlPreset(tlUI.syor)); return true; }
+      else if (a === 'simpanpukal') {
+        var rp = tlPukal(el('tl-pukal').value);
+        if (!rp.n && !rp.t) { alert('Tiada soalan baru dijumpai.' + (rp.ulang ? ' ' + rp.ulang + ' soalan sudah ada.' : '') + (rp.salah ? ' ' + rp.salah + ' baris tidak ikut format.' : '')); return true; }
+        tlUI.pukal = false; tlUI.preset = '';
+        tlSimpanU('JANA PUKAL: ' + rp.n + ' soalan baru' + (rp.t ? ', ' + rp.t + ' topik baru' : '') + (rp.ulang ? ' · ' + rp.ulang + ' sudah ada (diabaikan)' : '') + (rp.salah ? ' · ' + rp.salah + ' baris salah format' : '') + '.');
+      }
+      else if (a === 'simpantopik') {
+        var nt = (el('tl-topik').value || '').replace(/^\s+|\s+$/g, '');
+        if (!nt) { alert('Tulis nama topik.'); return true; }
+        if (tlBank().T.indexOf(nt) >= 0) { alert('Topik sudah ada.'); return true; }
+        if (tlU.buang['tema:' + nt]) delete tlU.buang['tema:' + nt];
+        if (tlU.tema.indexOf(nt) < 0) tlU.tema.push(nt);
+        tlUI.tambahT = false; tlSimpanU('Topik "' + nt + '" ditambah.');
+      }
+      else if (a === 'simpansoalan') {
+        var sq2 = (el('tl-sq').value || '').replace(/\s+/g, ' ').replace(/\|/g, '/').replace(/^\s+|\s+$/g, ''), si2 = (el('tl-si').value || '').split(/\r?\n/), bs = [], w, y;
+        if (!sq2) { alert('Tulis soalan.'); return true; }
+        for (w = 0; w < si2.length; w++) { y = si2[w].replace(/\|/g, '/').replace(/^\s+|\s+$/g, ''); if (y) bs.push(y); }
+        var baris = tlUI.rumah === 2 ? 'T2: ' + el('tl-sj').value + ' | ' + sq2 : 'T1: ' + sq2;
+        var rs = tlPukal(baris + (bs.length ? ' | ' + bs.join(' | ') : ''), tlUI.tema);
+        if (!rs.n) { alert(rs.ulang ? 'Soalan ini sudah ada.' : 'Gagal tambah.'); return true; }
+        tlUI.tambahS = false; tlSimpanU('Soalan ditambah.');
+      }
+      else if (a === 'buangtopik') {
+        var nq = tlSoalan(1, tlUI.tema).length + tlSoalan(2, tlUI.tema).length;
+        if (!confirm('Buang topik "' + tlUI.tema + '"' + (nq ? ' dan ' + nq + ' soalannya (Task 1 & 2)' : '') + '?')) return true;
+        tlU.buang['tema:' + tlUI.tema] = 1; tlUI.tema = ''; tlSimpanU('Topik dibuang.');
+      }
+      else if (a === 'buangsoalan') {
+        if (!sq || !confirm('Buang soalan ini?\n' + sq.soalan)) return true;
+        tlU.buang[sq.id] = 1; tlUI.id = ''; tlSimpanU('Soalan dibuang.');
+      }
+      else if (a === 'soalan') { tlUI.id = v; tlUI.edit = false; }
+      else if (a === 'senarai') { tlUI.id = ''; tlUI.edit = false; }
+      else if (a === 'edit') { tlUI.edit = true; }
+      else if (a === 'batal') { tlUI.edit = false; }
+      else if (a === 'simpan') {
+        var jw = (el('tl-jawab').value || '').replace(/\s+$/, '');
+        if (!jw.replace(/\s+/g, '')) { alert('Jawapan masih kosong.'); return true; }
+        var rek = { j: jw, n: tlKira(jw), at: Date.now(), tarikh: coachHariId() }, ub = { siap: {} };
+        kol('tulis_karangan').doc(k).set(rek).then(function() {
+          tlKar[k] = rek; tlUI.edit = false; tlUI.mesej = 'Jawapan disimpan (' + rek.n + ' perkataan).';
+          tlData.siap[k] = { t: rek.tarikh, n: rek.n }; ub.siap[k] = tlData.siap[k];
+          kol('coach').doc('tulis').set(ub, { merge: true }).catch(function() {});
+          lukisTulis();
+        }).catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
+        return true;
+      }
+      else return false;
+      lukisTulis();
+      if (atas) { try { window.scrollTo(0, 0); } catch (x) {} }
+      return true;
+    }
+    // HARI INI (17 Nov) = DAILY REPETITION EXERCISE (enjin sama dengan Pawagam, set r: 'tulis') + LATIHAN MENULIS (2 rumah Task 1 / Task 2)
     function lukisTulis() {
       if (pnRumah !== 'tulis') pnTukarRumah('tulis');
-      el('tulis-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>' + pnLukis();
+      var TJ = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>';
+      el('tulis-isi').innerHTML = tlUI.rumah ? TJ + tlLukis() : TJ + pnLukis() + tlLukis();
+      tlPasang();
     }
-    el('tulis-isi').onclick = function(e) { if (pnRumah !== 'tulis') { pnTukarRumah('tulis'); lukisTulis(); return; } pnKlik(e, this); };
+    el('tulis-isi').onclick = function(e) { if (pnRumah !== 'tulis') { pnTukarRumah('tulis'); lukisTulis(); return; } if (tlKlik(e, this)) return; pnKlik(e, this); };
     function bukaTulis() {
       pnTukarRumah('tulis');
+      tlUI.rumah = 0; tlUI.tema = ''; tlUI.id = ''; tlUI.edit = false; tlUI.mesej = ''; tlUI.pukal = false; tlUI.tambahS = false; tlUI.tambahT = false; tlUI.tanyaSyor = false; tlUI.preset = '';
       usMuat('screen-tulis', 'tulis-info', function() { el('tulis-info').textContent = ''; lukisTulis(); });
     }
     el('btn-us-tulis-keluar').onclick = function() { bukaTs(); };
