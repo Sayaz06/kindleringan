@@ -4102,10 +4102,11 @@
       if (sfOn()) { bukaSoalanFakta(); return; }
       srBebas = false; startFakta();
     }
+    // 17 Nov: Laci Reasoning / Presenting kini cara WRITING (karangan app phone → bacaan → kapal → DALAM KAPAL → laci)
     var _btnReasoning = document.getElementById('btn-go-reasoning');
-    if (_btnReasoning) _btnReasoning.onclick = function() { bukaLaciJenis('reasoning'); };
+    if (_btnReasoning) _btnReasoning.onclick = function() { startLaciWriting('reasoning'); };
     var _btnPresenting = document.getElementById('btn-go-presenting');
-    if (_btnPresenting) _btnPresenting.onclick = function() { bukaLaciJenis('presenting'); };
+    if (_btnPresenting) _btnPresenting.onclick = function() { startLaciWriting('presenting'); };
 
     // ══════════════════════════════════════════
     // SOALAN FAKTA — setiap baris fakta boleh ada medan soalan + jawapan (diisi di app phone)
@@ -4227,30 +4228,43 @@
     // Sumber: ayat yang sudah DISIMPAN (terjemahan BM) di DALAM KAPAL (Pelabuhan Writing) → writing_kapal/{soalanId}.ayat[{en, bm, ok}]
     // Setiap 5 ayat karangan = SATU laci (writing_drawers/{soalanId}_{n}, notes "en = bm" macam Laci Bahasa) — laci wujud bila
     // kelima-lima ayat (atau baki ayat terakhir) sudah DISIMPAN. Tiada tick: app pilih sendiri laci yang BELUM masuk SR (writing_sr_queue).
+    // 17 Nov: REASONING & PRESENTING guna cara yang SAMA (koleksi sendiri). pre = awalan ID kapal di Pelabuhan.
+    var LJ = {
+      writing: { label: 'WRITING', pre: 'tulis', topik: 'writing_topik', soalan: 'writing_soalan', baca: 'writing_baca', kapal: 'writing_kapal',
+        drawers: 'writing_drawers', sr: 'writing_sr_queue', perk: 'writing_perkataan' },
+      reasoning: { label: 'REASONING', pre: 'rsn', topik: 'reasoning_topik', soalan: 'reasoning_soalan', baca: 'reasoning_baca', kapal: 'reasoning_kapal',
+        drawers: 'reasoning_laci', sr: 'reasoning_laci_sr', perk: 'reasoning_laci_perkataan' },
+      presenting: { label: 'PRESENTING', pre: 'prs', topik: 'presenting_topik', soalan: 'presenting_soalan', baca: 'presenting_baca', kapal: 'presenting_kapal',
+        drawers: 'presenting_laci', sr: 'presenting_laci_sr', perk: 'presenting_laci_perkataan' }
+    };
+    // ID kapal "tulis-xxx" / "rsn-xxx" / "prs-xxx" → jenis ('' = kapal Laci Bahasa)
+    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting' }[m[1]] : ''; }
+    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs)-/, ''); }
     var bahasaSumber = 'bahasa';
     function kolB(n) {
-      if (bahasaSumber !== 'writing') return n;
-      if (n === 'bahasa_drawers') return 'writing_drawers';
-      if (n === 'bahasa_sr_queue') return 'writing_sr_queue';
-      if (n === 'bahasa_perkataan') return 'writing_perkataan';
+      var J = LJ[bahasaSumber];
+      if (!J) return n;
+      if (n === 'bahasa_drawers') return J.drawers;
+      if (n === 'bahasa_sr_queue') return J.sr;
+      if (n === 'bahasa_perkataan') return J.perk;
       return n;
     }
     var LWL_PERK = { id: 'writing', name: 'LACI WRITING', isActive: true };
     var LWL_SAIZ = 5;
-    function lwlSedia() { allBahasaPerkataan = [LWL_PERK]; activePerkataan = LWL_PERK; }
+    function lwlSedia() { LWL_PERK.name = 'LACI ' + ((LJ[bahasaSumber] || LJ.writing).label); allBahasaPerkataan = [LWL_PERK]; activePerkataan = LWL_PERK; }
     function lwlBersih(x) { return String(x || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
     function lwlTeksSoalan(x) { return lwlBersih(String(x || '').replace(/<[^>]*>/g, ' ').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')); }
     // Bina / kemas kini laci writing dari ayat DISIMPAN di DALAM KAPAL
     function lwlSegerak() {
-      var u = db.collection('users').doc(currentUser.uid);
-      return Promise.all([u.collection('writing_kapal').get(), u.collection('writing_soalan').get(),
-        u.collection('writing_drawers').get(), u.collection('writing_perkataan').doc('writing').get()]).then(function(r) {
+      var u = db.collection('users').doc(currentUser.uid), J = LJ[bahasaSumber] || LJ.writing, adaTask = J === LJ.writing;
+      return Promise.all([u.collection(J.kapal).get(), u.collection(J.soalan).get(),
+        u.collection(J.drawers).get(), u.collection(J.perk).doc('writing').get()]).then(function(r) {
         var soal = {}, mahu = {}, ada = {}, kerja = [], id;
         r[1].forEach(function(d) { soal[d.id] = d.data() || {}; });
         r[2].forEach(function(d) { ada[d.id] = d.data() || {}; });
         r[0].forEach(function(d) {
           var ay = (d.data() || {}).ayat || [], so = soal[d.id] || {}, k, i, bah, ok, baris, t = lwlTeksSoalan(so.soalan);
-          var tajuk = 'T' + (so.task === 2 ? 2 : 1) + ' · ' + (t.length > 30 ? t.slice(0, 30) + '...' : (t || '(tanpa soalan)'));
+          var tajuk = (adaTask ? 'T' + (so.task === 2 ? 2 : 1) + ' · ' : '') + (t.length > 30 ? t.slice(0, 30) + '...' : (t || '(tanpa soalan)'));
           for (k = 0; k * LWL_SAIZ < ay.length; k++) {
             bah = ay.slice(k * LWL_SAIZ, k * LWL_SAIZ + LWL_SAIZ); ok = true; baris = [];
             for (i = 0; i < bah.length; i++) {
@@ -4268,13 +4282,13 @@
           }
         });
         for (id in mahu) {
-          if (!ada[id] || ada[id].notes !== mahu[id].notes || ada[id].title !== mahu[id].title) kerja.push(u.collection('writing_drawers').doc(id).set(mahu[id]));
+          if (!ada[id] || ada[id].notes !== mahu[id].notes || ada[id].title !== mahu[id].title) kerja.push(u.collection(J.drawers).doc(id).set(mahu[id]));
         }
-        for (id in ada) { if (!mahu[id]) kerja.push(u.collection('writing_drawers').doc(id).delete()); }
+        for (id in ada) { if (!mahu[id]) kerja.push(u.collection(J.drawers).doc(id).delete()); }
         var p = r[3].exists ? (r[3].data() || {}) : null;
         LWL_PERK.lastDrawerId = (p && p.lastDrawerId) || null;
         LWL_PERK.lastIndex = (p && p.lastIndex) || 0;
-        if (!p) kerja.push(u.collection('writing_perkataan').doc('writing').set({ name: 'LACI WRITING', isActive: true, createdAt: Date.now() }));
+        if (!p) kerja.push(u.collection(J.perk).doc('writing').set({ name: 'LACI ' + J.label, isActive: true, createdAt: Date.now() }));
         return Promise.all(kerja);
       });
     }
@@ -4282,7 +4296,7 @@
     function lwlKadSelesai() {
       srModeAktif = false; srLaciSemasa = null;
       cards = [{
-        front: 'Semua laci writing sudah masuk SR.\nSimpan lagi terjemahan ayat di DALAM KAPAL (Pelabuhan Writing), kemudian tekan SETERUSNYA.',
+        front: 'Semua laci ' + (LJ[bahasaSumber] || LJ.writing).label.toLowerCase() + ' sudah masuk SR.\nSimpan lagi terjemahan ayat di DALAM KAPAL (Pelabuhan ' + (LJ[bahasaSumber] || LJ.writing).label + '), kemudian tekan SETERUSNYA.',
         back: '', tips: '', imageUrl: '', title: '', drawerId: null,
         isF0: false, isTamat: false, isSR: false, isKadSelesai: true, lwlSelesai: true
       }];
@@ -4291,7 +4305,7 @@
     function lwlPaparSelesai() {
       lwlKadSelesai();
       isBusy = false; isFlipped = false; showTips = false;
-      setText('play-status', 'LACI WRITING · Selesai');
+      setText('play-status', 'LACI ' + (LJ[bahasaSumber] || LJ.writing).label + ' · Selesai');
       setText('play-mode', 'TAMAT SEMUA');
       setText('side-label', '');
       setText('main-text', cards[0].front);
@@ -4303,10 +4317,10 @@
     // Laci writing: kad = laci yang BELUM masuk SR sahaja (susun ikut tajuk), mula dari laci pertama
     var _lwlRebuildAsal = rebuildBahasaCards;
     rebuildBahasaCards = function(cb) {
-      if (bahasaSumber !== 'writing') return _lwlRebuildAsal.apply(this, arguments);
+      if (!LJ[bahasaSumber]) return _lwlRebuildAsal.apply(this, arguments);
       lwlSedia();
       _lwlRebuildAsal(function(ok) {
-        db.collection('users').doc(currentUser.uid).collection('writing_sr_queue').get().then(function(snap) {
+        db.collection('users').doc(currentUser.uid).collection(LJ[bahasaSumber].sr).get().then(function(snap) {
           var dlmSR = {};
           snap.forEach(function(d) { dlmSR[(d.data() || {}).drawerId || d.id] = 1; });
           cards = cards.filter(function(c) { return !dlmSR[c.drawerId]; });
@@ -4319,44 +4333,45 @@
     };
     var _lwlRenderAsal = renderCard;
     renderCard = function() {
-      if (bahasaSumber === 'writing' && mode === 'bahasa' && cards[cardIndex] && cards[cardIndex].lwlSelesai) { lwlPaparSelesai(); return; }
+      if (LJ[bahasaSumber] && mode === 'bahasa' && cards[cardIndex] && cards[cardIndex].lwlSelesai) { lwlPaparSelesai(); return; }
       return _lwlRenderAsal.apply(this, arguments);
     };
     var _lwlMuatAsal = muatAktifRingan;
     muatAktifRingan = function() {
-      if (bahasaSumber !== 'writing') return _lwlMuatAsal.apply(this, arguments);
+      if (!LJ[bahasaSumber]) return _lwlMuatAsal.apply(this, arguments);
       lwlSedia();
       return Promise.resolve();
     };
     var _lwlLompatAsal = lompatPerkataanSeterusnya;
     lompatPerkataanSeterusnya = function() {
-      if (bahasaSumber !== 'writing') return _lwlLompatAsal.apply(this, arguments);
+      if (!LJ[bahasaSumber]) return _lwlLompatAsal.apply(this, arguments);
       lwlPaparSelesai();
       return Promise.resolve(true);
     };
     var _lwlResetAsal = resetBahasaKePerkataanPertama;
     resetBahasaKePerkataanPertama = function() {
-      if (bahasaSumber !== 'writing') return _lwlResetAsal.apply(this, arguments);
+      if (!LJ[bahasaSumber]) return _lwlResetAsal.apply(this, arguments);
       isBusy = false; isLoading = false;
-      startLaciWriting();
+      startLaciWriting(bahasaSumber);
     };
-    function startLaciWriting() {
+    // j = 'writing' (asal) / 'reasoning' / 'presenting'
+    function startLaciWriting(j) {
       if (isLoading || !currentUser) return;
-      faktaJenis = 'fakta'; srBebas = false; bahasaSumber = 'writing';
+      faktaJenis = 'fakta'; srBebas = false; bahasaSumber = LJ[j] ? j : 'writing';
       var bf = document.getElementById('btn-jenis-seterusnya-float');
       if (bf) bf.className = '';
       showScreen('screen-play');
-      setText('play-status', 'LACI WRITING · Menyusun laci...');
+      setText('play-status', 'LACI ' + LJ[bahasaSumber].label + ' · Menyusun laci...');
       setText('play-mode', ''); setText('side-label', ''); setText('play-err', '');
       setText('play-progress', ''); setText('play-meta', '');
-      setText('main-text', 'Menyusun laci writing dari ayat DALAM KAPAL...');
+      setText('main-text', 'Menyusun laci ' + LJ[bahasaSumber].label.toLowerCase() + ' dari ayat DALAM KAPAL...');
       setCardImage('');
       lwlSegerak().then(function() { lwlSedia(); startBahasa(); }).catch(function(e) {
         setText('play-err', 'Gagal susun laci writing: ' + ((e && e.message) || e));
       });
     }
     var _btnLaciWriting = document.getElementById('btn-go-laci-writing');
-    if (_btnLaciWriting) _btnLaciWriting.onclick = function() { startLaciWriting(); };
+    if (_btnLaciWriting) _btnLaciWriting.onclick = function() { startLaciWriting('writing'); };
     document.getElementById('btn-back-menu').onclick = function() {
       isLoading = false;
       showScreen('screen-menu');
@@ -7328,12 +7343,22 @@
     }
     function simpanLokal() {
       // Simpan senarai kapal BAHASA sahaja sebagai sr (kapal WRITING sentiasa dibaca baru)
-      try { var o = {}, k; for (k in S) if (S.hasOwnProperty(k) && k !== 'srT') o[k] = S[k]; if (S.srB) o.sr = S.srB; localStorage.setItem(KUNCI, JSON.stringify(o)); } catch (e) {}
+      try { var o = {}, k; for (k in S) if (S.hasOwnProperty(k) && k !== 'srT' && k !== 'srK') o[k] = S[k]; if (S.srB) o.sr = S.srB; localStorage.setItem(KUNCI, JSON.stringify(o)); } catch (e) {}
     }
     // Senarai laci SR (ID laci + tajuk) — dari bahasa_sr_queue
     function muatSR(paksa, cb) {
       // 17 Nov: S.srB = kapal Laci Bahasa · S.srT = kapal karangan (PELABUHAN WRITING) · S.sr = senarai yang sedang dipapar
-      var tulis = function() { lwKapal(function(a) { S.srT = a; S.sr = gbHal === 1 ? a : (S.srB || []); cb(true); }); };
+      // S.srK[1] WRITING · S.srK[2] REASONING · S.srK[3] PRESENTING (dibaca baru setiap kali)
+      var tulis = function() {
+        var J = ['', 'writing', 'reasoning', 'presenting'], n = 0, h;
+        S.srK = S.srK || {};
+        for (h = 1; h < J.length; h++) (function(h) {
+          lwKapal(J[h], function(a) {
+            S.srK[h] = a; if (h === 1) S.srT = a;
+            if (++n === J.length - 1) { S.sr = gbHal ? (S.srK[gbHal] || []) : (S.srB || []); cb(true); }
+          });
+        })(h);
+      };
       if (!S.srB && S.sr.length) S.srB = S.sr;
       if (!paksa && S.srB && S.srB.length && Date.now() - S.srTs < SEGAR_MS) { tulis(); return; }
       kol('bahasa_sr_queue').get().then(function(snap) {
@@ -8853,7 +8878,8 @@
       el('gb-status').textContent = 'PELABUHAN · ' + jum + ' kontena · ' + belayar + '/' + S.sr.length + ' kapal belayar';
       el('gb-laluan').textContent = belayar + '/' + S.sr.length;
       el('gb-bungkus').textContent = jum;
-      el('gb-info').textContent = S.sr.length ? '' : (gbHal === 1 ? 'Tiada kapal lagi. Baca karangan di USAHA → LATIHAN WRITING dulu (karangan yang sudah dibaca jadi kapal).' : 'Tiada kapal lagi (laci Bahasa belum masuk SR).');
+      el('gb-info').textContent = S.sr.length ? '' : (gbHal === 1 ? 'Tiada kapal lagi. Baca karangan di USAHA → LATIHAN WRITING dulu (karangan yang sudah dibaca jadi kapal).' :
+        (gbHal > 1 ? 'Tiada kapal lagi. Baca karangan di atas dulu (karangan yang sudah dibaca jadi kapal).' : 'Tiada kapal lagi (laci Bahasa belum masuk SR).'));
       // Signboard FREE PARKING → kapal kosong sentiasa masuk sendiri ke tempat tambat
       if (PAPAN.ada && tambatIdx < 0 && !layar) {
         var kk = kapalKosong();
@@ -9000,7 +9026,7 @@
           kapal.style.webkitTransform = tr; kapal.style.transform = tr;
           i++;
           if (i < xs.length) setTimeout(gerak, 200);
-          else setTimeout(function() { layar = false; if (/^tulis-/.test(l.id)) bukaDalamKapal(l); else bukaLaci(l); }, 200); // kapal WRITING → DALAM KAPAL dulu
+          else setTimeout(function() { layar = false; if (ljJenisKapal(l.id)) bukaDalamKapal(l); else bukaLaci(l); }, 200); // kapal WRITING / REASONING / PRESENTING → DALAM KAPAL dulu
         })();
       })();
     }
@@ -9310,12 +9336,12 @@
       // Ambil muatan TERKINI kapal ini dari Firebase dulu (elak tindih padanan yang dibuat di peranti lain)
       kol('game_bank').doc(l.id).get().then(function(sb) {
         if (sb.exists) { var d = sb.data(); S.bank[l.id] = { title: d.title || l.title, pasangan: d.pasangan || [], dibayar: d.dibayar }; simpanLokal(); }
-        return /^tulis-/.test(l.id) ? kol('writing_kapal').doc(l.id.slice(6)).get() : kol('bahasa_drawers').doc(l.id).get();
+        return ljJenisKapal(l.id) ? kol(LJ[ljJenisKapal(l.id)].kapal).doc(ljIdKapal(l.id)).get() : kol('bahasa_drawers').doc(l.id).get();
       }).then(function(s) {
         if (!L || L.id !== l.id) return;
         var notes = s.exists ? String(s.data().notes || '') : '';
         // Kapal WRITING: baris = "ayat English = terjemahan BM" (diisi DALAM KAPAL)
-        if (s.exists && /^tulis-/.test(l.id)) notes = (s.data().ayat || []).map(function(x) { return String(x.en || '').replace(/=/g, '-') + ' = ' + (x.bm || ''); }).join('\n');
+        if (s.exists && ljJenisKapal(l.id)) notes = (s.data().ayat || []).map(function(x) { return String(x.en || '').replace(/=/g, '-') + ' = ' + (x.bm || ''); }).join('\n');
         var baris = notes.split('\n');
         for (var i = 0; i < baris.length; i++) {
           var b = baris[i].trim();
@@ -10054,7 +10080,7 @@
       }
       return Promise.all([
         coachKira('bahasa_sr_queue'), coachKira('fakta_sr_queue'),
-        coachKira('reasoning_sr_queue'), coachKira('presenting_sr_queue'), coachVocab(),
+        coachKira(LJ.reasoning.sr), coachKira(LJ.presenting.sr), coachVocab(),
         kol('coach').doc('tetapan').get().catch(function() { return null; }),
         kol('coach').doc('stok').get().catch(function() { return null; }),
         kol('coach').doc('profil').get().catch(function() { return null; }),
@@ -19191,18 +19217,30 @@
     // Kapal WRITING = karangan yang sudah masuk SR di LACI WRITING (USAHA → LATIHAN WRITING). Lepas tali → kapal belayar →
     // DALAM KAPAL: setiap ayat (dipecah ikut titik) diterjemah ke BM → tekan PEMANDU → DERMAGA (padan perkataan macam biasa).
     // Data: writing_kapal/{soalanId} { ayat: [{ en, bm }], updatedAt } · kontena: game_bank/tulis-{soalanId}
-    var GB_HAL = ['PEJABAT PELABUHAN', 'PELABUHAN WRITING'];
+    // 17 Nov: titik 3 PELABUHAN REASONING · titik 4 PELABUHAN PRESENTING (karangan dari app phone; BACA dulu di atas → jadi kapal)
+    var GB_HAL = ['PEJABAT PELABUHAN', 'PELABUHAN WRITING', 'PELABUHAN REASONING', 'PELABUHAN PRESENTING'];
+    var GB_JENIS = ['', 'writing', 'reasoning', 'presenting'];
     var gbHal = 0;
     (function() { var sc = el('screen-gbank'), t = document.createElement('div'); t.id = 'gb-titik'; t.className = 'hl-titik'; sc.insertBefore(t, sc.querySelector('.gm-alat')); })();
+    // Kotak BACA KARANGAN (titik 3 & 4 sahaja) — di atas senarai kapal
+    (function() { var sc = el('screen-gbank'), t = document.createElement('div'); t.id = 'gb-baca'; sc.insertBefore(t, el('gb-info')); })();
+    function gbBacaLukis() {
+      var b = el('gb-baca');
+      if (!b) return;
+      b.innerHTML = gbHal > 1 ? lwbLukis(GB_JENIS[gbHal]) : '';
+    }
+    el('gb-baca').onclick = function(e) { if (gbHal > 1) lwbKlik(e, this, GB_JENIS[gbHal]); };
     function gbTitik() {
       hlTitik('gb-titik', GB_HAL.length, gbHal);
       el('screen-gbank').querySelector('.gm-alat-tajuk').textContent = GB_HAL[gbHal];
+      if (gbHal > 1) lwbS(GB_JENIS[gbHal]).dimuat = false; // muat semula karangan dari app phone
+      gbBacaLukis();
     }
     function gbPergi(i) {
       if (i < 0 || i >= GB_HAL.length || layar) return;
       if (i !== gbHal) tambatIdx = -1;
       gbHal = i;
-      S.sr = (i ? S.srT : S.srB) || [];
+      S.sr = (i ? (S.srK || {})[i] : S.srB) || [];
       gbTitik();
       lukisBank();
       try { window.scrollTo(0, 0); } catch (e) {}
@@ -19224,33 +19262,34 @@
     function lwNorm(x) { return String(x || '').toLowerCase().replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
     function lwEsc(x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
     function lwTeks(x) { return String(x || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); }
-    // Senarai kapal WRITING (karangan yang ada dalam SR bacaan)
-    function lwKapal(cb) {
-      Promise.all([kol('coach').doc('writing_baca').get(), kol('writing_soalan').get()]).then(function(r) {
+    // Senarai kapal WRITING / REASONING / PRESENTING (karangan yang ada dalam SR bacaan)
+    function lwKapal(j, cb) {
+      var J = LJ[j];
+      Promise.all([kol('coach').doc(J.baca).get(), kol(J.soalan).get()]).then(function(r) {
         var sr = (r[0].exists && (r[0].data() || {}).sr) || {}, a = [];
         r[1].forEach(function(d) {
           var s = d.data() || {}, x = sr[d.id];
           if (!x || !tlKira(s.karangan)) return;
           var t = lwTeks(s.soalan || '');
-          a.push({ id: 'tulis-' + d.id, title: 'T' + (s.task === 2 ? 2 : 1) + ' · ' + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
+          a.push({ id: J.pre + '-' + d.id, title: (j === 'writing' ? 'T' + (s.task === 2 ? 2 : 1) + ' · ' : '') + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
         });
         a.sort(function(x, y) { return x.t - y.t; });
         cb(a);
       }).catch(function() { cb([]); });
     }
     // ── DALAM KAPAL: terjemah setiap ayat sepanjang pelayaran ke dermaga ──
-    var GK = { l: null, id: '', soalan: null, ayat: [], bm: {}, ok: {}, salah: -1, mesej: '' }; // ok[i] = ayat sudah DISIMPAN (turun ke bawah)
+    var GK = { l: null, j: 'writing', id: '', soalan: null, ayat: [], bm: {}, ok: {}, salah: -1, mesej: '' }; // ok[i] = ayat sudah DISIMPAN (turun ke bawah)
     var GK_PEMANDU = '<svg viewBox="0 0 120 90" width="120" height="90" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#000" stroke-width="3" stroke-linecap="round">' +
       '<circle cx="40" cy="18" r="8" fill="#fff"/><path d="M40 26 V54 M40 54 L32 76 M40 54 L48 76 M40 34 L66 42 M40 34 L64 50"/>' +
       '<circle cx="80" cy="46" r="18"/><circle cx="80" cy="46" r="4" fill="#000"/><path d="M80 22 V70 M56 46 H104 M63 29 L97 63 M97 29 L63 63"/>' +
       '<path d="M10 84 H112"/></g></svg>';
     function bukaDalamKapal(l) {
-      GK.l = l; GK.id = l.id.slice(6); GK.mesej = '';
+      GK.l = l; GK.j = ljJenisKapal(l.id) || 'writing'; GK.id = ljIdKapal(l.id); GK.mesej = '';
       showScreen('screen-gb-kapal');
       try { window.scrollTo(0, 0); } catch (e) {}
       el('gk-isi').innerHTML = '';
       el('gk-info').textContent = 'Kapal belayar... memuatkan karangan.';
-      Promise.all([kol('writing_soalan').doc(GK.id).get(), kol('writing_kapal').doc(GK.id).get()]).then(function(r) {
+      Promise.all([kol(LJ[GK.j].soalan).doc(GK.id).get(), kol(LJ[GK.j].kapal).doc(GK.id).get()]).then(function(r) {
         var s = r[0].exists ? (r[0].data() || {}) : {}, k = r[1].exists ? (r[1].data() || {}) : {}, lama = {}, i;
         GK.soalan = s; GK.ayat = lwPecah(s.karangan); GK.bm = {}; GK.ok = {}; GK.salah = -1;
         var lamaOk = {};
@@ -19284,8 +19323,8 @@
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:0 0 6px;background:#eee;font-size:0.9rem;">Anda di <b>DALAM KAPAL</b>. Tulis sendiri terjemahan BM penuh setiap ayat, kemudian tekan <b>SIMPAN</b> — ayat itu turun ke bawah &amp; kapal makin dekat ke dermaga. Semua disimpan → tekan <b>PEMANDU</b>.</div>';
       h += '<div style="border:3px solid #000;border-radius:12px;padding:4px 6px 2px;margin:0 0 6px;">' + gkLaut() +
         '<div id="gk-kira" style="text-align:center;font-weight:bold;font-size:0.95rem;margin:2px 0;"></div></div>';
-      h += '<div style="font-size:0.85rem;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;"><b>TASK ' + (s.task === 2 ? 2 : 1) + '</b> · ' + lwEsc(lwTeks(s.soalan)) + '</div>';
-      if (!GK.ayat.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;">Karangan ini kosong. Tulis dulu di app phone (Laci Writing).</div>';
+      h += '<div style="font-size:0.85rem;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;"><b>' + (GK.j === 'writing' ? 'TASK ' + (s.task === 2 ? 2 : 1) : LJ[GK.j].label) + '</b> · ' + lwEsc(lwTeks(s.soalan)) + '</div>';
+      if (!GK.ayat.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;">Karangan ini kosong. Tulis dulu di app phone (Laci ' + LJ[GK.j].label.charAt(0) + LJ[GK.j].label.slice(1).toLowerCase() + ').</div>';
       // Susunan: ayat BELUM disimpan ikut nombor (1, 2, 3 ...) di atas → ayat DISIMPAN ikut nombor di bawah
       var urut = [], k2;
       for (i = 0; i < GK.ayat.length; i++) if (!GK.ok[i]) urut.push(i);
@@ -19315,7 +19354,7 @@
     function gkSimpan(cb) {
       var ay = [], i;
       for (i = 0; i < GK.ayat.length; i++) ay.push({ en: GK.ayat[i], bm: String(GK.bm[i] || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''), ok: !!GK.ok[i] });
-      kol('writing_kapal').doc(GK.id).set({ ayat: ay, updatedAt: Date.now() }).then(function() { cb(true); }).catch(function(e) { GK.mesej = 'Gagal simpan: ' + ((e && e.message) || e); gkLukis(); cb(false); });
+      kol(LJ[GK.j].kapal).doc(GK.id).set({ ayat: ay, updatedAt: Date.now() }).then(function() { cb(true); }).catch(function(e) { GK.mesej = 'Gagal simpan: ' + ((e && e.message) || e); gkLukis(); cb(false); });
     }
     el('gk-isi').onclick = function(e) {
       var ok = hlCari(e.target, this, 'data-gk-ok');
@@ -19357,20 +19396,26 @@
     // Data: writing_topik / writing_soalan (app phone) · coach/writing_baca { sr: { soalanId: { fasa, due, mula, at } } }
     var LWB_SELANG = [3, 7, 14, 30, 60, 120];
     var lwb = { topik: [], soalan: [], sr: {}, dimuat: false, muat: false, mesej: '' };
+    // 17 Nov: bacaan yang SAMA untuk REASONING & PRESENTING (Pelabuhan titik 3 & 4) — j = 'writing' / 'reasoning' / 'presenting'
+    var lwbSemua = { writing: lwb };
+    function lwbS(j) { j = j || 'writing'; return lwbSemua[j] || (lwbSemua[j] = { topik: [], soalan: [], sr: {}, dimuat: false, muat: false, mesej: '' }); }
+    function lwbSiap(j) { if ((j || 'writing') === 'writing') lukisTulis(); else gbBacaLukis(); }
     function lwbSusun(a, b) { return ((a.createdAt || 0) - (b.createdAt || 0)) || (a.id < b.id ? -1 : 1); }
-    function lwbMuat() {
-      if (lwb.muat || !currentUser) return;
-      lwb.muat = true;
-      Promise.all([kol('writing_topik').get(), kol('writing_soalan').get(), kol('coach').doc('writing_baca').get(), kol('coach').doc('tetapan').get()]).then(function(r) {
-        lwb.topik = []; lwb.soalan = [];
-        r[0].forEach(function(d) { var x = d.data() || {}; x.id = d.id; lwb.topik.push(x); });
-        r[1].forEach(function(d) { var x = d.data() || {}; x.id = d.id; lwb.soalan.push(x); });
-        lwb.topik.sort(lwbSusun); lwb.soalan.sort(lwbSusun);
-        lwb.sr = (r[2].exists && (r[2].data() || {}).sr) || {};
-        var dahPindah = r[3].exists && (r[3].data() || {}).writingPindah;
-        if (!lwb.topik.length && !lwb.soalan.length && !dahPindah) { lwbPindah(); return; }
-        lwb.dimuat = true; lwb.muat = false; lukisTulis();
-      }).catch(function(e) { lwb.muat = false; lwb.mesej = 'Gagal memuat: ' + ((e && e.message) || e); lwb.dimuat = true; lukisTulis(); });
+    function lwbMuat(j) {
+      j = j || 'writing';
+      var L = lwbS(j), J = LJ[j];
+      if (L.muat || !currentUser) return;
+      L.muat = true;
+      Promise.all([kol(J.topik).get(), kol(J.soalan).get(), kol('coach').doc(J.baca).get(), j === 'writing' ? kol('coach').doc('tetapan').get() : Promise.resolve(null)]).then(function(r) {
+        L.topik = []; L.soalan = [];
+        r[0].forEach(function(d) { var x = d.data() || {}; x.id = d.id; L.topik.push(x); });
+        r[1].forEach(function(d) { var x = d.data() || {}; x.id = d.id; L.soalan.push(x); });
+        L.topik.sort(lwbSusun); L.soalan.sort(lwbSusun);
+        L.sr = (r[2].exists && (r[2].data() || {}).sr) || {};
+        var dahPindah = !r[3] || (r[3].exists && (r[3].data() || {}).writingPindah);
+        if (j === 'writing' && !L.topik.length && !L.soalan.length && !dahPindah) { lwbPindah(); return; }
+        L.dimuat = true; L.muat = false; lwbSiap(j);
+      }).catch(function(e) { L.muat = false; L.mesej = 'Gagal memuat: ' + ((e && e.message) || e); L.dimuat = true; lwbSiap(j); });
     }
     // SEKALI SAHAJA: pindah soalan & karangan lama Kindle (TL_BANK + coach/tulis_bank + tulis_karangan) ke writing_topik / writing_soalan (app phone)
     function lwbPindah() {
@@ -19392,50 +19437,58 @@
         .catch(function(e) { lwb.muat = false; lwb.dimuat = true; lwb.mesej = 'Gagal pindah data lama: ' + ((e && e.message) || e); lukisTulis(); });
     }
     // Giliran: soalan ke-1 setiap topik, kemudian soalan ke-2 setiap topik, ... (hanya soalan yang ADA karangan)
-    function lwbUrutan() {
-      var per = {}, out = [], maks = 0, i, q, s;
-      for (i = 0; i < lwb.topik.length; i++) per[lwb.topik[i].id] = [];
-      for (i = 0; i < lwb.soalan.length; i++) { s = lwb.soalan[i]; if (per[s.topikId] && tlKira(s.karangan)) { per[s.topikId].push(s); if (per[s.topikId].length > maks) maks = per[s.topikId].length; } }
-      for (q = 0; q < maks; q++) for (i = 0; i < lwb.topik.length; i++) if (per[lwb.topik[i].id][q]) out.push(per[lwb.topik[i].id][q]);
+    function lwbUrutan(j) {
+      var L = lwbS(j), per = {}, out = [], maks = 0, i, q, s;
+      for (i = 0; i < L.topik.length; i++) per[L.topik[i].id] = [];
+      for (i = 0; i < L.soalan.length; i++) { s = L.soalan[i]; if (per[s.topikId] && tlKira(s.karangan)) { per[s.topikId].push(s); if (per[s.topikId].length > maks) maks = per[s.topikId].length; } }
+      for (q = 0; q < maks; q++) for (i = 0; i < L.topik.length; i++) if (per[L.topik[i].id][q]) out.push(per[L.topik[i].id][q]);
       return out;
     }
-    function lwbTopik(id) { for (var i = 0; i < lwb.topik.length; i++) if (lwb.topik[i].id === id) return lwb.topik[i]; return null; }
-    function lwbLukis() {
+    function lwbTopik(id, j) { var L = lwbS(j); for (var i = 0; i < L.topik.length; i++) if (L.topik[i].id === id) return L.topik[i]; return null; }
+    function lwbLukis(j) {
+      j = j || 'writing';
+      var L = lwbS(j), J = LJ[j], nm = J.label.charAt(0) + J.label.slice(1).toLowerCase();
       var h = '', hari = coachHariId(), U, due = [], baru = [], i, x, s, seterus = '';
-      h += '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:10px 0 4px;"><div style="font-weight:bold;font-size:1.15rem;">LACI WRITING</div>';
-      if (!lwb.dimuat) { lwbMuat(); return h + '<div style="font-size:0.85rem;">Memuatkan karangan...</div></div>'; }
-      U = lwbUrutan();
-      for (i = 0; i < U.length; i++) { x = lwb.sr[U[i].id]; if (!x) baru.push(U[i]); else if (x.due <= hari) due.push(U[i]); else if (!seterus || x.due < seterus) seterus = x.due; }
-      due.sort(function(a, b) { return lwb.sr[a.id].due < lwb.sr[b.id].due ? -1 : (lwb.sr[a.id].due > lwb.sr[b.id].due ? 1 : 0); });
+      h += '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:10px 0 4px;"><div style="font-weight:bold;font-size:1.15rem;">' + (j === 'writing' ? 'LACI WRITING' : 'BACA KARANGAN ' + J.label) + '</div>';
+      if (!L.dimuat) { lwbMuat(j); return h + '<div style="font-size:0.85rem;">Memuatkan karangan...</div></div>'; }
+      U = lwbUrutan(j);
+      for (i = 0; i < U.length; i++) { x = L.sr[U[i].id]; if (!x) baru.push(U[i]); else if (x.due <= hari) due.push(U[i]); else if (!seterus || x.due < seterus) seterus = x.due; }
+      due.sort(function(a, b) { return L.sr[a.id].due < L.sr[b.id].due ? -1 : (L.sr[a.id].due > L.sr[b.id].due ? 1 : 0); });
       h += '<div style="font-size:0.8rem;">' + U.length + ' karangan · ' + (U.length - baru.length) + ' dalam SR · ' + due.length + ' ulang kaji + ' + baru.length + ' baru</div>';
-      if (lwb.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + lwEsc(lwb.mesej) + '</div>';
+      if (L.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + lwEsc(L.mesej) + '</div>';
       s = due[0] || baru[0];
-      if (!U.length) return h + '<div style="border:1px dashed #000;border-radius:6px;padding:6px;margin-top:6px;">Belum ada karangan. Tulis karangan di <b>app phone → Laci Writing</b> (topik → soalan → karangan).</div></div>';
+      if (!U.length) return h + '<div style="border:1px dashed #000;border-radius:6px;padding:6px;margin-top:6px;">Belum ada karangan. Tulis karangan di <b>app phone → Laci ' + nm + '</b> (topik → soalan → karangan).</div></div>';
       if (!s) return h + '<div style="border:2px solid #000;border-radius:8px;padding:8px;margin-top:6px;text-align:center;"><b>SIAP!</b> Semua karangan sudah dibaca.' + (seterus ? '<div style="font-size:0.85rem;">Ulang kaji seterusnya: ' + seterus + '</div>' : '') + '</div></div>';
-      x = lwb.sr[s.id];
-      var tp = lwbTopik(s.topikId), para = String(s.karangan || '').split(/\r?\n/), p = '';
+      x = L.sr[s.id];
+      var tp = lwbTopik(s.topikId, j), para = String(s.karangan || '').split(/\r?\n/), p = '';
       for (i = 0; i < para.length; i++) if (para[i].replace(/\s+/g, '')) p += '<p style="margin:0 0 8px;">' + lwEsc(para[i]) + '</p>';
       h += '<div style="font-size:0.75rem;font-weight:bold;margin-top:8px;">' + (x ? 'ULANG KAJI · fasa ' + (x.fasa + 1) + '/' + LWB_SELANG.length : 'KARANGAN BARU') + '</div>' +
-        '<div style="font-weight:bold;">TOPIK: ' + lwEsc((tp && tp.name) || '-') + ' · TASK ' + (s.task === 2 ? 2 : 1) + '</div>' +
+        '<div style="font-weight:bold;">TOPIK: ' + lwEsc((tp && tp.name) || '-') + (j === 'writing' ? ' · TASK ' + (s.task === 2 ? 2 : 1) : '') + '</div>' +
         '<div style="font-size:0.85rem;font-style:italic;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;">' + lwEsc(s.soalan) + '</div>' +
         '<div style="border:2px solid #000;border-radius:8px;padding:8px 10px;font-size:1.05rem;line-height:1.6;">' + p + '</div>' +
         '<div style="font-size:0.8rem;margin-top:3px;">' + tlKira(s.karangan) + ' perkataan · ' + lwPecah(s.karangan).length + ' ayat</div>' +
         '<button type="button" data-lwb="baca" data-v="' + lwEsc(s.id) + '" style="display:block;width:100%;margin:8px 0 2px;padding:10px;font-size:1rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#000;color:#fff;">SUDAH BACA → SETERUSNYA ›</button>';
       return h + '</div>';
     }
-    function lwbKlik(e, box) {
-      var t = e.target;
+    function lwbKlik(e, box, j) {
+      j = j || 'writing';
+      var L = lwbS(j), J = LJ[j], t = e.target;
       while (t && t !== box && !(t.getAttribute && t.getAttribute('data-lwb'))) t = t.parentNode;
       if (!t || t === box) return false;
       if (t.getAttribute('data-lwb') !== 'baca') return true;
-      var id = t.getAttribute('data-v'), hari = coachHariId(), x = lwb.sr[id], f = x ? Math.min(x.fasa + 1, LWB_SELANG.length - 1) : 0;
+      var id = t.getAttribute('data-v'), hari = coachHariId(), x = L.sr[id], f = x ? Math.min(x.fasa + 1, LWB_SELANG.length - 1) : 0;
       var rek = { fasa: f, due: pnTambahHari(hari, LWB_SELANG[f]), mula: (x && x.mula) || hari, at: (x && x.at) || Date.now() }, ub = { sr: {} };
       ub.sr[id] = rek;
       t.disabled = true;
-      kol('coach').doc('writing_baca').set(ub, { merge: true }).then(function() {
-        lwb.sr[id] = rek;
-        lwb.mesej = (x ? 'Ulang kaji siap' : 'Masuk SR') + ' · baca semula ' + rek.due + (x ? '' : ' · kapalnya kini di PELABUHAN WRITING');
-        lukisTulis();
+      kol('coach').doc(J.baca).set(ub, { merge: true }).then(function() {
+        L.sr[id] = rek;
+        L.mesej = (x ? 'Ulang kaji siap' : 'Masuk SR') + ' · baca semula ' + rek.due + (x ? '' : ' · kapalnya kini di PELABUHAN ' + J.label);
+        if (j === 'writing') lukisTulis();
+        else {
+          gbBacaLukis();
+          // Karangan baru dibaca → kapalnya terus masuk senarai Pelabuhan ini
+          if (!x) lwKapal(j, function(a) { var h = GB_JENIS.indexOf(j); S.srK = S.srK || {}; S.srK[h] = a; if (gbHal === h && !layar) { S.sr = a; lukisBank(); } });
+        }
         try { window.scrollTo(0, 0); } catch (er) {}
       }).catch(function(er) { t.disabled = false; alert('Gagal simpan: ' + ((er && er.message) || er)); });
       return true;
