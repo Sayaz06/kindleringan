@@ -5725,7 +5725,8 @@
           loadMonitorState();
           loadRecapState();
         });
-        showScreen('screen-menu');
+        // 17 Nov: buka app → terus ke page COACH (MENU ada di page Coach: ‹ MENU)
+        if (window.bukaCoachAwal) window.bukaCoachAwal(); else showScreen('screen-menu');
       } else {
         window._azanFasaSemasa = '';
         tbAktif = false; tbHentiDengar();
@@ -10814,6 +10815,8 @@
         el('coach-bubble').textContent = 'Gagal memuat data coach: ' + ((e && e.message) || e) + '\nTekan Pergi ke game untuk main seperti biasa.';
       });
     }
+    // Dipanggil selepas login (skrip pertama) — page pertama selepas masuk app = COACH
+    window.bukaCoachAwal = function() { bukaCoach(false); };
     // ══════════ COACH — FASA 3a: MAKAN BUAH / SAYUR (KEDAI) ══════════
     // Data zat per 100 g MENTAH dari pangkalan data rasmi (disemak masa bina, bukan ingatan).
     // Tambah / buang makanan melalui KOD sahaja (semakan Ahad).
