@@ -9989,28 +9989,29 @@
 
     // ── Baca laporan hari ini + semalam (2 dokumen) ──
     // Baca 7 hari coach terakhir (hari ini, semalam + purata solat) dalam SATU query ikut ID tarikh
-    // ══ RESET SEKALI "MULA HARI INI" (14 Nov 2026) ══
-    //   Rekod harian SEBELUM hari ini dibuang (tugas, air, matahari, solat, markah, laci...) — KECUALI:
-    //   listening + minitBelajar (semua hari) · tidur/lampu semalam (dari laporan pagi hari ini) · rekod HARI INI kekal penuh.
+    // ══ RESET SEKALI "MULA SEMULA" (17 Nov 2026 — kali ke-2; kali pertama 14 Nov) ══
+    //   Rekod KESIHATAN harian SEHINGGA & TERMASUK hari ini dibuang (laporan pagi bangun/tidur/lampu, tugas air/matahari/cahaya petang/fokus/malap/sigh,
+    //   minum, kencing, makan/zat, berat, solat, senaman harian, pening, skrin lewat...) + rumusan harian — KECUALI data PELAJARAN:
+    //   listening + minitBelajar + pawagamUnit (semua hari).
     //   Progres GYM direset (giliran, beban, streak, pemulihan otot) — lokasi & tanda sakit kekal.
-    //   TIDAK disentuh: gambar senaman, stok listening, duit/dompet/bank, game belajar.
+    //   TIDAK disentuh: SEMUA data pelajaran (nota, Daily Repetition, Speaking, Reading, Writing, game belajar), profil, gambar senaman, stok listening, duit/dompet/bank.
     //   Berjalan SEKALI sahaja (tanda di coach/tetapan.resetMula + localStorage) — selamat dibiar dalam kod.
-    var COACH_RESET_KUNCI = 'MULA-2026-11-14';
+    var COACH_RESET_KUNCI = 'MULA-2026-11-17';
     var coachResetJanji = null;
     function coachResetMula() {
       var lk = 'coach_reset_' + currentUser.uid;
       try { if (localStorage.getItem(lk) === COACH_RESET_KUNCI) return Promise.resolve(); } catch (e) {}
       if (coachResetJanji) return coachResetJanji; // elak berjalan dua kali serentak (coachMuatData + coachMuatHari)
-      var id = COACH_RESET_KUNCI.slice(5), sid = coachSemalamId(id), FV = firebase.firestore.FieldValue;
+      var id = COACH_RESET_KUNCI.slice(5), FV = firebase.firestore.FieldValue;
       return coachResetJanji = kol('coach').doc('tetapan').get().then(function(t) {
         if (t.exists && t.data().resetMula === COACH_RESET_KUNCI) return null;
         return Promise.all([
-          kol('coach_hari').where(firebase.firestore.FieldPath.documentId(), '<', id).get(),
-          kol('coach_rumusan').where(firebase.firestore.FieldPath.documentId(), '<', id).get()
+          kol('coach_hari').where(firebase.firestore.FieldPath.documentId(), '<=', id).get(),
+          kol('coach_rumusan').where(firebase.firestore.FieldPath.documentId(), '<=', id).get()
         ]).then(function(r) {
           var ops = [];
           r[0].forEach(function(d) {
-            var x = d.data(), simpan = {}, ada = false, k, kekal = d.id === sid ? ['listening', 'minitBelajar', 'tidur', 'lampu'] : ['listening', 'minitBelajar'];
+            var x = d.data(), simpan = {}, ada = false, k, kekal = ['listening', 'minitBelajar', 'pawagamUnit']; // data pelajaran sahaja
             for (k = 0; k < kekal.length; k++) if (x[kekal[k]] !== undefined) { simpan[kekal[k]] = x[kekal[k]]; ada = true; }
             ops.push(ada ? [d.ref, simpan] : [d.ref, null]);
           });
