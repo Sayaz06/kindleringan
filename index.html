@@ -490,10 +490,28 @@
   </div>
 
   <div id="screen-menu" class="screen">
+    <!-- TOP BAR (17 Nov): Logout kiri · Waktu Azan + Layout Setting kanan -->
+    <div class="gm-alat" id="menu-topbar">
+      <button type="button" id="btn-logout" class="gm-kecil">Logout</button>
+      <span class="gm-alat-tajuk"></span>
+      <button type="button" id="btn-tb-azan" class="gm-kecil">Waktu Azan</button>
+      <button type="button" id="btn-tb-layout" class="gm-kecil">Layout</button>
+    </div>
+    <div id="tb-azan-panel" style="display:none;margin:0 0 8px;">
+    <div id="azan-log-wrap" style="display:none;margin-top:0;border:2px solid #000;border-radius:8px;padding:8px;background:#fff;">
+      <div style="font-size:0.8rem;font-weight:bold;color:#000;margin-bottom:6px;border-bottom:1px solid #000;padding-bottom:4px;">Waktu Solat Hari Ini</div>
+      <div id="azan-log-list" style="font-size:0.95rem;color:#000;line-height:2;"></div>
+    </div>
+      <div id="tb-azan-kosong" style="font-size:0.85rem;text-align:center;border:2px solid #000;border-radius:8px;padding:6px;">Waktu solat belum dimuat.</div>
+    </div>
     <h1>Kindle Learning Tool (Ringan)</h1>
     <div class="sub" id="menu-user">—</div>
     <!-- Titik halaman menu (menegak, kiri) — tekan titik untuk ke halaman menu seterusnya -->
     <div id="menu-titik"></div>
+    <!-- BANDAR (17 Nov): KILANG → PEMBORONG → GUDANG → PELABUHAN → ARKED + MASJID + COACH (dilukis oleh JS) -->
+    <div id="menu-bandar" class="kd-pondok"></div>
+    <!-- Butang lama — DISOROK tapi KEKAL (bangunan bandar tekan butang ini → kunci Health First & masa belajar ikut asal) -->
+    <div id="menu-lama" style="display:none;">
     <button id="btn-go-ib-tasbih" class="btn btn-primary">[ COUNTDOWN TASBIH ]</button>
     <button id="btn-go-bahasa" class="btn">Laci Bahasa</button>
     <!-- Ulang SR Bahasa tanpa had (atas → bawah, pusing semula) — TIADA kesan pada jadual SR -->
@@ -506,6 +524,17 @@
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
     <!-- GAME — Pelabuhan (bank perkataan) + mini game (Padan, Jutawan) + Exchange -->
     <button id="btn-go-game" class="btn">[ GAME ]</button>
+    </div>
+    <div class="footer">SR auto-check · progress sync phone</div>
+  </div>
+
+  <!-- SCREEN: LAYOUT SETTING (17 Nov) — semua toggle dari menu lama -->
+  <div id="screen-layout" class="screen">
+    <div class="gm-alat">
+      <button type="button" id="btn-layout-balik" class="gm-kecil">‹ Menu</button>
+      <span class="gm-alat-tajuk">LAYOUT SETTING</span>
+    </div>
+    <div class="jw-info">Tetapan paparan &amp; cara ulang kaji. Tekan untuk tukar ON / OFF.</div>
     <!-- SOALAN FAKTA: ON → Laci Fakta papar SOALAN sahaja (baris yang ada soalan) · tiada SR -->
     <button id="btn-soalan-fakta" class="btn" style="margin-top:8px;">SOALAN FAKTA: OFF</button>
     <button id="btn-jq" class="btn" style="margin-top:8px;">JQ: OFF</button>
@@ -537,12 +566,40 @@
       });
     })();
     </script>
-    <button id="btn-logout" class="btn" style="margin-top:12px;font-size:0.9rem;padding:10px;">Logout</button>
-    <div class="footer">SR auto-check · progress sync phone</div>
-    <div id="azan-log-wrap" style="display:none;margin-top:8px;border:2px solid #000;border-radius:8px;padding:8px;background:#fff;">
-      <div style="font-size:0.8rem;font-weight:bold;color:#000;margin-bottom:6px;border-bottom:1px solid #000;padding-bottom:4px;">Waktu Solat Hari Ini</div>
-      <div id="azan-log-list" style="font-size:0.95rem;color:#000;line-height:2;"></div>
+  </div>
+
+  <!-- SCREEN: KAWASAN BANDAR (KILANG / PEMBORONG / GUDANG / ARKED / MASJID) — bangunan dilukis oleh JS -->
+  <div id="screen-bandar" class="screen">
+    <div class="gm-alat">
+      <button type="button" id="btn-bd-menu" class="gm-kecil">‹ Bandar</button>
+      <span class="gm-alat-tajuk" id="bd-tajuk">BANDAR</span>
     </div>
+    <div id="bd-info" class="jw-info"></div>
+    <div id="bd-bangunan" class="kd-pondok"></div>
+  </div>
+
+  <!-- SCREEN: PEMBORONG WRITING — karangan → ayat + terjemahan BM → GUDANG -->
+  <div id="screen-pemborong" class="screen">
+    <div class="gm-alat">
+      <button type="button" id="btn-pb-balik" class="gm-kecil">‹ Pemborong</button>
+      <span class="gm-alat-tajuk">PEMBORONG WRITING</span>
+      <button type="button" id="btn-pb-gudang" class="gm-kecil">Gudang</button>
+    </div>
+    <div id="pb-info" class="jw-info"></div>
+    <div id="pb-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
+  </div>
+
+  <!-- SCREEN: GUDANG WRITING — hafal ayat satu-satu (jadual SR sama macam Laci Bahasa) -->
+  <div id="screen-gudang-tulis" class="screen">
+    <div class="gm-alat">
+      <button type="button" id="btn-gt-balik" class="gm-kecil">‹ Gudang</button>
+      <span class="gm-alat-tajuk">LACI WRITING</span>
+      <button type="button" id="btn-gt-pb" class="gm-kecil">Pemborong</button>
+    </div>
+    <div id="gt-info" class="jw-info"></div>
+    <div id="gt-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
   </div>
 
   <!-- SCREEN: SOALAN FAKTA (mod ulang kaji periksa — tiada SR) -->
@@ -7159,8 +7216,13 @@
           ada[id] = 1;
           a.push({ id: id, title: d.drawerTitle || '(Tanpa tajuk)', t: d.createdAt || 0 });
         });
-        a.sort(function(x, y) { return x.t - y.t; });
-        S.sr = a; S.srTs = Date.now(); simpanLokal(); cb(true);
+        // BANDAR (17 Nov): laci GUDANG WRITING (ayat + BM dari PEMBORONG) juga jadi kapal → padankan kosa kata macam laci Bahasa
+        return kol('tulis_laci').get().then(function(s2) {
+          s2.forEach(function(doc) { var d = doc.data() || {}; if (d.ayat && d.ayat.length) a.push({ id: 'tulis-' + doc.id, title: d.title || 'WRITING', t: d.createdAt || 0 }); });
+        }, function() {}).then(function() {
+          a.sort(function(x, y) { return x.t - y.t; });
+          S.sr = a; S.srTs = Date.now(); simpanLokal(); cb(true);
+        });
       }).catch(function(e) { cb(false, e); });
     }
     // Bank pasangan — dari game_bank. Cache pendek (2 minit) supaya padanan dari peranti lain (HP ↔ Kindle) cepat sampai.
@@ -9125,10 +9187,11 @@
       // Ambil muatan TERKINI kapal ini dari Firebase dulu (elak tindih padanan yang dibuat di peranti lain)
       kol('game_bank').doc(l.id).get().then(function(sb) {
         if (sb.exists) { var d = sb.data(); S.bank[l.id] = { title: d.title || l.title, pasangan: d.pasangan || [], dibayar: d.dibayar }; simpanLokal(); }
-        return kol('bahasa_drawers').doc(l.id).get();
+        return /^tulis-/.test(l.id) ? kol('tulis_laci').doc(l.id.slice(6)).get() : kol('bahasa_drawers').doc(l.id).get();
       }).then(function(s) {
         if (!L || L.id !== l.id) return;
         var notes = s.exists ? String(s.data().notes || '') : '';
+        if (s.exists && /^tulis-/.test(l.id)) notes = (s.data().ayat || []).map(function(x) { return String(x.en || '').replace(/=/g, '-') + ' = ' + (x.bm || ''); }).join('\n');
         var baris = notes.split('\n');
         for (var i = 0; i < baris.length; i++) {
           var b = baris[i].trim();
@@ -15185,6 +15248,16 @@
       if (k === 'pentas') s += '<path d="M46 28 H74 L71 34 H49 Z" fill="#000"/><rect x="56" y="34" width="8" height="12" fill="#000"/><path d="M48 48 H72" stroke="#000" stroke-width="3"/><path d="M60 28 V22" stroke="#000" stroke-width="2"/><circle cx="60" cy="21" r="2.5" fill="#000"/>';
       if (k === 'emel') s += '<rect x="44" y="27" width="32" height="21" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M44 27 L60 40 L76 27" fill="none" stroke="#000" stroke-width="2.5"/>';
       if (k === 'esei') s += '<path d="M47 23 H67 L73 29 V49 H47 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M51 31 H69 M51 36 H69 M51 41 H69 M51 46 H63" stroke="#000" stroke-width="2"/>';
+      // Ikon BANDAR (17 Nov): kilang · pemborong · gudang · pelabuhan · arked · masjid · coach · tasbih · quran
+      if (k === 'kilang') s += '<path d="M42 49 V35 L51 40 V35 L60 40 V35 L69 40 V25 H76 V49 Z" fill="#000"/><circle cx="73" cy="19" r="2.5" fill="#000"/><circle cx="78" cy="14" r="2" fill="#000"/>';
+      if (k === 'pemborong') s += '<rect x="43" y="35" width="15" height="14" fill="#fff" stroke="#000" stroke-width="2"/><path d="M43 35 L58 49 M58 35 L43 49" stroke="#000" stroke-width="1.5"/><rect x="62" y="35" width="15" height="14" fill="#000"/><path d="M50 30 H69 M65 26 L69 30 L65 34" fill="none" stroke="#000" stroke-width="2"/>';
+      if (k === 'gudang') s += '<rect x="44" y="39" width="15" height="10" fill="#000"/><rect x="61" y="39" width="15" height="10" fill="#000"/><rect x="52.5" y="27" width="15" height="11" fill="#fff" stroke="#000" stroke-width="2"/><path d="M60 27 V38" stroke="#000" stroke-width="1.5"/>';
+      if (k === 'pelabuhan') s += '<circle cx="60" cy="25" r="3" fill="none" stroke="#000" stroke-width="2"/><path d="M60 28 V49 M53 33 H67 M47 41 Q49 49 60 49 Q71 49 73 41" fill="none" stroke="#000" stroke-width="2.5"/>';
+      if (k === 'arked') s += '<rect x="42" y="31" width="36" height="16" rx="8" fill="#000"/><path d="M49 39 H56 M52.5 35.5 V42.5" stroke="#fff" stroke-width="2"/><circle cx="66" cy="37" r="1.8" fill="#fff"/><circle cx="70.5" cy="41" r="1.8" fill="#fff"/>';
+      if (k === 'masjid') s += '<path d="M50 47 Q50 33 60 31 Q70 33 70 47 Z" fill="#000"/><rect x="43" y="31" width="4" height="16" fill="#000"/><rect x="73" y="31" width="4" height="16" fill="#000"/><path d="M60 31 V25" stroke="#000" stroke-width="2"/><circle cx="60" cy="23" r="2" fill="#000"/>';
+      if (k === 'coach') s += '<circle cx="54" cy="40" r="8" fill="#000"/><rect x="54" y="32" width="20" height="7" fill="#000"/><circle cx="54" cy="40" r="3" fill="#fff"/><path d="M48 33 Q44 27 50 24" fill="none" stroke="#000" stroke-width="2"/>';
+      if (k === 'tasbih') s += '<circle cx="69" cy="36" r="2.4" fill="#000"/><circle cx="66.4" cy="42.4" r="2.4" fill="#000"/><circle cx="60" cy="45" r="2.4" fill="#000"/><circle cx="53.6" cy="42.4" r="2.4" fill="#000"/><circle cx="51" cy="36" r="2.4" fill="#000"/><circle cx="53.6" cy="29.6" r="2.4" fill="#000"/><circle cx="60" cy="27" r="2.4" fill="#000"/><circle cx="66.4" cy="29.6" r="2.4" fill="#000"/><path d="M60 47 V51" stroke="#000" stroke-width="2.5"/>';
+      if (k === 'quran') s += '<path d="M60 31 Q52 26 44 28 V42 Q52 40 60 45 Q68 40 76 42 V28 Q68 26 60 31 Z" fill="#000"/><path d="M60 31 V45" stroke="#fff" stroke-width="1.5"/><path d="M48 50 L72 44 M48 44 L72 50" stroke="#000" stroke-width="2"/>';
       if (k === 'tulis') s += '<path d="M48 47 L51 38 L68 21 L74 27 L57 44 Z" fill="#000"/><path d="M48 47 L51 38 L57 44 Z" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M44 49 H76" stroke="#000" stroke-width="2.5"/>';
       if (k === 'pustaka') s += '<rect x="45" y="40" width="30" height="7" fill="#000"/><rect x="48" y="33" width="26" height="6" fill="#fff" stroke="#000" stroke-width="2"/><rect x="46" y="26" width="24" height="6" fill="#000"/><path d="M50 43.5 H70" stroke="#fff" stroke-width="1.5"/>';
       s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
@@ -15306,7 +15379,7 @@
       if (k === 'pawagam') { bukaPawagam(); return; }
       if (k === 'pentas') { bukaPentas(); return; }
       if (k === 'pustaka') { bukaPustaka(); return; }
-      if (k === 'tulis') { bukaTulis(); return; }
+      if (k === 'tulis') { tulisMod = ''; el('btn-us-tulis-keluar').textContent = '‹ Usaha'; bukaTulis(); return; }
       el('ts-info').textContent = 'Bangunan ini AKAN DATANG. Buat tugas ini di page COACH dulu.';
     });
     // USAHA berhalaman: tekan titik → page itu · sapu atas / bawah → page seterusnya / sebelumnya
@@ -17101,7 +17174,8 @@
     function lukisTulis() {
       if (pnRumah !== 'tulis') pnTukarRumah('tulis');
       var TJ = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>';
-      el('tulis-isi').innerHTML = tlUI.rumah ? TJ + tlLukis() : TJ + pnLukis() + tlLukis();
+      // tulisMod (17 Nov): 'kilang' = LATIHAN MENULIS sahaja · 'arked' = DAILY REPETITION sahaja · '' (dari USAHA) = kedua-dua
+      el('tulis-isi').innerHTML = (tlUI.rumah || tulisMod === 'kilang') ? TJ + tlLukis() : (tulisMod === 'arked' ? TJ + pnLukis() : TJ + pnLukis() + tlLukis());
       tlPasang();
     }
     el('tulis-isi').onclick = function(e) { if (pnRumah !== 'tulis') { pnTukarRumah('tulis'); lukisTulis(); return; } if (tlKlik(e, this)) return; pnKlik(e, this); };
@@ -18857,6 +18931,426 @@
       if (Date.now() >= MESIN.at + MESIN.jam * PAPAN_JAM) mesinSewa(lukisCx); else lukisMesin();
     }, 30000);
     el('btn-cx-balik').onclick = function() { el('btn-mx-balik').onclick(); };
+    // ══════════ BANDAR (17 Nov) — menu utama jadi peta bandar ══════════
+    // Aliran: KILANG (tulis karangan) → PEMBORONG (pecah jadi ayat + BM) → GUDANG (hafal ayat, SR) → PELABUHAN (ayat → kosa kata) → ARKED (game & latihan)
+    // + MASJID (Tasbih, Quran) + COACH. Butang lama kekal dalam #menu-lama (disorok) — bangunan tekan butang itu supaya kunci Health First & masa belajar ikut asal.
+    // Data baru: tulis_laci/{q-id} { title, task, ayat: [{ en, bm, fasa, due, h, at }], createdAt, updatedAt } — satu laci = satu karangan.
+    var BD_UTAMA = [
+      ['kilang', 'KILANG', 'Tulis nota & karangan'],
+      ['pemborong', 'PEMBORONG', 'Karangan → ayat + BM'],
+      ['gudang', 'GUDANG', 'Laci: hafal ayat (SR)'],
+      ['pelabuhan', 'PELABUHAN', 'Ayat → kosa kata'],
+      ['arked', 'ARKED', 'Game & latihan'],
+      ['masjid', 'MASJID', 'Tasbih · Quran'],
+      ['coach', 'COACH', 'Pantau Kilang → Arked']
+    ];
+    function bdTekan(id) { return function() { var b = el(id); if (b) b.click(); }; }
+    // Kawasan: [tajuk, info, [[ikon, nama, keterangan, fungsi], ...]]
+    var BD_KAWASAN = {
+      kilang: ['KILANG', 'Tulis nota & karangan. Setiap kemahiran ada bangunan sendiri.', [
+        ['tulis', 'WRITING', 'Karangan Task 1 / Task 2 · TIPS · FORMAT', function() { bukaTulisMod('kilang'); }],
+        ['pawagam', 'LISTENING', 'Pawagam (belum diasingkan)', function() { bukaPawagam(); }],
+        ['pentas', 'SPEAKING', 'Pentas (belum diasingkan)', function() { bukaPentas(); }],
+        ['pustaka', 'READING', 'Perpustakaan (belum diasingkan)', function() { bukaPustaka(); }]
+      ]],
+      pemborong: ['PEMBORONG', 'Pecahkan karangan jadi ayat, letak terjemahan BM, hantar ke GUDANG.', [
+        ['pemborong', 'WRITING', 'Karangan Kilang Writing → ayat', function() { bukaPemborong(); }]
+      ]],
+      gudang: ['GUDANG', 'Simpan ayat & hafal satu-satu (SR). Nota laci Bahasa / Fakta / Reasoning / Presenting diurus di app phone.', [
+        ['esei', 'WRITING', 'Ayat dari Pemborong', function() { bukaGudangTulis(); }],
+        ['bahasa', 'LACI BAHASA', 'Laci Bahasa', bdTekan('btn-go-bahasa')],
+        ['bahasa', 'SR BEBAS', 'Ulang Bahasa tanpa had', bdTekan('btn-go-sr-bebas')],
+        ['fakta', 'LACI FAKTA', 'Laci Fakta', bdTekan('btn-go-fakta')],
+        ['reasoning', 'REASONING', 'Laci Reasoning', bdTekan('btn-go-reasoning')],
+        ['presenting', 'PRESENTING', 'Laci Presenting', bdTekan('btn-go-presenting')]
+      ]],
+      arked: ['ARKED', 'Latihan & game. Stok perkataan datang dari PELABUHAN.', [
+        ['arked', 'KOSA KATA', 'Padan · Jutawan · Memori · Duri · Betul-Salah', function() { bukaMini(); }],
+        ['tulis', 'WRITING', 'Daily repetition: useful expressions', function() { bukaTulisMod('arked'); }],
+        ['pawagam', 'LISTENING', 'Daily repetition Pawagam', function() { bukaPawagam(); }]
+      ]],
+      masjid: ['MASJID', 'Ibadah harian.', [
+        ['tasbih', 'TASBIH', 'Countdown tasbih', bdTekan('btn-go-ib-tasbih')],
+        ['quran', 'QURAN', '10 ayat setiap sesi', bdTekan('btn-go-quran')]
+      ]]
+    };
+    var bdKini = '', bdDari = '', tulisMod = '';
+    function bdHtml(a, attr) {
+      var h = '', i;
+      for (i = 0; i < a.length; i++) {
+        h += '<button type="button" class="kd-pd" ' + attr + '="' + i + '"><span style="position:relative;display:block;max-width:180px;margin:0 auto;">' +
+          svgBangunan(a[i][0], a[i][1], true) + '</span><small id="' + attr + '-s' + i + '">' + a[i][2] + '</small></button>';
+      }
+      return h;
+    }
+    function bdCari(t, box, attr) {
+      while (t && t !== box && !(t.getAttribute && t.getAttribute(attr) !== null)) t = t.parentNode;
+      return (!t || t === box) ? -1 : +t.getAttribute(attr);
+    }
+    // Setiap BARIS (2 bangunan) = anak terus #screen-menu → menu berhalaman (titik kanan) boleh pecah ikut baris
+    (function() {
+      var tp = el('menu-bandar'), mn = tp.parentNode, i, d, h;
+      d = document.createElement('div');
+      d.style.cssText = 'font-size:0.72rem;font-weight:bold;letter-spacing:0.5px;margin:0 0 6px;text-align:center;';
+      d.textContent = 'KILANG → PEMBORONG → GUDANG → PELABUHAN → ARKED';
+      mn.insertBefore(d, tp);
+      for (i = 0; i < BD_UTAMA.length; i += 2) {
+        d = document.createElement('div'); d.className = 'kd-pondok bd-baris'; d.style.margin = '0';
+        h = bdHtml(BD_UTAMA.slice(i, i + 2), 'data-bdu');
+        d.innerHTML = h.replace(/data-bdu="(\d+)"/g, function(m, n) { return 'data-bdu="' + (i + +n) + '"'; }).replace(/data-bdu-s(\d+)/g, function(m, n) { return 'data-bdu-s' + (i + +n); });
+        mn.insertBefore(d, tp);
+      }
+    })();
+    el('screen-menu').addEventListener('click', function(e) {
+      var i = bdCari(e.target, this, 'data-bdu');
+      if (i < 0) return;
+      var k = BD_UTAMA[i][0];
+      bdDari = '';
+      if (k === 'pelabuhan') { bukaBank(false); return; }
+      if (k === 'coach') { bukaCoach(false); return; }
+      bukaBandar(k);
+    });
+    function bukaBandar(k) {
+      var d = BD_KAWASAN[k];
+      if (!d || !currentUser) return;
+      bdKini = k; bdDari = '';
+      showScreen('screen-bandar');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('bd-tajuk').textContent = d[0];
+      el('bd-info').textContent = d[1];
+      el('bd-bangunan').innerHTML = bdHtml(d[2], 'data-bdk');
+      // Kiraan ringkas di bawah bangunan WRITING (Pemborong / Gudang)
+      if (k === 'gudang' || k === 'pemborong') {
+        kol('tulis_laci').get().then(function(sn) {
+          var n = 0, due = 0, kini = Date.now();
+          sn.forEach(function(doc) { var a = (doc.data() || {}).ayat || [], j; for (j = 0; j < a.length; j++) { n++; if (!a[j].due || a[j].due <= kini) due++; } });
+          var sm = el('data-bdk-s0');
+          if (sm && bdKini === k) sm.textContent = k === 'gudang' ? n + ' ayat · ' + due + ' perlu diulang' : 'Karangan → ayat · ' + n + ' ayat di Gudang';
+        }).catch(function() {});
+      }
+    }
+    el('bd-bangunan').onclick = function(e) {
+      var i = bdCari(e.target, this, 'data-bdk'), d = BD_KAWASAN[bdKini];
+      if (i < 0 || !d || !d[2][i]) return;
+      bdDari = bdKini;
+      d[2][i][3]();
+    };
+    el('btn-bd-menu').onclick = function() { bdDari = ''; showScreen('screen-menu'); };
+    // Keluar dari bangunan yang dibuka dari bandar (butang "‹ Usaha" Pawagam / Pentas / Pustaka / Dewan Tulis) → kembali ke kawasan bandar itu
+    bukaTs = (function(f) {
+      return function(selepas) {
+        if (bdDari && typeof selepas !== 'function') { var d = bdDari; bdDari = ''; bukaBandar(d); return; }
+        return f.apply(this, arguments);
+      };
+    })(bukaTs);
+    bukaCoach = (function(f) { return function() { bdDari = ''; return f.apply(this, arguments); }; })(bukaCoach);
+    // Tab game (MENU / PELABUHAN / MINI GAME / KEDAI / USAHA) = navigasi biasa → lupakan kawasan bandar
+    document.addEventListener('click', function(e) {
+      var t = e.target;
+      while (t && t !== document && !(t.getAttribute && t.getAttribute('data-gm-tab'))) t = t.parentNode;
+      if (t && t !== document) bdDari = '';
+    }, true);
+    function bukaTulisMod(m) {
+      tulisMod = m;
+      el('btn-us-tulis-keluar').textContent = m === 'kilang' ? '‹ Kilang' : '‹ Arked';
+      bukaTulis();
+    }
+    // TOP BAR: Waktu Azan (buka / tutup senarai waktu solat) · Layout Setting
+    el('btn-tb-azan').onclick = function() {
+      var p = el('tb-azan-panel'), buka = p.style.display === 'none';
+      p.style.display = buka ? '' : 'none';
+      this.style.background = buka ? '#000' : '#fff'; this.style.color = buka ? '#fff' : '#000';
+      el('tb-azan-kosong').style.display = el('azan-log-wrap').style.display === 'none' ? '' : 'none';
+      try { window.dispatchEvent(new Event('resize')); } catch (x) {}
+    };
+    el('btn-tb-layout').onclick = function() { showScreen('screen-layout'); try { window.scrollTo(0, 0); } catch (e) {} };
+    el('btn-layout-balik').onclick = function() { showScreen('screen-menu'); };
+
+    // ══ PEMBORONG WRITING: karangan (tulis_karangan) → ayat → tanda → BM (taip / AI) → HANTAR KE GUDANG ══
+    var pbUI = { k: '', ayat: [], pilih: {}, bm: {}, mesej: '', preset: '', pukal: false }, pbKar = [], pbSoal = {}, pbLaci = {};
+    function pbEsc(x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function pbTeks(x) { return String(x || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); }
+    function pbNorm(x) { return String(x || '').toLowerCase().replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
+    // Pecah ikut baris, kemudian ikut . ! ? — singkatan (Dr. Mr. e.g. i.e.) & nombor perpuluhan tidak dipecah
+    function pbPecah(teks) {
+      var out = [], baris = String(teks || '').split(/\r?\n/), i, j, s, m, a, Q = '\u0001';
+      for (i = 0; i < baris.length; i++) {
+        s = baris[i].replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+        if (!s) continue;
+        s = s.replace(/\b(Dr|Mr|Mrs|Ms|Prof|St|No|vs|etc|Jr|Sr)\./g, '$1' + Q).replace(/\b(e)\.(g)\./gi, '$1' + Q + '$2' + Q).replace(/\b(i)\.(e)\./gi, '$1' + Q + '$2' + Q).replace(/(\d)\.(\d)/g, '$1' + Q + '$2');
+        m = s.match(/[^.!?]+(?:[.!?]+["'’”)\]]*|$)/g) || [s];
+        for (j = 0; j < m.length; j++) { a = m[j].split(Q).join('.').replace(/^\s+|\s+$/g, ''); if (a) out.push(a); }
+      }
+      return out;
+    }
+    function pbSoalan(k) { return pbSoal[k] || null; }
+    function pbTajuk(k) {
+      var q = pbSoalan(k);
+      if (!q) return 'WRITING · ' + k.replace(/^q-/, '');
+      var t = pbTeks(q.soalan);
+      return 'WRITING T' + (q.task === 2 ? 2 : 1) + ' · ' + (t.length > 48 ? t.slice(0, 48) + '...' : t);
+    }
+    function pbDiGudang(k) { var m = {}, a = (pbLaci[k] && pbLaci[k].ayat) || [], i; for (i = 0; i < a.length; i++) m[pbNorm(a[i].en)] = a[i]; return m; }
+    function bukaPemborong() {
+      if (!currentUser) return;
+      pbUI.k = ''; pbUI.mesej = ''; pbUI.preset = ''; pbUI.pukal = false;
+      showScreen('screen-pemborong');
+      try { window.scrollTo(0, 0); } catch (e) {}
+      el('pb-isi').innerHTML = '';
+      el('pb-info').textContent = 'Memuatkan karangan...';
+      Promise.all([kol('tulis_karangan').get(), kol('coach').doc('tulis_bank').get(), kol('tulis_laci').get()]).then(function(r) {
+        var sm, i;
+        pbKar = [];
+        r[0].forEach(function(d) { var x = d.data() || {}; if (x.j) pbKar.push({ k: d.id, j: x.j, n: x.n || 0, at: x.at || 0, tarikh: x.tarikh || '' }); });
+        pbKar.sort(function(a, b) { return b.at - a.at; });
+        pbSoal = {};
+        sm = TL_BANK.concat((r[1].exists && (r[1].data() || {}).soalan) || []);
+        for (i = 0; i < sm.length; i++) if (sm[i] && sm[i].id && !pbSoal['q-' + sm[i].id]) pbSoal['q-' + sm[i].id] = sm[i];
+        pbLaci = {};
+        r[2].forEach(function(d) { pbLaci[d.id] = d.data() || {}; });
+        el('pb-info').textContent = '';
+        pbLukis();
+      }).catch(function(e) { el('pb-info').textContent = 'Gagal memuat: ' + ((e && e.message) || e); });
+    }
+    function pbBuka(k) {
+      var i, kr = null, gd = pbDiGudang(k), x;
+      for (i = 0; i < pbKar.length; i++) if (pbKar[i].k === k) kr = pbKar[i];
+      if (!kr) return;
+      pbUI.k = k; pbUI.ayat = pbPecah(kr.j); pbUI.pilih = {}; pbUI.bm = {}; pbUI.mesej = ''; pbUI.preset = ''; pbUI.pukal = false;
+      for (i = 0; i < pbUI.ayat.length; i++) { x = gd[pbNorm(pbUI.ayat[i])]; if (x) pbUI.bm[i] = x.bm || ''; }
+    }
+    function pbBaca() {
+      var t = el('pb-isi').querySelectorAll('textarea[data-pbbm]'), i;
+      for (i = 0; i < t.length; i++) pbUI.bm[+t[i].getAttribute('data-pbbm')] = t[i].value;
+    }
+    function pbLukis() {
+      var B = PT_BTN, BA = PT_BTNA, h = '', i, kr, q, gd, x, n, bil;
+      if (!pbUI.k) {
+        h += '<div style="font-weight:bold;font-size:1.1rem;">PILIH KARANGAN</div>' +
+          '<div style="font-size:0.85rem;margin:2px 0 6px;">Karangan yang disimpan di <b>KILANG → WRITING</b>. Pilih satu → app pecahkan jadi ayat → tanda ayat → letak terjemahan BM → <b>HANTAR KE GUDANG</b>.</div>';
+        if (!pbKar.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;">Belum ada karangan. Tulis dan SIMPAN dulu di KILANG → WRITING.</div><button type="button" data-pb="kilang" style="' + B + '">PERGI KE KILANG WRITING</button>';
+        for (i = 0; i < pbKar.length; i++) {
+          kr = pbKar[i]; q = pbSoalan(kr.k); n = ((pbLaci[kr.k] && pbLaci[kr.k].ayat) || []).length;
+          h += '<button type="button" data-pb="buka" data-v="' + pbEsc(kr.k) + '" style="display:block;width:100%;text-align:left;border:2px solid #000;border-radius:8px;background:#fff;color:#000;padding:6px 8px;margin:6px 0;font-family:inherit;font-size:0.9rem;">' +
+            '<b>' + (q ? 'TASK ' + (q.task === 2 ? 2 : 1) + ' · ' + tlE(q.tema || '') : pbEsc(kr.k)) + '</b>' +
+            '<div style="font-size:0.85rem;margin-top:2px;">' + (q ? pbEsc(pbTeks(q.soalan).slice(0, 110)) + (pbTeks(q.soalan).length > 110 ? '...' : '') : 'Soalan tidak dijumpai') + '</div>' +
+            '<div style="font-size:0.8rem;font-weight:bold;margin-top:3px;">' + kr.n + ' perkataan · ' + pbEsc(kr.tarikh) + ' · ' + (n ? n + ' ayat di Gudang' : 'belum dihantar') + '</div></button>';
+        }
+        el('pb-isi').innerHTML = h;
+        return;
+      }
+      q = pbSoalan(pbUI.k); gd = pbDiGudang(pbUI.k); bil = 0;
+      for (i in pbUI.pilih) if (pbUI.pilih.hasOwnProperty(i) && pbUI.pilih[i]) bil++;
+      h += '<button type="button" data-pb="senarai" style="' + B + '">‹ SENARAI KARANGAN</button>' +
+        '<div style="font-size:0.85rem;margin:6px 0;border-left:4px solid #000;padding-left:6px;">' + (q ? '<b>TASK ' + (q.task === 2 ? 2 : 1) + '</b> · ' + tlE(q.soalan) : pbEsc(pbUI.k)) + '</div>' +
+        '<div style="font-size:0.85rem;"><b>1.</b> Tanda ayat yang nak dihafal. <b>2.</b> Letak terjemahan BM — taip sendiri, atau <b>SALIN PRESET</b> → tampal ke AI → salin jawapan AI → <b>JANA PUKAL</b>. <b>3.</b> <b>HANTAR KE GUDANG</b>.</div>' +
+        '<div style="margin:4px 0;"><button type="button" data-pb="semua" style="' + B + '">PILIH SEMUA</button><button type="button" data-pb="kosong" style="' + B + '">KOSONGKAN</button></div>';
+      for (i = 0; i < pbUI.ayat.length; i++) {
+        x = gd[pbNorm(pbUI.ayat[i])];
+        h += '<div style="border:' + (pbUI.pilih[i] ? '3px solid #000' : '1px solid #000') + ';border-radius:8px;padding:5px 7px;margin:6px 0;">' +
+          '<button type="button" data-pb="tanda" data-v="' + i + '" style="' + (pbUI.pilih[i] ? BA : B) + 'margin:0 0 4px 0;">' + (pbUI.pilih[i] ? '✓ DIPILIH' : 'PILIH') + '</button> ' +
+          '<b>' + (i + 1) + '.</b> ' + (x ? '<span style="font-size:0.75rem;font-weight:bold;border:1px solid #000;border-radius:4px;padding:0 4px;">DI GUDANG</span>' : '') +
+          '<div style="font-size:1rem;margin-top:2px;">' + pbEsc(pbUI.ayat[i]) + '</div>' +
+          (pbUI.pilih[i] ? '<textarea data-pbbm="' + i + '" rows="2" placeholder="Terjemahan BM" style="width:100%;box-sizing:border-box;margin-top:4px;font-size:0.95rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;">' + pbEsc(pbUI.bm[i] || '') + '</textarea>' :
+            (x && x.bm ? '<div style="font-size:0.85rem;color:#333;margin-top:2px;">BM: ' + pbEsc(x.bm) + '</div>' : '')) +
+          '</div>';
+      }
+      h += '<div style="border-top:2px solid #000;margin-top:8px;padding-top:4px;font-weight:bold;">' + bil + ' ayat dipilih</div>' +
+        '<button type="button" data-pb="preset" style="' + B + '">SALIN PRESET</button>' +
+        '<button type="button" data-pb="pukal" style="' + (pbUI.pukal ? BA : B) + '">JANA PUKAL</button>' +
+        '<button type="button" data-pb="hantar" style="' + BA + '">HANTAR KE GUDANG</button>';
+      if (pbUI.pukal) h += '<div style="font-size:0.85rem;margin-top:6px;">Tampal jawapan AI (format <b>nombor = terjemahan BM</b>):</div>' +
+        '<textarea id="pb-pukal" rows="6" style="width:100%;box-sizing:border-box;font-size:0.9rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;"></textarea>' +
+        '<button type="button" data-pb="masuk" style="' + BA + '">MASUKKAN TERJEMAHAN</button>';
+      if (pbUI.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin-top:6px;font-weight:bold;">' + pbEsc(pbUI.mesej) + '</div>';
+      if (pbUI.preset) h += '<textarea readonly rows="8" style="width:100%;box-sizing:border-box;font-size:0.8rem;margin-top:4px;">' + pbEsc(pbUI.preset) + '</textarea>';
+      el('pb-isi').innerHTML = h;
+    }
+    function pbPreset() {
+      var q = pbSoalan(pbUI.k), t = [], i;
+      for (i = 0; i < pbUI.ayat.length; i++) if (pbUI.pilih[i]) t.push((i + 1) + '. ' + pbUI.ayat[i]);
+      return 'Saya belajar MUET Writing. Ini ayat-ayat daripada karangan saya sendiri' + (q ? ' (soalan: ' + pbTeks(q.soalan) + ')' : '') + '.\n' +
+        'Terjemahkan SETIAP ayat ke Bahasa Melayu yang tepat dan semula jadi (maksud sama, bukan terjemahan perkataan demi perkataan).\n' +
+        'Jangan ubah ayat English saya. Kekalkan nombor ayat.\n' +
+        'Jawab dalam format TEPAT ini sahaja, satu baris satu ayat, tanpa ulasan:\n' +
+        'nombor = terjemahan BM\n\nAYAT:\n' + t.join('\n');
+    }
+    function pbSalin(teks) {
+      var siap = function() { pbUI.preset = ''; pbUI.mesej = 'Preset disalin. Tampal ke AI, kemudian salin jawapan AI → JANA PUKAL.'; pbLukis(); };
+      var gagal = function() {
+        var ta = document.createElement('textarea'), ok = false;
+        ta.value = teks; ta.style.position = 'fixed'; ta.style.top = '-1000px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { ok = document.execCommand('copy'); } catch (x) {}
+        document.body.removeChild(ta);
+        if (ok) siap(); else { pbUI.preset = teks; pbUI.mesej = 'Peranti ini tak benarkan salin automatik. Tekan lama teks di bawah → Pilih semua → Salin.'; pbLukis(); }
+      };
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(teks).then(siap, gagal); return; } } catch (x) {}
+      gagal();
+    }
+    // JANA PUKAL: setiap baris "nombor = terjemahan" (juga terima "3. ...", "3: ...", "3) ...") → isi kotak BM ayat itu & tanda ayat itu
+    function pbPukal(teks) {
+      var L = String(teks || '').split(/\r?\n/), i, m, n = 0, salah = 0, idx;
+      for (i = 0; i < L.length; i++) {
+        var g = L[i].replace(/\*\*/g, '').replace(/`/g, '').replace(/^\s+|\s+$/g, '');
+        if (!g) continue;
+        m = g.match(/^(\d+)\s*[=:.)\-]\s*(.+)$/);
+        if (!m) { salah++; continue; }
+        idx = +m[1] - 1;
+        if (idx < 0 || idx >= pbUI.ayat.length) { salah++; continue; }
+        pbUI.bm[idx] = m[2].replace(/^\s+|\s+$/g, ''); pbUI.pilih[idx] = 1; n++;
+      }
+      return { n: n, salah: salah };
+    }
+    function pbHantar() {
+      var k = pbUI.k, hantar = [], kosong = [], i, b;
+      for (i = 0; i < pbUI.ayat.length; i++) {
+        if (!pbUI.pilih[i]) continue;
+        b = String(pbUI.bm[i] || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+        if (!b) kosong.push(i + 1); else hantar.push({ en: pbUI.ayat[i], bm: b });
+      }
+      if (!hantar.length && !kosong.length) { pbUI.mesej = 'Tanda sekurang-kurangnya satu ayat dulu.'; pbLukis(); return; }
+      if (kosong.length) { pbUI.mesej = 'Ayat ' + kosong.join(', ') + ' belum ada terjemahan BM.'; pbLukis(); return; }
+      var q = pbSoalan(k), rujuk = kol('tulis_laci').doc(k), hasil = { baru: 0, kemas: 0, data: null }, kini = Date.now();
+      pbUI.mesej = 'Menghantar...'; pbLukis();
+      db.runTransaction(function(tx) {
+        return tx.get(rujuk).then(function(sd) {
+          var d = sd.exists ? (sd.data() || {}) : {}, ay = (d.ayat || []).slice(), ix = {}, j, p;
+          hasil.baru = 0; hasil.kemas = 0;
+          for (j = 0; j < ay.length; j++) ix[pbNorm(ay[j].en)] = j;
+          for (j = 0; j < hantar.length; j++) {
+            p = hantar[j];
+            if (ix[pbNorm(p.en)] !== undefined) { ay[ix[pbNorm(p.en)]].bm = p.bm; hasil.kemas++; }
+            else { ix[pbNorm(p.en)] = ay.length; ay.push({ en: p.en, bm: p.bm, fasa: 0, due: 0, at: kini }); hasil.baru++; }
+          }
+          hasil.data = { title: pbTajuk(k), task: q && q.task === 2 ? 2 : 1, ayat: ay, createdAt: d.createdAt || kini, updatedAt: kini };
+          tx.set(rujuk, hasil.data);
+        });
+      }).then(function() {
+        pbLaci[k] = hasil.data;
+        S.srTs = 0; simpanLokal(); // PELABUHAN baca semula senarai kapal → kapal WRITING muncul
+        pbUI.pilih = {};
+        pbUI.mesej = hasil.baru + ' ayat baru' + (hasil.kemas ? ' + ' + hasil.kemas + ' dikemas kini' : '') + ' dihantar ke GUDANG. Kapal "' + hasil.data.title + '" juga sampai di PELABUHAN.';
+        pbLukis();
+      }).catch(function(e) { pbUI.mesej = 'Gagal hantar: ' + ((e && e.message) || e); pbLukis(); });
+    }
+    el('pb-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pb'))) t = t.parentNode;
+      if (!t || t === this) return;
+      var a = t.getAttribute('data-pb'), v = t.getAttribute('data-v'), i, r;
+      if (pbUI.k) pbBaca();
+      if (a === 'kilang') { bdDari = 'kilang'; bukaTulisMod('kilang'); return; }
+      if (a === 'buka') { pbBuka(v); pbLukis(); try { window.scrollTo(0, 0); } catch (x) {} return; }
+      if (a === 'senarai') { pbUI.k = ''; pbUI.mesej = ''; pbLukis(); try { window.scrollTo(0, 0); } catch (x) {} return; }
+      if (a === 'tanda') { i = +v; pbUI.pilih[i] = pbUI.pilih[i] ? 0 : 1; }
+      else if (a === 'semua') { for (i = 0; i < pbUI.ayat.length; i++) pbUI.pilih[i] = 1; }
+      else if (a === 'kosong') { pbUI.pilih = {}; }
+      else if (a === 'pukal') { pbUI.pukal = !pbUI.pukal; pbUI.mesej = ''; }
+      else if (a === 'preset') {
+        for (i in pbUI.pilih) if (pbUI.pilih.hasOwnProperty(i) && pbUI.pilih[i]) { pbSalin(pbPreset()); return; }
+        pbUI.mesej = 'Tanda ayat dulu, kemudian SALIN PRESET.';
+      }
+      else if (a === 'masuk') {
+        r = pbPukal(el('pb-pukal') ? el('pb-pukal').value : '');
+        pbUI.mesej = r.n ? r.n + ' terjemahan dimasukkan' + (r.salah ? ' · ' + r.salah + ' baris tak difahami (diabaikan)' : '') + '. Semak, kemudian HANTAR KE GUDANG.' : 'Tiada terjemahan dijumpai. Format: nombor = terjemahan BM';
+        if (r.n) pbUI.pukal = false;
+      }
+      else if (a === 'hantar') { pbHantar(); return; }
+      pbLukis();
+    };
+    el('btn-pb-balik').onclick = function() { bukaBandar('pemborong'); };
+    el('btn-pb-gudang').onclick = function() { bukaGudangTulis(); };
+
+    // ══ GUDANG WRITING: hafal ayat satu-satu · jadual SR sama macam Laci Bahasa (getSRInterval) ══
+    // Ayat baru (due 0) → INGAT: fasa 0, ulang +20 minit · seterusnya INGAT naik satu fasa · LUPA → fasa 0 semula (+20 minit)
+    var gtUI = { q: [], i: 0, buka: false, mesej: '' }, gtLaci = {};
+    function gtMula() { try { return localStorage.getItem('gt_mula') === 'en' ? 'en' : 'bm'; } catch (e) { return 'bm'; } }
+    function gtSusun() {
+      var k, a, j, kini = Date.now(), q = [];
+      for (k in gtLaci) if (gtLaci.hasOwnProperty(k)) { a = gtLaci[k].ayat || []; for (j = 0; j < a.length; j++) if (!a[j].due || a[j].due <= kini) q.push({ k: k, en: a[j].en, due: a[j].due || 0, baru: !a[j].h }); }
+      q.sort(function(x, y) { return x.due - y.due; }); // paling lama tertunggak dulu, ayat baru (due 0) paling depan
+      gtUI.q = q; gtUI.i = 0; gtUI.buka = false;
+    }
+    function gtCari(k, en) { var a = (gtLaci[k] && gtLaci[k].ayat) || [], j; for (j = 0; j < a.length; j++) if (pbNorm(a[j].en) === pbNorm(en)) return a[j]; return null; }
+    function bukaGudangTulis() {
+      if (!currentUser) return;
+      coachSemakKunci(function() {
+        coachMasa.jenis = 'bahasa'; coachMasa.last = Date.now(); // dikira masa belajar macam Laci Bahasa
+        showScreen('screen-gudang-tulis');
+        try { window.scrollTo(0, 0); } catch (e) {}
+        el('gt-isi').innerHTML = '';
+        el('gt-info').textContent = 'Memuatkan laci...';
+        kol('tulis_laci').get().then(function(sn) {
+          gtLaci = {};
+          sn.forEach(function(d) { gtLaci[d.id] = d.data() || {}; });
+          gtUI.mesej = '';
+          el('gt-info').textContent = '';
+          gtSusun(); gtLukis();
+        }).catch(function(e) { el('gt-info').textContent = 'Gagal memuat: ' + ((e && e.message) || e); });
+      });
+    }
+    function gtLukis() {
+      var B = PT_BTN, BA = PT_BTNA, h = '', k, n = 0, nl = 0, seterus = 0, a, j, c, x, mula = gtMula();
+      for (k in gtLaci) if (gtLaci.hasOwnProperty(k)) { a = gtLaci[k].ayat || []; if (a.length) nl++; for (j = 0; j < a.length; j++) { n++; if (a[j].due && (!seterus || a[j].due < seterus) && a[j].due > Date.now()) seterus = a[j].due; } }
+      h += '<div style="font-size:0.85rem;font-weight:bold;">' + n + ' ayat · ' + nl + ' laci · ' + (gtUI.q.length - gtUI.i > 0 ? (gtUI.q.length - gtUI.i) + ' perlu diulang sekarang' : 'tiada yang perlu diulang') + '</div>' +
+        '<button type="button" data-gt="mula" style="' + B + '">MULA: ' + (mula === 'en' ? 'ENGLISH' : 'BM') + '</button>';
+      if (!n) {
+        h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;margin-top:6px;">Laci masih kosong. Hantar ayat dari <b>PEMBORONG WRITING</b> dulu.</div><button type="button" data-gt="pb" style="' + BA + '">PERGI KE PEMBORONG</button>';
+      } else if (gtUI.i >= gtUI.q.length) {
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:8px;margin-top:8px;text-align:center;"><b>SIAP!</b> Tiada ayat perlu diulang sekarang.' +
+          (seterus ? '<div style="font-size:0.85rem;margin-top:3px;">Ulang kaji seterusnya: ' + new Date(seterus).toLocaleString('ms-MY', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) + '</div>' : '') + '</div>' +
+          '<button type="button" data-gt="segar" style="' + B + '">SEMAK SEMULA</button>';
+      } else {
+        c = gtUI.q[gtUI.i]; x = gtCari(c.k, c.en);
+        if (!x) { gtUI.i++; gtLukis(); return; }
+        var depan = mula === 'en' ? x.en : x.bm, belakang = mula === 'en' ? x.bm : x.en;
+        h += '<div style="font-size:0.75rem;font-weight:bold;margin-top:8px;">AYAT ' + (gtUI.i + 1) + ' / ' + gtUI.q.length + ' · ' + (c.baru ? 'BARU' : 'Fasa ' + ((x.fasa || 0) + 1)) + '</div>' +
+          '<div style="font-size:0.75rem;margin-bottom:3px;">' + pbEsc(gtLaci[c.k].title || '') + '</div>' +
+          '<div style="font-size:0.72rem;font-weight:bold;letter-spacing:0.08em;">' + (mula === 'en' ? 'ENGLISH' : 'BAHASA MELAYU') + '</div>' +
+          '<div style="border:2px solid #000;border-radius:8px;padding:10px;font-size:1.1rem;line-height:1.5;">' + pbEsc(depan) + '</div>';
+        if (!gtUI.buka) h += '<div style="font-size:0.85rem;margin-top:6px;">Sebut / tulis dalam kepala ' + (mula === 'en' ? 'maksud BM' : 'ayat English') + ', kemudian tekan TUNJUK.</div><button type="button" data-gt="tunjuk" style="' + BA + '">TUNJUK ' + (mula === 'en' ? 'BM' : 'ENGLISH') + '</button>';
+        else h += '<div style="font-size:0.72rem;font-weight:bold;letter-spacing:0.08em;margin-top:8px;">' + (mula === 'en' ? 'BAHASA MELAYU' : 'ENGLISH') + '</div>' +
+          '<div style="border:3px solid #000;border-radius:8px;padding:10px;font-size:1.1rem;line-height:1.5;">' + pbEsc(belakang) + '</div>' +
+          '<div style="margin-top:6px;"><button type="button" data-gt="ingat" style="' + BA + '">INGAT</button><button type="button" data-gt="lupa" style="' + B + '">LUPA (ulang)</button></div>';
+      }
+      if (gtUI.mesej) h += '<div style="font-size:0.85rem;margin-top:6px;">' + pbEsc(gtUI.mesej) + '</div>';
+      el('gt-isi').innerHTML = h;
+    }
+    function gtJawab(ingat) {
+      var c = gtUI.q[gtUI.i], kini = Date.now();
+      if (!c) return;
+      var x = gtCari(c.k, c.en);
+      if (!x) { gtUI.i++; gtUI.buka = false; gtLukis(); return; }
+      var fasa = ingat ? (x.h ? (x.fasa || 0) + 1 : 0) : 0;
+      // Kemas kini dalam peranti dulu (Kindle laju), kemudian simpan ke Firebase guna transaksi (tak tindih ayat baru dari peranti lain)
+      x.fasa = fasa; x.due = kini + getSRInterval(fasa); x.h = x.h || kini;
+      gtUI.i++; gtUI.buka = false; gtUI.mesej = ingat ? 'Ulang kaji seterusnya: ' + getLabelFasaSR(fasa) : 'Mula semula: ' + getLabelFasaSR(0);
+      gtLukis();
+      var rujuk = kol('tulis_laci').doc(c.k), simpan = { fasa: x.fasa, due: x.due, h: x.h };
+      db.runTransaction(function(tx) {
+        return tx.get(rujuk).then(function(sd) {
+          if (!sd.exists) return;
+          var ay = (sd.data().ayat || []).slice(), j;
+          for (j = 0; j < ay.length; j++) if (pbNorm(ay[j].en) === pbNorm(c.en)) { ay[j].fasa = simpan.fasa; ay[j].due = simpan.due; ay[j].h = simpan.h; }
+          tx.update(rujuk, { ayat: ay, updatedAt: Date.now() });
+        });
+      }).catch(function(e) { gtUI.mesej = 'Gagal simpan: ' + ((e && e.message) || e); gtLukis(); });
+    }
+    el('gt-isi').onclick = function(e) {
+      var t = e.target;
+      while (t && t !== this && !(t.getAttribute && t.getAttribute('data-gt'))) t = t.parentNode;
+      if (!t || t === this) return;
+      var a = t.getAttribute('data-gt');
+      if (a === 'tunjuk') { gtUI.buka = true; gtLukis(); }
+      else if (a === 'ingat') gtJawab(true);
+      else if (a === 'lupa') gtJawab(false);
+      else if (a === 'mula') { try { localStorage.setItem('gt_mula', gtMula() === 'en' ? 'bm' : 'en'); } catch (x) {} gtUI.buka = false; gtLukis(); }
+      else if (a === 'segar') { gtSusun(); gtUI.mesej = ''; gtLukis(); }
+      else if (a === 'pb') bukaPemborong();
+    };
+    el('btn-gt-balik').onclick = function() { bukaBandar('gudang'); };
+    el('btn-gt-pb').onclick = function() { bukaPemborong(); };
   })();
   </script>
 
