@@ -7078,7 +7078,7 @@
   <div id="screen-gb-kapal" class="screen">
     <div class="status-bar">DALAM KAPAL · PELAYARAN KE DERMAGA</div>
     <div class="gm-alat">
-      <button type="button" id="btn-gk-balik" class="gm-kecil">‹ Pelabuhan</button>
+      <button type="button" id="btn-gkp-balik" class="gm-kecil">‹ Pelabuhan</button>
       <span class="gm-alat-tajuk">DALAM KAPAL</span>
     </div>
     <div id="gk-info" class="jw-info"></div>
@@ -19155,7 +19155,7 @@
       GK.mesej = 'Belayar ke dermaga...'; gkLukis();
       gkSimpan(function(ok) { if (ok) bukaLaci(GK.l); });
     };
-    el('btn-gk-balik').onclick = function() { gkBaca(); gkSimpan(function() {}); bukaBank(false); }; // simpan draf terjemahan
+    el('btn-gkp-balik').onclick = function() { gkBaca(); gkSimpan(function() {}); bukaBank(false); }; // simpan draf terjemahan (id gkp — btn-gk-balik milik Kaunter Tiket)
     // Taip → kiraan & kapal bergerak terus · keluar dari kotak (atau berhenti menaip 3 saat) → simpan sendiri
     var gkKotor = false, gkT = null;
     function gkSimpanSenyap() { if (!gkKotor || !GK.id) return; gkKotor = false; gkSimpan(function() {}); }
