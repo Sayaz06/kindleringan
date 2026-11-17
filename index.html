@@ -490,7 +490,17 @@
   </div>
 
   <div id="screen-menu" class="screen">
-    <!-- TOP BAR (17 Nov): Logout kiri · Waktu Azan + Layout Setting kanan -->
+    <!-- TOP BAR TERAPUNG (17 Nov): Logout kiri · Waktu Azan + Layout Setting kanan · senarai waktu solat jatuh di bawahnya -->
+    <style>
+      #menu-atas { position: fixed; top: 0; left: 0; right: 0; z-index: 9500; background: #fff; border-bottom: 2px solid #000; padding: 6px 10px 0; }
+      #menu-atas .gm-alat { margin: 0 0 6px; }
+      #menu-atas-ruang { height: 48px; }
+      #bd-titik { text-align: center; margin: 2px 0 4px; }
+      #bd-titik .bdt { display: inline-block; width: 30px; height: 34px; margin: 0 2px; padding: 0; border: 0; background: transparent; }
+      #bd-titik .bdt span { display: block; width: 16px; height: 16px; margin: 9px auto; border: 2px solid #000; border-radius: 50%; background: #fff; box-sizing: border-box; }
+      #bd-titik .bdt.on span { background: #000; }
+    </style>
+    <div id="menu-atas">
     <div class="gm-alat" id="menu-topbar">
       <button type="button" id="btn-logout" class="gm-kecil">Logout</button>
       <span class="gm-alat-tajuk"></span>
@@ -504,11 +514,13 @@
     </div>
       <div id="tb-azan-kosong" style="font-size:0.85rem;text-align:center;border:2px solid #000;border-radius:8px;padding:6px;">Waktu solat belum dimuat.</div>
     </div>
+    </div>
+    <div id="menu-atas-ruang"></div>
     <h1>Kindle Learning Tool (Ringan)</h1>
     <div class="sub" id="menu-user">—</div>
     <!-- Titik halaman menu (menegak, kiri) — tekan titik untuk ke halaman menu seterusnya -->
     <div id="menu-titik"></div>
-    <!-- BANDAR (17 Nov): KILANG → PEMBORONG → GUDANG → PELABUHAN → ARKED + MASJID + COACH (dilukis oleh JS) -->
+    <!-- BANDAR (17 Nov): jalan raya — KILANG → PEMBORONG → GUDANG → PELABUHAN → ARKED + MASJID + COACH (dilukis oleh JS) -->
     <div id="menu-bandar" class="kd-pondok"></div>
     <!-- Butang lama — DISOROK tapi KEKAL (bangunan bandar tekan butang ini → kunci Health First & masa belajar ikut asal) -->
     <div id="menu-lama" style="display:none;">
@@ -7121,7 +7133,7 @@
     <!-- PELABUHAN BAHASA (17 Nov): berdiri sendiri di BANDAR — tab game disorok, kembali guna butang ‹ Bandar -->
     <style>#screen-gbank .gm-tab { display: none; }</style>
     <div class="gm-alat">
-      <button type="button" id="btn-gb-bandar" class="gm-kecil">‹ Bandar</button>
+      <button type="button" id="btn-gb-bandar" class="gm-kecil">‹ Pelabuhan</button>
       <span class="gm-alat-tajuk">PELABUHAN BAHASA</span>
       <button type="button" class="gm-kecil" data-panduan="pd-bank">Panduan</button>
       <button type="button" id="btn-gb-segar" class="gm-kecil">Segar</button>
@@ -18942,7 +18954,7 @@
       ['kilang', 'KILANG', 'Tulis nota & karangan'],
       ['pemborong', 'PEMBORONG', 'Karangan → ayat + BM'],
       ['gudang', 'GUDANG', 'Laci: hafal ayat (SR)'],
-      ['pelabuhan', 'PELABUHAN BAHASA', 'Ayat → kosa kata'],
+      ['pelabuhan', 'PELABUHAN', 'Ayat → kosa kata'],
       ['arked', 'ARKED', 'Game & latihan'],
       ['masjid', 'MASJID', 'Tasbih · Quran'],
       ['coach', 'COACH', 'Pantau Kilang → Arked']
@@ -18967,6 +18979,9 @@
         ['reasoning', 'REASONING', 'Laci Reasoning', bdTekan('btn-go-reasoning')],
         ['presenting', 'PRESENTING', 'Laci Presenting', bdTekan('btn-go-presenting')]
       ]],
+      pelabuhan: ['PELABUHAN', 'Tukar ayat jadi kosa kata. Setiap kemahiran ada pelabuhan sendiri.', [
+        ['pelabuhan', 'PELABUHAN BAHASA', 'Ayat → kosa kata', function() { bukaBank(false); }]
+      ]],
       arked: ['ARKED', 'Latihan & game. Stok perkataan datang dari PELABUHAN.', [
         ['arked', 'KOSA KATA', 'Padan · Jutawan · Memori · Duri · Betul-Salah', function() { bukaMini(); }],
         ['tulis', 'WRITING', 'Daily repetition: useful expressions', function() { bukaTulisMod('arked'); }],
@@ -18990,29 +19005,89 @@
       while (t && t !== box && !(t.getAttribute && t.getAttribute(attr) !== null)) t = t.parentNode;
       return (!t || t === box) ? -1 : +t.getAttribute(attr);
     }
-    // Setiap BARIS (2 bangunan) = anak terus #screen-menu → menu berhalaman (titik kanan) boleh pecah ikut baris
-    (function() {
-      var tp = el('menu-bandar'), mn = tp.parentNode, i, d, h;
-      d = document.createElement('div');
-      d.style.cssText = 'font-size:0.72rem;font-weight:bold;letter-spacing:0.5px;margin:0 0 6px;text-align:center;';
-      d.textContent = 'KILANG → PEMBORONG → GUDANG → PELABUHAN → ARKED';
-      mn.insertBefore(d, tp);
-      for (i = 0; i < BD_UTAMA.length; i += 2) {
-        d = document.createElement('div'); d.className = 'kd-pondok bd-baris'; d.style.margin = '0';
-        h = bdHtml(BD_UTAMA.slice(i, i + 2), 'data-bdu');
-        d.innerHTML = h.replace(/data-bdu="(\d+)"/g, function(m, n) { return 'data-bdu="' + (i + +n) + '"'; }).replace(/data-bdu-s(\d+)/g, function(m, n) { return 'data-bdu-s' + (i + +n); });
-        mn.insertBefore(d, tp);
+    // ══ JALAN BANDAR (17 Nov): bangunan sebaris di tepi JALAN RAYA melintang · lorong menegak dari pintu ke jalan ══
+    // Orang lidi mula di depan KILANG. Tekan titik MELINTANG (atau sapu kiri / kanan) → orang lidi berjalan ke bangunan itu.
+    // Tekan bangunan di depan orang lidi (atau butang MASUK) → masuk.
+    var BD_S = 200, BD_H = 250, bdPos = 0, bdSasar = 0, bdX = 100, bdJalanT = null, bdKaki = 0, bdLaju = 25;
+    function bdOrang() {
+      var P = [[[-7, 0], [7, 0], [-11, -24], [11, -24]], [[-12, 0], [12, 0], [-13, -30], [13, -22]], [[-4, 0], [5, 0], [12, -30], [-12, -22]]], s = '', i, p;
+      for (i = 0; i < 3; i++) {
+        p = P[i];
+        s += '<g id="bd-o' + i + '" transform="translate(' + bdX + ',232)"' + (i ? ' display="none"' : '') + ' stroke="#000" stroke-width="3.5" stroke-linecap="round" fill="none">' +
+          '<circle cx="0" cy="-54" r="8" fill="#fff"/><path d="M0 -46 V-20 M0 -40 L' + p[2][0] + ' ' + p[2][1] + ' M0 -40 L' + p[3][0] + ' ' + p[3][1] +
+          ' M0 -20 L' + p[0][0] + ' ' + p[0][1] + ' M0 -20 L' + p[1][0] + ' ' + p[1][1] + '"/></g>';
       }
-    })();
-    el('screen-menu').addEventListener('click', function(e) {
-      var i = bdCari(e.target, this, 'data-bdu');
-      if (i < 0) return;
+      return s;
+    }
+    function bdJalanSvg() {
+      var n = BD_UTAMA.length, W = n * BD_S, s = '<svg width="' + W + '" height="' + BD_H + '" viewBox="0 0 ' + W + ' ' + BD_H + '" xmlns="http://www.w3.org/2000/svg">', i, x, atas = 'M0 190', b;
+      for (i = 0; i < n; i++) {
+        x = i * BD_S;
+        // Lorong menegak: pintu rumah → jalan raya
+        s += '<path d="M' + (x + 88) + ' 166 V190 M' + (x + 112) + ' 166 V190" stroke="#000" stroke-width="2.5" fill="none"/>';
+        atas += ' H' + (x + 88) + ' M' + (x + 112) + ' 190';
+        b = svgBangunan(BD_UTAMA[i][0], BD_UTAMA[i][1], true).replace('<svg ', '<svg x="' + (x + 20) + '" y="0" width="160" height="176" ');
+        s += '<g data-bdu="' + i + '">' + b + '</g>';
+      }
+      // Jalan raya melintang: tepi atas (terbuka di setiap lorong), tepi bawah, garisan tengah putus-putus
+      s += '<path d="' + atas + ' H' + W + ' M0 244 H' + W + '" stroke="#000" stroke-width="3" fill="none"/>';
+      s += '<path d="M0 217 H' + W + '" stroke="#000" stroke-width="2" stroke-dasharray="14 10" fill="none"/>';
+      return s + bdOrang() + '</svg>';
+    }
+    function bdKemas() {
+      var i, o, h = '', b = BD_UTAMA[bdSasar];
+      el('bd-geser').style.marginLeft = (-bdX) + 'px';
+      for (i = 0; i < 3; i++) { o = el('bd-o' + i); if (o) { o.setAttribute('transform', 'translate(' + bdX + ',232)'); o.setAttribute('display', i === bdKaki ? 'inline' : 'none'); } }
+      for (i = 0; i < BD_UTAMA.length; i++) h += '<button type="button" class="bdt' + (i === bdSasar ? ' on' : '') + '" data-bdt="' + i + '"><span></span></button>';
+      el('bd-titik').innerHTML = h;
+      el('bd-papan').innerHTML = '<div style="font-weight:bold;font-size:1.1rem;">' + b[1] + '</div><div style="font-size:0.8rem;font-weight:bold;">' + b[2] + '</div>' +
+        '<button type="button" data-bdmasuk="1" style="' + PT_BTNA + 'margin:6px 0 0;padding:8px 22px;">' + (bdJalanT ? 'BERJALAN...' : 'MASUK ' + b[1]) + '</button>';
+    }
+    function bdPergi(i) {
+      if (i < 0 || i >= BD_UTAMA.length) return;
+      bdSasar = i;
+      bdLaju = Math.max(25, Math.round(Math.abs(i * BD_S + BD_S / 2 - bdX) / 10)); // jauh = langkah lebih besar (≈ 10 langkah)
+      if (bdJalanT) { bdKemas(); return; }
+      bdJalanT = setInterval(function() {
+        var t = bdSasar * BD_S + BD_S / 2, d = t - bdX;
+        if (Math.abs(d) <= bdLaju) { bdX = t; bdPos = bdSasar; clearInterval(bdJalanT); bdJalanT = null; bdKaki = 0; bdKemas(); return; }
+        bdX += d > 0 ? bdLaju : -bdLaju; bdKaki = bdKaki === 1 ? 2 : 1; bdKemas();
+      }, 120);
+      bdKemas();
+    }
+    function bdMasuk(i) {
       var k = BD_UTAMA[i][0];
       bdDari = '';
-      if (k === 'pelabuhan') { bukaBank(false); return; }
       if (k === 'coach') { bukaCoach(false); return; }
       bukaBandar(k);
-    });
+    }
+    (function() {
+      var box = el('menu-bandar');
+      box.className = '';
+      box.innerHTML = '<div id="bd-jalan" style="position:relative;overflow:hidden;height:' + BD_H + 'px;margin:0 0 2px;"><div id="bd-geser" style="position:absolute;top:0;left:50%;"></div></div>' +
+        '<div id="bd-titik"></div><div id="bd-papan" style="text-align:center;"></div>';
+      el('bd-geser').innerHTML = bdJalanSvg();
+      bdKemas();
+      box.onclick = function(e) {
+        var i = bdCari(e.target, this, 'data-bdt');
+        if (i >= 0) { bdPergi(i); return; }
+        if (bdCari(e.target, this, 'data-bdmasuk') >= 0) { if (!bdJalanT) bdMasuk(bdPos); return; }
+        i = bdCari(e.target, this, 'data-bdu');
+        if (i < 0) return;
+        if (i === bdPos && !bdJalanT) bdMasuk(i); else bdPergi(i);
+      };
+      // Sapu kiri / kanan atas jalan → bangunan sebelah
+      var j = el('bd-jalan'), x0 = null, y0 = 0;
+      if (!j.addEventListener) return;
+      j.addEventListener('touchstart', function(e) { if (e.touches && e.touches.length === 1) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; } }, false);
+      j.addEventListener('touchend', function(e) {
+        if (x0 === null || !e.changedTouches || !e.changedTouches.length) { x0 = null; return; }
+        var dx = x0 - e.changedTouches[0].clientX, dy = y0 - e.changedTouches[0].clientY;
+        x0 = null;
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+        bdPergi(bdSasar + (dx > 0 ? 1 : -1));
+      }, false);
+    })();
     function bukaBandar(k) {
       var d = BD_KAWASAN[k];
       if (!d || !currentUser) return;
@@ -19068,7 +19143,7 @@
     };
     el('btn-tb-layout').onclick = function() { showScreen('screen-layout'); try { window.scrollTo(0, 0); } catch (e) {} };
     el('btn-layout-balik').onclick = function() { showScreen('screen-menu'); };
-    el('btn-gb-bandar').onclick = function() { bdDari = ''; showScreen('screen-menu'); };
+    el('btn-gb-bandar').onclick = function() { bukaBandar('pelabuhan'); };
 
     // ══ PEMBORONG WRITING: karangan (tulis_karangan) → ayat → tanda → BM (taip / AI) → HANTAR KE GUDANG ══
     var pbUI = { k: '', ayat: [], pilih: {}, bm: {}, mesej: '', preset: '', pukal: false }, pbKar = [], pbSoal = {}, pbLaci = {};
