@@ -18590,6 +18590,7 @@
     setInterval(function() { if (document.querySelector('.screen.active .mw-bar, .screen.active .gc-bar')) mwLukis(); }, 1000);
     (function() {
       var t = document.querySelectorAll('.gm-tab'), i, b, s, bar, x;
+      var TAB_EN = { pos: 'HARBOUR', mini: 'ARCADE', kd: 'SHOP', ts: 'TASKS', lc: 'DRAWER', atur: 'RULES' };
       for (i = 0; i < t.length; i++) {
         x = t[i].querySelector('[data-gm-tab="mx"]');
         if (x) x.parentNode.removeChild(x);
@@ -18624,6 +18625,12 @@
           b.type = 'button'; b.setAttribute('data-gm-tab', 'atur'); b.textContent = 'PERATURAN';
         }
         t[i].appendChild(b);
+        // 17 Nov: nama tab dalam Bahasa Inggeris (pendek, muat satu baris)
+        x = t[i].querySelectorAll('[data-gm-tab]');
+        for (var nt = 0; nt < x.length; nt++) {
+          var kt = x[nt].getAttribute('data-gm-tab');
+          if (TAB_EN[kt]) x[nt].textContent = TAB_EN[kt];
+        }
         s = t[i].parentNode;
         if (s.querySelector('.mw-bar')) continue;
         bar = document.createElement('div');
