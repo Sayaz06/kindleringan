@@ -19080,21 +19080,47 @@
       }).catch(function(e) { el('gk-info').textContent = 'Gagal memuat: ' + ((e && e.message) || e); });
     }
     function gkBaca() { var t = el('gk-isi').querySelectorAll('textarea[data-gk]'), i; for (i = 0; i < t.length; i++) GK.bm[+t[i].getAttribute('data-gk')] = t[i].value; }
+    // Pemandangan DALAM KAPAL (17 Nov): laut + pelabuhan (kiri) + kren dermaga (kanan) · kapal bergerak ikut bilangan ayat yang sudah diterjemah
+    function gkSiap() { var n = 0, i; for (i = 0; i < GK.ayat.length; i++) if (String(GK.bm[i] || '').replace(/\s+/g, '')) n++; return n; }
+    function gkX(n) { return GK.ayat.length ? Math.round(n / GK.ayat.length * 230) : 0; }
+    function gkLaut() {
+      var s = '<svg viewBox="0 0 360 96" style="display:block;width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round">';
+      // Pelabuhan (kiri): rumah api
+      s += '<path d="M14 74 L18 34 H28 L32 74 Z" fill="#fff"/><path d="M16 50 H30 M17 62 H29"/><rect x="17" y="24" width="12" height="10" fill="#000"/><path d="M23 18 V24 M10 26 L4 22 M36 26 L42 22"/>';
+      // Dermaga (kanan): kren + kontena
+      s += '<path d="M318 74 V22 H352 M318 22 L300 22 M326 22 L318 32 M318 30 L326 22 M340 22 V40"/><rect x="333" y="40" width="14" height="10" fill="#000"/><rect x="326" y="62" width="26" height="12" fill="#fff"/><path d="M312 74 H356"/>';
+      // Laut (ombak)
+      s += '<path d="M0 80 Q10 74 20 80 T40 80 T60 80 T80 80 T100 80 T120 80 T140 80 T160 80 T180 80 T200 80 T220 80 T240 80 T260 80 T280 80 T300 80 T320 80 T340 80 T360 80"/>';
+      s += '<path d="M0 90 Q10 84 20 90 T40 90 T60 90 T80 90 T100 90 T120 90 T140 90 T160 90 T180 90 T200 90 T220 90 T240 90 T260 90 T280 90 T300 90 T320 90 T340 90 T360 90" stroke-dasharray="6 6"/>';
+      // Kapal (bergerak) + pemandu di stereng
+      s += '<g id="gk-kapal" transform="translate(' + gkX(gkSiap()) + ',0)"><path d="M40 66 H110 L102 80 H48 Z" fill="#000"/><rect x="62" y="50" width="30" height="16" fill="#fff"/><circle cx="70" cy="58" r="3"/><circle cx="84" cy="58" r="3"/>' +
+        '<path d="M77 50 V38 M77 38 L92 44 L77 46"/><circle cx="54" cy="52" r="4" fill="#fff"/><path d="M54 56 V64 M54 59 L60 57"/><circle cx="62" cy="57" r="3"/></g>';
+      return s + '</g></svg>';
+    }
     function gkLukis() {
-      var s = GK.soalan || {}, h = '', i, siap = 0;
-      for (i = 0; i < GK.ayat.length; i++) if (String(GK.bm[i] || '').replace(/\s+/g, '')) siap++;
+      var s = GK.soalan || {}, h = '', i, siap = gkSiap();
+      h += '<div style="border:3px solid #000;border-radius:12px;padding:4px 6px 2px;margin:0 0 6px;">' + gkLaut() +
+        '<div id="gk-kira" style="text-align:center;font-weight:bold;font-size:0.95rem;margin:2px 0;"></div></div>';
       h += '<div style="font-size:0.85rem;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;"><b>TASK ' + (s.task === 2 ? 2 : 1) + '</b> · ' + lwEsc(lwTeks(s.soalan)) + '</div>' +
-        '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;background:#eee;font-size:0.9rem;">Kapal sedang belayar ke dermaga. Sepanjang pelayaran, <b>terjemah setiap ayat ke BM sepenuhnya</b> (tulis sendiri). Siap → tekan <b>PEMANDU</b> untuk sampai ke dermaga.</div>' +
-        '<div style="font-weight:bold;margin:8px 0 2px;">' + siap + ' / ' + GK.ayat.length + ' ayat diterjemah</div>';
+        '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;background:#eee;font-size:0.9rem;">Anda di <b>DALAM KAPAL</b>. Setiap ayat yang diterjemah ke BM membawa kapal lebih dekat ke dermaga. Tulis sendiri terjemahan penuh setiap ayat — disimpan sendiri bila keluar dari kotak. Siap semua → tekan <b>PEMANDU</b>.</div>';
       if (!GK.ayat.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;">Karangan ini kosong. Tulis dulu di app phone (Laci Writing).</div>';
       for (i = 0; i < GK.ayat.length; i++) {
-        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-size:1rem;"><b>' + (i + 1) + '.</b> ' + lwEsc(GK.ayat[i]) + '</div>' +
-          '<textarea data-gk="' + i + '" rows="2" placeholder="Terjemahan BM ayat ini" style="width:100%;box-sizing:border-box;margin-top:4px;font-size:0.95rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;">' + lwEsc(GK.bm[i] || '') + '</textarea></div>';
+        // Kad ayat = KABIN (tingkap bulat bernombor)
+        h += '<div style="display:flex;gap:8px;border:2px solid #000;border-radius:10px;padding:6px 7px;margin:8px 0;"><div style="flex:0 0 34px;height:34px;border:3px double #000;border-radius:50%;text-align:center;font-weight:bold;line-height:28px;font-size:0.9rem;">' + (i + 1) + '</div>' +
+          '<div style="flex:1 1 auto;min-width:0;"><div style="font-size:1rem;">' + lwEsc(GK.ayat[i]) + '</div>' +
+          '<textarea data-gk="' + i + '" rows="2" placeholder="Terjemahan BM ayat ini" style="width:100%;box-sizing:border-box;margin-top:4px;font-size:0.95rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;">' + lwEsc(GK.bm[i] || '') + '</textarea></div></div>';
       }
       if (GK.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + lwEsc(GK.mesej) + '</div>';
       if (GK.ayat.length) h += '<button type="button" data-gk-pemandu="1" style="display:block;width:100%;margin:10px 0;padding:6px;border:3px solid #000;border-radius:10px;background:#fff;color:#000;font-family:inherit;">' +
         GK_PEMANDU + '<div style="font-weight:bold;font-size:1.05rem;">PEMANDU · BELAYAR KE DERMAGA ›</div></button>';
       el('gk-isi').innerHTML = h;
+      gkKemas();
+    }
+    // Kemas kini kiraan + kedudukan kapal TANPA lukis semula (kotak taip tidak hilang fokus)
+    function gkKemas() {
+      var n = gkSiap(), k = el('gk-kira'), kp = el('gk-kapal');
+      if (k) k.textContent = n + ' / ' + GK.ayat.length + ' ayat diterjemah' + (n === GK.ayat.length && n ? ' · DERMAGA SUDAH DEKAT!' : ' · ' + (GK.ayat.length ? Math.round(n / GK.ayat.length * 100) : 0) + '% pelayaran');
+      if (kp) kp.setAttribute('transform', 'translate(' + gkX(n) + ',0)');
     }
     function gkSimpan(cb) {
       var ay = [], i;
@@ -19111,6 +19137,20 @@
       gkSimpan(function(ok) { if (ok) bukaLaci(GK.l); });
     };
     el('btn-gk-balik').onclick = function() { gkBaca(); gkSimpan(function() {}); bukaBank(false); }; // simpan draf terjemahan
+    // Taip → kiraan & kapal bergerak terus · keluar dari kotak (atau berhenti menaip 3 saat) → simpan sendiri
+    var gkKotor = false, gkT = null;
+    function gkSimpanSenyap() { if (!gkKotor || !GK.id) return; gkKotor = false; gkSimpan(function() {}); }
+    el('gk-isi').addEventListener('input', function(e) {
+      var t = e.target; if (!t || !t.getAttribute || t.getAttribute('data-gk') === null) return;
+      GK.bm[+t.getAttribute('data-gk')] = t.value; gkKotor = true; gkKemas();
+      if (gkT) clearTimeout(gkT); gkT = setTimeout(gkSimpanSenyap, 3000);
+    }, false);
+    el('gk-isi').addEventListener('focusout', function(e) {
+      var t = e.target; if (!t || !t.getAttribute || t.getAttribute('data-gk') === null) return;
+      GK.bm[+t.getAttribute('data-gk')] = t.value;
+      if (gkT) { clearTimeout(gkT); gkT = null; }
+      gkSimpanSenyap();
+    }, false);
 
     // ══ LACI WRITING (USAHA → LATIHAN WRITING · HARI INI) ══
     // Baca karangan (ditulis di app phone) SATU demi SATU ikut GILIRAN TOPIK: topik 1 soalan 1 → topik 2 soalan 1 → ... → topik 1 soalan 2 ...
