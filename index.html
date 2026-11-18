@@ -13569,7 +13569,8 @@
     // Baca teks format:  G: idSet | idKumpulanBaru | Tajuk English | Maksud Melayu | item | item ...   ·   F: idKumpulan | item | item ...
     //   item = 'frasa' ATAU 'perkataan = maksud'. Pulang { g, f, ulang, salah }
     function pnPukal(teks) {
-      var L = String(teks || '').split(/\r?\n/), r = { g: 0, f: 0, ulang: 0, salah: 0, t: 0, tr: {} }, hari = coachHariId(), baru = [], i, j, m, bh, it, sid, gid, items, gx, ada;
+      // 18 Nov: teks tampal kadang-kadang hilang baris baru (semua jadi SATU baris) → pecah semula di depan setiap G: / F: / T:
+      var L = String(teks || '').replace(/\s+(?=[GFT]\s*:\s)/g, '\n').split(/\r?\n/), r = { g: 0, f: 0, ulang: 0, salah: 0, t: 0, tr: {} }, hari = coachHariId(), baru = [], i, j, m, bh, it, sid, gid, items, gx, ada;
       var item = function(x) { var p = x.split('='); if (p.length > 1) { var w = p.shift().replace(/^\s+|\s+$/g, ''), mk = p.join('=').replace(/^\s+|\s+$/g, ''); return w ? { w: w, m: mk } : null; } return x || null; };
       var kunci = function(x) { return JSON.stringify(pnItem(x)); };
       for (i = 0; i < L.length; i++) {
@@ -20136,7 +20137,8 @@
       ].join('\n');
     }
     function rdPukal(teks, jAsal) {
-      var r = { n: 0, ulang: 0, salah: 0 }, ada = {}, L = String(teks || '').split(/\r?\n/), i, k, gr, j, m, bh, w, kunci;
+      // 18 Nov: teks tampal kadang-kadang hilang baris baru → pecah semula di depan setiap SIN: / ANT: / IDM:
+      var r = { n: 0, ulang: 0, salah: 0 }, ada = {}, L = String(teks || '').replace(/\s+(?=(?:SIN|ANT|IDM)\s*:\s)/g, '\n').split(/\r?\n/), i, k, gr, j, m, bh, w, kunci;
       kunci = function(j, w) { return j + ':' + String(w).toLowerCase().replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); };
       for (k = 0; k < RD_JENIS.length; k++) for (i = 0; i < RD.bank[RD_JENIS[k][0]].length; i++) ada[kunci(RD_JENIS[k][0], RD.bank[RD_JENIS[k][0]][i].w)] = 1;
       for (i = 0; i < L.length; i++) {
