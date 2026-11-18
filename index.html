@@ -16560,7 +16560,22 @@
     // Kawasan dikunci KUNCI AIR: semua bangunan (kecuali MAKMAL), laci, game, arked, harbour, kedai, MUET.
     //   Kunci hanya bila pengguna dari LUAR (Tasks / Menu / Coach / Makmal…) cuba masuk — yang sedang di dalam TIDAK dikeluarkan.
     var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|nutrisi|sup-edit|bilik|hj|bp|ul-|gb|tpl)/;
-    function coachAirKeMakmal(ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); }, 0); }
+    function coachAirKeMakmal(ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); coachAirPopup('Minta maaf, ' + coachAirMesej(ak)); }, 0); }
+    // 18 Nov: POPUP bila app bawa pengguna ke Makmal secara automatik (kunci air)
+    function coachAirPopup(teks) {
+      var p = el('air-popup');
+      if (!p) {
+        p = document.createElement('div'); p.id = 'air-popup';
+        p.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.45);';
+        p.innerHTML = '<div style="position:absolute;left:5%;right:5%;top:22%;background:#fff;color:#000;border:4px double #000;border-radius:12px;padding:14px 14px 12px;font-size:1.05rem;line-height:1.4;">' +
+          '<div style="font-weight:bold;font-size:1.15rem;margin-bottom:6px;">MAKMAL HIDRASI</div><div id="air-popup-teks"></div>' +
+          '<button type="button" id="air-popup-ok" style="display:block;width:100%;margin-top:12px;padding:10px;border:2px solid #000;border-radius:8px;background:#000;color:#fff;font-family:inherit;font-size:1rem;font-weight:bold;">OK, MINUM SEKARANG</button></div>';
+        document.body.appendChild(p);
+        el('air-popup-ok').onclick = function() { el('air-popup').style.display = 'none'; };
+      }
+      el('air-popup-teks').textContent = teks;
+      p.style.display = 'block';
+    }
     window.supHalang = function(id) {
       var ak, a = document.querySelector('.screen.active'), dari = a ? a.id : '';
       if (AIR_SKRIN_KUNCI.test(id || '') && !AIR_SKRIN_KUNCI.test(dari) && (ak = coachAirKunci())) { coachAirKeMakmal(ak); return true; }
