@@ -13760,11 +13760,10 @@
       return '<div style="font-size:0.9rem;margin:2px 0 4px;">Awak rasa nota-nota di bawah penting? Latihan bagi nota-nota di bawah ini diletakkan di <b>Arked ' + nama + '</b>.</div>' +
         '<button type="button" data-ark="' + v + '" style="display:block;width:100%;text-align:left;margin:0 0 8px;padding:8px;font-size:0.95rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#fff;color:#000;">DAILY REPETITION → ARKED ' + nama.toUpperCase() + ' ›</button>';
     }
-    function pnLukisTopikTulis() {
-      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">NOTA WRITING</div>' + pnArkedAtas(2, 'Writing'), S, i, j, g;
-      if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
-      S = pnSetDRE();
-      if (!S.length) return h + '<div>Belum ada nota. Tambah di app phone → Daily Repetition.</div>';
+    // Senarai SEMUA nota Daily Repetition rumah semasa (set → kumpulan → frasa) — sama dengan yang dilatih di ARKED
+    function pnSenaraiSemuaNota() {
+      var S = pnSetDRE(), h = '', i, j, g;
+      if (!S.length) return '<div>Belum ada nota. Tambah di app phone → Daily Repetition.</div>';
       for (i = 0; i < S.length; i++) {
         h += '<div style="font-weight:bold;margin:8px 0 2px;border-top:2px solid #000;padding-top:4px;">' + S[i].t + '</div>';
         for (j = 0; j < S[i].g.length; j++) {
@@ -13774,10 +13773,18 @@
       }
       return h;
     }
+    function pnLukisTopikTulis() {
+      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">NOTA WRITING</div>' + pnArkedAtas(2, 'Writing');
+      if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
+      return h + pnSenaraiSemuaNota();
+    }
+    // 18 Nov: TOPIK Listening = SEMUA nota Listening (linking words, language functions, idioms, signal words, facts & opinions...) + kosa kata topik
     function pnLukisTopik() {
-      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TOPIC-SPECIFIC VOCABULARY</div>' + pnArkedAtas(1, 'Listening'), S = pnSet(PN_SET_TOPIK), i, g;
+      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">NOTA LISTENING</div>' + pnArkedAtas(1, 'Listening'), S = pnSet(PN_SET_TOPIK), i, g;
       if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
       if (pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
+      h += pnSenaraiSemuaNota();
+      h += '<div style="font-weight:bold;font-size:1.05rem;margin:12px 0 2px;border-top:3px solid #000;padding-top:4px;">TOPIC-SPECIFIC VOCABULARY</div>';
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Perkataan ikut topik. Tekan ikon bunyi untuk dengar · + MP3 untuk muat naik audio.</div>';
       if (!S || !S.g.length) return h + '<div>Belum ada topik.</div>';
       for (i = 0; i < S.g.length; i++) {
