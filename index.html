@@ -13681,7 +13681,7 @@
       if (tb) h += '<button type="button" data-pn="presettr" style="' + PN_BTN + '">PRESET TERJEMAHAN (' + tb + ' belum)</button>';
       if (pnUI.tanyaSyor) h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ADA PERKARA YANG DISYORKAN?</div>' +
         '<div style="font-size:0.8rem;">Contoh: expressions for giving advice. AI akan beri nota berkaitan perkara ini dahulu, kemudian nota lain seperti biasa. Biar kosong jika tiada.</div>' +
-        '<input id="pn-syor" type="text" value="' + String(pnUI.syor || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;') + '" placeholder="Perkara disyorkan (pilihan)" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;">' +
+        '<textarea id="pn-syor" rows="3" placeholder="Perkara disyorkan (pilihan)" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;resize:vertical;">' + String(pnUI.syor || '').replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</textarea>' + // 18 Nov: kotak berbilang baris
         '<div><button type="button" data-pn="presetsalin" style="' + PN_BTNA + '">SALIN PRESET</button><button type="button" data-pn="preset" style="' + PN_BTN + '">BATAL</button></div></div>';
       if (pnUI.preset) h += '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + pnUI.preset.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</textarea>';
       if (pnUI.pukal) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JANA PUKAL</div>' +
@@ -20166,7 +20166,7 @@
         h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JENIS:</div><div>';
         for (k = 0; k < RD_JENIS.length; k++) h += '<button type="button" data-rdt="jenis" data-v="' + RD_JENIS[k][0] + '" style="' + (u.jenis === RD_JENIS[k][0] ? PN_BTNA : PN_BTN) + '">' + RD_JENIS[k][1] + '</button>';
         h += '</div><div style="font-weight:bold;margin-top:6px;">ADA PERKARA YANG DISYORKAN?</div>' +
-          '<input id="rd-syor" type="text" value="' + puE(u.syor) + '" placeholder="Perkara disyorkan (pilihan) — cth: kesihatan" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;">' +
+          '<textarea id="rd-syor" rows="3" placeholder="Perkara disyorkan (pilihan) — cth: kesihatan" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;resize:vertical;">' + puE(u.syor) + '</textarea>' + // 18 Nov: kotak berbilang baris
           '<div><button type="button" data-rdt="salin" style="' + PN_BTNA + '">SALIN PRESET</button><button type="button" data-rdt="preset" style="' + PN_BTN + '">BATAL</button></div></div>';
       }
       if (u.teks) h += '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + puE(u.teks) + '</textarea>';
