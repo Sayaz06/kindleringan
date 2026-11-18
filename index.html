@@ -501,12 +501,14 @@
       <button type="button" id="btn-menu-logout">Logout</button>
       <span class="ma-ruang"></span>
       <button type="button" id="btn-menu-layout">Layout Setting</button>
-      <span id="menu-azan-slot"></span>
+      <button type="button" id="btn-menu-azan">Waktu Azan</button>
     </div>
     <h1>Kindle Learning Tool (Ringan)</h1>
     <div class="sub" id="menu-user">—</div>
     <!-- Titik halaman menu (menegak, kiri) — tekan titik untuk ke halaman menu seterusnya -->
     <div id="menu-titik"></div>
+    <!-- GAME — Pelabuhan (bank perkataan) + mini game (Padan, Jutawan) + Exchange · 18 Nov: paling atas, hitam -->
+    <button id="btn-go-game" class="btn btn-primary">[ GAME ]</button>
     <button id="btn-go-ib-tasbih" class="btn btn-primary">[ COUNTDOWN TASBIH ]</button>
     <button id="btn-go-bahasa" class="btn" style="display:none;">Laci Bahasa</button>
     <!-- Ulang SR Bahasa tanpa had (atas → bawah, pusing semula) — TIADA kesan pada jadual SR -->
@@ -518,8 +520,6 @@
     <button id="btn-go-laci-writing" class="btn" style="display:none;">Laci Writing</button>
     <!-- QURAN — sesi Quran (kemajuan kindle_quran/current), pusing 10 ayat setiap sesi -->
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
-    <!-- GAME — Pelabuhan (bank perkataan) + mini game (Padan, Jutawan) + Exchange -->
-    <button id="btn-go-game" class="btn">[ GAME ]</button>
     <!-- SOALAN FAKTA: ON → Laci Fakta papar SOALAN sahaja (baris yang ada soalan) · tiada SR -->
     <button id="btn-soalan-fakta" class="btn" style="margin-top:8px;">SOALAN FAKTA: OFF</button>
     <button id="btn-jq" class="btn" style="margin-top:8px;">JQ: OFF</button>
@@ -553,6 +553,13 @@
     </script>
     <button id="btn-logout" class="btn" style="display:none;">Logout</button>
     <div class="footer">SR auto-check · progress sync phone</div>
+  </div>
+
+  <!-- SCREEN: WAKTU AZAN (18 Nov) — butang 'Waktu Azan' di top bar menu -->
+  <div id="screen-azan" class="screen">
+    <div class="status-bar">WAKTU AZAN</div>
+    <button type="button" id="btn-azan-balik" class="btn" style="margin:0 0 8px;">‹ Menu</button>
+    <div id="azan-log-kosong" style="font-size:0.9rem;">Waktu solat belum dimuat. Cuba sebentar lagi.</div>
     <div id="azan-log-wrap" style="display:none;margin-top:8px;border:2px solid #000;border-radius:8px;padding:8px;background:#fff;">
       <div style="font-size:0.8rem;font-weight:bold;color:#000;margin-bottom:6px;border-bottom:1px solid #000;padding-bottom:4px;">Waktu Solat Hari Ini</div>
       <div id="azan-log-list" style="font-size:0.95rem;color:#000;line-height:2;"></div>
@@ -4121,8 +4128,12 @@
       });
       $('btn-menu-layout').onclick = function() { showScreen('screen-layout'); try { window.scrollTo(0, 0); } catch (e) {} };
       $('btn-layout-balik').onclick = function() { showScreen('screen-menu'); };
-      var az = $('btn-azan-test');
-      if (az && $('menu-azan-slot')) $('menu-azan-slot').appendChild(az);
+      // 18 Nov: Test Azan kembali di tempat asal (butang terapung) · top bar = page WAKTU AZAN
+      $('btn-menu-azan').onclick = function() {
+        $('azan-log-kosong').style.display = $('azan-log-wrap').style.display === 'none' ? '' : 'none';
+        showScreen('screen-azan'); try { window.scrollTo(0, 0); } catch (e) {}
+      };
+      $('btn-azan-balik').onclick = function() { showScreen('screen-menu'); };
     })();
     document.getElementById('btn-go-bahasa').onclick = function() { faktaJenis = 'fakta'; srBebas = false; bahasaSumber = 'bahasa'; startBahasa(); };
     document.getElementById('btn-go-fakta').onclick = function() {
@@ -14013,55 +14024,82 @@
       var p = jumlah / bil;
       return { purata: Math.round(p * 10) / 10, hari: bil, st: p >= 4.5 ? 'HIJAU' : (p >= 3.5 ? 'KUNING' : 'MERAH') };
     }
-    // PAWAGAM (12 Nov): pai Listening — SATU sektor (bahagian Listening dalam English) bermula pukul 12 · jejari putus-putus = SASARAN %
-    //   + KALKULATOR: berapa minit lagi listening untuk capai sasaran.  (L + x) / (J + x) = s/100  →  x = (s·J − 100·L) / (100 − s)
-    function pawagamPaiListening() {
+    // PAWAGAM (18 Nov): pai Listening DUA sektor bermula pukul 12 — MUET (latihan kertas, gelap) + VIDEO (cerah)
+    //   SASARAN listening musim dibahagi 2: separuh MUET, separuh Video (cth 20% → 10% + 10%) · jejari putus-putus = sasaran
+    //   KALKULATOR (setiap titik): (N + x) / (J + x) = s/100  →  x = (s·J − 100·N) / (100 − s)
+    function pwKMin(hari) { var n = 0, k, i, h = (pwData && pwData.hari) || {}; for (k in h) if (h.hasOwnProperty(k) && h[k] && (!hari || k === hari)) for (i = 0; i < h[k].length; i++) n += h[k][i].min || PW_MINIT_PART; return n; }
+    function pwJm(m) { m = Math.max(0, Math.round(m || 0)); var j = Math.floor(m / 60), n = m % 60; return j ? j + ' jam' + (n ? ' ' + n + ' minit' : '') : n + ' minit'; }
+    function pwKira() {
       var d = coachDataAkhir || {}, musim = COACH_MUSIM[d.musim] ? d.musim : 'CUTI', sas = COACH_MUSIM[musim].english.listening || 0;
       var unit = { listening: d.listening || 0, pentas: d.pentas || 0, reading: d.reading || 0, tulis: d.tulis || 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
-      var J = 0, i, L = unit.listening;
+      var J = 0, i, L = unit.listening, K = Math.min(L, pwKMin());
       for (i = 0; i < COACH_BIDANG.length; i++) if (!COACH_POSPON[COACH_BIDANG[i][0]]) J += unit[COACH_BIDANG[i][0]] || 0;
-      var f = J ? L / J : 0, pc = Math.round(f * 100);
+      return { sas: sas, s1: sas / 2, J: J, L: L, K: K, V: L - K };
+    }
+    function pwKalk(nama, N, s, J, part) {
+      var x;
+      if (!J) x = s > 0 ? 1 : 0;
+      else if (s >= 100) x = J - N > 0 ? -1 : 0;
+      else x = Math.ceil((s * J - 100 * N) / (100 - s));
+      return '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>KALKULATOR ' + nama + '</b><br>' +
+        (x === -1 ? 'Sasaran 100% hanya boleh dicapai jika bidang lain 0.'
+          : x > 0 ? 'Awak perlukan <b>' + pwJm(x) + '</b>' + (part ? ' (lebih kurang <b>' + Math.ceil(x / PW_MINIT_PART) + ' Part</b>)' : '') + ' lagi ' + nama + ' untuk capai <b>' + s + '%</b>.'
+          : nama + ' dah capai sasaran <b>' + s + '%</b>. Bagus!') +
+        '<div style="font-size:0.75rem;margin-top:2px;">Kira ikut jumlah English sekarang (' + J + '). Kalau bidang lain bertambah, minit perlu ikut naik.</div></div>';
+    }
+    function pawagamPaiListening() {
+      var k = pwKira(), J = k.J, fm = J ? k.K / J : 0, fv = J ? k.V / J : 0;
       var cx = 120, cy = 112, r = 90, s = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="3"/>';
       function titik(fr, rr) { var a = -Math.PI / 2 + fr * 2 * Math.PI; return [(cx + rr * Math.cos(a)).toFixed(2), (cy + rr * Math.sin(a)).toFixed(2)]; }
-      if (f >= 0.999) s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#bbb" stroke="#000" stroke-width="3"/>';
-      else if (f > 0) { var p1 = titik(f, r); s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + ' A' + r + ' ' + r + ' 0 ' + (f > 0.5 ? 1 : 0) + ' 1 ' + p1[0] + ' ' + p1[1] + ' Z" fill="#bbb" stroke="#000" stroke-width="3" stroke-linejoin="round"/>'; }
+      function sektor(a0, a1, warna) {
+        if (a1 - a0 <= 0) return '';
+        if (a1 - a0 >= 0.999) return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + warna + '" stroke="#000" stroke-width="3"/>';
+        var p0 = titik(a0, r), p1 = titik(a1, r);
+        return '<path d="M' + cx + ' ' + cy + ' L' + p0[0] + ' ' + p0[1] + ' A' + r + ' ' + r + ' 0 ' + (a1 - a0 > 0.5 ? 1 : 0) + ' 1 ' + p1[0] + ' ' + p1[1] + ' Z" fill="' + warna + '" stroke="#000" stroke-width="3" stroke-linejoin="round"/>';
+      }
+      s += sektor(0, Math.min(1, fm), '#555') + sektor(Math.min(1, fm), Math.min(1, fm + fv), '#bbb');
       s += '<path d="M' + cx + ' ' + cy + ' L' + cx + ' ' + (cy - r) + '" stroke="#000" stroke-width="4"/>';
-      // Jejari putus-putus = SASARAN
-      var ps = titik(sas / 100, r);
-      s += '<path d="M' + cx + ' ' + cy + ' L' + ps[0] + ' ' + ps[1] + '" stroke="#000" stroke-width="3" stroke-dasharray="6 4"/>';
+      var p1 = titik(k.s1 / 100, r), p2 = titik(k.sas / 100, r);
+      s += '<path d="M' + cx + ' ' + cy + ' L' + p1[0] + ' ' + p1[1] + '" stroke="#000" stroke-width="3" stroke-dasharray="6 4"/>';
+      s += '<path d="M' + cx + ' ' + cy + ' L' + p2[0] + ' ' + p2[1] + '" stroke="#000" stroke-width="3" stroke-dasharray="6 4"/>';
       s += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#000"/>';
-      // TAG bergaris (gaya pai English: nama tebal + peratus di bawah, garis ke bulatan)
-      var tagY = {};
+      // TAG bergaris — disusun ikut sudut, elak bertindih
+      var tagY = { k: [], w: [] }, T = [], i;
       function tag(fr, nama, teks) {
         var a = -Math.PI / 2 + fr * 2 * Math.PI, kanan = Math.cos(a) >= 0;
         var x0 = cx + r * Math.cos(a), y0 = cy + r * Math.sin(a), x1 = cx + (r + 14) * Math.cos(a), y1 = cy + (r + 14) * Math.sin(a);
-        var sisi = kanan ? 'k' : 'w';
-        if (tagY[sisi] !== undefined && Math.abs(y1 - tagY[sisi]) < 40) y1 = tagY[sisi] + 40 > cy + r + 10 ? tagY[sisi] - 40 : tagY[sisi] + 40; // elak bertindih
+        var sisi = kanan ? 'k' : 'w', L = tagY[sisi], q, ok = false;
         y1 = Math.max(4, Math.min(cy + r + 10, y1));
-        tagY[sisi] = y1;
+        while (!ok) { ok = true; for (q = 0; q < L.length; q++) if (Math.abs(y1 - L[q]) < 38) { y1 = L[q] + 38; ok = false; } }
+        L.push(y1);
         var x2 = kanan ? cx + r + 26 : cx - r - 26, tx = kanan ? x2 + 4 : x2 - 4, an = kanan ? 'start' : 'end';
         return '<path d="M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' L' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' L' + x2.toFixed(1) + ' ' + y1.toFixed(1) + '" fill="none" stroke="#000" stroke-width="2"/>' +
           '<text x="' + tx.toFixed(1) + '" y="' + (y1 - 2).toFixed(1) + '" font-size="15" font-weight="bold" text-anchor="' + an + '" fill="#000">' + nama + '</text>' +
           '<text x="' + tx.toFixed(1) + '" y="' + (y1 + 15).toFixed(1) + '" font-size="15" text-anchor="' + an + '" fill="#000">' + teks + '</text>';
       }
-      s += tag(f / 2, 'Listening', pc + '%');
-      s += tag(sas / 100, 'Sasaran', sas + '%');
-      var perlu;
-      if (!J) perlu = sas > 0 ? 1 : 0;
-      else if (sas >= 100) perlu = J - L > 0 ? -1 : 0;
-      else perlu = Math.ceil((sas * J - 100 * L) / (100 - sas));
-      var hr = coachHariData.hari || {};
-      // Minit → "7 jam 24 minit" / "45 minit" / "2 jam"
-      function jm(m) { m = Math.max(0, Math.round(m || 0)); var j = Math.floor(m / 60), n = m % 60; return j ? j + ' jam' + (n ? ' ' + n + ' minit' : '') : n + ' minit'; }
-      return '<div style="border-top:1px solid #000;margin-top:8px;padding-top:4px;font-weight:bold;">LISTENING vs ENGLISH LAIN</div>' +
-        '<div style="text-align:center;"><svg viewBox="-110 -10 460 250" style="width:100%;max-width:380px;" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>' +
-        '<div style="font-size:0.9rem;">Listening hari ini: <b>' + jm(hr.listening) + '</b></div>' +
-        '<div style="font-size:0.9rem;">Jumlah terkumpul: <b>' + jm(L) + '</b></div>' +
-        '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>KALKULATOR</b><br>' +
-        (perlu === -1 ? 'Sasaran 100% hanya boleh dicapai jika bidang lain 0.'
-          : perlu > 0 ? 'Awak perlukan <b>' + jm(perlu) + '</b> lagi listening untuk capai <b>' + sas + '%</b>.'
-          : 'Listening dah capai sasaran <b>' + sas + '%</b>. Bagus!') +
-        '<div style="font-size:0.75rem;margin-top:2px;">Kira ikut jumlah English sekarang (' + J + '). Kalau bidang lain bertambah, minit perlu ikut naik.</div></div>';
+      if (fm > 0) T.push([fm / 2, 'MUET', Math.round(fm * 100) + '%']);
+      if (fv > 0) T.push([fm + fv / 2, 'Video', Math.round(fv * 100) + '%']);
+      T.push([k.s1 / 100, 'Sasaran MUET', k.s1 + '%']);
+      T.push([k.sas / 100, 'Sasaran', k.sas + '%']);
+      T.sort(function(a, b) { return a[0] - b[0]; });
+      for (i = 0; i < T.length; i++) s += tag(T[i][0], T[i][1], T[i][2]);
+      var kotak = function(w) { return '<span style="display:inline-block;width:12px;height:12px;border:2px solid #000;background:' + w + ';vertical-align:middle;margin-right:4px;"></span>'; };
+      return '<div style="font-weight:bold;">LISTENING vs ENGLISH LAIN</div>' +
+        '<div style="text-align:center;"><svg viewBox="-110 -10 470 245" style="width:100%;max-width:380px;" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>' +
+        '<div style="font-size:0.85rem;">' + kotak('#555') + 'MUET (kertas): <b>' + Math.round(fm * 100) + '%</b> · sasaran ' + k.s1 + '% · ' + pwJm(k.K) + '</div>' +
+        '<div style="font-size:0.85rem;">' + kotak('#bbb') + 'Video: <b>' + Math.round(fv * 100) + '%</b> · sasaran ' + k.s1 + '% · ' + pwJm(k.V) + '</div>';
+    }
+    function pwLukisPai() {
+      var b = el('pw-pai'); if (!b) return;
+      pwPastiData();
+      b.innerHTML = pawagamPaiListening();
+    }
+    function pwPastiData() {
+      if (pwData || pwMuat || !currentUser) return;
+      pwMuat = true;
+      var siap = function() { pwLukisPai(); if (pwHal === 0) lukisPwKertas(); else coachLukisUsaha(); };
+      kol('coach').doc('pawagam_kertas').get().then(function(d) { pwData = d.exists ? (d.data() || {}) : {}; pwData.hari = pwData.hari || {}; pwData.kertas = pwData.kertas || []; siap(); })
+        .catch(function() { pwData = { hari: {}, kertas: [] }; siap(); });
     }
     function coachLukisUsaha() {
       var box = el('coach-usaha');
@@ -14069,7 +14107,11 @@
       var hr = coachHariData.hari || {}, h = '';
       h += '<div style="font-weight:bold;margin-bottom:4px;">LISTENING ENGLISH</div>';
       h += '<div style="font-size:0.8rem;">Kuning hari ini: ' + rm((hr.pawagamUnit || 0) * (EKO.PAWAGAM_SEN || 0)) + ' (' + ((hr.pawagamUnit || 0) * 10) + ' / ' + (PAWAGAM_HAD_UNIT * 10) + ' min dibayar)</div>';
-      h += pawagamPaiListening(); // listening hari ini + jumlah terkumpul kini di bawah pai
+      pwLukisPai(); // pai duduk di ATAS titik (18 Nov)
+      var kv = pwKira();
+      h += '<div style="border-top:1px solid #000;margin-top:8px;padding-top:4px;font-size:0.9rem;">Video hari ini: <b>' + pwJm((hr.listening || 0) - pwKMin(coachHariId())) + '</b></div>';
+      h += '<div style="font-size:0.9rem;">Video terkumpul: <b>' + pwJm(kv.V) + '</b></div>';
+      h += pwKalk('VIDEO', kv.V, kv.s1, kv.J, false);
       if (coachUIU.listening) {
         h += '<div style="margin:4px 0;">minit: <input type="text" inputmode="numeric" id="coach-ls-input" style="width:90px;font-size:1rem;padding:4px;border:2px solid #000;"> ' +
           '<button type="button" data-cu="lssimpan" style="padding:6px 8px;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;">SIMPAN</button> ' +
@@ -16608,7 +16650,12 @@
     var PW_HAL = ['KERTAS LISTENING', 'VIDEO'], PW_MINIT_PART = 7, pwHal = 0;
     var pwData = null, pwMuat = false, pwUI = { hari: '', part: 0, mesej: '' };
     // Titik duduk DALAM tab HARI INI sahaja (bawah bar tab) — tab TOPIK / TIPS / FORMAT tidak terjejas
-    (function() { var w = el('pw-wrap'), t = document.createElement('div'); t.id = 'pw-titik'; t.className = 'hl-titik'; w.insertBefore(t, w.firstChild); })();
+    (function() {
+      var w = el('pw-wrap'), t = document.createElement('div'), p = document.createElement('div');
+      p.id = 'pw-pai'; p.style.cssText = 'border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;';
+      t.id = 'pw-titik'; t.className = 'hl-titik'; t.style.marginTop = '6px';
+      w.insertBefore(t, w.firstChild); w.insertBefore(p, t);
+    })();
     function pwPergi(i) {
       pwHal = i;
       var t = el('pw-titik'), h = '', k;
@@ -16635,15 +16682,8 @@
     }
     function lukisPwKertas() {
       var box = el('pw-kertas'), h = '<div style="font-weight:bold;font-size:1.15rem;">LISTENING — KERTAS MUET (PAPER 1)</div>', i, a, hari = coachHariId();
-      if (!pwData) {
-        box.innerHTML = h + '<div>Memuatkan...</div>';
-        if (!pwMuat && currentUser) {
-          pwMuat = true;
-          kol('coach').doc('pawagam_kertas').get().then(function(d) { pwData = d.exists ? (d.data() || {}) : {}; pwData.hari = pwData.hari || {}; pwData.kertas = pwData.kertas || []; lukisPwKertas(); })
-            .catch(function() { pwData = { hari: {}, kertas: [] }; lukisPwKertas(); });
-        }
-        return;
-      }
+      pwLukisPai(); // pai duduk di ATAS titik (18 Nov)
+      if (!pwData) { box.innerHTML = h + '<div>Memuatkan...</div>'; pwPastiData(); return; }
       var senarai = pwHariSenarai();
       if (pwUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + puE(pwUI.mesej) + '</div>';
       if (pwUI.hari) {
@@ -16675,6 +16715,8 @@
         box.innerHTML = h; return;
       }
       h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Listening, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = ' + PW_MINIT_PART + ' minit Listening</b> (masuk pai English & Ringgit Kuning Pawagam).<br>Jumlah: <b>' + pwJumlah() + ' Part</b></div>';
+      var km = pwKira();
+      h += '<div style="font-size:0.9rem;">MUET hari ini: <b>' + pwJm(pwKMin(hari)) + '</b> · terkumpul: <b>' + pwJm(km.K) + '</b></div>' + pwKalk('MUET', km.K, km.s1, km.J, true);
       if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pw="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
       if (!senarai.length) h += '<div style="font-size:0.85rem;">Belum ada latihan.</div>';
       for (i = senarai.length - 1; i >= 0; i--) {
