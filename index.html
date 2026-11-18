@@ -7028,10 +7028,10 @@
     <div style="height:30px;"></div>
   </div>
   <div id="screen-pawagam" class="screen">
-    <div class="status-bar">PAWAGAM</div>
+    <div class="status-bar">LISTENING</div>
     <div class="gm-alat">
       <button type="button" id="btn-us-pawagam-keluar" class="gm-kecil">‹ Usaha</button>
-      <span class="gm-alat-tajuk">PAWAGAM</span>
+      <span class="gm-alat-tajuk">LISTENING</span>
       <button type="button" id="btn-us-pawagam-coach" class="gm-kecil">Coach</button>
     </div>
     <div id="pawagam-info" class="jw-info"></div>
@@ -7043,10 +7043,10 @@
   </div>
   <!-- PENTAS (Speaking English — MUET Paper 2) — bangunan BELAJAR (16 Nov) -->
   <div id="screen-pentas" class="screen">
-    <div class="status-bar">PENTAS</div>
+    <div class="status-bar">SPEAKING</div>
     <div class="gm-alat">
       <button type="button" id="btn-us-pentas-keluar" class="gm-kecil">‹ Usaha</button>
-      <span class="gm-alat-tajuk">PENTAS</span>
+      <span class="gm-alat-tajuk">SPEAKING</span>
       <button type="button" id="btn-us-pentas-coach" class="gm-kecil">Coach</button>
     </div>
     <div id="pentas-info" class="jw-info"></div>
@@ -13750,12 +13750,32 @@
       else if (pnRumah === 'tulis') lukisTulis();
       else coachLukisUsaha();
       if (pnTopikBuka && pnRumah === 'pawagam') { var t = el('ub-tips-pawagam'); if (t) t.innerHTML = pnLukisTopik(); }
+      if (tlTopikBuka && pnRumah === 'tulis') { var t2 = el('ub-tips-tulis'); if (t2) t2.innerHTML = pnLukisTopikTulis(); }
       coachDreNota();
     }
     // ── Tab TOPIK (PAWAGAM): topic-specific vocabulary — senarai topik akan disusun kemudian ──
-    var pnTopikBuka = false;
+    var pnTopikBuka = false, tlTopikBuka = false;
+    // 18 Nov: tab TOPIK → ayat + butang ARKED di atas nota (Listening: ARKED LISTENING · Dewan Tulis: ARKED WRITING)
+    function pnArkedAtas(v, nama) {
+      return '<div style="font-size:0.9rem;margin:2px 0 4px;">Awak rasa nota-nota di bawah penting? Latihan bagi nota-nota di bawah ini diletakkan di <b>Arked ' + nama + '</b>.</div>' +
+        '<button type="button" data-ark="' + v + '" style="display:block;width:100%;text-align:left;margin:0 0 8px;padding:8px;font-size:0.95rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#fff;color:#000;">DAILY REPETITION → ARKED ' + nama.toUpperCase() + ' ›</button>';
+    }
+    function pnLukisTopikTulis() {
+      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">NOTA WRITING</div>' + pnArkedAtas(2, 'Writing'), S, i, j, g;
+      if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
+      S = pnSetDRE();
+      if (!S.length) return h + '<div>Belum ada nota. Tambah di app phone → Daily Repetition.</div>';
+      for (i = 0; i < S.length; i++) {
+        h += '<div style="font-weight:bold;margin:8px 0 2px;border-top:2px solid #000;padding-top:4px;">' + S[i].t + '</div>';
+        for (j = 0; j < S[i].g.length; j++) {
+          g = S[i].g[j];
+          h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 7px;margin:6px 0;"><div style="font-weight:bold;">' + g.t + '</div><div style="font-size:0.8rem;">' + g.ms + '</div>' + pnSenaraiFrasa(g) + '</div>';
+        }
+      }
+      return h;
+    }
     function pnLukisTopik() {
-      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TOPIC-SPECIFIC VOCABULARY</div>', S = pnSet(PN_SET_TOPIK), i, g;
+      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TOPIC-SPECIFIC VOCABULARY</div>' + pnArkedAtas(1, 'Listening'), S = pnSet(PN_SET_TOPIK), i, g;
       if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
       if (pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Perkataan ikut topik. Tekan ikon bunyi untuk dengar · + MP3 untuk muat naik audio.</div>';
@@ -14119,8 +14139,7 @@
       } else {
         h += '<button type="button" data-cu="ls" style="padding:6px 8px;margin-top:4px;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;">+ LISTENING (minit video ditonton)</button>';
       }
-      // 17 Nov: DAILY REPETITION dipindah ke ARKED (titik 2) — di sini latihan sahaja
-      h += '<button type="button" data-ark="1" style="display:block;width:100%;text-align:left;margin-top:10px;padding:8px;font-size:0.95rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#fff;color:#000;">DAILY REPETITION → ARKED LISTENING ›</button>';
+      // 18 Nov: butang DAILY REPETITION → ARKED LISTENING dipindah ke tab TOPIK
       box.innerHTML = h;
       var inp = document.getElementById('coach-ls-input');
       if (inp) { try { inp.focus(); } catch (e) {} }
@@ -15543,13 +15562,13 @@
       ['nutrisi', 'PUSAT NUTRISI', 'Makan buah + sayur', true],
       ['tidur', 'BILIK TIDUR', 'Malap lampu, sigh, tidur', true],
       ['surau', 'SURAU', 'Solat 5 waktu', true],
-      ['pawagam', 'PAWAGAM', 'Listening English (video)', true],
+      ['pawagam', 'LISTENING', 'Listening English (video)', true],
       // Bangunan LACI (14 Nov): tekan → laci terus dibuka (ikut kunci Health First & kira minit belajar, sama macam butang MENU)
       ['bahasa', 'LACI BAHASA', 'Ulang kaji ayat', true],
       ['fakta', 'LACI FAKTA', 'Ulang kaji fakta', true],
       ['reasoning', 'REASONING', 'Laci reasoning', true],
       ['presenting', 'PRESENTING', 'Laci presenting', true],
-      ['pentas', 'PENTAS', 'Speaking English (MUET)', true],
+      ['pentas', 'SPEAKING', 'Speaking English (MUET)', true],
       ['pustaka', 'PERPUSTAKAAN', 'Reading English (MUET)', true],
       ['tulis', 'DEWAN TULIS', 'Writing English (MUET)', true]
     ];
@@ -16549,7 +16568,7 @@
     //   (had 120 min sehari; coach_hari.pawagamUnit = bilangan unit 10 min sudah dibayar).
     var US_BANGUNAN = [
       ['surau', 'SURAU', 'Solat 5 waktu', true],
-      ['pawagam', 'PAWAGAM', 'Listening English (video)', true]
+      ['pawagam', 'LISTENING', 'Listening English (video)', true]
     ];
     var US_WAKTU = [['subuh', 'SUBUH'], ['zohor', 'ZOHOR'], ['asar', 'ASAR'], ['maghrib', 'MAGHRIB'], ['isyak', 'ISYAK']];
     var PAWAGAM_HAD_UNIT = 12;
@@ -17169,7 +17188,16 @@
     }
     function lukisPentas() {
       if (ptUI.cid) { if (!ptUI.rumah) ptUI.rumah = 1; lukisPentasLama(); return; } // CONTOH dari buku (paparan lama)
-      var TJ = '<div style="font-weight:bold;font-size:1.15rem;margin-top:4px;">SPEAKING — BACA HURAIAN</div>', h = TJ, hari = coachHariId(), U, due = [], baru = [], i, j, x, s, seterus = '', t;
+      var TJ = '<div style="font-weight:bold;font-size:1.15rem;margin-top:4px;">SPEAKING — BACA HURAIAN</div>', h, hari = coachHariId(), U, due = [], baru = [], i, j, x, s, seterus = '', t;
+      if (PB.contoh) { // 18 Nov: page CONTOH KARANGAN DARIPADA BUKU
+        h = '<button type="button" data-pb="tutupc" style="' + PT_BTN + '">‹ BACA HURAIAN</button><div style="font-weight:bold;font-size:1.15rem;margin:6px 0 4px;">CONTOH KARANGAN DARIPADA BUKU</div>';
+        for (i = PT_TOPIK.length - 1; i >= 0; i--) {
+          t = PT_TOPIK[i]; if (!t.contoh && !t.nota) continue;
+          h += '<button type="button" data-pt="lihatcontoh" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + ptE(t.tajuk) + '<span style="font-weight:normal;font-size:0.75rem;"> · Part ' + t.part + '</span> ›</button>';
+        }
+        el('pentas-isi').innerHTML = h; return;
+      }
+      h = '<div style="text-align:right;"><button type="button" data-pb="contoh" style="padding:3px 8px;font-size:0.75rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;">Lihat contoh karangan</button></div>' + TJ;
       if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan...</div>'; return; }
       if (!PB.dimuat) { pbMuat(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan huraian...</div>'; return; }
       U = pbUrutan();
@@ -17179,8 +17207,7 @@
       h += '<div style="font-size:0.8rem;border-left:4px solid #000;padding-left:6px;margin:4px 0;">Tulis / baiki huraian di <b>APP PHONE → Laci Speaking</b>. Di sini baca sahaja.</div>';
       if (PB.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + ptE(PB.mesej) + '</div>';
       s = due[0] || baru[0];
-      if (!U.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;margin-top:6px;">Belum ada huraian. Tulis huraian di <b>app phone → Laci Speaking</b> (topik → soalan → huraian setiap isi).</div>';
-      else if (!s) h += '<div style="border:2px solid #000;border-radius:8px;padding:8px;margin-top:6px;text-align:center;"><b>SIAP!</b> Semua huraian sudah dibaca.' + (seterus ? '<div style="font-size:0.85rem;">Ulang kaji seterusnya: ' + seterus + '</div>' : '') + '</div>';
+      if (!s) h += bacaHabis(ptBank().L.length, U.length, 'Laci Speaking', 'huraian', true, seterus);
       else {
         x = PB.sr[s.id];
         var hs = pbH(s), slot = function(tajuk, hujah, k) {
@@ -17196,13 +17223,7 @@
           var hj = []; for (j = 0; j < s.isi.length; j++) if (s.isi[j].p === i) hj.push(s.isi[j].t);
           h += slot(ptE(s.pilihan[i]) + (s.terbaik === s.pilihan[i] ? ' · TERBAIK' : ''), hj, 'p' + i);
         }
-        h += '<button type="button" data-pb="baca" data-v="' + s.id + '" style="display:block;width:100%;margin-top:8px;padding:10px;font-size:1rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#000;color:#fff;">SUDAH BACA</button>';
-      }
-      var adaC = false;
-      for (i = PT_TOPIK.length - 1; i >= 0; i--) {
-        t = PT_TOPIK[i]; if (!t.contoh && !t.nota) continue;
-        if (!adaC) { h += '<div style="font-weight:bold;margin:14px 0 2px;border-top:2px solid #000;padding-top:4px;">CONTOH DARI BUKU</div>'; adaC = true; }
-        h += '<button type="button" data-pt="lihatcontoh" data-v="' + t.id + '" style="' + PT_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + ptE(t.tajuk) + '<span style="font-weight:normal;font-size:0.75rem;"> · Part ' + t.part + '</span> ›</button>';
+        h += '<button type="button" data-pb="baca" data-v="' + s.id + '" style="display:block;width:100%;margin-top:8px;padding:10px;font-size:1rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#000;color:#fff;">SUDAH BACA → SETERUSNYA ›</button>';
       }
       el('pentas-isi').innerHTML = h;
     }
@@ -17243,7 +17264,7 @@
       if (ptUI.cid) {
         t = ptCari(ptUI.cid);
         if (!t) { ptUI.cid = ''; lukisPentas(); return; }
-        h = kepala('tutupcontoh', 'TOPIK BESAR');
+        h = kepala('tutupcontoh', 'CONTOH KARANGAN');
         h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">CONTOH: ' + ptE(t.tajuk) + '</div>';
         h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;"><b>Situation:</b> ' + ptE(t.situasi);
         if (t.part === 1) h += '<div style="margin-top:4px;"><b>Candidate A:</b> You have to give a presentation to your class. ' + ptE(t.calon[0]) + '</div>';
@@ -17453,7 +17474,7 @@
     };
     function bukaPentas() {
       ptUI.rumah = 0; ptUI.tema = ''; ptUI.id = ''; ptUI.cid = ''; ptUI.edit = false; ptUI.mesej = ''; ptUI.pukal = false; ptUI.tambahS = false; ptUI.tambahT = false;
-      ptData = null; ptMuat = false; ptIdx = null; PB.dimuat = false; PB.mesej = ''; // muat semula — soalan & huraian mungkin diubah di app phone
+      ptData = null; ptMuat = false; ptIdx = null; PB.dimuat = false; PB.mesej = ''; PB.contoh = false; // muat semula — soalan & huraian mungkin diubah di app phone
       usMuat('screen-pentas', 'pentas-info', function() { el('pentas-info').textContent = ''; lukisPentas(); });
     }
     // SUDAH BACA (SR) — selain itu ikut pengendali lama (CONTOH dari buku)
@@ -17463,6 +17484,8 @@
         var t = e.target, box = this;
         while (t && t !== box && !(t.getAttribute && t.getAttribute('data-pb'))) t = t.parentNode;
         if (!t || t === box) return asal.call(this, e);
+        var pb = t.getAttribute('data-pb');
+        if (pb === 'contoh' || pb === 'tutupc') { PB.contoh = pb === 'contoh'; lukisPentas(); try { window.scrollTo(0, 0); } catch (er) {} return; }
         var id = t.getAttribute('data-v'), hari = coachHariId(), x = PB.sr[id], f = x ? Math.min(x.fasa + 1, LWB_SELANG.length - 1) : 0;
         var rek = { fasa: f, due: pnTambahHari(hari, LWB_SELANG[f]), mula: (x && x.mula) || hari, at: (x && x.at) || Date.now() }, ub = { sr: {} };
         ub.sr[id] = rek;
@@ -17941,8 +17964,7 @@
       var TJ = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>';
       // 17 Nov: HARI INI = LACI WRITING (baca karangan dari app phone ikut SR) · Daily Repetition → ARKED WRITING
       // Tulis topik / soalan / karangan → app phone (Laci Writing). Latihan menulis lama (rumah Task 1 / Task 2) tidak dipapar lagi.
-      el('tulis-isi').innerHTML = TJ + lwbLukis() +
-        '<button type="button" data-ark="2" style="display:block;width:100%;text-align:left;margin:8px 0 0;padding:8px;font-size:0.95rem;font-weight:bold;border:3px solid #000;border-radius:8px;background:#fff;color:#000;">DAILY REPETITION → ARKED WRITING ›</button>';
+      el('tulis-isi').innerHTML = TJ + lwbLukis(); // 18 Nov: DAILY REPETITION → ARKED WRITING dipindah ke tab TOPIK
     }
     el('tulis-isi').onclick = function(e) { lwbKlik(e, this); };
     function bukaTulis() {
@@ -18699,9 +18721,10 @@
       for (i = 0; i < USAHA_BG.length; i++) if (USAHA_BG[i][0] === k) b = USAHA_BG[i];
       if (!b || !tb || !tp) return;
       if (tab === 'format' && !USAHA_FORMAT[k]) tab = 'hari';
-      if (tab === 'topik' && k !== 'pawagam') tab = 'hari';
+      if (tab === 'topik' && k !== 'pawagam' && k !== 'tulis') tab = 'hari';
       if (tab === 'sup' && k !== 'nutrisi') tab = 'hari';
       if (k === 'pawagam') pnTopikBuka = tab === 'topik';
+      if (k === 'tulis') tlTopikBuka = tab === 'topik';
       if (k === 'nutrisi') SUP.buka = tab === 'sup';
       for (i = 0; i < tb.children.length; i++) tb.children[i].className = tb.children[i].getAttribute('data-ub') === tab ? 'gym-aktif' : '';
       var lain = tab !== 'hari'; // TIPS / FORMAT → sorok kandungan HARI INI
@@ -18710,7 +18733,7 @@
       tp.style.display = lain ? '' : 'none';
       if (tab === 'tips') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TIPS</div>' + USAHA_TIPS[k](); } catch (e) { tp.textContent = 'Tips tidak dapat dipapar.'; } }
       if (tab === 'format') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">FORMAT</div>' + USAHA_FORMAT[k](); } catch (e) { tp.textContent = 'Format tidak dapat dipapar.'; } }
-      if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
+      if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = k === 'tulis' ? pnLukisTopikTulis() : pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
       if (tab === 'sup') supLukis();
     }
     (function() {
@@ -18721,7 +18744,7 @@
         tb = document.createElement('div'); tb.className = 'gym-topbar'; tb.id = 'ub-tb-' + b[0];
         tb.innerHTML = '<button type="button" data-ub="hari" class="gym-aktif">' + USAHA_IKON[b[0]] + 'HARI INI</button>' +
           (b[0] === 'nutrisi' ? '<button type="button" data-ub="sup">' + USAHA_IKON.sup + 'SUPLEMEN</button>' : '') +
-          (b[0] === 'pawagam' ? '<button type="button" data-ub="topik">' + USAHA_IKON.topik + 'TOPIK</button>' : '') +
+          (b[0] === 'pawagam' || b[0] === 'tulis' ? '<button type="button" data-ub="topik">' + USAHA_IKON.topik + 'TOPIK</button>' : '') +
           '<button type="button" data-ub="tips">' + USAHA_IKON.tips + 'TIPS</button>' +
           (USAHA_FORMAT[b[0]] ? '<button type="button" data-ub="format">' + USAHA_IKON.format + 'FORMAT</button>' : '');
         tb.setAttribute('data-k', b[0]);
@@ -20031,6 +20054,17 @@
       for (q = 0; q < maks; q++) for (i = 0; i < L.topik.length; i++) if (per[L.topik[i].id][q]) out.push(per[L.topik[i].id][q]);
       return out;
     }
+    // 18 Nov: tiada karangan / huraian seterusnya → beritahu apa perlu dibuat di APP PHONE (macam Laci Fakta)
+    //   Q = bilangan soalan · U = soalan yang ADA karangan · preset = laci phone ada butang SALIN PRESET
+    function bacaHabis(Q, U, laci, benda, preset, seterus) {
+      var tambah = 'Tambah topik &amp; soalan baru di <b>app phone → ' + laci + '</b>' + (preset ? ' — guna butang <b>&#128203; Salin Preset</b> (tampal ke AI) → <b>Jana Pukal</b>.' : '.');
+      var h = '<div style="border:2px solid #000;border-radius:8px;padding:8px;margin-top:6px;">';
+      if (!Q) h += '<b>BELUM ADA SOALAN.</b><div style="font-size:0.9rem;margin-top:3px;">' + tambah + '</div>';
+      else if (!U) h += '<b>BELUM ADA ' + benda.toUpperCase() + '.</b><div style="font-size:0.9rem;margin-top:3px;">Ada <b>' + Q + ' soalan</b> menunggu. Tulis ' + benda + ' dulu di <b>app phone → ' + laci + '</b>.</div>';
+      else if (Q > U) h += '<b>SIAP!</b> Semua ' + benda + ' yang ditulis sudah dibaca &amp; masuk SR.<div style="font-size:0.9rem;margin-top:3px;">Ada <b>' + (Q - U) + ' soalan</b> belum ada ' + benda + ' — tulis dulu di <b>app phone → ' + laci + '</b>.</div>';
+      else h += '<b>SIAP!</b> Semua soalan sudah ada ' + benda + ' &amp; sudah dibaca.<div style="font-size:0.9rem;margin-top:3px;">Tiada soalan baru. ' + tambah + '</div>';
+      return h + (seterus ? '<div style="font-size:0.85rem;margin-top:4px;">Ulang kaji seterusnya: ' + seterus + '</div>' : '') + '</div>';
+    }
     function lwbTopik(id, j) { var L = lwbS(j); for (var i = 0; i < L.topik.length; i++) if (L.topik[i].id === id) return L.topik[i]; return null; }
     function lwbLukis(j) {
       j = j || 'writing';
@@ -20044,8 +20078,7 @@
       h += '<div style="font-size:0.8rem;">' + U.length + ' karangan · ' + (U.length - baru.length) + ' dalam SR · ' + due.length + ' ulang kaji + ' + baru.length + ' baru</div>';
       if (L.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + lwEsc(L.mesej) + '</div>';
       s = due[0] || baru[0];
-      if (!U.length) return h + '<div style="border:1px dashed #000;border-radius:6px;padding:6px;margin-top:6px;">Belum ada karangan. Tulis karangan di <b>app phone → Laci ' + nm + '</b> (topik → soalan → karangan).</div></div>';
-      if (!s) return h + '<div style="border:2px solid #000;border-radius:8px;padding:8px;margin-top:6px;text-align:center;"><b>SIAP!</b> Semua karangan sudah dibaca.' + (seterus ? '<div style="font-size:0.85rem;">Ulang kaji seterusnya: ' + seterus + '</div>' : '') + '</div></div>';
+      if (!s) return h + bacaHabis(L.soalan.length, U.length, 'Laci ' + nm, 'karangan', j === 'writing', seterus) + '</div>';
       x = L.sr[s.id];
       var tp = lwbTopik(s.topikId, j), para = String(s.karangan || '').split(/\r?\n/), p = '';
       for (i = 0; i < para.length; i++) if (para[i].replace(/\s+/g, '')) p += '<p style="margin:0 0 8px;">' + lwEsc(para[i]) + '</p>';
