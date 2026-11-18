@@ -10267,7 +10267,7 @@
       else teks = fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
       if (seterus) teks += '\nSeterusnya: ' + seterus.nama + ' — ' + coachTeksMasa(seterus.min);
       teks += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
-      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — app phone › Daily Repetition › SALIN PRESET → JANA PUKAL.';
+      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Listening / Dewan Tulis › tab TOPIK › SALIN PRESET → JANA PUKAL.';
       if (typeof ptPerluTambah === 'function' && ptPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah soalan SPEAKING — app phone › Laci Speaking › SALIN PRESET.';
       return teks;
     }
@@ -13763,7 +13763,7 @@
     // Senarai SEMUA nota Daily Repetition rumah semasa (set → kumpulan → frasa) — sama dengan yang dilatih di ARKED
     function pnSenaraiSemuaNota() {
       var S = pnSetDRE(), h = '', i, j, g;
-      if (!S.length) return '<div>Belum ada nota. Tambah di app phone → Daily Repetition.</div>';
+      if (!S.length) return '<div>Belum ada nota. Tekan SALIN PRESET → JANA PUKAL di atas.</div>';
       for (i = 0; i < S.length; i++) {
         h += '<div style="font-weight:bold;margin:8px 0 2px;border-top:2px solid #000;padding-top:4px;">' + S[i].t + '</div>';
         for (j = 0; j < S[i].g.length; j++) {
@@ -13776,14 +13776,15 @@
     function pnLukisTopikTulis() {
       var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">NOTA WRITING</div>' + pnArkedAtas(2, 'Writing');
       if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
-      return h + pnSenaraiSemuaNota();
+      if (pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
+      return h + pnKotakPreset(false) + pnSenaraiSemuaNota(); // 18 Nov: tambah nota di Kindle (bukan app phone)
     }
     // 18 Nov: TOPIK Listening = SEMUA nota Listening (linking words, language functions, idioms, signal words, facts & opinions...) + kosa kata topik
     function pnLukisTopik() {
       var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">NOTA LISTENING</div>' + pnArkedAtas(1, 'Listening'), S = pnSet(PN_SET_TOPIK), i, g;
       if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
       if (pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
-      h += pnSenaraiSemuaNota();
+      h += pnKotakPreset(false) + pnSenaraiSemuaNota(); // 18 Nov: tambah nota di Kindle (bukan app phone)
       h += '<div style="font-weight:bold;font-size:1.05rem;margin:12px 0 2px;border-top:3px solid #000;padding-top:4px;">TOPIC-SPECIFIC VOCABULARY</div>';
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Perkataan ikut topik. Tekan ikon bunyi untuk dengar · + MP3 untuk muat naik audio.</div>';
       if (!S || !S.g.length) return h + '<div>Belum ada topik.</div>';
@@ -13832,7 +13833,7 @@
       if (!pnData) { pnMuatData(); return h + '<div style="font-size:0.85rem;">Memuatkan nota...</div></div>'; }
       if (pnUI.halaman === 'pawagam' && pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
       // 17 Nov: TAMBAH NOTA (SALIN PRESET / JANA PUKAL) dipindah ke APP PHONE → Daily Repetition
-      if (pnUI.halaman === 'pawagam' && !pnUI.mod && pnPerluTambah()) h += '<div style="border:2px dashed #000;border-radius:8px;padding:5px 7px;margin:6px 0;font-size:0.85rem;"><b>COACH:</b> tambah nota baru hari ini di <b>app phone → Daily Repetition</b>.</div>';
+      if (pnUI.halaman === 'pawagam' && !pnUI.mod && pnPerluTambah()) h += '<div style="border:2px dashed #000;border-radius:8px;padding:5px 7px;margin:6px 0;font-size:0.85rem;"><b>COACH:</b> tambah nota baru hari ini di tab <b>TOPIK</b> (SALIN PRESET → JANA PUKAL).</div>';
       if (pnUI.halaman === 'pawagam' && pnUI.mod === 'kuiz' && pnUI.kuiz) return h + pnLukisKuiz() + '</div>';
       var due = pnDue();
       if (!due.length) {
@@ -13884,7 +13885,7 @@
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Semua nota, termasuk yang bukan ulang kaji hari ini. Tekan untuk baca' + (pnRumah === 'tulis' ? '' : ', dengar audio, muat naik MP3') + ' atau latih bila-bila.</div>';
       var SD = pnSetDRE();
       for (i = 0; i < SD.length; i++) h += '<button type="button" data-pn="set" data-v="' + SD[i].id + '" style="' + PN_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + SD[i].b + ' ›</button>';
-      h += '<div style="font-size:0.85rem;margin-top:6px;border-top:2px solid #000;padding-top:4px;">Nota terakhir ditambah: ' + pnVersi() + '. Tambah nota baru di <b>app phone → Daily Repetition</b>.</div>';
+      h += '<div style="font-size:0.85rem;margin-top:6px;border-top:2px solid #000;padding-top:4px;">Nota terakhir ditambah: ' + pnVersi() + '. Tambah nota baru di tab <b>TOPIK</b> (SALIN PRESET → JANA PUKAL).</div>';
       return h;
     }
     function pnAcak(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
@@ -18769,6 +18770,8 @@
       }
     })();
     el('ub-tips-pawagam').onclick = function(e) { if (pnTopikBuka) pnKlik(e, this); }; // audio / + MP3 dalam tab TOPIK
+    el('ub-tips-tulis').onclick = function(e) { if (tlTopikBuka) pnKlik(e, this); }; // SALIN PRESET / JANA PUKAL dalam tab TOPIK
+    el('ub-tips-pustaka').onclick = function(e) { if (rdTopikBuka) rdTopikKlik(e, this); }; // SALIN PRESET / JANA PUKAL Reading
     el('ub-tips-nutrisi').onclick = function(e) { if (SUP.buka) supKlik(e); }; // tab SUPLEMEN
     // Setiap kali bangunan dibuka → kembali ke tab HARI INI
     bukaTaman = (function(f) { return function() { usahaTab('taman', 'hari'); return f.apply(this, arguments); }; })(bukaTaman);
@@ -19840,7 +19843,7 @@
     // coach/reading_sr { sr: { id: { fasa, due, mula } } } · betul → diulang ikut jadual (1, 3, 7, 14, 30, 60 hari) · salah → diulang esok
     var RD_JENIS = [['sin', 'SINONIM', 'Replace the underlined word with the most appropriate synonym.'], ['ant', 'ANTONIM', 'Choose the word most opposite in meaning to the underlined word.'], ['idm', 'IDIOM', 'What does the underlined idiom mean?']];
     var RD_SELANG = [1, 3, 7, 14, 30, 60], RD_BARU = 10, RD_SESI = 10;
-    var RD = { bank: null, sr: {}, muat: false, kuiz: null, mesej: '' }, rdTopikBuka = false;
+    var RD = { bank: null, sr: {}, muat: false, kuiz: null, mesej: '', ui: { preset: false, pukal: false, jenis: 'sin', syor: '', teks: '' } }, rdTopikBuka = false;
     function rdMuat() {
       if (RD.bank || RD.muat || !currentUser) return;
       RD.muat = true;
@@ -19874,10 +19877,11 @@
         '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:0 0 6px;font-size:0.9rem;">Reading tiada latihan yang konsisten — cara terbaik ialah <b>BANYAK MEMBACA</b> (artikel, berita, buku, jurnal). Nota di bawah membantu kosa kata semasa membaca.</div>' +
         pnArkedAtas(3, 'Reading', 'LATIHAN AYAT'), k, L, i, it;
       if (!RD.bank) { rdMuat(); return h + '<div>Memuatkan nota...</div>'; }
+      h += rdKotakPreset();
       for (k = 0; k < RD_JENIS.length; k++) {
         L = RD.bank[RD_JENIS[k][0]];
         h += '<div style="font-weight:bold;margin:8px 0 2px;border-top:2px solid #000;padding-top:4px;">' + RD_JENIS[k][1] + ' (' + L.length + ')</div>';
-        if (!L.length) { h += '<div style="font-size:0.85rem;">Belum ada. Tambah di app phone → Laci Reading → ' + RD_JENIS[k][1] + ' (Salin Preset → Jana Pukal).</div>'; continue; }
+        if (!L.length) { h += '<div style="font-size:0.85rem;">Belum ada. Tekan SALIN PRESET → ' + RD_JENIS[k][1] + ' di atas.</div>'; continue; }
         for (i = 0; i < L.length; i++) {
           it = L[i];
           h += '<div style="border-bottom:1px solid #000;padding:3px 0;"><b>' + puE(it.w) + '</b> ' + (k === 1 ? '&#8800;' : '=') + ' <b>' + puE(it.j) + '</b>' + (it.m ? ' <span style="font-size:0.8rem;">(' + puE(it.m) + ')</span>' : '') +
@@ -19885,6 +19889,102 @@
         }
       }
       return h;
+    }
+    // 18 Nov: TAMBAH NOTA READING di Kindle (tab TOPIK) — SALIN PRESET (pilih jenis) → AI → JANA PUKAL
+    //   Baris: SIN: / ANT: / IDM: ayat dengan [sasaran] | jawapan betul | salah 1 | salah 2 | maksud BM
+    function rdPreset(j, syor) {
+      var L = RD.bank[j], idm = j === 'idm', ant = j === 'ant', tag = j.toUpperCase() + ': ', w = [], i;
+      for (i = 0; i < L.length; i++) w.push(L[i].w);
+      syor = String(syor || '').replace(/^\s+|\s+$/g, '');
+      return [
+        idm ? 'TUGAS: Beri sekurang-kurangnya 30 IDIOM bahasa Inggeris (idiomatic expressions) BARU yang biasa muncul dalam teks MUET (Reading & Listening) dan BELUM ADA dalam senarai saya di bawah. Setiap idiom digunakan dalam SATU ayat konteks.'
+          : 'TUGAS: Beri sekurang-kurangnya 30 soalan ' + (ant ? 'ANTONIM' : 'SINONIM') + ' BARU gaya buku MUET (Pre-Reading Activities: "' + (ant ? RD_JENIS[1][2] : 'Replace each underlined word with the most appropriate synonym.') + '"). Perkataan sasaran BELUM ADA dalam senarai saya di bawah. Tahap MUET band 4-5 (kosa kata akademik).',
+        syor ? 'PERKARA DISYORKAN: "' + syor + '" — MULAKAN dengan seberapa banyak soalan berkaitan perkara ini, kemudian topik lain seperti biasa.' : 'Campur topik MUET: masyarakat & budaya, kewangan & kepenggunaan, sains & teknologi, kesihatan & alam sekitar, pendidikan.',
+        '',
+        'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL dalam app — satu soalan satu baris, ikut tepat, mula dengan ' + tag + '):',
+        idm ? tag + 'Ayat yang menggunakan [idiom] dalam kurungan siku | maksud betul (English ringkas) | maksud salah 1 | maksud salah 2 | maksud dalam BM'
+          : tag + 'Ayat dengan [perkataan sasaran] dalam kurungan siku | jawapan betul | pilihan salah 1 | pilihan salah 2 | maksud BM perkataan sasaran',
+        'Contoh: ' + tag + (idm ? 'You will need to [burn the midnight oil] if you want to finish the report by tomorrow. | to work late into the night | to waste electricity | to go to bed early | bekerja hingga lewat malam'
+          : ant ? 'The instruction from the top management is [vague], so the departments have to meet again. | clear | confusing | brief | samar-samar'
+          : 'The instruction from the top management is [vague], so the departments have to meet again. | ambiguous | baffling | unfavourable | samar-samar'),
+        '',
+        'PERATURAN:',
+        '1. Hanya SATU [ ] dalam setiap ayat.',
+        '2. Pilihan salah mesti munasabah (makna hampir / berkaitan) supaya mencabar, tetapi hanya SATU jawapan paling tepat dalam konteks ayat.',
+        '3. Jangan guna aksara | dalam ayat. Tiada nombor di depan baris, tiada emoji.',
+        '4. Output: SATU codebox teks biasa sahaja, tanpa penerangan.',
+        '',
+        'SENARAI SAYA (' + L.length + '): ' + (w.join(', ') || '(kosong)')
+      ].join('\n');
+    }
+    function rdPukal(teks, jAsal) {
+      var r = { n: 0, ulang: 0, salah: 0 }, ada = {}, L = String(teks || '').split(/\r?\n/), i, k, gr, j, m, bh, w, kunci;
+      kunci = function(j, w) { return j + ':' + String(w).toLowerCase().replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); };
+      for (k = 0; k < RD_JENIS.length; k++) for (i = 0; i < RD.bank[RD_JENIS[k][0]].length; i++) ada[kunci(RD_JENIS[k][0], RD.bank[RD_JENIS[k][0]][i].w)] = 1;
+      for (i = 0; i < L.length; i++) {
+        gr = L[i].replace(/^\s*([-*•>]|\d+[.)])\s*/, '').replace(/\*\*/g, '').replace(/^\s+|\s+$/g, ''); j = jAsal;
+        if (!gr || /^```/.test(gr)) continue;
+        m = gr.match(/^(SINONIM|ANTONIM|IDIOM|SIN|ANT|IDM)\s*:\s*(.+)$/i);
+        if (m) { m[1] = m[1].toUpperCase(); j = m[1].indexOf('SIN') === 0 ? 'sin' : m[1].indexOf('ANT') === 0 ? 'ant' : 'idm'; gr = m[2]; }
+        bh = gr.split('|'); for (k = 0; k < bh.length; k++) bh[k] = bh[k].replace(/^\s+|\s+$/g, '');
+        w = ((bh[0] || '').match(/\[([^\]]+)\]/) || [])[1];
+        if (bh.length < 4 || !w || !bh[1] || !bh[2] || !bh[3]) { r.salah++; continue; }
+        w = w.replace(/^\s+|\s+$/g, '');
+        if (ada[kunci(j, w)]) { r.ulang++; continue; }
+        ada[kunci(j, w)] = 1;
+        RD.bank[j].push({ id: j + Date.now().toString(36) + r.n + Math.floor(Math.random() * 1000), s: bh[0], w: w, j: bh[1], x: [bh[2], bh[3]], m: bh[4] || '' });
+        r.n++;
+      }
+      return r;
+    }
+    function rdKotakPreset() {
+      var u = RD.ui, h = '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">TAMBAH NOTA DENGAN AI</div>' +
+        '<div style="font-size:0.85rem;">Tekan SALIN PRESET → pilih jenis → tampal ke AI → salin jawapan AI → JANA PUKAL → tampal → SIMPAN.</div>' +
+        '<button type="button" data-rdt="preset" style="' + (u.preset ? PN_BTNA : PN_BTN) + '">SALIN PRESET</button><button type="button" data-rdt="pukal" style="' + (u.pukal ? PN_BTNA : PN_BTN) + '">JANA PUKAL</button>', k;
+      if (RD.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0 0;">' + puE(RD.mesej) + '</div>';
+      if (u.preset) {
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JENIS:</div><div>';
+        for (k = 0; k < RD_JENIS.length; k++) h += '<button type="button" data-rdt="jenis" data-v="' + RD_JENIS[k][0] + '" style="' + (u.jenis === RD_JENIS[k][0] ? PN_BTNA : PN_BTN) + '">' + RD_JENIS[k][1] + '</button>';
+        h += '</div><div style="font-weight:bold;margin-top:6px;">ADA PERKARA YANG DISYORKAN?</div>' +
+          '<input id="rd-syor" type="text" value="' + puE(u.syor) + '" placeholder="Perkara disyorkan (pilihan) — cth: kesihatan" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;">' +
+          '<div><button type="button" data-rdt="salin" style="' + PN_BTNA + '">SALIN PRESET</button><button type="button" data-rdt="preset" style="' + PN_BTN + '">BATAL</button></div></div>';
+      }
+      if (u.teks) h += '<textarea readonly style="width:100%;height:160px;margin-top:6px;font-size:0.75rem;border:2px solid #000;">' + puE(u.teks) + '</textarea>';
+      if (u.pukal) h += '<div style="border:3px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">JANA PUKAL</div>' +
+        '<div style="font-size:0.8rem;">Tampal jawapan AI → SIMPAN. Baris mula dengan SIN: / ANT: / IDM:. Perkataan yang sudah ada diabaikan.</div>' +
+        '<textarea id="rd-pukal" placeholder="SIN: ayat dengan [perkataan] | jawapan | salah 1 | salah 2 | maksud BM" style="width:100%;height:170px;margin-top:6px;font-size:0.85rem;border:2px solid #000;border-radius:6px;padding:5px;box-sizing:border-box;"></textarea>' +
+        '<div><button type="button" data-rdt="simpan" style="' + PN_BTNA + '">SIMPAN</button><button type="button" data-rdt="pukal" style="' + PN_BTN + '">TUTUP</button></div></div>';
+      return h + '</div>';
+    }
+    function rdTopikKlik(e, box) {
+      var a = hlCari(e.target, box, 'data-rdt'), u = RD.ui, lukis = function() { box.innerHTML = rdLukisTopik(); };
+      if (a === null || !RD.bank || !currentUser) return;
+      if (a !== 'jenis') RD.mesej = '';
+      if (a === 'preset') { u.preset = !u.preset; u.teks = ''; }
+      else if (a === 'pukal') u.pukal = !u.pukal;
+      else if (a === 'jenis') { u.syor = (el('rd-syor') || {}).value || u.syor; u.jenis = hlCari(e.target, box, 'data-v'); }
+      else if (a === 'salin') {
+        u.syor = ((el('rd-syor') || {}).value || '').replace(/^\s+|\s+$/g, ''); u.preset = false;
+        var teks = rdPreset(u.jenis, u.syor), siap = function() { RD.mesej = 'PRESET ' + RD_JENIS[u.jenis === 'sin' ? 0 : u.jenis === 'ant' ? 1 : 2][1] + ' DISALIN. Tampal ke AI → salin jawapan → JANA PUKAL → SIMPAN.'; u.teks = ''; lukis(); };
+        var gagal = function() {
+          var ta = document.createElement('textarea'), ok = false;
+          ta.value = teks; ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.focus(); ta.select();
+          try { ok = document.execCommand('copy'); } catch (x) {}
+          document.body.removeChild(ta);
+          if (ok) siap(); else { u.teks = teks; RD.mesej = 'Peranti ini tak benarkan salin automatik. Tekan lama teks di bawah → Pilih semua → Salin.'; lukis(); }
+        };
+        try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(teks).then(siap, gagal); return; } } catch (x) {}
+        gagal(); return;
+      }
+      else if (a === 'simpan') {
+        var r = rdPukal((el('rd-pukal') || {}).value, u.jenis);
+        if (!r.n) { alert('Tiada soalan baru.' + (r.ulang ? ' ' + r.ulang + ' sudah ada.' : '') + (r.salah ? ' ' + r.salah + ' baris salah format.' : '')); return; }
+        u.pukal = false; u.teks = '';
+        RD.mesej = 'JANA PUKAL: ' + r.n + ' soalan baru' + (r.ulang ? ' · ' + r.ulang + ' sudah ada' : '') + (r.salah ? ' · ' + r.salah + ' baris salah format' : '') + '.';
+        kol('coach').doc('reading_bank').set({ sin: RD.bank.sin, ant: RD.bank.ant, idm: RD.bank.idm, at: Date.now() }).catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
+      }
+      lukis();
     }
     function rdLukisArked() {
       var q = RD.kuiz, h, n, i, s, kls, jum, buka;
@@ -19910,7 +20010,7 @@
       n = rdPerlu(); buka = n > 0; jum = rdSemua().length;
       h = '<button type="button" class="mini-kad' + (buka ? '' : ' mini-tutup') + '" data-rd="mula"><span class="mini-kedai">' + svgKedai(buka ? 'buka' : 'tutup') + '</span>' +
         '<span class="mini-teks">SINONIM · ANTONIM · IDIOM<span class="gb-sub" style="white-space:pre-line;">' +
-        (buka ? 'BUKA\n' + n + ' soalan hari ini' : jum ? 'TUTUP – SIAP HARI INI\nUlang kaji ikut jadual' : 'TUTUP – BANK KOSONG\nTambah di app phone → Laci Reading') + '</span></span></button>';
+        (buka ? 'BUKA\n' + n + ' soalan hari ini' : jum ? 'TUTUP – SIAP HARI INI\nUlang kaji ikut jadual' : 'TUTUP – BANK KOSONG\nTambah di Perpustakaan › tab TOPIK') + '</span></span></button>';
       return h + '<div class="jw-info">Latihan dalam bentuk ayat (gaya buku MUET). ' + jum + ' soalan dalam bank · maks ' + RD_BARU + ' soalan baru sehari · ' + RD_SESI + ' soalan setiap pusingan.</div>';
     }
     el('ark-hal-3').onclick = function(e) {
@@ -20241,7 +20341,7 @@
           'Tekan level semasa → BACA DULU nota hari ini (bersama beberapa kumpulan lain sebagai perbandingan) → SIAP BACA → MULA LATIHAN.',
           'Latihan 5 soalan gaya Jutawan. Lulus 80% → level naik &amp; nota diulang lagi ikut jadual (1, 2, 4, 7, 14, 30 hari). Tak lulus → ulang esok.',
           'Tiada nota perlu diulang → kedai TUTUP sampai Coach buka semula ikut masa.',
-          'Nota baru ditambah di app phone → Daily Repetition. LIHAT SEMUA NOTA = semua nota, boleh baca &amp; latih bila-bila.'].join('</li><li>') + '</li></ul>';
+          'Nota baru ditambah di tab TOPIK (Listening / Dewan Tulis) → SALIN PRESET → JANA PUKAL. LIHAT SEMUA NOTA = semua nota, boleh baca &amp; latih bila-bila.'].join('</li><li>') + '</li></ul>';
         el('gm-panduan-isi').innerHTML += h;
       };
     })(lukisPanduan);
@@ -20369,7 +20469,7 @@
       pnRumah = 'tulis'; if (pnVersi() < hari) a.push('Writing');
       pnRumah = lama;
       b.style.display = a.length ? '' : 'none';
-      b.innerHTML = '<b>COACH:</b> tambah nota baru hari ini di <b>app phone → Daily Repetition</b> (' + a.join(' &amp; ') + ').';
+      b.innerHTML = '<b>COACH:</b> tambah nota baru hari ini di <b>tab TOPIK</b> (' + a.join(' &amp; ') + ') → SALIN PRESET → JANA PUKAL.';
     }
     bukaCoach = (function(f) { return function() { var r = f.apply(this, arguments); if (!pnData) pnMuatData(); coachDreNota(); return r; }; })(bukaCoach);
 
