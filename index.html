@@ -16607,13 +16607,13 @@
     // 1 Part = PW_MINIT_PART minit Listening → masuk minit listening hari ini + stok (sama macam + LISTENING video) + Ringgit Kuning Pawagam.
     var PW_HAL = ['KERTAS LISTENING', 'VIDEO'], PW_MINIT_PART = 7, pwHal = 0;
     var pwData = null, pwMuat = false, pwUI = { hari: '', part: 0, mesej: '' };
-    (function() { var sc = el('screen-pawagam'), t = document.createElement('div'); t.id = 'pw-titik'; t.className = 'hl-titik'; sc.insertBefore(t, sc.querySelector('.gm-alat')); })();
+    // Titik duduk DALAM tab HARI INI sahaja (bawah bar tab) — tab TOPIK / TIPS / FORMAT tidak terjejas
+    (function() { var w = el('pw-wrap'), t = document.createElement('div'); t.id = 'pw-titik'; t.className = 'hl-titik'; w.insertBefore(t, w.firstChild); })();
     function pwPergi(i) {
       pwHal = i;
       var t = el('pw-titik'), h = '', k;
       for (k = 0; k < PW_HAL.length; k++) h += '<button type="button" class="hlt' + (k === i ? ' on' : '') + '" data-hl="' + k + '"><span></span></button>';
-      t.innerHTML = h;
-      el('screen-pawagam').querySelector('.gm-alat-tajuk').textContent = 'PAWAGAM · ' + PW_HAL[i];
+      t.innerHTML = h + '<div style="font-size:0.75rem;font-weight:bold;text-align:center;width:100%;">' + PW_HAL[i] + '</div>';
       el('pw-kertas').style.display = i === 0 ? '' : 'none';
       el('coach-usaha').style.display = i === 1 ? '' : 'none';
       if (i === 0) lukisPwKertas(); else coachLukisUsaha();
