@@ -16173,7 +16173,20 @@
       ['KUNING CAIR', '#ccc', 'BAIK — badan cukup air.'],
       ['KUNING PEKAT', '#555', 'Kurang air — minum 1 gelas sekarang.']
     ];
-    var makmalUI = { ml: '' };
+    var makmalUI = { ml: '', teguk: 0 };
+    // 18 Nov: GELAS — minum ikut TEGUK (10 ml setiap tekan) · MINUM PUKAL = banyak teguk sekali gus (cth 100 ml = 10 teguk)
+    var MAKMAL_TEGUK = 10;
+    function mkGelas(k, btn, btnA) {
+      var ml = makmalUI.teguk || 0;
+      return '<div style="border:2px dashed #000;border-radius:8px;padding:5px 7px;margin:4px 0;background:#fff;color:#000;">' +
+        '<div style="font-size:0.9rem;">Gelas ini: <b>' + Math.round(ml / MAKMAL_TEGUK) + ' teguk · ' + ml + ' ml</b></div>' +
+        '<button type="button" data-mk="teguk" style="' + btnA + 'padding:10px 14px;font-size:1rem;">+ 1 TEGUK (' + MAKMAL_TEGUK + ' ml)</button>' +
+        (ml ? '<button type="button" data-mk="kurang" style="' + btn + '">− 1 TEGUK</button>' : '') +
+        '<div style="font-size:0.8rem;margin-top:6px;"><b>MINUM PUKAL:</b> <button type="button" data-mk="pukal" data-v="50" style="' + btn + '">+50</button><button type="button" data-mk="pukal" data-v="100" style="' + btn + '">+100</button><button type="button" data-mk="pukal" data-v="250" style="' + btn + '">+250</button>' +
+        '<br>atau: <input type="text" inputmode="numeric" id="makmal-ml" style="width:70px;font-size:1rem;padding:3px;border:2px solid #000;"> ml <button type="button" data-mk="pukalin" style="' + btn + '">TAMBAH</button></div>' +
+        '<div style="margin-top:6px;">' + (ml ? '<button type="button" data-mk="siap" data-k="' + k + '" style="' + btnA + '">SIMPAN ' + ml + ' ml</button>' : '') +
+        '<button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div></div>';
+    }
     function lukisMakmal() {
       var box = el('makmal-isi');
       if (!box) return;
@@ -16199,9 +16212,7 @@
           (r ? (r.s === 'BUAT' ? 'SIAP ' + (r.ml || 0) + ' ml' + (r.lewat ? ' (lewat)' : '') : r.s === 'GANTI' ? 'GANTI' : 'TAK DAPAT') : (st === 'SEKARANG' ? 'SEKARANG' : st === 'ABAI' ? (kini >= j.tidur ? 'tiada denda' : 'DIABAIKAN') : 'nanti')) + '</b>';
         if (aktif) {
           if (makmalUI.ml === k) {
-            h += '<div>Berapa ml? <button type="button" data-mk="ml" data-k="' + k + '" data-v="250" style="' + btn + '">250</button><button type="button" data-mk="ml" data-k="' + k + '" data-v="350" style="' + btn + '">350</button>' +
-              '<button type="button" data-mk="ml" data-k="' + k + '" data-v="500" style="' + btn + '">500</button><br>atau: <input type="text" inputmode="numeric" id="makmal-ml" style="width:70px;font-size:1rem;padding:3px;border:2px solid #000;"> ml ' +
-              '<button type="button" data-mk="mlin" data-k="' + k + '" style="' + btnA + '">SIMPAN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
+            h += mkGelas(k, btn, btnA);
           } else if (makmalUI.dapat === k) {
             h += '<div>Sebab tak dapat: <button type="button" data-mk="sebab" data-k="' + k + '" data-v="SAKIT" style="' + btn + '">SAKIT</button><button type="button" data-mk="sebab" data-k="' + k + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
           } else h += '<div><button type="button" data-mk="minum" data-k="' + k + '" style="' + (st === 'SEKARANG' ? btnA : btn) + '">' + (st === 'ABAI' ? 'MINUM (lewat)' : 'MINUM') + '</button>' +
@@ -16214,9 +16225,7 @@
       }
       // Minum luar jadual
       h += '<div style="margin-top:4px;font-size:0.85rem;">Minum luar jadual: ' +
-        (makmalUI.ml === 'luar' ? '<button type="button" data-mk="ml" data-k="luar" data-v="250" style="' + btn + '">250</button><button type="button" data-mk="ml" data-k="luar" data-v="500" style="' + btn + '">500</button>' +
-          '<input type="text" inputmode="numeric" id="makmal-ml" style="width:70px;font-size:1rem;padding:3px;border:2px solid #000;"> ml <button type="button" data-mk="mlin" data-k="luar" style="' + btnA + '">SIMPAN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button>'
-          : '<button type="button" data-mk="minum" data-k="luar" style="' + btn + '">+ MINUM</button>') + '</div>';
+        (makmalUI.ml === 'luar' ? mkGelas('luar', btn, btnA) : '<button type="button" data-mk="minum" data-k="luar" style="' + btn + '">+ MINUM</button>') + '</div>';
       // Ujian kencing
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:8px 0 4px;"><b>UJIAN KENCING</b> (' + kc.length + ' kali hari ini)<div style="font-size:0.8rem;">Selepas kencing, pilih warna yang paling hampir:</div>';
       for (i = 0; i < MAKMAL_WARNA.length; i++) {
@@ -16233,8 +16242,6 @@
       }
       h += '</div>';
       box.innerHTML = h;
-      var inp = document.getElementById('makmal-ml');
-      if (inp) { try { inp.focus(); } catch (e) {} }
     }
     function bukaMakmal(slot) {
       if (!currentUser) return;
@@ -16278,8 +16285,22 @@
       if (!t || t === this || !currentUser) return;
       var mk = t.getAttribute('data-mk'), k = t.getAttribute('data-k') || '';
       if (mk === 'coach') { bukaCoach(false); return; }
-      if (mk === 'minum') { makmalUI.ml = k; makmalUI.dapat = ''; lukisMakmal(); return; }
-      if (mk === 'batal') { makmalUI.ml = ''; makmalUI.dapat = ''; lukisMakmal(); return; }
+      if (mk === 'minum') { makmalUI.ml = k; makmalUI.dapat = ''; makmalUI.teguk = 0; lukisMakmal(); return; }
+      if (mk === 'batal') { makmalUI.ml = ''; makmalUI.dapat = ''; makmalUI.teguk = 0; lukisMakmal(); return; }
+      // GELAS: teguk / pukal dikumpul dulu → SIMPAN sekali (satu rekod)
+      if (mk === 'teguk') { makmalUI.teguk = (makmalUI.teguk || 0) + MAKMAL_TEGUK; lukisMakmal(); return; }
+      if (mk === 'kurang') { makmalUI.teguk = Math.max(0, (makmalUI.teguk || 0) - MAKMAL_TEGUK); lukisMakmal(); return; }
+      if (mk === 'pukal') { makmalUI.teguk = (makmalUI.teguk || 0) + parseInt(t.getAttribute('data-v'), 10); lukisMakmal(); return; }
+      if (mk === 'pukalin') {
+        var inpP = document.getElementById('makmal-ml'), nP = parseInt(((inpP && inpP.value) || '').replace(/[^0-9]/g, ''), 10);
+        if (!(nP > 0 && nP <= 3000)) { alert('Masukkan jumlah ml (1 – 3000).'); return; }
+        makmalUI.teguk = (makmalUI.teguk || 0) + nP; lukisMakmal(); return;
+      }
+      if (mk === 'siap') {
+        var mlS = makmalUI.teguk || 0;
+        if (!(mlS > 0 && mlS <= 3000)) { alert('Jumlah ml mesti 1 – 3000.'); return; }
+        makmalUI.teguk = 0; makmalSimpanMl(k, mlS); return;
+      }
       if (mk === 'dapat') { makmalUI.dapat = k; makmalUI.ml = ''; lukisMakmal(); return; }
       if (mk === 'sebab') {
         var dK = { tugas: {} };
