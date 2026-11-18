@@ -13569,14 +13569,19 @@
     // Baca teks format:  G: idSet | idKumpulanBaru | Tajuk English | Maksud Melayu | item | item ...   ·   F: idKumpulan | item | item ...
     //   item = 'frasa' ATAU 'perkataan = maksud'. Pulang { g, f, ulang, salah }
     function pnPukal(teks) {
-      var L = String(teks || '').split(/\r?\n/), r = { g: 0, f: 0, ulang: 0, salah: 0 }, hari = coachHariId(), baru = [], i, j, m, bh, it, sid, gid, items, gx, ada;
+      var L = String(teks || '').split(/\r?\n/), r = { g: 0, f: 0, ulang: 0, salah: 0, t: 0, tr: {} }, hari = coachHariId(), baru = [], i, j, m, bh, it, sid, gid, items, gx, ada;
       var item = function(x) { var p = x.split('='); if (p.length > 1) { var w = p.shift().replace(/^\s+|\s+$/g, ''), mk = p.join('=').replace(/^\s+|\s+$/g, ''); return w ? { w: w, m: mk } : null; } return x || null; };
       var kunci = function(x) { return JSON.stringify(pnItem(x)); };
       for (i = 0; i < L.length; i++) {
         var gr = L[i].replace(/^\s*([-*•>]|\d+[.)])\s*/, '').replace(/\*\*/g, '').replace(/^\s+|\s+$/g, '');
         if (!gr || /^```/.test(gr)) continue;
-        m = gr.match(/^([GF])\s*:\s*(.+)$/i);
+        m = gr.match(/^([GFT])\s*:\s*(.+)$/i);
         if (!m) { r.salah++; continue; }
+        if (m[1].toUpperCase() === 'T') { // 18 Nov: T: frasa = terjemahan BM (untuk game ARKED)
+          var tp = m[2].split('='), fk = (tp.shift() || '').replace(/^\s+|\s+$/g, ''), tv = tp.join('=').replace(/^\s+|\s+$/g, '');
+          if (fk && tv) { r.tr[pnTrKey(fk)] = tv; r.t++; } else r.salah++;
+          continue;
+        }
         bh = m[2].split('|'); for (j = 0; j < bh.length; j++) bh[j] = bh[j].replace(/^\s+|\s+$/g, '');
         if (m[1].toUpperCase() === 'G') {
           sid = bh.shift(); gid = (bh.shift() || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
@@ -13639,6 +13644,7 @@
         'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL dalam app — ikut tepat, satu baris satu entri):',
         'G: idSet | idKumpulanBaru | Tajuk English | Maksud Melayu | frasa 1 | frasa 2 | frasa 3 | frasa 4',
         'F: idKumpulanSediaAda | frasa baru | frasa baru',
+        'T: frasa = terjemahan BM   ← WAJIB untuk SETIAP frasa baru dalam G / F (frasa ditulis TEPAT sama). Setiap kumpulan baru (G) akan jadi GAME baru di Arked.',
         '',
         'PERATURAN:',
         '1. G = kumpulan BARU dalam set sedia ada (sekurang-kurangnya 4 item). F = tambah item ke HUJUNG kumpulan sedia ada.',
@@ -13670,6 +13676,8 @@
         '<div style="font-size:0.85rem;">1. Tekan SALIN PRESET → tampal ke AI.<br>2. Salin jawapan AI.<br>3. Tekan JANA PUKAL → tampal → SIMPAN.<br>Nota lama kekal — senarai bertambah setiap hari.</div>';
       else h += '<div style="font-weight:bold;">TAMBAH NOTA DENGAN AI</div><div style="font-size:0.85rem;">Nota terakhir ditambah: ' + pnVersi() + '. Tekan SALIN PRESET → tampal ke AI → JANA PUKAL.</div>';
       h += '<button type="button" data-pn="preset" style="' + (pnUI.tanyaSyor ? PN_BTNA : PN_BTN) + '">SALIN PRESET</button><button type="button" data-pn="bukapukal" style="' + (pnUI.pukal ? PN_BTNA : PN_BTN) + '">JANA PUKAL</button>';
+      var tb = pnTanpaTr().length; // 18 Nov: frasa tanpa terjemahan (game Arked perlukan terjemahan)
+      if (tb) h += '<button type="button" data-pn="presettr" style="' + PN_BTN + '">PRESET TERJEMAHAN (' + tb + ' belum)</button>';
       if (pnUI.tanyaSyor) h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><div style="font-weight:bold;">ADA PERKARA YANG DISYORKAN?</div>' +
         '<div style="font-size:0.8rem;">Contoh: expressions for giving advice. AI akan beri nota berkaitan perkara ini dahulu, kemudian nota lain seperti biasa. Biar kosong jika tiada.</div>' +
         '<input id="pn-syor" type="text" value="' + String(pnUI.syor || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;') + '" placeholder="Perkara disyorkan (pilihan)" style="width:100%;font-size:0.95rem;border:2px solid #000;border-radius:6px;padding:5px;margin-top:4px;box-sizing:border-box;">' +
@@ -13717,9 +13725,20 @@
       return '<button type="button" data-pn="main" data-v="' + id + '" style="padding:2px 6px;margin-left:4px;border:2px ' + (ada ? 'solid #000' : 'dashed #999') + ';border-radius:5px;background:#fff;color:' + (ada ? '#000' : '#999') + ';"' + (ada ? '' : ' disabled') + '>' + PN_IKON + '</button>' +
         '<button type="button" data-pn="naik" data-v="' + id + '" style="padding:2px 6px;margin-left:4px;font-size:0.72rem;font-weight:bold;border:2px solid #000;border-radius:5px;background:#fff;">' + (ada ? 'TUKAR MP3' : '+ MP3') + '</button>';
     }
+    // 18 Nov: terjemahan frasa (pnData.tr) — untuk game Arked & nota TOPIK
+    function pnTrKey(x) { return String(x || '').toLowerCase().replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
+    function pnTr(x) { return typeof x === 'string' ? (((pnData && pnData.tr) || {})[pnTrKey(x)] || '') : (x[1] || ''); }
+    function pnTanpaTr() { var a = [], G = pnSemuaGrp(), i, j; for (i = 0; i < G.length; i++) for (j = 0; j < G[i].f.length; j++) if (typeof G[i].f[j] === 'string' && !pnTr(G[i].f[j])) a.push(G[i].f[j]); return a; }
+    function pnPresetTr() {
+      return ['TUGAS: Beri terjemahan Bahasa Melayu yang ringkas & tepat untuk setiap frasa English di bawah (ungkapan MUET ' + (pnRumah === 'tulis' ? 'Writing' : 'Listening / Speaking') + ').',
+        'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL): satu baris satu frasa —',
+        'T: frasa English = terjemahan BM',
+        'Frasa mesti ditulis TEPAT sama seperti di bawah (termasuk ... dan tanda baca). Tiada nombor di depan baris. Output: SATU codebox teks biasa sahaja.',
+        '', 'FRASA:'].concat(pnTanpaTr()).join('\n');
+    }
     function pnSenaraiFrasa(g) {
       var h = '', i;
-      for (i = 0; i < g.f.length; i++) h += '<div style="margin:3px 0;">- <b>' + pnTeks(g.f[i]) + '</b>' + (pnRumah === 'tulis' ? '' : pnButangAudio(g.id + '-' + i)) + '</div>';
+      for (i = 0; i < g.f.length; i++) h += '<div style="margin:3px 0;">- <b>' + pnTeks(g.f[i]) + '</b>' + (typeof g.f[i] === 'string' && pnTr(g.f[i]) ? ' — <i>' + puE(pnTr(g.f[i])) + '</i>' : '') + (pnRumah === 'tulis' ? '' : pnButangAudio(g.id + '-' + i)) + '</div>';
       return h;
     }
     // Bacaan = kumpulan HARI INI + maks 3 kumpulan lain dari set yang sama (supaya SEMUA pilihan jawapan latihan ada dalam bacaan)
@@ -13966,12 +13985,14 @@
       if (a === 'bukapukal') { pnUI.pukal = !pnUI.pukal; pnRender(); return true; }
       if (a === 'simpanpukal') {
         var rp = pnPukal((el('pn-pukal') || {}).value);
-        if (!rp.g && !rp.f) { alert('Tiada nota baru dijumpai.' + (rp.ulang ? ' ' + rp.ulang + ' baris sudah ada.' : '') + (rp.salah ? ' ' + rp.salah + ' baris tidak ikut format.' : '')); return true; }
+        if (!rp.g && !rp.f && !rp.t) { alert('Tiada nota baru dijumpai.' + (rp.ulang ? ' ' + rp.ulang + ' baris sudah ada.' : '') + (rp.salah ? ' ' + rp.salah + ' baris tidak ikut format.' : '')); return true; }
         pnUI.pukal = false; pnUI.preset = '';
-        pnUI.mesej = 'JANA PUKAL: ' + rp.g + ' kumpulan baru, ' + rp.f + ' tambahan item' + (rp.ulang ? ' · ' + rp.ulang + ' sudah ada (diabaikan)' : '') + (rp.salah ? ' · ' + rp.salah + ' baris salah format' : '') + '.';
-        kol('coach').doc('pawagam_bank').set(pnBank).catch(function(e) { alert('Gagal simpan: ' + ((e && e.message) || e)); });
+        pnUI.mesej = 'JANA PUKAL: ' + rp.g + ' kumpulan baru (game baru), ' + rp.f + ' tambahan item, ' + rp.t + ' terjemahan' + (rp.ulang ? ' · ' + rp.ulang + ' sudah ada (diabaikan)' : '') + (rp.salah ? ' · ' + rp.salah + ' baris salah format' : '') + '.';
+        if (rp.g || rp.f) kol('coach').doc('pawagam_bank').set(pnBank).catch(function(e) { alert('Gagal simpan: ' + ((e && e.message) || e)); });
+        if (rp.t) { var kt; pnData.tr = pnData.tr || {}; for (kt in rp.tr) if (rp.tr.hasOwnProperty(kt)) pnData.tr[kt] = rp.tr[kt]; pnSimpan({ tr: rp.tr }); }
         pnRender(); return true;
       }
+      if (a === 'presettr') { pnSalin(pnPresetTr()); return true; }
       if (a === 'latihset') { pnUI.kuiz = pnBinaKuiz(null, pnSet(v).g.map(function(x) { return x.id; }), 10); pnUI.kuiz.set = v; pnUI.kuiz.dariSet = true; pnUI.mod = 'kuiz'; pnRender(); try { window.scrollTo(0, 0); } catch (x) {} return true; }
       if (a === 'jawab' && pnUI.kuiz && pnUI.kuiz.jawab === null) {
         pnUI.kuiz.jawab = parseInt(v, 10);
@@ -19910,7 +19931,7 @@
       if (!p[1]) { box.innerHTML = '<div style="border:2px dashed #000;border-radius:10px;padding:20px 10px;text-align:center;font-weight:bold;font-size:1.1rem;">AKAN DATANG</div>'; return; }
       if (pnRumah !== p[1]) pnTukarRumah(p[1]);
       if (!pnData) { pnMuatData(); box.innerHTML = '<div class="jw-info">Memuatkan...</div>'; return; }
-      box.innerHTML = ulKad(p[1]) + '<div class="jw-info">Game lain untuk ' + (p[1] === 'tulis' ? 'Writing' : 'Listening') + ' akan ditambah di senarai ini.</div>';
+      box.innerHTML = agLukis(p[1]); // 18 Nov: setiap kumpulan nota = satu GAME
     }
     function arkPergi(i) {
       var k;
@@ -19939,6 +19960,96 @@
     bukaMini = (function(f) { return function() { var r = f.apply(this, arguments); arkPergi(arkHal); return r; }; })(bukaMini);
     // Buka ARKED terus ke halaman tertentu (butang di LATIHAN LISTENING / WRITING)
     function bukaArked(i) { arkHal = i; bukaMini(); }
+
+    // ══ GAME NOTA (18 Nov) — ARKED Listening / Writing: SETIAP KUMPULAN nota = SATU GAME (tajuk = fungsi, cth "To introduce a new point") ══
+    //   LISTENING: tekan DENGAR (MP3) → taip apa yang didengar + taip terjemahan BM · WRITING: lihat frasa → taip terjemahan BM
+    //   Lulus 80% → kumpulan naik fasa SR (1, 2, 4, 7, 14, 30 hari) + level game naik · tak lulus → ulang esok. Kumpulan baru (JANA PUKAL G:) = game baru.
+    var AG = null; // { r, gid, s: [{ en, bm, aid }], i, skor, semak, ok: [en, bm], en, bm }
+    function agNorm(x, bm) { return String(x || '').toLowerCase().replace(/\.\.\.|…/g, ' ').replace(bm ? /[^a-z0-9\s-]/g : /[^a-z0-9\s']/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
+    function agSamaBm(jwp, betul) { // terjemahan: sama, atau sekurang-kurangnya 60% perkataan penting ada
+      var a = agNorm(jwp, 1), b = agNorm(betul, 1), w, i, n = 0, k = 0;
+      if (!b) return true; if (a === b) return true;
+      w = b.split(' ');
+      for (i = 0; i < w.length; i++) if (w[i].length > 2) { k++; if ((' ' + a + ' ').indexOf(' ' + w[i] + ' ') !== -1) n++; }
+      return k ? n / k >= 0.6 : a === b;
+    }
+    function agKad(r, g, due) {
+      var s = pnData.sr[g.id], buka = due.indexOf(g.id) !== -1, hari = coachHariId();
+      return '<button type="button" class="mini-kad' + (buka ? '' : ' mini-tutup') + '" data-ag="mula" data-v="' + g.id + '"><span class="mini-kedai">' + svgKedai(buka ? 'buka' : 'tutup') + '</span>' +
+        '<span class="mini-teks" style="font-size:1.05rem;">' + g.t + '<span class="gb-sub" style="white-space:pre-line;">' +
+        (buka ? 'BUKA\n' + g.f.length + ' frasa · ' + (s ? 'ulang kaji' : 'BARU') : s ? 'TUTUP\nUlang ' + s.due : 'TUTUP\nBelum dibuka (1 game baru sehari)') +
+        '</span></span><span class="mini-lv">' + ulLencana(((s && s.n) || 0) + 1) + '</span></button>';
+    }
+    function agLukis(r) {
+      var h = '', i, j, S, due, nm = r === 'tulis' ? 'WRITING' : 'LISTENING', q, it, kls;
+      if (AG && AG.r !== r) AG = null;
+      if (!AG) {
+        S = pnSetDRE(); due = pnDue();
+        h += '<div class="jw-info">' + (r === 'tulis' ? 'Lihat frasa → taip TERJEMAHAN BM.' : 'Tekan DENGAR → taip apa yang didengar + taip TERJEMAHAN BM.') + ' Lulus 80% → level naik. Game baru = kumpulan baru dari JANA PUKAL (tab TOPIK).</div>';
+        var bk = [], tt = [];
+        for (i = 0; i < S.length; i++) for (j = 0; j < S[i].g.length; j++) (due.indexOf(S[i].g[j].id) !== -1 ? bk : tt).push(S[i].g[j]);
+        if (!bk.length && !tt.length) return h + '<div class="jw-info">Belum ada nota. Tambah di tab TOPIK ' + nm + '.</div>';
+        for (i = 0; i < bk.length; i++) h += agKad(r, bk[i], due);
+        for (i = 0; i < tt.length; i++) h += agKad(r, tt[i], due);
+        return h;
+      }
+      q = AG; if (el('ag-en')) q.en = el('ag-en').value; if (el('ag-bm')) q.bm = el('ag-bm').value; // kekal teks semasa lukis semula
+      if (q.i >= q.s.length) {
+        return '<div class="jw-tajuk">' + (q.lulus ? 'LULUS!' : 'BELUM LULUS') + '</div><div class="jw-info">' + puE(q.t) + ' · Skor ' + q.skor + '/' + q.s.length +
+          (q.lulus ? ' · ulang ' + pnData.sr[q.gid].due : ' · perlu 80% — cuba lagi esok') + '</div><button type="button" class="btn btn-primary" data-ag="tutup">Kembali</button>';
+      }
+      it = q.s[q.i];
+      h = '<div class="status-bar" style="font-size:0.75rem;">' + puE(q.t) + ' · Soalan ' + (q.i + 1) + '/' + q.s.length + '</div><div class="jw-hadiah">SKOR ' + q.skor + '/' + q.s.length + '</div>';
+      if (r === 'tulis') h += '<div class="jw-soalan" style="margin:12px 0 6px;">' + puE(it.en) + '</div>';
+      else h += '<button type="button" class="btn btn-primary" data-ag="dengar" style="margin:10px 0 6px;">&#9654; DENGAR</button>' +
+        (q.semak ? '' : '<div style="font-size:0.85rem;">Apa yang didengar (English):</div><input id="ag-en" type="text" value="' + puE(q.en || '') + '" style="width:100%;font-size:1rem;border:2px solid #000;border-radius:6px;padding:6px;box-sizing:border-box;">');
+      if (!q.semak) {
+        h += '<div style="font-size:0.85rem;margin-top:6px;">Terjemahan (BM):</div><input id="ag-bm" type="text" value="' + puE(q.bm || '') + '" style="width:100%;font-size:1rem;border:2px solid #000;border-radius:6px;padding:6px;box-sizing:border-box;">' +
+          '<button type="button" class="btn btn-primary" data-ag="semak" style="margin-top:8px;">SEMAK</button>';
+      } else {
+        if (r !== 'tulis') h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[0] ? 'BETUL' : 'SALAH') + '</b> · Didengar: <b>' + puE(it.en) + '</b>' + (q.ok[0] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.en || '-') + '</div>') + '</div>';
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[1] ? 'BETUL' : 'SALAH') + '</b> · Terjemahan: <b>' + puE(it.bm || '(belum ada — tambah di TOPIK › PRESET TERJEMAHAN)') + '</b>' + (q.ok[1] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.bm || '-') + '</div>') + '</div>';
+        if (!(q.ok[0] && q.ok[1])) h += '<button type="button" class="btn" data-ag="betulkan">SAYA RASA BETUL (tanda betul)</button>';
+        h += '<button type="button" class="btn btn-primary" data-ag="seterus" style="margin-top:6px;">' + (q.i + 1 < q.s.length ? 'SETERUSNYA ›' : 'LIHAT KEPUTUSAN') + '</button>';
+      }
+      return h + '<button type="button" class="btn" data-ag="tutup" style="margin-top:6px;">Keluar</button>';
+    }
+    function agKlik(e) {
+      var a = hlCari(e.target, this, 'data-ag'), v = hlCari(e.target, this, 'data-v'), q = AG, r = ARK_HAL[arkHal][1], g, i, it;
+      if (a === null) { pnKlik(e, this); return; }
+      if (!currentUser || !pnData) return;
+      if (a === 'mula') {
+        g = pnGrp(v); if (!g || pnDue().indexOf(v) === -1) return;
+        AG = { r: r, gid: v, t: g.t, s: [], i: 0, skor: 0, semak: false, ok: [true, true], en: '', bm: '' };
+        for (i = 0; i < g.f.length; i++) AG.s.push({ en: typeof g.f[i] === 'string' ? g.f[i] : g.f[i][0], bm: pnTr(g.f[i]), aid: g.id + '-' + i });
+        AG.s = pnAcak(AG.s);
+      } else if (a === 'dengar' && q) {
+        it = q.s[q.i];
+        if (pnData.audio && pnData.audio[it.aid]) { pnKlik({ target: { getAttribute: function(k) { return k === 'data-pn' ? 'main' : k === 'data-v' ? it.aid : null; }, parentNode: null } }, this); return; }
+        try { if (window.speechSynthesis && window.SpeechSynthesisUtterance) { var u = new SpeechSynthesisUtterance(it.en.replace(/\.\.\.|…/g, ' ')); u.lang = 'en-GB'; window.speechSynthesis.speak(u); return; } } catch (x) {}
+        alert('Belum ada MP3 untuk frasa ini dan peranti tiada suara sintetik. Muat naik MP3 di tab TOPIK (+ MP3).'); return;
+      } else if (a === 'semak' && q && !q.semak) {
+        it = q.s[q.i];
+        q.en = (el('ag-en') || {}).value || ''; q.bm = (el('ag-bm') || {}).value || '';
+        q.ok = [r === 'tulis' || agNorm(q.en) === agNorm(it.en), agSamaBm(q.bm, it.bm)];
+        q.semak = true; if (q.ok[0] && q.ok[1]) q.skor++;
+      } else if (a === 'betulkan' && q && q.semak && !(q.ok[0] && q.ok[1])) { q.ok = [true, true]; q.skor++; }
+      else if (a === 'seterus' && q && q.semak) {
+        q.i++; q.semak = false; q.en = ''; q.bm = '';
+        if (q.i >= q.s.length) { // tamat → kemas kini SR kumpulan
+          var hari = coachHariId(), x = pnData.sr[q.gid], ub = { sr: {} }, f;
+          q.lulus = q.skor >= Math.ceil(q.s.length * 0.8);
+          f = q.lulus ? (x ? Math.min(x.fasa + 1, PN_SELANG.length - 1) : 0) : (x ? x.fasa : 0);
+          ub.sr[q.gid] = pnData.sr[q.gid] = { fasa: f, due: pnTambahHari(hari, q.lulus ? PN_SELANG[f] : 1), mula: (x && x.mula) || hari, n: ((x && x.n) || 0) + (q.lulus ? 1 : 0) };
+          if (q.lulus) { pnData.lv = pnData.lv || {}; pnData.lv[r] = (pnData.lv[r] || 0) + 1; ub.lv = {}; ub.lv[r] = pnData.lv[r]; }
+          pnSimpan(ub);
+        }
+      } else if (a === 'tutup') AG = null;
+      arkLukis();
+      try { window.scrollTo(0, 0); } catch (x) {}
+    }
+    el('ark-hal-1').onclick = agKlik;
+    el('ark-hal-2').onclick = agKlik;
 
     // ══ READING (18 Nov): SINONIM · ANTONIM · IDIOM — bank ditulis di APP PHONE (Laci Reading) ══
     // Nota (jawapan) di tab TOPIK Perpustakaan · latihan dalam bentuk AYAT (gaya buku MUET) di ARKED titik 4
@@ -20470,8 +20581,8 @@
         var h = '', k;
         for (k in UL_PANDUAN) if (UL_PANDUAN.hasOwnProperty(k)) h += '<h3 id="pd-ulang-' + k + '">' + UL_PANDUAN[k][0] + '</h3><ul><li>' + [UL_PANDUAN[k][1],
           '<i>Don\'t worry, Coach will let you do the exercise according to the time.</i>',
-          'Tekan level semasa → BACA DULU nota hari ini (bersama beberapa kumpulan lain sebagai perbandingan) → SIAP BACA → MULA LATIHAN.',
-          'Latihan 5 soalan gaya Jutawan. Lulus 80% → level naik &amp; nota diulang lagi ikut jadual (1, 2, 4, 7, 14, 30 hari). Tak lulus → ulang esok.',
+          'Setiap KUMPULAN nota = SATU GAME (tajuk = fungsi, cth To introduce a new point). Listening: tekan DENGAR → taip apa yang didengar + terjemahan BM. Writing: lihat frasa → taip terjemahan BM.',
+          'Lulus 80% → game naik level &amp; diulang lagi ikut jadual (1, 2, 4, 7, 14, 30 hari). Tak lulus → ulang esok. Terjemahan hampir sama? Tekan SAYA RASA BETUL.',
           'Tiada nota perlu diulang → kedai TUTUP sampai Coach buka semula ikut masa.',
           'Nota baru ditambah di tab TOPIK (Listening / Dewan Tulis) → SALIN PRESET → JANA PUKAL. LIHAT SEMUA NOTA = semua nota, boleh baca &amp; latih bila-bila.'].join('</li><li>') + '</li></ul>';
         el('gm-panduan-isi').innerHTML += h;
