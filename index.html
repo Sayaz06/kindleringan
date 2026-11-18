@@ -14347,7 +14347,8 @@
       var t = e.target;
       while (t && t !== document && !(t.getAttribute && t.getAttribute('data-gm-tab'))) t = t.parentNode;
       if (!t || t === document) return;
-      var k = t.getAttribute('data-gm-tab');
+      var k = t.getAttribute('data-gm-tab'), akT;
+      if (k !== 'coach' && k !== 'atur' && (akT = coachAirKunci())) { coachAirKeMakmal(akT); return; } // KUNCI AIR: tab lain → Makmal
       pus = null; jw = null;
       if (k === 'menu') showScreen('screen-menu');
       else if (k === 'coach') bukaCoach(false);
@@ -15836,10 +15837,11 @@
         }
         var tanda = '';
         try { tanda = TS_LACI[b[0]] ? (kunciLaci ? 'DIKUNCI' : '') : tsTanda(b[0]); } catch (e) {}
+        try { if (coachAirKunci()) tanda = b[0] === 'makmal' ? 'MINUM DULU' : 'DIKUNCI'; } catch (e) {} // KUNCI AIR
         // Tanda = cop di tengah bumbung, tutup simbol bangunan (gaya cop SOLD, 12 Nov) — tidak menolak bangunan ke bawah
         var cop = '';
         if (tanda) {
-          var copHitam = tanda.indexOf('TERLEPAS') !== -1 || tanda === 'DIKUNCI';
+          var copHitam = tanda.indexOf('TERLEPAS') !== -1 || tanda === 'DIKUNCI' || tanda === 'MINUM DULU';
           cop = '<span style="position:absolute;z-index:2;left:' + (TS_PETI[b[0]] ? '43%' : '50%') + ';top:29%;padding:2px ' + (tsMod === 'ts' ? 4 : 7) + 'px;border:3px double ' + (copHitam ? '#fff' : '#000') + ';outline:2px solid #000;' +
             'font-weight:bold;font-size:' + (tsMod === 'ts' ? '0.62rem' : '0.78rem') + ';white-space:nowrap;letter-spacing:1px;text-transform:uppercase;' +
             '-webkit-transform:translate(-50%,-50%) rotate(-10deg);transform:translate(-50%,-50%) rotate(-10deg);' +
@@ -15850,10 +15852,12 @@
           '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
       }
       el('ts-bangunan').innerHTML = h;
+      try { var akTs = coachAirKunci(); if (akTs) el('ts-info').textContent = coachAirMesej(akTs) + ' Hanya MAKMAL HIDRASI dibuka.'; } catch (e) {}
     }
     function bukaTs(selepas, mod) {
       if (!currentUser) return;
-      var m = mod === 'muet' ? 'muet' : 'ts', tbT, q;
+      var m = mod === 'muet' ? 'muet' : 'ts', tbT, q, akM;
+      if (m === 'muet' && (akM = coachAirKunci())) { var aM = document.querySelector('.screen.active'); if (!aM || !AIR_SKRIN_KUNCI.test(aM.id)) { coachAirKeMakmal(akM); return; } }
       tsHalSimpan[tsMod] = tsHal; tsMod = m; tsHal = tsHalSimpan[m] || 0;
       TS_HALAMAN = m === 'muet' ? TS_HAL_MUET : TS_HAL_USAHA;
       el('ts-status').textContent = m === 'muet' ? 'MUET' : 'USAHA';
@@ -15867,7 +15871,7 @@
         coachDataAkhir = r[0];
         lukisTs();
         coachLukisTugas();
-        if (coachHariData.hari.laporanAt && tsMod === 'ts') {
+        if (coachHariData.hari.laporanAt && tsMod === 'ts' && !coachAirKunci()) {
           var kk = coachKiraKesihatan();
           el('ts-info').textContent = 'Buat tugas di setiap bangunan → Ringgit Kuning. Markah diabaikan ' + kk.markah + '/' + COACH_HAD_KUNCI + (kk.kunci ? ' · LACI DIKUNCI (siapkan bangunan bertanda TERLEPAS)' : '');
         }
@@ -16271,7 +16275,7 @@
       idx = Math.max(0, Math.min(slot.length - 1, c + (makmalUI.geser || 0)));
       makmalUI.geser = idx - c;
       h += '<div style="font-weight:bold;margin-top:6px;">SLOT AIR <span style="font-weight:normal;font-size:0.8rem;">· ' + slot.length + ' slot · 1 teguk (' + COACH_TEGUK_ML + ' ml) setiap ' + COACH_TEGUK_SELANG + ' minit · siap ' + bil.siap + ' · terlepas ' + bil.abai + '</span></div>';
-      h += '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.8rem;"><b>KUNCI GAME:</b> minum air dulu 1 slot untuk main game — semua kunci dibuka walaupun tertinggal banyak slot, tetapi game dikunci balik bila tiba masa slot seterusnya.' + (coachAirKunci() ? ' <b>SEKARANG: DIKUNCI.</b>' : ' Sekarang: TERBUKA.') + '</div>';
+      h += '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.8rem;"><b>KUNCI GAME:</b> minum air dulu 1 slot untuk main game — semua kunci dibuka walaupun tertinggal banyak slot, tetapi game dikunci balik bila tiba masa slot seterusnya. Yang sedang di dalam bangunan / laci / game tidak dikeluarkan — hanya tab lain dikunci.' + (coachAirKunci() ? ' <b>SEKARANG: DIKUNCI.</b>' : ' Sekarang: TERBUKA.') + '</div>';
       h += '<div style="border:4px double #000;border-radius:12px;padding:4px 6px;margin:4px 0;background:#eee;">' +
         '<button type="button" data-mk="naik" style="' + btn + 'display:block;width:100%;margin:0 0 4px;"' + (idx > 0 ? '' : ' disabled') + '>&#9650; ' + (idx > 0 ? idx + ' slot di atas' : 'slot pertama') + '</button>';
       for (i = idx - 2; i <= idx + 2; i++) {
@@ -16553,15 +16557,14 @@
     function coachAirMesej(t) {
       return 'DIKUNCI — minum air dulu: 1 teguk (slot ' + t.kunci.replace('air', '') + ' · ' + coachTeksMasa(t.min) + '). Semua kunci terus dibuka walaupun banyak slot tertinggal. Kunci kembali bila slot seterusnya bermula (' + coachTeksMasa(coachTamat(t)) + ').';
     }
-    // Skrin game terbuka bila slot baru bermula → kunci serta-merta (semak setiap 30 saat)
-    setInterval(function() {
-      var a = document.querySelector('.screen.active');
-      if (a && SUP_SKRIN_KUNCI.test(a.id) && coachAirKunci()) window.supHalang(a.id);
-    }, 30000);
+    // Kawasan dikunci KUNCI AIR: semua bangunan (kecuali MAKMAL), laci, game, arked, harbour, kedai, MUET.
+    //   Kunci hanya bila pengguna dari LUAR (Tasks / Menu / Coach / Makmal…) cuba masuk — yang sedang di dalam TIDAK dikeluarkan.
+    var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|nutrisi|sup-edit|bilik|hj|bp|ul-|gb|tpl)/;
+    function coachAirKeMakmal(ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); }, 0); }
     window.supHalang = function(id) {
+      var ak, a = document.querySelector('.screen.active'), dari = a ? a.id : '';
+      if (AIR_SKRIN_KUNCI.test(id || '') && !AIR_SKRIN_KUNCI.test(dari) && (ak = coachAirKunci())) { coachAirKeMakmal(ak); return true; }
       if (!SUP_SKRIN_KUNCI.test(id || '')) return false;
-      var ak = coachAirKunci();
-      if (ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); }, 0); return true; }
       if (!supTerlepas().length) return false;
       coachKunciMesej = supMesejKunci();
       setTimeout(function() { bukaCoach(false); }, 0);
