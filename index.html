@@ -10502,7 +10502,6 @@
     function coachStatusTugas(t, kini) {
       var rec = (coachHariData.hari.tugas || {})[t.kunci];
       if (rec) return rec.s; // 'BUAT' | 'TAK_DAPAT' | 'GANTI'
-      if (t.jenis === 'air' && coachHariData.hari.airMula && t.min < coachHariData.hari.airMula) return 'TAK_DAPAT'; // sebelum sistem TEGUK bermula (18 Nov) — tidak dikira
       if (t.jenis === 'tidur' || t.jenis === 'fokus') return 'MALAM';
       if (kini >= coachTamat(t)) return 'ABAI';
       if (kini >= t.min) return 'SEKARANG';
@@ -16258,13 +16257,15 @@
       for (i = 0; i < j.tugas.length; i++) if (j.tugas[i].jenis === 'air') { slot.push(j.tugas[i]); if (tg[j.tugas[i].kunci] && tg[j.tugas[i].kunci].s === 'BUAT') siap++; }
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;font-size:0.9rem;"><b>AIR HARI INI: ' + ml + ' ml</b> (' + minum.length + ' kali)</div>';
       // 18 Nov: SLOT AIR macam MESIN SPIN — roda slot (1 slot = 1 teguk 10 ml / 5 minit) · hanya 5 slot kelihatan, slot SEKARANG di tengah · ▲ ▼ pusing roda
-      var c = -1, idx, bil = { siap: 0, abai: 0 };
+      // Fokus roda = slot PALING ATAS yang belum siap (terlepas / sekarang) — isi dari slot pertama ke bawah
+      var c = -1, cKini = -1, idx, bil = { siap: 0, abai: 0 };
       for (i = 0; i < slot.length; i++) {
         var sx = coachStatusTugas(slot[i], kini);
-        if (c === -1 && kini < coachTamat(slot[i])) c = i;
+        if (c === -1 && !tg[slot[i].kunci] && (sx === 'SEKARANG' || (sx === 'ABAI' && kini < j.tidur))) c = i;
+        if (cKini === -1 && kini < coachTamat(slot[i])) cKini = i;
         if (sx === 'BUAT') bil.siap++; else if (sx === 'ABAI') bil.abai++;
       }
-      if (c === -1) c = slot.length - 1;
+      if (c === -1) c = cKini === -1 ? slot.length - 1 : cKini;
       idx = Math.max(0, Math.min(slot.length - 1, c + (makmalUI.geser || 0)));
       makmalUI.geser = idx - c;
       h += '<div style="font-weight:bold;margin-top:6px;">SLOT AIR <span style="font-weight:normal;font-size:0.8rem;">· ' + slot.length + ' slot · 1 teguk (' + COACH_TEGUK_ML + ' ml) setiap ' + COACH_TEGUK_SELANG + ' minit · siap ' + bil.siap + ' · terlepas ' + bil.abai + '</span></div>';
@@ -16291,7 +16292,7 @@
         h += '</div>';
       }
       h += '<button type="button" data-mk="turun" style="' + btn + 'display:block;width:100%;margin:4px 0 0;"' + (idx < slot.length - 1 ? '' : ' disabled') + '>&#9660; ' + (idx < slot.length - 1 ? (slot.length - 1 - idx) + ' slot di bawah' : 'slot terakhir') + '</button>' +
-        (makmalUI.geser ? '<button type="button" data-mk="kini" style="' + btnA + 'display:block;width:100%;margin:4px 0 0;">KEMBALI KE SLOT SEKARANG</button>' : '') + '</div>';
+        (makmalUI.geser ? '<button type="button" data-mk="kini" style="' + btnA + 'display:block;width:100%;margin:4px 0 0;">KEMBALI KE SLOT BELUM SIAP</button>' : '') + '</div>';
       // Minum luar jadual
       h += '<div style="margin-top:4px;font-size:0.85rem;">Minum luar jadual: ' +
         (makmalUI.ml === 'luar' ? mkGelas('luar', btn, btnA) : '<button type="button" data-mk="minum" data-k="luar" style="' + btn + '">+ MINUM</button>') + '</div>';
@@ -16376,7 +16377,7 @@
       if (mk === 'naik') { makmalUI.geser = (makmalUI.geser || 0) - 1; lukisMakmal(); return; }
       if (mk === 'turun') { makmalUI.geser = (makmalUI.geser || 0) + 1; lukisMakmal(); return; }
       if (mk === 'kini') { makmalUI.geser = 0; lukisMakmal(); return; }
-      if (mk === 'lewat') { makmalTegukLewat(k); return; }
+      if (mk === 'lewat') { makmalUI.geser = 0; makmalTegukLewat(k); return; }
       if (mk === 'pukal') { makmalUI.teguk = (makmalUI.teguk || 0) + parseInt(t.getAttribute('data-v'), 10); lukisMakmal(); return; }
       if (mk === 'pukalin') {
         var inpP = document.getElementById('makmal-ml'), nP = parseInt(((inpP && inpP.value) || '').replace(/[^0-9]/g, ''), 10);
