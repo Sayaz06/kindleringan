@@ -15688,10 +15688,19 @@
           '<circle cx="28" cy="87" r="7" fill="#000"/><circle cx="42" cy="88" r="6" fill="#fff" stroke="#000" stroke-width="2"/><path d="M56 94 Q56 80 68 80 Q80 80 80 94 Z" fill="#fff" stroke="#000" stroke-width="2"/><path d="M60 86 H76 M62 90 H74" stroke="#000" stroke-width="1.5"/>' +
           '<circle cx="92" cy="87" r="7" fill="#000"/><path d="M92 80 Q94 76 97 76" fill="none" stroke="#000" stroke-width="1.5"/><path d="M28 80 V76" stroke="#000" stroke-width="1.5"/>';
       }
-      if (k === 'tidur') { // rumah kecil malam: bulan + bintang + tingkap gelap
-        s += '<path d="M98 6 A11 11 0 1 0 108 24 A8 8 0 1 1 98 6 Z" fill="#000"/><path d="M14 14 L16 18 L20 18 L17 21 L18 25 L14 22 L10 25 L11 21 L8 18 L12 18 Z M80 8 L81 11 L84 11 L82 13 L83 16 L80 14 L77 16 L78 13 L76 11 L79 11 Z" fill="#000"/>' +
-          '<path d="M14 58 L60 26 L106 58 Z" fill="#000"/><rect x="20" y="58" width="80" height="64" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
-          lb(24, 64, 72) + '<rect x="52" y="94" width="18" height="28" fill="#fff" stroke="#000" stroke-width="2"/><rect x="28" y="88" width="16" height="16" fill="#000"/><rect x="78" y="88" width="16" height="16" fill="#000"/><path d="M28 96 H44 M86 88 V104" stroke="#fff" stroke-width="1.5"/>';
+      if (k === 'tidur') { // BILIK (dalam): katil + bantal + selimut + meja sisi + lampu tidur menyala + tingkap malam
+        s += '<rect x="4" y="6" width="112" height="118" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M4 96 H116" stroke="#000" stroke-width="1.5"/>' + lb(24, 11, 72) +
+          '<rect x="8" y="32" width="20" height="26" fill="#000"/><path d="M18 32 V58 M8 45 H28" stroke="#fff" stroke-width="1.5"/><path d="M21 35 A4 4 0 1 0 25 41 A3 3 0 1 1 21 35 Z" fill="#fff"/>' +
+          '<path d="M6 30 Q10 44 7 60 M30 30 Q26 44 29 60" fill="none" stroke="#000" stroke-width="2"/>' +
+          '<rect x="46" y="32" width="13" height="10" fill="#fff" stroke="#000" stroke-width="1.5"/><rect x="63" y="34" width="9" height="8" fill="#fff" stroke="#000" stroke-width="1.5"/><rect x="76" y="31" width="10" height="11" fill="#fff" stroke="#000" stroke-width="1.5"/>' +
+          '<rect x="34" y="52" width="52" height="30" rx="3" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+          '<rect x="38" y="62" width="20" height="9" rx="4" fill="#fff" stroke="#000" stroke-width="2"/><rect x="62" y="62" width="20" height="9" rx="4" fill="#fff" stroke="#000" stroke-width="2"/>' +
+          '<path d="M32 74 H88 L96 106 H24 Z" fill="#000"/><path d="M30 80 H90" stroke="#fff" stroke-width="2"/><path d="M40 92 Q52 88 60 94 Q70 99 82 93" fill="none" stroke="#fff" stroke-width="1.5"/>' +
+          '<rect x="22" y="106" width="76" height="8" fill="#fff" stroke="#000" stroke-width="2"/><path d="M26 114 V120 M94 114 V120" stroke="#000" stroke-width="2.5"/>' +
+          '<rect x="8" y="80" width="16" height="16" fill="#fff" stroke="#000" stroke-width="2"/><path d="M12 88 H20" stroke="#000" stroke-width="1.5"/><path d="M16 80 V74" stroke="#000" stroke-width="1.5"/><path d="M11 74 H21 L19 66 H13 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>' +
+          '<rect x="96" y="80" width="16" height="16" fill="#fff" stroke="#000" stroke-width="2"/><path d="M100 88 H108" stroke="#000" stroke-width="1.5"/><path d="M104 80 V74" stroke="#000" stroke-width="1.5"/><path d="M99 74 H109 L107 66 H101 Z" fill="#000"/>' +
+          '<path d="M104 62 V58 M96 66 L93 63 M112 66 L115 63 M95 72 H91 M113 72 H117" stroke="#000" stroke-width="1.5"/>' +
+          '<ellipse cx="60" cy="121" rx="36" ry="2.5" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="3 2"/>';
       }
       if (k === 'surau') { // kubah + menara + pintu gerbang
         s += '<path d="M30 60 Q30 30 60 28 Q90 30 90 60 Z" fill="#000"/><path d="M60 28 V18" stroke="#000" stroke-width="2"/><path d="M60 8 A5 5 0 1 0 64 16 A4 4 0 1 1 60 8 Z" fill="#000"/>' +
