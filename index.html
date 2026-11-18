@@ -10532,7 +10532,7 @@
           if (t.jenis === 'tidur' || t.jenis === 'fokus') continue;
           var st = coachStatusTugas(t, kini);
           kemas(t.jenis, st);
-          if (st === 'ABAI') markah += t.jenis === 'air' ? COACH_BERAT.air * COACH_TEGUK_SELANG / 120 : (COACH_BERAT[t.jenis] || 1);
+          if (st === 'ABAI') markah += t.jenis === 'air' ? 0 : (COACH_BERAT[t.jenis] || 1); // air → KUNCI AIR (coachAirKunci), bukan markah
           else if (st === 'GANTI') markah += (COACH_BERAT[t.jenis] || 1) / 2; // tugas ganti = separuh markah dibuang
         }
         // MAKAN BUAH / SAYUR: 0 g selepas slot air terakhir (2.5 jam sebelum tidur) → DIABAIKAN
@@ -14275,6 +14275,8 @@
           return;
         }
         if (supTerlepas().length) { coachKunciMesej = supMesejKunci(); bukaCoach(false); return; }
+        var akL = coachAirKunci();
+        if (akL) { makmalUI.pesan = coachAirMesej(akL); bukaMakmal(); return; }
         coachKunciMesej = '';
         teruskan();
       }).catch(function() { teruskan(); });
@@ -16269,6 +16271,7 @@
       idx = Math.max(0, Math.min(slot.length - 1, c + (makmalUI.geser || 0)));
       makmalUI.geser = idx - c;
       h += '<div style="font-weight:bold;margin-top:6px;">SLOT AIR <span style="font-weight:normal;font-size:0.8rem;">· ' + slot.length + ' slot · 1 teguk (' + COACH_TEGUK_ML + ' ml) setiap ' + COACH_TEGUK_SELANG + ' minit · siap ' + bil.siap + ' · terlepas ' + bil.abai + '</span></div>';
+      h += '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.8rem;"><b>KUNCI GAME:</b> minum air dulu 1 slot untuk main game — semua kunci dibuka walaupun tertinggal banyak slot, tetapi game dikunci balik bila tiba masa slot seterusnya.' + (coachAirKunci() ? ' <b>SEKARANG: DIKUNCI.</b>' : ' Sekarang: TERBUKA.') + '</div>';
       h += '<div style="border:4px double #000;border-radius:12px;padding:4px 6px;margin:4px 0;background:#eee;">' +
         '<button type="button" data-mk="naik" style="' + btn + 'display:block;width:100%;margin:0 0 4px;"' + (idx > 0 ? '' : ' disabled') + '>&#9650; ' + (idx > 0 ? idx + ' slot di atas' : 'slot pertama') + '</button>';
       for (i = idx - 2; i <= idx + 2; i++) {
@@ -16321,7 +16324,7 @@
       el('makmal-info').textContent = 'Memuatkan...';
       Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
         coachDataAkhir = r[0];
-        el('makmal-info').textContent = '';
+        el('makmal-info').textContent = makmalUI.pesan || ''; makmalUI.pesan = '';
         makmalUI.ml = slot || '';
         lukisMakmal();
       }).catch(function(e) { el('makmal-info').textContent = 'Gagal memuat MAKMAL: ' + ((e && e.message) || e); });
@@ -16534,8 +16537,32 @@
       return 'SUPLEMEN TERLEPAS: ' + t.map(function(x) { return x.nama + ' (' + coachTeksMasa(x.min) + ')'; }).join(', ') +
         '.\nSemua laci, ARKED, game, Pawagam, Pentas, Perpustakaan & Dewan Tulis DIKUNCI.\nMakan sekarang (lewat pun tak apa) → tekan SUDAH MAKAN di NUTRISI › SUPLEMEN → kunci terus dibuka.';
     }
+    // ══ KUNCI AIR (18 Nov): slot air SEKARANG belum ada sebarang minum sejak slot bermula → semua game / laci DIKUNCI ══
+    //   Minum 1 teguk (slot sekarang / lewat / + MINUM) → semua kunci dibuka walaupun banyak slot tertinggal · kunci kembali bila slot seterusnya bermula
+    function coachAirKunci() {
+      var hr = coachHariData.hari;
+      if (!hr || !hr.laporanAt || coachHariData.id !== coachHariId()) return null;
+      var j = coachJadualKini(), kini = coachMinitKini(), i, t, cur = null, m = hr.minum || [], d = new Date(), mula;
+      if (!j || kini >= j.tidur) return null;
+      for (i = 0; i < j.tugas.length; i++) { t = j.tugas[i]; if (t.jenis === 'air' && kini >= t.min && kini < coachTamat(t)) { cur = t; break; } }
+      if (!cur) return null;
+      mula = d.getTime() - (kini - cur.min) * 60000 - d.getSeconds() * 1000 - d.getMilliseconds();
+      for (i = 0; i < m.length; i++) if (m[i].at >= mula) return null;
+      return cur;
+    }
+    function coachAirMesej(t) {
+      return 'DIKUNCI — minum air dulu: 1 teguk (slot ' + t.kunci.replace('air', '') + ' · ' + coachTeksMasa(t.min) + '). Semua kunci terus dibuka walaupun banyak slot tertinggal. Kunci kembali bila slot seterusnya bermula (' + coachTeksMasa(coachTamat(t)) + ').';
+    }
+    // Skrin game terbuka bila slot baru bermula → kunci serta-merta (semak setiap 30 saat)
+    setInterval(function() {
+      var a = document.querySelector('.screen.active');
+      if (a && SUP_SKRIN_KUNCI.test(a.id) && coachAirKunci()) window.supHalang(a.id);
+    }, 30000);
     window.supHalang = function(id) {
-      if (!SUP_SKRIN_KUNCI.test(id || '') || !supTerlepas().length) return false;
+      if (!SUP_SKRIN_KUNCI.test(id || '')) return false;
+      var ak = coachAirKunci();
+      if (ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); }, 0); return true; }
+      if (!supTerlepas().length) return false;
       coachKunciMesej = supMesejKunci();
       setTimeout(function() { bukaCoach(false); }, 0);
       return true;
@@ -18832,7 +18859,7 @@
       taman: function() { return usahaSenarai('MATAHARI PAGI', COACH_TAMAN_TIP.matahari) + usahaSenarai('CAHAYA PETANG', COACH_TAMAN_TIP.petang) +
         '<div style="margin-top:8px;"><b>GANJARAN:</b> +' + rm(EKO.TAMAN_SEN || 0) + ' Ringgit Kuning setiap tugas (tepat masa, cukup minit).</div>'; },
       makmal: function() {
-        var h = '<div><b>AIR:</b> air kosong sahaja. <b>1 slot = 1 teguk (' + COACH_TEGUK_ML + ' ml) setiap ' + COACH_TEGUK_SELANG + ' minit</b> — tekan + 1 TEGUK dalam 5 minit itu. Terlepas → + MINUM (pukal): setiap 10 ml tebus 1 teguk terlepas (LEWAT).</div><div><b>GANJARAN:</b> +' + rm(EKO.MAKMAL_SEN || 0) + ' Kuning setiap 24 teguk tepat masa.</div><div style="font-weight:bold;margin-top:8px;">WARNA KENCING</div>', i;
+        var h = '<div><b>AIR:</b> air kosong sahaja. <b>1 slot = 1 teguk (' + COACH_TEGUK_ML + ' ml) setiap ' + COACH_TEGUK_SELANG + ' minit</b> — tekan + 1 TEGUK dalam 5 minit itu. Terlepas → + MINUM (pukal): setiap 10 ml tebus 1 teguk terlepas (LEWAT).</div><div style="margin-top:4px;"><b>KUNCI GAME:</b> minum air dulu 1 slot untuk main game — ia akan buka semua kunci walaupun tertinggal banyak slot, tetapi game akan dikunci balik bila tiba masa slot seterusnya.</div><div><b>GANJARAN:</b> +' + rm(EKO.MAKMAL_SEN || 0) + ' Kuning setiap 24 teguk tepat masa.</div><div style="font-weight:bold;margin-top:8px;">WARNA KENCING</div>', i;
         for (i = 0; i < MAKMAL_WARNA.length; i++) h += '<div><span style="display:inline-block;width:14px;height:14px;border:2px solid #000;background:' + MAKMAL_WARNA[i][1] + ';vertical-align:middle;margin-right:4px;"></span><b>' + MAKMAL_WARNA[i][0] + '</b> — ' + MAKMAL_WARNA[i][2] + '</div>';
         return h + '<div style="margin-top:8px;">Kencing terlalu kerap luar biasa, sakit, atau dahaga melampau → jumpa doktor.</div>';
       },
