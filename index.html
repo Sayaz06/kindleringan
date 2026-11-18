@@ -7055,10 +7055,10 @@
   </div>
   <!-- PERPUSTAKAAN (Reading English — MUET Paper 3) — bangunan BELAJAR (16 Nov) -->
   <div id="screen-pustaka" class="screen">
-    <div class="status-bar">PERPUSTAKAAN</div>
+    <div class="status-bar">READING</div>
     <div class="gm-alat">
       <button type="button" id="btn-us-pustaka-keluar" class="gm-kecil">‹ Usaha</button>
-      <span class="gm-alat-tajuk">PERPUSTAKAAN</span>
+      <span class="gm-alat-tajuk">READING</span>
       <button type="button" id="btn-us-pustaka-coach" class="gm-kecil">Coach</button>
     </div>
     <div id="pustaka-info" class="jw-info"></div>
@@ -7067,10 +7067,10 @@
   </div>
   <!-- DEWAN TULIS (Writing English — MUET Paper 4) — bangunan BELAJAR (17 Nov) -->
   <div id="screen-tulis" class="screen">
-    <div class="status-bar">DEWAN TULIS</div>
+    <div class="status-bar">WRITING</div>
     <div class="gm-alat">
       <button type="button" id="btn-us-tulis-keluar" class="gm-kecil">‹ Usaha</button>
-      <span class="gm-alat-tajuk">DEWAN TULIS</span>
+      <span class="gm-alat-tajuk">WRITING</span>
       <button type="button" id="btn-us-tulis-coach" class="gm-kecil">Coach</button>
     </div>
     <div id="tulis-info" class="jw-info"></div>
@@ -13939,8 +13939,8 @@
       var a = t.getAttribute('data-pn'), v = t.getAttribute('data-v');
       if (a !== 'main' && a !== 'naik') pnUI.mesej = '';
       if (a === 'nota') {
-        el('btn-pn-nota-keluar').textContent = pnRumah === 'tulis' ? '‹ Dewan Tulis' : '‹ Pawagam';
-        var sbN = document.querySelector('#screen-pn-nota .status-bar'); if (sbN) sbN.textContent = (pnRumah === 'tulis' ? 'DEWAN TULIS' : 'PAWAGAM') + ' · SEMUA NOTA';
+        el('btn-pn-nota-keluar').textContent = pnRumah === 'tulis' ? '‹ Writing' : '‹ Listening';
+        var sbN = document.querySelector('#screen-pn-nota .status-bar'); if (sbN) sbN.textContent = (pnRumah === 'tulis' ? 'WRITING' : 'LISTENING') + ' · SEMUA NOTA';
         pnHentiMasa(); pnUI.halaman = 'nota'; pnUI.mod = 'senarai'; pnUI.kuiz = null; showScreen('screen-pn-nota'); try { window.scrollTo(0, 0); } catch (x) {} pnRender(); return true; }
       if (a === 'senarai') { pnUI.mod = 'senarai'; pnRender(); return true; }
       if (a === 'set') { pnUI.mod = 'set'; pnUI.set = v; pnRender(); try { window.scrollTo(0, 0); } catch (x) {} return true; }
@@ -15577,8 +15577,8 @@
       ['reasoning', 'REASONING', 'Laci reasoning', true],
       ['presenting', 'PRESENTING', 'Laci presenting', true],
       ['pentas', 'SPEAKING', 'Speaking English (MUET)', true],
-      ['pustaka', 'PERPUSTAKAAN', 'Reading English (MUET)', true],
-      ['tulis', 'DEWAN TULIS', 'Writing English (MUET)', true]
+      ['pustaka', 'READING', 'Reading English (MUET)', true],
+      ['tulis', 'WRITING', 'Writing English (MUET)', true]
     ];
     // USAHA BERHALAMAN: [tajuk, senarai kunci bangunan] — tekan titik kanan / sapu atas-bawah untuk tukar page (tiada skrol)
     var TS_HALAMAN = [
@@ -19946,7 +19946,7 @@
     // coach/reading_sr { sr: { id: { fasa, due, mula } } } · betul → diulang ikut jadual (1, 3, 7, 14, 30, 60 hari) · salah → diulang esok
     var RD_JENIS = [['sin', 'SINONIM', 'Replace the underlined word with the most appropriate synonym.'], ['ant', 'ANTONIM', 'Choose the word most opposite in meaning to the underlined word.'], ['idm', 'IDIOM', 'What does the underlined idiom mean?']];
     var RD_SELANG = [1, 3, 7, 14, 30, 60], RD_BARU = 10, RD_SESI = 10;
-    var RD = { bank: null, sr: {}, muat: false, kuiz: null, mesej: '', ui: { preset: false, pukal: false, jenis: 'sin', syor: '', teks: '' } }, rdTopikBuka = false;
+    var RD = { bank: null, sr: {}, lv: {}, muat: false, kuiz: null, mesej: '', ui: { preset: false, pukal: false, jenis: 'sin', syor: '', teks: '' } }, rdTopikBuka = false;
     function rdMuat() {
       if (RD.bank || RD.muat || !currentUser) return;
       RD.muat = true;
@@ -19954,6 +19954,7 @@
         var b = r[0].exists ? (r[0].data() || {}) : {};
         RD.bank = { sin: b.sin || [], ant: b.ant || [], idm: b.idm || [] };
         RD.sr = (r[1].exists && (r[1].data() || {}).sr) || {};
+        RD.lv = (r[1].exists && (r[1].data() || {}).lv) || {};
         RD.muat = false; rdSegar();
       }).catch(function() { RD.bank = { sin: [], ant: [], idm: [] }; RD.muat = false; rdSegar(); });
     }
@@ -19966,9 +19967,10 @@
       for (k = 0; k < RD_JENIS.length; k++) { L = (RD.bank && RD.bank[RD_JENIS[k][0]]) || []; for (i = 0; i < L.length; i++) if (L[i] && L[i].id && L[i].j) a.push({ it: L[i], k: k }); }
       return a;
     }
-    // Soalan hari ini = ulang kaji (due <= hari ini) + soalan baru (maks RD_BARU sehari)
-    function rdDue() {
-      var hari = coachHariId(), A = rdSemua(), due = [], baru = [], dahBaru = 0, i, s;
+    // Soalan hari ini = ulang kaji (due <= hari ini) + soalan baru (maks RD_BARU sehari SETIAP game) · jk = 0 SINONIM / 1 ANTONIM / 2 IDIOM (kosong = semua)
+    function rdDue(jk) {
+      if (jk === undefined) { var t = [], q; for (q = 0; q < RD_JENIS.length; q++) t = t.concat(rdDue(q)); return t; }
+      var hari = coachHariId(), A = rdSemua().filter(function(x) { return x.k === jk; }), due = [], baru = [], dahBaru = 0, i, s;
       for (i = 0; i < A.length; i++) { s = RD.sr[A[i].it.id]; if (s && s.mula === hari) dahBaru++; }
       for (i = 0; i < A.length; i++) { s = RD.sr[A[i].it.id]; if (s) { if (s.due <= hari) due.push(A[i]); } else baru.push(A[i]); }
       return due.concat(baru.slice(0, Math.max(0, RD_BARU - dahBaru)));
@@ -20090,9 +20092,9 @@
       lukis();
     }
     function rdLukisArked() {
-      var q = RD.kuiz, h, n, i, s, kls, jum, buka;
+      var q = RD.kuiz, h, n, i, s, kls, jum, buka, k;
       if (!RD.bank) { rdMuat(); return '<div class="jw-info">Memuatkan...</div>'; }
-      if (q && q.i >= q.soalan.length) return '<div class="jw-tajuk">SIAP!</div><div class="jw-info">Skor ' + q.skor + '/' + q.soalan.length + '. Yang betul diulang ikut jadual; yang salah diulang esok.</div>' +
+      if (q && q.i >= q.soalan.length) return '<div class="jw-tajuk">' + (q.lulus ? 'LULUS!' : 'BELUM LULUS') + '</div><div class="jw-info">' + RD_JENIS[q.jk][1] + ' · Skor ' + q.skor + '/' + q.soalan.length + (q.lulus ? ' · naik ke Level ' + ((RD.lv[RD_JENIS[q.jk][0]] || 0) + 1) : ' · perlu 80% untuk naik level') + '.\nYang betul diulang ikut jadual; yang salah diulang esok.</div>' +
         '<button type="button" class="btn btn-primary" data-rd="tutup">Kembali</button>';
       if (q) {
         s = q.soalan[q.i];
@@ -20110,19 +20112,25 @@
           '<button type="button" class="btn btn-primary" data-rd="seterus">' + (q.i + 1 < q.soalan.length ? 'SETERUSNYA ›' : 'LIHAT KEPUTUSAN') + '</button>';
         return h + '<button type="button" class="btn" data-rd="tutup" style="margin-top:6px;">Keluar</button>';
       }
-      n = rdPerlu(); buka = n > 0; jum = rdSemua().length;
-      h = '<button type="button" class="mini-kad' + (buka ? '' : ' mini-tutup') + '" data-rd="mula"><span class="mini-kedai">' + svgKedai(buka ? 'buka' : 'tutup') + '</span>' +
-        '<span class="mini-teks">SINONIM · ANTONIM · IDIOM<span class="gb-sub" style="white-space:pre-line;">' +
-        (buka ? 'BUKA\n' + n + ' soalan hari ini' : jum ? 'TUTUP – SIAP HARI INI\nUlang kaji ikut jadual' : 'TUTUP – BANK KOSONG\nTambah di Perpustakaan › tab TOPIK') + '</span></span></button>';
-      return h + '<div class="jw-info">Latihan dalam bentuk ayat (gaya buku MUET). ' + jum + ' soalan dalam bank · maks ' + RD_BARU + ' soalan baru sehari · ' + RD_SESI + ' soalan setiap pusingan.</div>';
+      // 18 Nov: 3 game berasingan — SINONIM · ANTONIM · IDIOM (kad gaya PADAN / JUTAWAN, level sendiri)
+      h = '';
+      for (k = 0; k < RD_JENIS.length; k++) {
+        n = rdDue(k).length; buka = n > 0; jum = RD.bank[RD_JENIS[k][0]].length;
+        h += '<button type="button" class="mini-kad' + (buka ? '' : ' mini-tutup') + '" data-rd="mula" data-v="' + k + '"><span class="mini-kedai">' + svgKedai(buka ? 'buka' : 'tutup') + '</span>' +
+          '<span class="mini-teks">' + RD_JENIS[k][1] + '<span class="gb-sub" style="white-space:pre-line;">' +
+          (buka ? 'BUKA\nSoalan hari ini ' + n + '\nBank ' + jum : jum ? 'TUTUP – SIAP HARI INI\nBank ' + jum : 'TUTUP – BANK KOSONG\nTambah di Reading › TOPIK') +
+          '</span></span><span class="mini-lv">' + ulLencana((RD.lv[RD_JENIS[k][0]] || 0) + 1) + '</span></button>';
+      }
+      return h + '<div class="jw-info">Latihan dalam bentuk ayat (gaya buku MUET) · maks ' + RD_BARU + ' soalan baru sehari setiap game · ' + RD_SESI + ' soalan setiap pusingan · lulus 80% → level naik.</div>';
     }
     el('ark-hal-3').onclick = function(e) {
       var a = hlCari(e.target, this, 'data-rd'), q = RD.kuiz, i, s, A, P;
       if (a === null || !currentUser) return;
       if (a === 'mula') {
-        A = rdDue().slice(0, RD_SESI); if (!A.length) return;
+        var jk = +hlCari(e.target, this, 'data-v') || 0;
+        A = rdDue(jk).slice(0, RD_SESI); if (!A.length) return;
         for (i = 0; i < A.length; i++) { P = pnAcak([A[i].it.j].concat((A[i].it.x || []).slice(0, 3))); A[i] = { it: A[i].it, k: A[i].k, pilih: P, betul: P.indexOf(A[i].it.j) }; }
-        RD.kuiz = { soalan: A, i: 0, skor: 0, jawab: null };
+        RD.kuiz = { soalan: A, i: 0, skor: 0, jawab: null, jk: jk };
       } else if (a === 'jawab' && q && q.jawab === null) {
         q.jawab = +hlCari(e.target, this, 'data-v'); s = q.soalan[q.i];
         var ok = q.jawab === s.betul, hari = coachHariId(), x = RD.sr[s.it.id], f = ok && x ? Math.min(x.fasa + 1, RD_SELANG.length - 1) : 0;
@@ -20130,7 +20138,17 @@
         if (ok) q.skor++;
         RD.sr[s.it.id] = rek; ub.sr[s.it.id] = rek;
         kol('coach').doc('reading_sr').set(ub, { merge: true }).catch(function(er) { alert('Gagal simpan: ' + ((er && er.message) || er)); });
-      } else if (a === 'seterus' && q) { q.i++; q.jawab = null; }
+      } else if (a === 'seterus' && q) {
+        q.i++; q.jawab = null;
+        if (q.i >= q.soalan.length) { // tamat pusingan → lulus 80% = level naik
+          q.lulus = q.skor >= Math.ceil(q.soalan.length * 0.8);
+          if (q.lulus) {
+            var kj = RD_JENIS[q.jk][0], ul = { lv: {} };
+            RD.lv[kj] = (RD.lv[kj] || 0) + 1; ul.lv[kj] = RD.lv[kj];
+            kol('coach').doc('reading_sr').set(ul, { merge: true }).catch(function() {});
+          }
+        }
+      }
       else if (a === 'tutup') RD.kuiz = null;
       arkLukis();
       try { window.scrollTo(0, 0); } catch (er) {}
