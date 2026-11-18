@@ -13654,7 +13654,7 @@
         '5. Output: SATU codebox teks biasa sahaja, tanpa penerangan.',
         '',
         'SENARAI NOTA SEMASA:'
-      ].concat(L).join('\n');
+      ].concat(L).concat(pnTanpaTr().length ? ['', 'TERJEMAHAN BELUM ADA — beri JUGA baris "T: frasa = terjemahan BM" untuk SETIAP frasa di bawah (frasa ditulis TEPAT sama, termasuk ... dan tanda baca). Game Arked perlukan terjemahan ini:'].concat(pnTanpaTr()) : []).join('\n'); // 18 Nov
     }
     function pnSalin(teks) {
       var siap = function() { pnUI.mesej = 'PRESET DISALIN. Tampal ke AI → salin jawapan AI → tekan JANA PUKAL → tampal → SIMPAN.'; pnUI.preset = ''; pnRender(); };
@@ -13738,7 +13738,7 @@
     }
     function pnSenaraiFrasa(g) {
       var h = '', i;
-      for (i = 0; i < g.f.length; i++) h += '<div style="margin:3px 0;">- <b>' + pnTeks(g.f[i]) + '</b>' + (typeof g.f[i] === 'string' && pnTr(g.f[i]) ? ' — <i>' + puE(pnTr(g.f[i])) + '</i>' : '') + (pnRumah === 'tulis' ? '' : pnButangAudio(g.id + '-' + i)) + '</div>';
+      for (i = 0; i < g.f.length; i++) h += '<div style="margin:3px 0;">- <b>' + pnTeks(g.f[i]) + '</b>' + (typeof g.f[i] === 'string' ? (pnTr(g.f[i]) ? ' — <i>' + puE(pnTr(g.f[i])) + '</i>' : ' <span style="font-size:0.75rem;">(terjemahan belum ada)</span>') : '') + (pnRumah === 'tulis' ? '' : pnButangAudio(g.id + '-' + i)) + '</div>';
       return h;
     }
     // Bacaan = kumpulan HARI INI + maks 3 kumpulan lain dari set yang sama (supaya SEMUA pilihan jawapan latihan ada dalam bacaan)
@@ -19973,11 +19973,12 @@
       for (i = 0; i < w.length; i++) if (w[i].length > 2) { k++; if ((' ' + a + ' ').indexOf(' ' + w[i] + ' ') !== -1) n++; }
       return k ? n / k >= 0.6 : a === b;
     }
+    function agTiadaTr(g) { var n = 0, i; for (i = 0; i < g.f.length; i++) if (!pnTr(g.f[i])) n++; return n; } // frasa tanpa terjemahan
     function agKad(r, g, due) {
-      var s = pnData.sr[g.id], buka = due.indexOf(g.id) !== -1, hari = coachHariId();
+      var s = pnData.sr[g.id], buka = due.indexOf(g.id) !== -1, hari = coachHariId(), tt = agTiadaTr(g);
       return '<button type="button" class="mini-kad' + (buka ? '' : ' mini-tutup') + '" data-ag="mula" data-v="' + g.id + '"><span class="mini-kedai">' + svgKedai(buka ? 'buka' : 'tutup') + '</span>' +
         '<span class="mini-teks" style="font-size:1.05rem;">' + g.t + '<span class="gb-sub" style="white-space:pre-line;">' +
-        (buka ? 'BUKA\n' + g.f.length + ' frasa · ' + (s ? 'ulang kaji' : 'BARU') : s ? 'TUTUP\nUlang ' + s.due : 'TUTUP\nBelum dibuka (1 game baru sehari)') +
+        (buka && tt ? 'PERLU TERJEMAHAN (' + tt + ' frasa)\nTOPIK › SALIN PRESET → JANA PUKAL' : buka ? 'BUKA\n' + g.f.length + ' frasa · ' + (s ? 'ulang kaji' : 'BARU') : s ? 'TUTUP\nUlang ' + s.due : 'TUTUP\nBelum dibuka (1 game baru sehari)') +
         '</span></span><span class="mini-lv">' + ulLencana(((s && s.n) || 0) + 1) + '</span></button>';
     }
     function agLukis(r) {
@@ -20008,7 +20009,7 @@
           '<button type="button" class="btn btn-primary" data-ag="semak" style="margin-top:8px;">SEMAK</button>';
       } else {
         if (r !== 'tulis') h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[0] ? 'BETUL' : 'SALAH') + '</b> · Didengar: <b>' + puE(it.en) + '</b>' + (q.ok[0] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.en || '-') + '</div>') + '</div>';
-        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[1] ? 'BETUL' : 'SALAH') + '</b> · Terjemahan: <b>' + puE(it.bm || '(belum ada — tambah di TOPIK › PRESET TERJEMAHAN)') + '</b>' + (q.ok[1] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.bm || '-') + '</div>') + '</div>';
+        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[1] ? 'BETUL' : 'SALAH') + '</b> · Terjemahan: <b>' + puE(it.bm) + '</b>' + (q.ok[1] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.bm || '-') + '</div>') + '</div>';
         if (!(q.ok[0] && q.ok[1])) h += '<button type="button" class="btn" data-ag="betulkan">SAYA RASA BETUL (tanda betul)</button>';
         h += '<button type="button" class="btn btn-primary" data-ag="seterus" style="margin-top:6px;">' + (q.i + 1 < q.s.length ? 'SETERUSNYA ›' : 'LIHAT KEPUTUSAN') + '</button>';
       }
@@ -20020,6 +20021,7 @@
       if (!currentUser || !pnData) return;
       if (a === 'mula') {
         g = pnGrp(v); if (!g || pnDue().indexOf(v) === -1) return;
+        if (agTiadaTr(g)) { alert('Game ini perlukan terjemahan BM untuk ' + agTiadaTr(g) + ' frasa.\n\nPergi tab TOPIK ' + (r === 'tulis' ? 'Writing' : 'Listening') + ' → SALIN PRESET → tampal ke AI → salin jawapan → JANA PUKAL → SIMPAN.\nPreset sudah senaraikan semua frasa yang belum ada terjemahan.'); return; }
         AG = { r: r, gid: v, t: g.t, s: [], i: 0, skor: 0, semak: false, ok: [true, true], en: '', bm: '' };
         for (i = 0; i < g.f.length; i++) AG.s.push({ en: typeof g.f[i] === 'string' ? g.f[i] : g.f[i][0], bm: pnTr(g.f[i]), aid: g.id + '-' + i });
         AG.s = pnAcak(AG.s);
