@@ -5078,6 +5078,7 @@
           _subuhEsokMs = subuhEsok;
         }
         _waktuSolatList = waktuList;
+        window._waktuSolatList = waktuList; // 18 Nov: KUNCI SOLAT guna senarai ini
         paparWaktuSolat(waktuList);
 
         waktuList.forEach(function(item, idx) {
@@ -14275,8 +14276,8 @@
           return;
         }
         if (supTerlepas().length) { coachKunciMesej = supMesejKunci(); bukaCoach(false); return; }
-        var akL = coachAirKunci();
-        if (akL) { makmalUI.pesan = coachAirMesej(akL); bukaMakmal(); return; }
+        var akL = coachKunciSemua();
+        if (akL) { coachKeKunci(akL); return; }
         coachKunciMesej = '';
         teruskan();
       }).catch(function() { teruskan(); });
@@ -14348,7 +14349,7 @@
       while (t && t !== document && !(t.getAttribute && t.getAttribute('data-gm-tab'))) t = t.parentNode;
       if (!t || t === document) return;
       var k = t.getAttribute('data-gm-tab'), akT;
-      if (k !== 'coach' && k !== 'atur' && (akT = coachAirKunci())) { coachAirKeMakmal(akT); return; } // KUNCI AIR: tab lain → Makmal
+      if (k !== 'coach' && k !== 'atur' && (akT = coachKunciSemua())) { coachKeKunci(akT); return; } // KUNCI SOLAT / AIR: tab lain → Surau / Makmal
       pus = null; jw = null;
       if (k === 'menu') showScreen('screen-menu');
       else if (k === 'coach') bukaCoach(false);
@@ -15837,11 +15838,11 @@
         }
         var tanda = '';
         try { tanda = TS_LACI[b[0]] ? (kunciLaci ? 'DIKUNCI' : '') : tsTanda(b[0]); } catch (e) {}
-        try { if (coachAirKunci()) tanda = b[0] === 'makmal' ? 'MINUM DULU' : 'DIKUNCI'; } catch (e) {} // KUNCI AIR
+        try { if (coachSolatKunci()) tanda = b[0] === 'surau' ? 'SOLAT DULU' : 'DIKUNCI'; else if (coachAirKunci()) tanda = b[0] === 'makmal' ? 'MINUM DULU' : 'DIKUNCI'; } catch (e) {} // KUNCI SOLAT / AIR
         // Tanda = cop di tengah bumbung, tutup simbol bangunan (gaya cop SOLD, 12 Nov) — tidak menolak bangunan ke bawah
         var cop = '';
         if (tanda) {
-          var copHitam = tanda.indexOf('TERLEPAS') !== -1 || tanda === 'DIKUNCI' || tanda === 'MINUM DULU';
+          var copHitam = tanda.indexOf('TERLEPAS') !== -1 || tanda === 'DIKUNCI' || tanda === 'MINUM DULU' || tanda === 'SOLAT DULU';
           cop = '<span style="position:absolute;z-index:2;left:' + (TS_PETI[b[0]] ? '43%' : '50%') + ';top:29%;padding:2px ' + (tsMod === 'ts' ? 4 : 7) + 'px;border:3px double ' + (copHitam ? '#fff' : '#000') + ';outline:2px solid #000;' +
             'font-weight:bold;font-size:' + (tsMod === 'ts' ? '0.62rem' : '0.78rem') + ';white-space:nowrap;letter-spacing:1px;text-transform:uppercase;' +
             '-webkit-transform:translate(-50%,-50%) rotate(-10deg);transform:translate(-50%,-50%) rotate(-10deg);' +
@@ -15852,12 +15853,12 @@
           '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
       }
       el('ts-bangunan').innerHTML = h;
-      try { var akTs = coachAirKunci(); if (akTs) el('ts-info').textContent = coachAirMesej(akTs) + ' Hanya MAKMAL HIDRASI dibuka.'; } catch (e) {}
+      try { var skTs = coachSolatKunci(), akTs = coachAirKunci(); if (skTs) el('ts-info').textContent = coachSolatMesej(skTs) + ' Hanya SURAU dibuka.'; else if (akTs) el('ts-info').textContent = coachAirMesej(akTs) + ' Hanya MAKMAL HIDRASI dibuka.'; } catch (e) {}
     }
     function bukaTs(selepas, mod) {
       if (!currentUser) return;
       var m = mod === 'muet' ? 'muet' : 'ts', tbT, q, akM;
-      if (m === 'muet' && (akM = coachAirKunci())) { var aM = document.querySelector('.screen.active'); if (!aM || !AIR_SKRIN_KUNCI.test(aM.id)) { coachAirKeMakmal(akM); return; } }
+      if (m === 'muet' && (akM = coachKunciSemua())) { var aM = document.querySelector('.screen.active'); if (!aM || !AIR_SKRIN_KUNCI.test(aM.id)) { coachKeKunci(akM); return; } }
       tsHalSimpan[tsMod] = tsHal; tsMod = m; tsHal = tsHalSimpan[m] || 0;
       TS_HALAMAN = m === 'muet' ? TS_HAL_MUET : TS_HAL_USAHA;
       el('ts-status').textContent = m === 'muet' ? 'MUET' : 'USAHA';
@@ -15871,7 +15872,7 @@
         coachDataAkhir = r[0];
         lukisTs();
         coachLukisTugas();
-        if (coachHariData.hari.laporanAt && tsMod === 'ts' && !coachAirKunci()) {
+        if (coachHariData.hari.laporanAt && tsMod === 'ts' && !coachKunciSemua()) {
           var kk = coachKiraKesihatan();
           el('ts-info').textContent = 'Buat tugas di setiap bangunan → Ringgit Kuning. Markah diabaikan ' + kk.markah + '/' + COACH_HAD_KUNCI + (kk.kunci ? ' · LACI DIKUNCI (siapkan bangunan bertanda TERLEPAS)' : '');
         }
@@ -16561,24 +16562,54 @@
     //   Kunci hanya bila pengguna dari LUAR (Tasks / Menu / Coach / Makmal…) cuba masuk — yang sedang di dalam TIDAK dikeluarkan.
     var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|nutrisi|sup-edit|bilik|hj|bp|ul-|gb|tpl)/;
     function coachAirKeMakmal(ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); coachAirPopup('Minta maaf, ' + coachAirMesej(ak)); }, 0); }
-    // 18 Nov: POPUP bila app bawa pengguna ke Makmal secara automatik (kunci air)
-    function coachAirPopup(teks) {
+    // ══ KUNCI SOLAT (18 Nov): sudah masuk waktu (azan) tetapi solat waktu itu belum ditanda SUDAH di SURAU → semua dikunci macam KUNCI AIR (Surau sahaja dibuka) ══
+    var SOLAT_TIP = 'TIP: Kalau rasa berat nak solat, rasa malas untuk solat betul-betul lepas azan — terus SUJUD atas sejadah. Sujud lama-lama sampailah rasa boleh bangun. Masa lebih sejam bersujud pun tak apa — sebab ia buat kita tak lari kepada benda-benda dopamin, iaitu pelarian daripada solat awal waktu.';
+    function coachSolatKunci() {
+      var L = window._waktuSolatList, hr = coachHariData.hari, now = Date.now(), i, last = null, d, w;
+      if (!L || !L.length || !hr || coachHariData.id !== coachHariId()) return null;
+      for (i = 0; i < L.length; i++) if (L[i].waktuMs <= now && (!last || L[i].waktuMs > last.waktuMs)) last = L[i];
+      if (!last) return null;
+      d = new Date(last.waktuMs); if (d.getHours() < 4) d.setDate(d.getDate() - 1);
+      if (coachTarikh(d) !== coachHariData.id) return null; // waktu milik hari coach lain (cth Isyak semalam sebelum Subuh)
+      w = (hr.solatW || {})[last.nama.toLowerCase()];
+      return w && w.s ? null : last;
+    }
+    function coachSolatMesej(t) {
+      return 'DIKUNCI — sudah masuk waktu ' + t.nama.toUpperCase() + ' (' + coachTeksMasa(coachKeMinit(t.jamStr)) + '). Solat dulu, kemudian tanda SUDAH di SURAU — semua kunci terus dibuka.';
+    }
+    function coachKunciSemua() { var sk = coachSolatKunci(), ak; if (sk) return { solat: sk }; ak = coachAirKunci(); return ak ? { air: ak } : null; }
+    function coachKeKunci(x) {
+      if (!x) return;
+      if (x.air) { coachAirKeMakmal(x.air); return; }
+      setTimeout(function() { bukaSurau(); el('surau-info').textContent = coachSolatMesej(x.solat); coachAirPopup('Minta maaf, ' + coachSolatMesej(x.solat), 'SURAU', 'OK, SOLAT SEKARANG', SOLAT_TIP); }, 0);
+    }
+    // 18 Nov: POPUP bila app bawa pengguna ke Makmal / Surau secara automatik (kunci air / solat)
+    function coachAirPopup(teks, tajuk, butang, tip) {
       var p = el('air-popup');
       if (!p) {
         p = document.createElement('div'); p.id = 'air-popup';
         p.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.45);';
-        p.innerHTML = '<div style="position:absolute;left:5%;right:5%;top:22%;background:#fff;color:#000;border:4px double #000;border-radius:12px;padding:14px 14px 12px;font-size:1.05rem;line-height:1.4;">' +
-          '<div style="font-weight:bold;font-size:1.15rem;margin-bottom:6px;">MAKMAL HIDRASI</div><div id="air-popup-teks"></div>' +
-          '<button type="button" id="air-popup-ok" style="display:block;width:100%;margin-top:12px;padding:10px;border:2px solid #000;border-radius:8px;background:#000;color:#fff;font-family:inherit;font-size:1rem;font-weight:bold;">OK, MINUM SEKARANG</button></div>';
+        p.innerHTML = '<div style="position:absolute;left:5%;right:5%;top:16%;background:#fff;color:#000;border:4px double #000;border-radius:12px;padding:14px 14px 12px;font-size:1.05rem;line-height:1.4;">' +
+          '<div id="air-popup-tajuk" style="font-weight:bold;font-size:1.15rem;margin-bottom:6px;"></div><div id="air-popup-teks"></div>' +
+          '<div id="air-popup-tip" style="border-left:4px solid #000;padding:2px 0 2px 8px;margin-top:10px;font-size:0.92rem;"></div>' +
+          '<button type="button" id="air-popup-ok" style="display:block;width:100%;margin-top:12px;padding:10px;border:2px solid #000;border-radius:8px;background:#000;color:#fff;font-family:inherit;font-size:1rem;font-weight:bold;"></button></div>';
         document.body.appendChild(p);
         el('air-popup-ok').onclick = function() { el('air-popup').style.display = 'none'; };
       }
+      el('air-popup-tajuk').textContent = tajuk || 'MAKMAL HIDRASI';
       el('air-popup-teks').textContent = teks;
+      el('air-popup-tip').textContent = tip || '';
+      el('air-popup-tip').style.display = tip ? '' : 'none';
+      el('air-popup-ok').textContent = butang || 'OK, MINUM SEKARANG';
       p.style.display = 'block';
     }
     window.supHalang = function(id) {
-      var ak, a = document.querySelector('.screen.active'), dari = a ? a.id : '';
-      if (AIR_SKRIN_KUNCI.test(id || '') && !AIR_SKRIN_KUNCI.test(dari) && (ak = coachAirKunci())) { coachAirKeMakmal(ak); return true; }
+      var ak, sk, a = document.querySelector('.screen.active'), dari = a ? a.id : '';
+      if (AIR_SKRIN_KUNCI.test(id || '') && !AIR_SKRIN_KUNCI.test(dari)) {
+        sk = coachSolatKunci();
+        if (sk) { if (!/^screen-surau/.test(id)) { coachKeKunci({ solat: sk }); return true; } } // Surau sahaja dibuka
+        else if ((ak = coachAirKunci())) { coachAirKeMakmal(ak); return true; }
+      }
       if (!SUP_SKRIN_KUNCI.test(id || '')) return false;
       if (!supTerlepas().length) return false;
       coachKunciMesej = supMesejKunci();
@@ -16922,6 +16953,9 @@
       }
       var sm = coachSolatMinggu();
       if (sm) h += '<div style="font-size:0.8rem;">Purata 7 hari: ' + sm.purata + ' / 5 (' + sm.hari + ' hari direkod) · <b>' + sm.st + '</b></div>';
+      var skS = coachSolatKunci();
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:8px 0 4px;font-size:0.85rem;"><b>KUNCI SOLAT:</b> selepas azan, semua game, laci &amp; bangunan dikunci sehingga solat waktu itu ditanda SUDAH.' + (skS ? ' <b>SEKARANG: DIKUNCI (' + skS.nama.toUpperCase() + ').</b>' : ' Sekarang: TERBUKA.') +
+        '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin-top:6px;">' + SOLAT_TIP + '</div></div>';
       box.innerHTML = h;
     }
     function bukaSurau() { usMuat('screen-surau', 'surau-info', lukisSurau); }
