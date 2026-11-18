@@ -6223,6 +6223,11 @@
     /* Bar atas: MENU kiri · PROFIL kanan */
     .mn-bar { display: flex; justify-content: space-between; align-items: center; }
     .mn-bar button[data-gm-profil] svg { width: 16px; height: 16px; margin-right: 6px; }
+    .mn-kanan { display: flex; align-items: center; }
+    .mn-kanan button + button { margin-left: 6px; }
+    .mn-bar button[data-gm-tab="atur"] svg { width: 16px; height: 16px; }
+    .mn-bar button.mn-aktif { background: #000; color: #fff; }
+    .mn-bar button.mn-aktif svg path { stroke: #fff; }
     /* Mata wang game (Tiket / Dollar / Emas / Perak) di kanan atas, macam game CoC */
     .gc-bar { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin: 0 0 6px; }
     .gc-pil.gc-lv { min-width: 0; }
@@ -6991,6 +6996,16 @@
     <div id="ts-bangunan" class="kd-pondok"></div>
     <div id="coach-tugas" style="display:none;"></div>
   </div>
+  <!-- PETI SURAT (18 Nov): templat tetap Speaking / Writing — dibuka dari peti surat tepi bangunan di tab MUET -->
+  <div id="screen-tpl" class="screen">
+    <div class="status-bar">PETI SURAT · TEMPLAT</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-tpl-balik" class="gm-kecil">‹ MUET</button>
+      <span class="gm-alat-tajuk" id="tpl-tajuk">TEMPLAT</span>
+    </div>
+    <div id="tpl-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
+  </div>
   <!-- TAB LACI (17 Nov) — senarai laci macam MENU -->
   <div id="screen-lc" class="screen">
     <div class="status-bar">LACI</div>
@@ -7030,7 +7045,7 @@
   <div id="screen-pawagam" class="screen">
     <div class="status-bar">LISTENING</div>
     <div class="gm-alat">
-      <button type="button" id="btn-us-pawagam-keluar" class="gm-kecil">‹ Usaha</button>
+      <button type="button" id="btn-us-pawagam-keluar" class="gm-kecil">‹ MUET</button>
       <span class="gm-alat-tajuk">LISTENING</span>
       <button type="button" id="btn-us-pawagam-coach" class="gm-kecil">Coach</button>
     </div>
@@ -7045,7 +7060,7 @@
   <div id="screen-pentas" class="screen">
     <div class="status-bar">SPEAKING</div>
     <div class="gm-alat">
-      <button type="button" id="btn-us-pentas-keluar" class="gm-kecil">‹ Usaha</button>
+      <button type="button" id="btn-us-pentas-keluar" class="gm-kecil">‹ MUET</button>
       <span class="gm-alat-tajuk">SPEAKING</span>
       <button type="button" id="btn-us-pentas-coach" class="gm-kecil">Coach</button>
     </div>
@@ -7057,7 +7072,7 @@
   <div id="screen-pustaka" class="screen">
     <div class="status-bar">READING</div>
     <div class="gm-alat">
-      <button type="button" id="btn-us-pustaka-keluar" class="gm-kecil">‹ Usaha</button>
+      <button type="button" id="btn-us-pustaka-keluar" class="gm-kecil">‹ MUET</button>
       <span class="gm-alat-tajuk">READING</span>
       <button type="button" id="btn-us-pustaka-coach" class="gm-kecil">Coach</button>
     </div>
@@ -7069,7 +7084,7 @@
   <div id="screen-tulis" class="screen">
     <div class="status-bar">WRITING</div>
     <div class="gm-alat">
-      <button type="button" id="btn-us-tulis-keluar" class="gm-kecil">‹ Usaha</button>
+      <button type="button" id="btn-us-tulis-keluar" class="gm-kecil">‹ MUET</button>
       <span class="gm-alat-tajuk">WRITING</span>
       <button type="button" id="btn-us-tulis-coach" class="gm-kecil">Coach</button>
     </div>
@@ -10267,7 +10282,7 @@
       else teks = fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
       if (seterus) teks += '\nSeterusnya: ' + seterus.nama + ' — ' + coachTeksMasa(seterus.min);
       teks += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
-      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Listening / Dewan Tulis › tab FORMULA › SALIN PRESET → JANA PUKAL.';
+      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — MUET › Listening / Writing › tab FORMULA › SALIN PRESET → JANA PUKAL.';
       if (typeof ptPerluTambah === 'function' && ptPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah soalan SPEAKING — app phone › Laci Speaking › SALIN PRESET.';
       return teks;
     }
@@ -14319,6 +14334,7 @@
       else if (k === 'mx') bukaMx();
       else if (k === 'kd') bukaKd();
       else if (k === 'ts') bukaTs();
+      else if (k === 'muet') bukaMuet();
       else if (k === 'lc') bukaLc();
       else if (k === 'us') bukaUs();
       else if (k === 'atur') { showScreen('screen-atur'); try { window.scrollTo(0, 0); } catch (e2) {} }
@@ -15612,11 +15628,13 @@
       ['tulis', 'WRITING', 'Writing English (MUET)', true]
     ];
     // USAHA BERHALAMAN: [tajuk, senarai kunci bangunan] — tekan titik kanan / sapu atas-bawah untuk tukar page (tiada skrol)
-    var TS_HALAMAN = [
+    var TS_HAL_USAHA = [
       ['BADAN', ['gym', 'taman', 'makmal', 'nutrisi']],
-      ['REHAT & IBADAH', ['tidur', 'surau']],
-      ['ENGLISH MUET', ['pawagam', 'pustaka', 'pentas', 'tulis']] // 18 Nov: baris 1 INPUT (Listening · Reading) · baris 2 OUTPUT (Speaking · Writing)
+      ['REHAT & IBADAH', ['tidur', 'surau']]
     ];
+    // 18 Nov: tab MUET sendiri (sebelah TASKS) — baris 1 INPUT (Listening · Reading) · baris 2 OUTPUT (Speaking · Writing)
+    var TS_HAL_MUET = [['ENGLISH MUET', ['pawagam', 'pustaka', 'pentas', 'tulis']]];
+    var TS_HALAMAN = TS_HAL_USAHA, tsMod = 'ts', tsHalSimpan = { ts: 0, muet: 0 };
     // ══ TAB LACI (17 Nov) — senarai butang macam MENU · tekan → laci terus dibuka (kunci Health First & kira minit sama macam MENU) ══
     var LC_SENARAI = [['btn-go-bahasa', 'Laci Bahasa'], ['btn-go-sr-bebas', 'SR Bebas (Bahasa)'], ['btn-go-fakta', 'Laci Fakta'],
       ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing']];
@@ -15636,8 +15654,9 @@
     };
     var TS_LACI = { bahasa: 'btn-go-bahasa', fakta: 'btn-go-fakta', reasoning: 'btn-go-reasoning', presenting: 'btn-go-presenting' };
     var tsHal = 0;
+    var TS_PETI = { pentas: 1, tulis: 1 }; // 18 Nov: bangunan ada PETI SURAT (templat) di tepi
     function svgBangunan(k, nama, aktif) {
-      var g = aktif ? '' : ' stroke-dasharray="5 3"', s = '<svg viewBox="0 0 120 132" xmlns="http://www.w3.org/2000/svg">';
+      var g = aktif ? '' : ' stroke-dasharray="5 3"', s = '<svg viewBox="0 0 ' + (TS_PETI[k] ? 140 : 120) + ' 132" xmlns="http://www.w3.org/2000/svg"' + (TS_PETI[k] ? ' style="max-width:210px;"' : '') + '>';
       s += '<path d="M6 52 L60 14 L114 52 Z" fill="#fff" stroke="#000" stroke-width="2.5"' + g + '/>';
       s += '<rect x="14" y="52" width="92" height="70" fill="#fff" stroke="#000" stroke-width="2.5"' + g + '/>';
       s += '<rect x="20" y="58" width="80" height="18" fill="' + (aktif ? '#000' : '#fff') + '" stroke="#000" stroke-width="2"' + g + '/>';
@@ -15662,7 +15681,13 @@
       if (k === 'esei') s += '<path d="M47 23 H67 L73 29 V49 H47 Z" fill="#fff" stroke="#000" stroke-width="2.5"/><path d="M51 31 H69 M51 36 H69 M51 41 H69 M51 46 H63" stroke="#000" stroke-width="2"/>';
       if (k === 'tulis') s += '<path d="M48 47 L51 38 L68 21 L74 27 L57 44 Z" fill="#000"/><path d="M48 47 L51 38 L57 44 Z" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M44 49 H76" stroke="#000" stroke-width="2.5"/>';
       if (k === 'pustaka') s += '<rect x="45" y="40" width="30" height="7" fill="#000"/><rect x="48" y="33" width="26" height="6" fill="#fff" stroke="#000" stroke-width="2"/><rect x="46" y="26" width="24" height="6" fill="#000"/><path d="M50 43.5 H70" stroke="#fff" stroke-width="1.5"/>';
-      s += '<path d="M0 124 H120" stroke="#000" stroke-width="2"/>';
+      if (TS_PETI[k]) s += '<g data-tpl="' + k + '"><rect x="121" y="99" width="4" height="25" fill="#000"/>' +
+        '<path d="M128 80 V70 H135 V75 H128" fill="#000" stroke="#000" stroke-width="1.5"/>' +
+        '<path d="M110 101 V88 Q110 80 118 80 H128 Q136 80 136 88 V101 Z" fill="#fff" stroke="#000" stroke-width="2.5"/>' +
+        '<rect x="114" y="85" width="18" height="9" fill="#fff" stroke="#000" stroke-width="1.5"/><path d="M114 85 L123 91 L132 85" fill="none" stroke="#000" stroke-width="1.5"/>' +
+        '<text x="123" y="99" font-size="4.6" font-weight="bold" text-anchor="middle" fill="#000">TEMPLAT</text>' +
+        '<rect x="106" y="66" width="34" height="58" fill="#fff" fill-opacity="0"/></g>';
+      s += '<path d="M0 124 H' + (TS_PETI[k] ? 140 : 120) + '" stroke="#000" stroke-width="2"/>';
       return s + '</svg>';
     }
     // Tanda atas bangunan: "n TERLEPAS" (hitam) · "SEKARANG" · "SIAP" — ganti senarai tugas panjang
@@ -15698,7 +15723,8 @@
       var titik = '';
       for (hp = 0; hp < TS_HALAMAN.length; hp++) titik += '<button type="button" class="mt' + (hp === tsHal ? ' on' : '') + '" data-tshal="' + hp + '"><span>' + (ada[hp] ? '!' : '') + '</span></button>';
       el('ts-titik').innerHTML = titik;
-      el('ts-hal-tajuk').textContent = TS_HALAMAN[tsHal][0] + ' · ' + (tsHal + 1) + '/' + TS_HALAMAN.length;
+      el('ts-hal-tajuk').textContent = TS_HALAMAN[tsHal][0] + (TS_HALAMAN.length > 1 ? ' · ' + (tsHal + 1) + '/' + TS_HALAMAN.length : '');
+      el('ts-titik').style.display = TS_HALAMAN.length > 1 ? '' : 'none';
       var senaraiHal = TS_HALAMAN[tsHal][1];
       for (i = 0; i < senaraiHal.length; i++) {
         b = tsCariBangunan(senaraiHal[i]);
@@ -15737,36 +15763,45 @@
         var cop = '';
         if (tanda) {
           var copHitam = tanda.indexOf('TERLEPAS') !== -1 || tanda === 'DIKUNCI';
-          cop = '<span style="position:absolute;z-index:2;left:50%;top:29%;padding:2px 7px;border:3px double ' + (copHitam ? '#fff' : '#000') + ';outline:2px solid #000;' +
+          cop = '<span style="position:absolute;z-index:2;left:' + (TS_PETI[b[0]] ? '43%' : '50%') + ';top:29%;padding:2px 7px;border:3px double ' + (copHitam ? '#fff' : '#000') + ';outline:2px solid #000;' +
             'font-weight:bold;font-size:0.78rem;white-space:nowrap;letter-spacing:1px;text-transform:uppercase;' +
             '-webkit-transform:translate(-50%,-50%) rotate(-10deg);transform:translate(-50%,-50%) rotate(-10deg);' +
             (copHitam ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + tanda + '</span>';
         }
         h += '<button type="button" class="kd-pd" data-ts="' + b[0] + '"' + (b[3] ? '' : ' style="opacity:0.85;"') + '>' +
-          '<span style="position:relative;display:block;max-width:180px;margin:0 auto;">' + svgBangunan(b[0], b[1], b[3]) + cop + '</span>' +
+          '<span style="position:relative;display:block;max-width:' + (TS_PETI[b[0]] ? 210 : 180) + 'px;margin:0 auto;">' + svgBangunan(b[0], b[1], b[3]) + cop + '</span>' +
           '<small>' + sub + (b[3] ? '' : ' · AKAN DATANG') + '</small></button>';
       }
       el('ts-bangunan').innerHTML = h;
     }
-    function bukaTs(selepas) {
+    function bukaTs(selepas, mod) {
       if (!currentUser) return;
+      var m = mod === 'muet' ? 'muet' : 'ts', tbT, q;
+      tsHalSimpan[tsMod] = tsHal; tsMod = m; tsHal = tsHalSimpan[m] || 0;
+      TS_HALAMAN = m === 'muet' ? TS_HAL_MUET : TS_HAL_USAHA;
+      el('ts-status').textContent = m === 'muet' ? 'MUET' : 'USAHA';
+      tbT = el('screen-ts').querySelectorAll('.gm-tab [data-gm-tab]');
+      for (q = 0; q < tbT.length; q++) tbT[q].className = tbT[q].getAttribute('data-gm-tab') === m ? 'gm-aktif' : '';
       showScreen('screen-ts');
       try { window.scrollTo(0, 0); } catch (e) {}
-      el('ts-info').textContent = 'Buat tugas di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).';
+      el('ts-info').textContent = m === 'muet' ? 'Baris atas INPUT (Listening · Reading) · baris bawah OUTPUT (Speaking · Writing). Tekan PETI SURAT di tepi bangunan untuk TEMPLAT.' : 'Buat tugas di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).';
       lukisTs();
       Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
         coachDataAkhir = r[0];
         lukisTs();
         coachLukisTugas();
-        if (coachHariData.hari.laporanAt) {
+        if (coachHariData.hari.laporanAt && tsMod === 'ts') {
           var kk = coachKiraKesihatan();
           el('ts-info').textContent = 'Buat tugas di setiap bangunan → Ringgit Kuning. Markah diabaikan ' + kk.markah + '/' + COACH_HAD_KUNCI + (kk.kunci ? ' · LACI DIKUNCI (siapkan bangunan bertanda TERLEPAS)' : '');
         }
         if (typeof selepas === 'function') selepas();
       }).catch(function() {});
     }
+    function bukaMuet(selepas) { bukaTs(selepas, 'muet'); }
     el('ts-bangunan').addEventListener('click', function(e) {
-      var t = e.target;
+      var t = e.target, tp = t;
+      while (tp && tp !== this && !(tp.getAttribute && tp.getAttribute('data-tpl'))) tp = tp.parentNode;
+      if (tp && tp !== this) { bukaTemplat(tp.getAttribute('data-tpl')); return; } // PETI SURAT → TEMPLAT
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-ts'))) t = t.parentNode;
       if (!t || t === this) return;
       var k = t.getAttribute('data-ts');
@@ -16834,7 +16869,7 @@
       usBayar(baru * (EKO.PAWAGAM_SEN || 0), 'pawagam', 'Listening ' + (baru * 10) + ' min', 'pawagam-info');
     }
     el('btn-us-surau-keluar').onclick = function() { bukaTs(); };
-    el('btn-us-pawagam-keluar').onclick = function() { bukaTs(); };
+    el('btn-us-pawagam-keluar').onclick = function() { bukaMuet(); };
     el('btn-us-surau-coach').onclick = function() { bukaCoach(false); };
     el('btn-us-pawagam-coach').onclick = function() { bukaCoach(false); };
     // ══ PENTAS — NOTA KARANGAN SPEAKING (16 Nov): 2 RUMAH (INDIVIDUAL = Part 1 · GROUP = Part 2) ══
@@ -17553,7 +17588,7 @@
         }).catch(function(er) { t.disabled = false; alert('Gagal simpan: ' + ((er && er.message) || er)); });
       };
     })();
-    el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaTs(); };
+    el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaMuet(); };
     el('btn-us-pentas-coach').onclick = function() { bukaCoach(false); };
     // ══ PERPUSTAKAAN — READING MUET Paper 3 (17 Nov): HARI INI = senarai DAY 1, 2, 3 … · setiap Day = senarai latihan (tajuk kertas + Part) · 1 Part = 10 unit Reading (COACH_UNIT_READING) ══
     // Data: coach/pustaka { hari: { 'YYYY-MM-DD': [ { k: tajuk kertas, p: 1-7, m: markah (pilihan), at } ] }, kertas: [tajuk pernah ditaip] }
@@ -17656,7 +17691,7 @@
       puUI.hari = ''; puUI.part = 0; puUI.mesej = '';
       usMuat('screen-pustaka', 'pustaka-info', function() { el('pustaka-info').textContent = ''; lukisPustaka(); });
     }
-    el('btn-us-pustaka-keluar').onclick = function() { bukaTs(); };
+    el('btn-us-pustaka-keluar').onclick = function() { bukaMuet(); };
     el('btn-us-pustaka-coach').onclick = function() { bukaCoach(false); };
     // ══ DEWAN TULIS — WRITING MUET Paper 4 (17 Nov): 3 tab (HARI INI / TIPS / FORMAT) · isi TIPS & FORMAT dari buku, HARI INI dibincang kemudian ══
 
@@ -18028,7 +18063,7 @@
       if (!pnData) pnMuatData(); rdMuat(); // senarai nota TOPIK untuk PRESET BINCANG AI
       usMuat('screen-tulis', 'tulis-info', function() { el('tulis-info').textContent = ''; lukisTulis(); });
     }
-    el('btn-us-tulis-keluar').onclick = function() { bukaTs(); };
+    el('btn-us-tulis-keluar').onclick = function() { bukaMuet(); };
     el('btn-us-tulis-coach').onclick = function() { bukaCoach(false); };
     // ══ TOPBAR BANGUNAN USAHA (gaya GYM, 12 Nov): ikon HARI INI (tugas) · ikon TIPS (nota, cara, ganjaran — disorok dari page utama) ══
     var USAHA_IKON = {
@@ -18058,16 +18093,18 @@
         '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0 0;"><i>Macam kata orang engineering: <b>wujudkan dulu, baru memperbaik.</b></i></div></div>';
     }
     // 18 Nov: CARA MEMBINA KARANGAN — 4 LANGKAH + TEMPLAT TETAP (cop mohor sendiri). r = 'tulis' / 'pentas'
-    function usahaCaraKarangan(r) {
+    function usahaCaraKarangan(r, tpl) { // tpl = true → TEMPLAT TETAP sahaja (page PETI SURAT) · tanpa → 4 LANGKAH (TIPS)
       var T = function(t) { return '<div style="font-weight:bold;margin:8px 0 2px;">' + t + '</div>'; }, B = function(a) { return '<ol style="margin:2px 0 4px 18px;padding:0;"><li>' + a.join('</li><li>') + '</li></ol>'; };
       var h = '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:4px 0 10px;">' +
         '<div style="background:#000;color:#fff;font-weight:bold;border-radius:6px;padding:3px 8px;margin-bottom:5px;">CARA MEMBINA ' + (r === 'tulis' ? 'KARANGAN' : 'SKRIP SPEAKING') + ' — 4 LANGKAH</div>' +
-        '<div><b>LANGKAH 1 · Tulis ikut TEMPLAT.</b> Draf pertama ikut templat tetap di bawah (cop mohor sendiri) — isi ___ guna ilmu sedia ada. Wujudkan dulu, baru perbaiki.</div>' +
+        '<div><b>LANGKAH 1 · Tulis ikut TEMPLAT.</b> Draf pertama ikut templat tetap (cop mohor sendiri) — buka <b>PETI SURAT</b> di tepi bangunan ' + (r === 'tulis' ? 'WRITING' : 'SPEAKING') + ' (tab MUET). Isi ___ guna ilmu sedia ada. Wujudkan dulu, baru perbaiki.</div>' +
         '<div style="margin-top:4px;"><b>LANGKAH 2 · Rujuk BUKU dulu.</b> Selak buku contoh esei helai demi helai — mana tahu ada corak ayat boleh guna. <b>Jangan tanya AI dulu</b>: AI akan beri cadangan yang lebih baik bila draf kita sudah baik.</div>' +
         '<div style="margin-top:4px;"><b>LANGKAH 3 · Baiki bersama AI.</b> Tab HARI INI → <b>SALIN PRESET BINCANG AI</b> → bincang ayat demi ayat, sesuai letak di mana. AI semak nota FORMULA (cohesive devices, useful expressions, idiom…) — masukkan yang berguna. Kalau AI tahu ungkapan / idiom yang lebih baik walaupun tiada dalam FORMULA, guna yang lebih baik — kemudian tambah nota baru itu ke tab FORMULA (JANA PUKAL) sebab kita dah belajar benda baru.</div>' +
         '<div style="margin-top:4px;"><b>LANGKAH 4 · Ulang kaji pada masa hadapan (SR).</b> Baca semula tajuk yang sama ikut jadual. Pada hari kita tak menulis, kita membaca macam pembaca karangan orang lain — nampak ayat yang terabur, sukar difahami dan berbelit → baiki.</div>' +
         '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0 0;"><b>TIP:</b> Tulis di <b>Google Docs atau kertas</b>, kemudian salin versi siap ke app phone (supaya Kindle boleh baca ikut SR). Game bukan tempat menulis — game tempat rujuk tips &amp; ulang kaji.</div></div>';
-      h += '<div style="font-weight:bold;font-size:1.1rem;margin:10px 0 2px;">TEMPLAT TETAP</div><div style="font-size:0.85rem;">MUET tidak tetapkan bilangan ayat — ' + (r === 'tulis' ? 'cuma Task 1 sekurang-kurangnya 100 perkataan (guna SEMUA 4 nota) &amp; Task 2 sekurang-kurangnya 250 perkataan' : 'cuma Part 1 = 2 minit bercakap &amp; Part 2 = perbincangan 8–12 minit capai pilihan TERBAIK') + '. Bilangan ayat di bawah ditetapkan supaya cukup ' + (r === 'tulis' ? 'perkataan' : 'masa') + '.</div>';
+      if (!tpl) return h;
+      h = '';
+      h += '<div style="font-weight:bold;font-size:1.1rem;margin:0 0 2px;">TEMPLAT TETAP</div><div style="font-size:0.85rem;">MUET tidak tetapkan bilangan ayat — ' + (r === 'tulis' ? 'cuma Task 1 sekurang-kurangnya 100 perkataan (guna SEMUA 4 nota) &amp; Task 2 sekurang-kurangnya 250 perkataan' : 'cuma Part 1 = 2 minit bercakap &amp; Part 2 = perbincangan 8–12 minit capai pilihan TERBAIK') + '. Bilangan ayat di bawah ditetapkan supaya cukup ' + (r === 'tulis' ? 'perkataan' : 'masa') + '.</div>';
       if (r === 'tulis') {
         h += T('TASK 1 — E-MEL / SURAT (±130 perkataan)') +
           '<div><b>Sapaan:</b> Dear Sir / Madam, (formal) · Hi ___, (informal)</div>' +
@@ -18097,6 +18134,14 @@
       }
       return h;
     }
+    // 18 Nov: PETI SURAT tepi bangunan SPEAKING / WRITING → page TEMPLAT TETAP
+    function bukaTemplat(r) {
+      el('tpl-tajuk').textContent = 'TEMPLAT ' + (r === 'tulis' ? 'WRITING' : 'SPEAKING');
+      el('tpl-isi').innerHTML = usahaCaraKarangan(r, true);
+      showScreen('screen-tpl');
+      try { window.scrollTo(0, 0); } catch (e) {}
+    }
+    el('btn-tpl-balik').onclick = function() { bukaMuet(); };
     // 18 Nov: PRESET BINCANG AI (Langkah 3) — karangan / huraian + SENARAI NOTA TOPIK → AI bincang ayat demi ayat → nota baru format JANA PUKAL
     function bcNotaTeks(r) {
       var L = [], i, j, k, S, g, A;
@@ -19374,7 +19419,7 @@
     setInterval(function() { if (document.querySelector('.screen.active .mw-bar, .screen.active .gc-bar')) mwLukis(); }, 1000);
     (function() {
       var t = document.querySelectorAll('.gm-tab'), i, b, s, bar, x;
-      var TAB_EN = { pos: 'HARBOUR', mini: 'ARCADE', kd: 'SHOP', ts: 'TASKS', lc: 'DRAWER', atur: 'RULES' };
+      var TAB_EN = { pos: 'HARBOUR', mini: 'ARCADE', kd: 'SHOP', ts: 'TASKS', muet: 'MUET', lc: 'DRAWER', atur: 'RULES' };
       for (i = 0; i < t.length; i++) {
         x = t[i].querySelector('[data-gm-tab="mx"]');
         if (x) x.parentNode.removeChild(x);
@@ -19402,13 +19447,16 @@
         // Tab USAHA lama (kawasan SURAU + PAWAGAM) dibuang — bangunannya kini dalam tab USAHA di atas
         x = t[i].querySelector('[data-gm-tab="us"]');
         if (x) x.parentNode.removeChild(x);
-        // Tab PERATURAN di hujung kanan: PELABUHAN · ARKED · KEDAI · PERATURAN
-        b = t[i].querySelector('[data-gm-tab="atur"]');
-        if (!b) {
+        // 18 Nov: tab MUET (4 bangunan English) terus selepas TASKS
+        if (!t[i].querySelector('[data-gm-tab="muet"]')) {
           b = document.createElement('button');
-          b.type = 'button'; b.setAttribute('data-gm-tab', 'atur'); b.textContent = 'PERATURAN';
+          b.type = 'button'; b.setAttribute('data-gm-tab', 'muet'); b.textContent = 'MUET';
+          x = t[i].querySelector('[data-gm-tab="ts"]');
+          t[i].insertBefore(b, x ? x.nextSibling : null);
         }
-        t[i].appendChild(b);
+        // 18 Nov: PERATURAN (RULES) bukan lagi tab — kini butang di bar atas, kiri PROFIL
+        x = t[i].querySelector('[data-gm-tab="atur"]');
+        if (x) x.parentNode.removeChild(x);
         // 17 Nov: nama tab dalam Bahasa Inggeris (pendek, muat satu baris)
         x = t[i].querySelectorAll('[data-gm-tab]');
         for (var nt = 0; nt < x.length; nt++) {
@@ -19428,7 +19476,8 @@
         bar = document.createElement('div');
         bar.className = 'mn-bar';
         bar.innerHTML = '<button type="button" data-gm-tab="coach"><svg viewBox="0 0 16 14" xmlns="http://www.w3.org/2000/svg"><path d="M2 8 Q2 1 8 1 Q14 1 14 8 Z" fill="#000"/><rect x="12" y="6" width="4" height="2" fill="#000"/><circle cx="8" cy="10.5" r="3" fill="none" stroke="#000" stroke-width="1.6"/></svg>COACH</button>' +
-          '<button type="button" data-gm-profil="1"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5" r="3.2" fill="none" stroke="#000" stroke-width="2"/><path d="M2 15 Q2 9.5 8 9.5 Q14 9.5 14 15" fill="none" stroke="#000" stroke-width="2"/></svg>PROFIL</button>';
+          '<span class="mn-kanan"><button type="button" data-gm-tab="atur"' + (s.id === 'screen-atur' ? ' class="mn-aktif"' : '') + '><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M2 2 H7 Q8 2 8 3.5 V15 Q8 13.5 6.5 13.5 H2 Z M14 2 H9 Q8 2 8 3.5 V15 Q8 13.5 9.5 13.5 H14 Z" fill="none" stroke="#000" stroke-width="1.6"/></svg>RULES</button>' +
+          '<button type="button" data-gm-profil="1"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5" r="3.2" fill="none" stroke="#000" stroke-width="2"/><path d="M2 15 Q2 9.5 8 9.5 Q14 9.5 14 15" fill="none" stroke="#000" stroke-width="2"/></svg>PROFIL</button></span>';
         s.insertBefore(bar, s.firstChild);
       }
     })();
