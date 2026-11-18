@@ -15634,6 +15634,7 @@
     ];
     // 18 Nov: tab MUET sendiri (sebelah TASKS) — baris 1 INPUT (Listening · Reading) · baris 2 OUTPUT (Speaking · Writing)
     var TS_HAL_MUET = [['ENGLISH MUET', ['pawagam', 'pustaka', 'pentas', 'tulis']]];
+    var TS_MUET_TAJUK = { pawagam: ['ENGLISH MUET INPUT', 'TEST FOCUS STUDENT'], pentas: ['ENGLISH MUET OUTPUT SETTING', 'TEST KREATIVITI PERFORMANCE STUDENT'] };
     var TS_HALAMAN = TS_HAL_USAHA, tsMod = 'ts', tsHalSimpan = { ts: 0, muet: 0 };
     // ══ TAB LACI (17 Nov) — senarai butang macam MENU · tekan → laci terus dibuka (kunci Health First & kira minit sama macam MENU) ══
     var LC_SENARAI = [['btn-go-bahasa', 'Laci Bahasa'], ['btn-go-sr-bebas', 'SR Bebas (Bahasa)'], ['btn-go-fakta', 'Laci Fakta'],
@@ -15725,8 +15726,11 @@
       el('ts-titik').innerHTML = titik;
       el('ts-hal-tajuk').textContent = TS_HALAMAN[tsHal][0] + (TS_HALAMAN.length > 1 ? ' · ' + (tsHal + 1) + '/' + TS_HALAMAN.length : '');
       el('ts-titik').style.display = TS_HALAMAN.length > 1 ? '' : 'none';
+      el('ts-hal-tajuk').style.display = tsMod === 'muet' ? 'none' : ''; // MUET: tajuk INPUT / OUTPUT atas setiap baris
       var senaraiHal = TS_HALAMAN[tsHal][1];
       for (i = 0; i < senaraiHal.length; i++) {
+        if (tsMod === 'muet' && TS_MUET_TAJUK[senaraiHal[i]]) h += '<div style="display:block;text-align:left;font-size:1.05rem;font-weight:bold;margin:' + (i ? '10px' : '4px') + ' 0 6px;border-bottom:3px solid #000;">' +
+          TS_MUET_TAJUK[senaraiHal[i]][0] + '<div style="font-size:0.8rem;font-weight:bold;border:0;">- ' + TS_MUET_TAJUK[senaraiHal[i]][1] + '</div></div>';
         b = tsCariBangunan(senaraiHal[i]);
         if (!b) continue;
         sub = b[2];
