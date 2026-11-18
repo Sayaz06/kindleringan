@@ -10267,7 +10267,7 @@
       else teks = fokus ? ('Fokus English: ' + fokus + '.') : 'Teruskan usaha hari ini.';
       if (seterus) teks += '\nSeterusnya: ' + seterus.nama + ' — ' + coachTeksMasa(seterus.min);
       teks += '\nSasaran tidur: ' + coachTeksMasa(j.tidur);
-      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Listening / Dewan Tulis › tab TOPIK › SALIN PRESET → JANA PUKAL.';
+      if (typeof pnPerluTambah === 'function' && pnPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah nota DAILY REPETITION — Usaha › Listening / Dewan Tulis › tab FORMULA › SALIN PRESET → JANA PUKAL.';
       if (typeof ptPerluTambah === 'function' && ptPerluTambah() && kini < 12 * 60) teks += '\nPagi ini: tambah soalan SPEAKING — app phone › Laci Speaking › SALIN PRESET.';
       return teks;
     }
@@ -13639,7 +13639,7 @@
         for (j = 0; j < S.g.length; j++) { g = S.g[j]; L.push('  · ' + g.id + ' — ' + g.t + ': ' + g.f.map(function(x) { return typeof x === 'string' ? x : x[0] + ' = ' + x[1]; }).join(' / ')); }
       }
       return [
-        'TUGAS: Beri nota BARU untuk DAILY REPETITION EXERCISE (' + (pnRumah === 'tulis' ? 'MUET Writing Task 1 — useful expressions untuk membalas e-mel / surat' : 'MUET Listening — useful expressions / linking words') + ') dalam app saya, sebanyak yang boleh, yang BELUM ADA dalam senarai di bawah.',
+        'TUGAS: Beri nota BARU untuk DAILY REPETITION EXERCISE (' + (pnRumah === 'tulis' ? 'MUET Writing Task 1 — useful expressions untuk membalas e-mel / surat' : pnRumah === 'pentas' ? 'MUET Speaking — useful expressions untuk Individual Presentation (Part 1) & Group Discussion (Part 2)' : 'MUET Listening — useful expressions / linking words') + ') dalam app saya, sebanyak yang boleh, yang BELUM ADA dalam senarai di bawah.',
         syor ? '\nPERKARA DISYORKAN: "' + syor + '"\n- MULAKAN dengan SEBANYAK MUNGKIN nota yang berkaitan atau hampir dengan perkara ini.\n- SELEPAS itu, beri juga nota lain seperti biasa.' : '',
         '',
         'FORMAT WAJIB (saya tampal terus ke butang JANA PUKAL dalam app — ikut tepat, satu baris satu entri):',
@@ -13705,7 +13705,7 @@
     var PN_SET_TOPIK = 'vocab';
     // Enjin DAILY REPETITION dikongsi PAWAGAM & DEWAN TULIS: pnRumah = rumah yang sedang dibuka · set tanpa medan r = Pawagam
     var pnRumah = 'pawagam';
-    function pnRumahSet(S) { return (S.r || 'pawagam') === pnRumah; }
+    function pnRumahSet(S) { return (S.r || (S.id === 'pembentangan' ? 'pentas' : 'pawagam')) === pnRumah; } // 18 Nov: Oral Presentation = nota SPEAKING
     function pnTukarRumah(r) {
       if (pnRumah !== r) { pnHentiMasa(); pnUI.mod = ''; pnUI.kuiz = null; pnUI.baca = null; pnUI.grp = ''; pnUI.mesej = ''; pnUI.pukal = false; pnUI.tanyaSyor = false; pnUI.preset = ''; }
       pnRumah = r; pnUI.halaman = 'pawagam';
@@ -13768,13 +13768,22 @@
       else if (ulAktif()) ulLukis(); // ULANG KAJI HARIAN (ARKED, 17 Nov)
       else if (arkAktif()) arkLukis(); // kad ULANG KAJI HARIAN di ARKED
       else if (pnRumah === 'tulis') lukisTulis();
+      else if (pnRumah === 'pentas') {} // SPEAKING: hanya tab FORMULA (di bawah)
       else coachLukisUsaha();
       if (pnTopikBuka && pnRumah === 'pawagam') { var t = el('ub-tips-pawagam'); if (t) t.innerHTML = pnLukisTopik(); }
       if (tlTopikBuka && pnRumah === 'tulis') { var t2 = el('ub-tips-tulis'); if (t2) t2.innerHTML = pnLukisTopikTulis(); }
+      if (spTopikBuka && pnRumah === 'pentas') { var t3 = el('ub-tips-pentas'); if (t3) t3.innerHTML = pnLukisTopikSpeaking(); }
       coachDreNota();
     }
     // ── Tab TOPIK (PAWAGAM): topic-specific vocabulary — senarai topik akan disusun kemudian ──
-    var pnTopikBuka = false, tlTopikBuka = false;
+    var pnTopikBuka = false, tlTopikBuka = false, spTopikBuka = false;
+    // 18 Nov: tab FORMULA SPEAKING — nota Oral Presentation (buku) + SALIN PRESET / JANA PUKAL · latihan di ARKED titik 5
+    function pnLukisTopikSpeaking() {
+      var h = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">NOTA SPEAKING</div>' + pnArkedAtas(4, 'Speaking');
+      if (!pnData) { pnMuatData(); return h + '<div>Memuatkan nota...</div>'; }
+      if (pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
+      return h + pnKotakPreset(false) + pnSenaraiSemuaNota();
+    }
     // 18 Nov: tab TOPIK → ayat + butang ARKED di atas nota (Listening: ARKED LISTENING · Dewan Tulis: ARKED WRITING)
     function pnArkedAtas(v, nama, label) {
       return '<div style="font-size:0.9rem;margin:2px 0 4px;">Awak rasa nota-nota di bawah penting? Latihan bagi nota-nota di bawah ini diletakkan di <b>Arked ' + nama + '</b>.</div>' +
@@ -13853,7 +13862,7 @@
       if (!pnData) { pnMuatData(); return h + '<div style="font-size:0.85rem;">Memuatkan nota...</div></div>'; }
       if (pnUI.halaman === 'pawagam' && pnUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + pnUI.mesej + '</div>';
       // 17 Nov: TAMBAH NOTA (SALIN PRESET / JANA PUKAL) dipindah ke APP PHONE → Daily Repetition
-      if (pnUI.halaman === 'pawagam' && !pnUI.mod && pnPerluTambah()) h += '<div style="border:2px dashed #000;border-radius:8px;padding:5px 7px;margin:6px 0;font-size:0.85rem;"><b>COACH:</b> tambah nota baru hari ini di tab <b>TOPIK</b> (SALIN PRESET → JANA PUKAL).</div>';
+      if (pnUI.halaman === 'pawagam' && !pnUI.mod && pnPerluTambah()) h += '<div style="border:2px dashed #000;border-radius:8px;padding:5px 7px;margin:6px 0;font-size:0.85rem;"><b>COACH:</b> tambah nota baru hari ini di tab <b>FORMULA</b> (SALIN PRESET → JANA PUKAL).</div>';
       if (pnUI.halaman === 'pawagam' && pnUI.mod === 'kuiz' && pnUI.kuiz) return h + pnLukisKuiz() + '</div>';
       var due = pnDue();
       if (!due.length) {
@@ -13905,7 +13914,7 @@
       h += '<div style="font-size:0.85rem;margin-bottom:4px;">Semua nota, termasuk yang bukan ulang kaji hari ini. Tekan untuk baca' + (pnRumah === 'tulis' ? '' : ', dengar audio, muat naik MP3') + ' atau latih bila-bila.</div>';
       var SD = pnSetDRE();
       for (i = 0; i < SD.length; i++) h += '<button type="button" data-pn="set" data-v="' + SD[i].id + '" style="' + PN_BTN + 'display:block;width:100%;text-align:left;margin-bottom:4px;">' + SD[i].b + ' ›</button>';
-      h += '<div style="font-size:0.85rem;margin-top:6px;border-top:2px solid #000;padding-top:4px;">Nota terakhir ditambah: ' + pnVersi() + '. Tambah nota baru di tab <b>TOPIK</b> (SALIN PRESET → JANA PUKAL).</div>';
+      h += '<div style="font-size:0.85rem;margin-top:6px;border-top:2px solid #000;padding-top:4px;">Nota terakhir ditambah: ' + pnVersi() + '. Tambah nota baru di tab <b>FORMULA</b> (SALIN PRESET → JANA PUKAL).</div>';
       return h;
     }
     function pnAcak(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
@@ -17527,8 +17536,8 @@
             hj = []; for (q3 = 0; q3 < sq.isi.length; q3++) if (sq.isi[q3].p === q2) hj.push(sq.isi[q3].t);
             tx.push('PILIHAN: ' + sq.pilihan[q2] + (sq.terbaik === sq.pilihan[q2] ? ' (TERBAIK)' : '') + (hj.length ? ' — ' + hj.join('; ') : '') + ':\n' + (hs['p' + q2] || '(belum ditulis)'));
           }
-          pr = bcPreset('skrip Speaking (Part ' + sq.part + (sq.part === 1 ? ' · Individual Presentation 2 minit' : ' · Group Discussion') + ')', sq.soalan, tx.join('\n\n'), 'pawagam');
-          bcSalin(pr, function() { PB.presetTeks = ''; PB.mesej = 'PRESET BINCANG DISALIN. Tampal ke AI → bincang ayat demi ayat → baiki huraian di app phone → nota baru: JANA PUKAL di tab TOPIK.'; lukisPentas(); },
+          pr = bcPreset('skrip Speaking (Part ' + sq.part + (sq.part === 1 ? ' · Individual Presentation 2 minit' : ' · Group Discussion') + ')', sq.soalan, tx.join('\n\n'), 'pentas');
+          bcSalin(pr, function() { PB.presetTeks = ''; PB.mesej = 'PRESET BINCANG DISALIN. Tampal ke AI → bincang ayat demi ayat → baiki huraian di app phone → nota baru: JANA PUKAL di tab FORMULA.'; lukisPentas(); },
             function() { PB.presetTeks = pr; PB.mesej = 'Peranti tak benarkan salin automatik — tekan lama teks di bawah → Pilih semua → Salin.'; lukisPentas(); });
           return;
         }
@@ -18055,7 +18064,7 @@
         '<div style="background:#000;color:#fff;font-weight:bold;border-radius:6px;padding:3px 8px;margin-bottom:5px;">CARA MEMBINA ' + (r === 'tulis' ? 'KARANGAN' : 'SKRIP SPEAKING') + ' — 4 LANGKAH</div>' +
         '<div><b>LANGKAH 1 · Tulis ikut TEMPLAT.</b> Draf pertama ikut templat tetap di bawah (cop mohor sendiri) — isi ___ guna ilmu sedia ada. Wujudkan dulu, baru perbaiki.</div>' +
         '<div style="margin-top:4px;"><b>LANGKAH 2 · Rujuk BUKU dulu.</b> Selak buku contoh esei helai demi helai — mana tahu ada corak ayat boleh guna. <b>Jangan tanya AI dulu</b>: AI akan beri cadangan yang lebih baik bila draf kita sudah baik.</div>' +
-        '<div style="margin-top:4px;"><b>LANGKAH 3 · Baiki bersama AI.</b> Tab HARI INI → <b>SALIN PRESET BINCANG AI</b> → bincang ayat demi ayat, sesuai letak di mana. AI semak nota TOPIK (cohesive devices, useful expressions, idiom…) — masukkan yang berguna. Kalau AI tahu ungkapan / idiom yang lebih baik walaupun tiada dalam TOPIK, guna yang lebih baik — kemudian tambah nota baru itu ke tab TOPIK (JANA PUKAL) sebab kita dah belajar benda baru.</div>' +
+        '<div style="margin-top:4px;"><b>LANGKAH 3 · Baiki bersama AI.</b> Tab HARI INI → <b>SALIN PRESET BINCANG AI</b> → bincang ayat demi ayat, sesuai letak di mana. AI semak nota FORMULA (cohesive devices, useful expressions, idiom…) — masukkan yang berguna. Kalau AI tahu ungkapan / idiom yang lebih baik walaupun tiada dalam FORMULA, guna yang lebih baik — kemudian tambah nota baru itu ke tab FORMULA (JANA PUKAL) sebab kita dah belajar benda baru.</div>' +
         '<div style="margin-top:4px;"><b>LANGKAH 4 · Ulang kaji pada masa hadapan (SR).</b> Baca semula tajuk yang sama ikut jadual. Pada hari kita tak menulis, kita membaca macam pembaca karangan orang lain — nampak ayat yang terabur, sukar difahami dan berbelit → baiki.</div>' +
         '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:6px 0 0;"><b>TIP:</b> Tulis di <b>Google Docs atau kertas</b>, kemudian salin versi siap ke app phone (supaya Kindle boleh baca ikut SR). Game bukan tempat menulis — game tempat rujuk tips &amp; ulang kaji.</div></div>';
       h += '<div style="font-weight:bold;font-size:1.1rem;margin:10px 0 2px;">TEMPLAT TETAP</div><div style="font-size:0.85rem;">MUET tidak tetapkan bilangan ayat — ' + (r === 'tulis' ? 'cuma Task 1 sekurang-kurangnya 100 perkataan (guna SEMUA 4 nota) &amp; Task 2 sekurang-kurangnya 250 perkataan' : 'cuma Part 1 = 2 minit bercakap &amp; Part 2 = perbincangan 8–12 minit capai pilihan TERBAIK') + '. Bilangan ayat di bawah ditetapkan supaya cukup ' + (r === 'tulis' ? 'perkataan' : 'masa') + '.</div>';
@@ -18112,14 +18121,14 @@
         '1. Tatabahasa betul atau salah (tunjuk pembetulan ringkas).',
         '2. Jelas, atau berbelit / sukar difahami?',
         '3. Patut kekal di situ, tukar kedudukan, atau pindah ke perenggan lain?',
-        '4. Adakah nota dalam SENARAI NOTA TOPIK saya (cohesive devices, useful expressions, idiom, sinonim) berguna di sini? Nyatakan nota mana dan di mana.',
+        '4. Adakah nota dalam SENARAI NOTA FORMULA saya (cohesive devices, useful expressions, idiom, sinonim) berguna di sini? Nyatakan nota mana dan di mana.',
         '5. Jika ada ungkapan / idiom / perkataan yang LEBIH BAIK walaupun TIADA dalam senarai saya, cadangkan juga.',
         '',
         'AKHIR PERBINCANGAN: senaraikan SEMUA nota BARU yang dicadangkan (yang tiada dalam senarai) dalam format JANA PUKAL, satu baris satu entri, dalam SATU codebox:',
-        '- Ungkapan (tab TOPIK ' + (r === 'tulis' ? 'Dewan Tulis' : 'Listening') + '): F: idKumpulanSediaAda | frasa baru   ATAU   G: idSet | idKumpulanBaru | Tajuk English | Maksud Melayu | frasa | frasa | frasa | frasa',
-        '- Kosa kata (tab TOPIK Perpustakaan): SIN: / ANT: / IDM: ayat dengan [perkataan] | jawapan betul | salah 1 | salah 2 | maksud BM',
+        '- Ungkapan (tab FORMULA ' + (r === 'tulis' ? 'Dewan Tulis' : 'Listening') + '): F: idKumpulanSediaAda | frasa baru   ATAU   G: idSet | idKumpulanBaru | Tajuk English | Maksud Melayu | frasa | frasa | frasa | frasa',
+        '- Kosa kata (tab FORMULA Perpustakaan): SIN: / ANT: / IDM: ayat dengan [perkataan] | jawapan betul | salah 1 | salah 2 | maksud BM',
         '',
-        'SOALAN:', soalan || '-', '', jenis.toUpperCase() + ' SAYA:', teks || '-', '', 'SENARAI NOTA TOPIK SAYA:'
+        'SOALAN:', soalan || '-', '', jenis.toUpperCase() + ' SAYA:', teks || '-', '', 'SENARAI NOTA FORMULA SAYA:'
       ].concat(bcNotaTeks(r)).join('\n');
     }
     function bcSalin(teks, siap, gagal) {
@@ -18585,7 +18594,7 @@
           '<div style="border:2px dashed #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>FIKIR:</b> Kenapa penting merumus isi di penutup?<br><span style="font-size:0.85rem;">Cadangan jawapan: ia mengingatkan pemeriksa semua isi anda, menunjukkan pembentangan tersusun dan lengkap, dan menutup dengan kemas dalam masa 2 minit.</span></div>' +
           // MENYAMPAIKAN PEMBENTANGAN + CONTOH PENUH + WORD STRESS (16 Nov)
           '<div style="font-weight:bold;font-size:1.1rem;margin:12px 0 4px;">MENYAMPAIKAN PEMBENTANGAN (DELIVERY)</div>' +
-          '<div>Senarai <b>ungkapan berguna</b> (<i>useful expressions</i>) untuk setiap fungsi bahasa kini ada dalam <b>PAWAGAM &#8250; SEMUA NOTA &#8250; Develop skill on delivering an oral presentation</b> &mdash; diulang kaji ikut jadual DAILY REPETITION.</div>' +
+          '<div>Senarai <b>ungkapan berguna</b> (<i>useful expressions</i>) untuk setiap fungsi bahasa kini ada dalam <b>SPEAKING &#8250; tab FORMULA</b> &mdash; dilatih di <b>ARKED &#8250; MINI GAME FOR SPEAKING</b>.</div>' +
           '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;background:#eee;font-size:0.9rem;"><b>PERINGATAN DARI BUKU:</b><br>1. <b>Sentiasa mula</b> dengan menyapa pemeriksa dan calon.<br>2. <b>Sentiasa nyatakan</b> situasi / tugasan yang diberi.<br>3. <b>Mula dengan menyatakan pendirian</b> (<i>viewpoint</i>) anda.<br>4. <b>Tekankan</b> perkataan <i>most, main, important</i>.<br>5. Beri <b>sebab</b> &mdash; ia meyakinkan pendengar bahawa isi anda sah.<br>6. Beri <b>contoh</b> &mdash; ia menjelaskan isi.<br>7. Untuk meyakinkan, <b>wajarkan</b> isi dengan sebab / penjelasan yang kukuh.<br>8. Guna <b>pelbagai ungkapan</b> &mdash; tanda penutur yang mahir. Jangan ulang ungkapan yang sama.<br>9. <b>Berhenti sesaat</b> sebelum memulakan isi baru.<br>10. Bertanya / menjawab soalan (cth: <i>So, what can be done?</i>) menarik minat pendengar dan buat pembentangan lebih menarik.<br>11. Sebelum menutup, <b>rumus</b> isi &mdash; ia mengingatkan pendengar semua yang telah dikata.<br>12. <b>Jangan lupa</b> menutup pembentangan.</div>' +
           '<div style="border:2px solid #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>SEMAK KESALAHAN (CHECKPOINT):</b><br>&#10007; <i>Different from us, they learn music in school.</i><br>&#10003; <i>Unlike us, they learn music in school.</i><br>&#10007; <i>So then, they are not give respect to olders.</i><br>&#10003; <i>As a result, they do not respect their elders.</i></div>' +
           '<div style="border:2px dashed #000;border-radius:8px;padding:5px 8px;margin:6px 0;font-size:0.9rem;"><b>FIKIR:</b> Apa beza <i>Firstly</i> dan <i>First</i>?<br><span style="font-size:0.85rem;">Cadangan jawapan: kedua-duanya betul dan sama maksud bila menyenaraikan isi. Yang penting <b>konsisten</b> &mdash; <i>First, Second, Third</i> ATAU <i>Firstly, Secondly, Thirdly</i>; jangan campur.</span></div>' +
@@ -18854,10 +18863,11 @@
       for (i = 0; i < USAHA_BG.length; i++) if (USAHA_BG[i][0] === k) b = USAHA_BG[i];
       if (!b || !tb || !tp) return;
       if (tab === 'format' && !USAHA_FORMAT[k]) tab = 'hari';
-      if (tab === 'topik' && k !== 'pawagam' && k !== 'tulis' && k !== 'pustaka') tab = 'hari';
+      if (tab === 'topik' && k !== 'pawagam' && k !== 'tulis' && k !== 'pustaka' && k !== 'pentas') tab = 'hari';
       if (tab === 'sup' && k !== 'nutrisi') tab = 'hari';
       if (k === 'pawagam') pnTopikBuka = tab === 'topik';
       if (k === 'tulis') tlTopikBuka = tab === 'topik';
+      if (k === 'pentas') { spTopikBuka = tab === 'topik'; if (spTopikBuka) pnTukarRumah('pentas'); }
       if (k === 'pustaka') { rdTopikBuka = tab === 'topik'; if (rdTopikBuka && !RD.kuiz) RD.bank = null; } // muat semula bank dari app phone
       if (k === 'nutrisi') SUP.buka = tab === 'sup';
       for (i = 0; i < tb.children.length; i++) tb.children[i].className = tb.children[i].getAttribute('data-ub') === tab ? 'gym-aktif' : '';
@@ -18867,7 +18877,7 @@
       tp.style.display = lain ? '' : 'none';
       if (tab === 'tips') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TIPS</div>' + USAHA_TIPS[k](); } catch (e) { tp.textContent = 'Tips tidak dapat dipapar.'; } }
       if (tab === 'format') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">FORMAT</div>' + USAHA_FORMAT[k](); } catch (e) { tp.textContent = 'Format tidak dapat dipapar.'; } }
-      if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = k === 'tulis' ? pnLukisTopikTulis() : k === 'pustaka' ? rdLukisTopik() : pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
+      if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = k === 'tulis' ? pnLukisTopikTulis() : k === 'pustaka' ? rdLukisTopik() : k === 'pentas' ? pnLukisTopikSpeaking() : pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
       if (tab === 'sup') supLukis();
     }
     (function() {
@@ -18878,7 +18888,7 @@
         tb = document.createElement('div'); tb.className = 'gym-topbar'; tb.id = 'ub-tb-' + b[0];
         tb.innerHTML = '<button type="button" data-ub="hari" class="gym-aktif">' + USAHA_IKON[b[0]] + 'HARI INI</button>' +
           (b[0] === 'nutrisi' ? '<button type="button" data-ub="sup">' + USAHA_IKON.sup + 'SUPLEMEN</button>' : '') +
-          (b[0] === 'pawagam' || b[0] === 'tulis' || b[0] === 'pustaka' ? '<button type="button" data-ub="topik">' + USAHA_IKON.topik + 'TOPIK</button>' : '') +
+          (b[0] === 'pawagam' || b[0] === 'tulis' || b[0] === 'pustaka' || b[0] === 'pentas' ? '<button type="button" data-ub="topik">' + USAHA_IKON.topik + 'FORMULA</button>' : '') +
           '<button type="button" data-ub="tips">' + USAHA_IKON.tips + 'TIPS</button>' +
           (USAHA_FORMAT[b[0]] ? '<button type="button" data-ub="format">' + USAHA_IKON.format + 'FORMAT</button>' : '');
         tb.setAttribute('data-k', b[0]);
@@ -18897,6 +18907,7 @@
     el('ub-tips-pawagam').onclick = function(e) { if (pnTopikBuka) pnKlik(e, this); }; // audio / + MP3 dalam tab TOPIK
     el('ub-tips-tulis').onclick = function(e) { if (tlTopikBuka) pnKlik(e, this); }; // SALIN PRESET / JANA PUKAL dalam tab TOPIK
     el('ub-tips-pustaka').onclick = function(e) { if (rdTopikBuka) rdTopikKlik(e, this); }; // SALIN PRESET / JANA PUKAL Reading
+    el('ub-tips-pentas').onclick = function(e) { if (spTopikBuka) pnKlik(e, this); }; // FORMULA Speaking: preset / pukal / audio
     el('ub-tips-nutrisi').onclick = function(e) { if (SUP.buka) supKlik(e); }; // tab SUPLEMEN
     // Setiap kali bangunan dibuka → kembali ke tab HARI INI
     bukaTaman = (function(f) { return function() { usahaTab('taman', 'hari'); return f.apply(this, arguments); }; })(bukaTaman);
@@ -19908,7 +19919,7 @@
     }
 
     // ── ARKED ──
-    var ARK_HAL = [['MINI GAME', ''], ['MINI GAME FOR LISTENING', 'pawagam'], ['MINI GAME FOR WRITING', 'tulis'], ['MINI GAME FOR READING', 'pustaka'], ['AKAN DATANG', '']];
+    var ARK_HAL = [['MINI GAME', ''], ['MINI GAME FOR LISTENING', 'pawagam'], ['MINI GAME FOR WRITING', 'tulis'], ['MINI GAME FOR READING', 'pustaka'], ['MINI GAME FOR SPEAKING', 'pentas']];
     var arkHal = 0, arkDreBuka = false, arkDariNota = false;
     hlSediakan('screen-mini', 'ark-titik', 'ark-hal-', ARK_HAL.length);
     var ARK_IKON = {
@@ -19923,7 +19934,7 @@
       return n;
     }
     function arkAktif() { return el('screen-mini').className.indexOf('active') !== -1; }
-    function arkLukisTitik() { rdMuat(); hlTitik('ark-titik', ARK_HAL.length, arkHal, [0, arkPerlu('pawagam'), arkPerlu('tulis'), rdPerlu(), 0]); }
+    function arkLukisTitik() { rdMuat(); hlTitik('ark-titik', ARK_HAL.length, arkHal, [0, arkPerlu('pawagam'), arkPerlu('tulis'), rdPerlu(), arkPerlu('pentas')]); }
     function arkLukis() {
       var p = ARK_HAL[arkHal], box = el('ark-hal-' + arkHal), h = '', n;
       arkLukisTitik();
@@ -19979,7 +19990,7 @@
       var s = pnData.sr[g.id], buka = due.indexOf(g.id) !== -1, hari = coachHariId(), tt = agTiadaTr(g);
       return '<button type="button" class="mini-kad' + (buka ? '' : ' mini-tutup') + '" data-ag="mula" data-v="' + g.id + '"><span class="mini-kedai">' + svgKedai(buka ? 'buka' : 'tutup') + '</span>' +
         '<span class="mini-teks" style="font-size:1.05rem;">' + g.t + '<span class="gb-sub" style="white-space:pre-line;">' +
-        (buka && tt ? 'PERLU TERJEMAHAN (' + tt + ' frasa)\nTOPIK › SALIN PRESET → JANA PUKAL' : buka ? 'BUKA\n' + g.f.length + ' frasa · ' + (s ? 'ulang kaji' : 'BARU') : s ? 'TUTUP\nUlang ' + s.due : 'TUTUP\nBelum dibuka (1 game baru sehari)') +
+        (buka && tt ? 'PERLU TERJEMAHAN (' + tt + ' frasa)\nFORMULA › SALIN PRESET → JANA PUKAL' : buka ? 'BUKA\n' + g.f.length + ' frasa · ' + (s ? 'ulang kaji' : 'BARU') : s ? 'TUTUP\nUlang ' + s.due : 'TUTUP\nBelum dibuka (1 game baru sehari)') +
         '</span></span><span class="mini-lv">' + ulLencana(((s && s.n) || 0) + 1) + '</span></button>';
     }
     function agLukis(r) {
@@ -19987,10 +19998,10 @@
       if (AG && AG.r !== r) AG = null;
       if (!AG) {
         S = pnSetDRE(); due = pnDue();
-        h += '<div class="jw-info">' + (r === 'tulis' ? 'Lihat frasa → taip TERJEMAHAN BM.' : 'Tekan DENGAR → taip apa yang didengar + taip TERJEMAHAN BM.') + ' Lulus 80% → level naik. Game baru = kumpulan baru dari JANA PUKAL (tab TOPIK).</div>';
+        h += '<div class="jw-info">' + (r === 'tulis' ? 'Lihat frasa → taip TERJEMAHAN BM.' : r === 'pentas' ? 'Lihat maksud BM → taip UNGKAPAN ENGLISH (latih sebut dalam kepala).' : 'Tekan DENGAR → taip apa yang didengar + taip TERJEMAHAN BM.') + ' Lulus 80% → level naik. Game baru = kumpulan baru dari JANA PUKAL (tab FORMULA).</div>';
         var bk = [], tt = [];
         for (i = 0; i < S.length; i++) for (j = 0; j < S[i].g.length; j++) (due.indexOf(S[i].g[j].id) !== -1 ? bk : tt).push(S[i].g[j]);
-        if (!bk.length && !tt.length) return h + '<div class="jw-info">Belum ada nota. Tambah di tab TOPIK ' + nm + '.</div>';
+        if (!bk.length && !tt.length) return h + '<div class="jw-info">Belum ada nota. Tambah di tab FORMULA ' + nm + '.</div>';
         for (i = 0; i < bk.length; i++) h += agKad(r, bk[i], due);
         for (i = 0; i < tt.length; i++) h += agKad(r, tt[i], due);
         return h;
@@ -20003,14 +20014,16 @@
       it = q.s[q.i];
       h = '<div class="status-bar" style="font-size:0.75rem;">' + puE(q.t) + ' · Soalan ' + (q.i + 1) + '/' + q.s.length + '</div><div class="jw-hadiah">SKOR ' + q.skor + '/' + q.s.length + '</div>';
       if (r === 'tulis') h += '<div class="jw-soalan" style="margin:12px 0 6px;">' + puE(it.en) + '</div>';
+      else if (r === 'pentas') h += '<div style="font-size:0.85rem;margin-top:10px;">Maksud BM:</div><div class="jw-soalan" style="margin:4px 0 6px;">' + puE(it.bm) + '</div>' +
+        (q.semak ? '<button type="button" class="btn" data-ag="dengar" style="margin:4px 0;">&#9654; DENGAR SEBUTAN</button>' : '<div style="font-size:0.85rem;">Ungkapan English:</div><input id="ag-en" type="text" value="' + puE(q.en || '') + '" style="width:100%;font-size:1rem;border:2px solid #000;border-radius:6px;padding:6px;box-sizing:border-box;">');
       else h += '<button type="button" class="btn btn-primary" data-ag="dengar" style="margin:10px 0 6px;">&#9654; DENGAR</button>' +
         (q.semak ? '' : '<div style="font-size:0.85rem;">Apa yang didengar (English):</div><input id="ag-en" type="text" value="' + puE(q.en || '') + '" style="width:100%;font-size:1rem;border:2px solid #000;border-radius:6px;padding:6px;box-sizing:border-box;">');
       if (!q.semak) {
-        h += '<div style="font-size:0.85rem;margin-top:6px;">Terjemahan (BM):</div><input id="ag-bm" type="text" value="' + puE(q.bm || '') + '" style="width:100%;font-size:1rem;border:2px solid #000;border-radius:6px;padding:6px;box-sizing:border-box;">' +
+        h += (r === 'pentas' ? '' : '<div style="font-size:0.85rem;margin-top:6px;">Terjemahan (BM):</div><input id="ag-bm" type="text" value="' + puE(q.bm || '') + '" style="width:100%;font-size:1rem;border:2px solid #000;border-radius:6px;padding:6px;box-sizing:border-box;">') +
           '<button type="button" class="btn btn-primary" data-ag="semak" style="margin-top:8px;">SEMAK</button>';
       } else {
-        if (r !== 'tulis') h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[0] ? 'BETUL' : 'SALAH') + '</b> · Didengar: <b>' + puE(it.en) + '</b>' + (q.ok[0] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.en || '-') + '</div>') + '</div>';
-        h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[1] ? 'BETUL' : 'SALAH') + '</b> · Terjemahan: <b>' + puE(it.bm) + '</b>' + (q.ok[1] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.bm || '-') + '</div>') + '</div>';
+        if (r !== 'tulis') h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[0] ? 'BETUL' : 'SALAH') + '</b> · ' + (r === 'pentas' ? 'Ungkapan' : 'Didengar') + ': <b>' + puE(it.en) + '</b>' + (q.ok[0] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.en || '-') + '</div>') + '</div>';
+        if (r !== 'pentas') h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:6px 0;"><b>' + (q.ok[1] ? 'BETUL' : 'SALAH') + '</b> · Terjemahan: <b>' + puE(it.bm) + '</b>' + (q.ok[1] ? '' : '<div style="font-size:0.85rem;">Jawapan awak: ' + puE(q.bm || '-') + '</div>') + '</div>';
         if (!(q.ok[0] && q.ok[1])) h += '<button type="button" class="btn" data-ag="betulkan">SAYA RASA BETUL (tanda betul)</button>';
         h += '<button type="button" class="btn btn-primary" data-ag="seterus" style="margin-top:6px;">' + (q.i + 1 < q.s.length ? 'SETERUSNYA ›' : 'LIHAT KEPUTUSAN') + '</button>';
       }
@@ -20022,7 +20035,7 @@
       if (!currentUser || !pnData) return;
       if (a === 'mula') {
         g = pnGrp(v); if (!g || pnDue().indexOf(v) === -1) return;
-        if (agTiadaTr(g)) { alert('Game ini perlukan terjemahan BM untuk ' + agTiadaTr(g) + ' frasa.\n\nPergi tab TOPIK ' + (r === 'tulis' ? 'Writing' : 'Listening') + ' → SALIN PRESET → tampal ke AI → salin jawapan → JANA PUKAL → SIMPAN.\nPreset sudah senaraikan semua frasa yang belum ada terjemahan.'); return; }
+        if (agTiadaTr(g)) { alert('Game ini perlukan terjemahan BM untuk ' + agTiadaTr(g) + ' frasa.\n\nPergi tab FORMULA ' + (r === 'tulis' ? 'Writing' : r === 'pentas' ? 'Speaking' : 'Listening') + ' → SALIN PRESET → tampal ke AI → salin jawapan → JANA PUKAL → SIMPAN.\nPreset sudah senaraikan semua frasa yang belum ada terjemahan.'); return; }
         AG = { r: r, gid: v, t: g.t, s: [], i: 0, skor: 0, semak: false, ok: [true, true], en: '', bm: '' };
         for (i = 0; i < g.f.length; i++) AG.s.push({ en: typeof g.f[i] === 'string' ? g.f[i] : g.f[i][0], bm: pnTr(g.f[i]), aid: g.id + '-' + i });
         AG.s = pnAcak(AG.s);
@@ -20030,11 +20043,11 @@
         it = q.s[q.i];
         if (pnData.audio && pnData.audio[it.aid]) { pnKlik({ target: { getAttribute: function(k) { return k === 'data-pn' ? 'main' : k === 'data-v' ? it.aid : null; }, parentNode: null } }, this); return; }
         try { if (window.speechSynthesis && window.SpeechSynthesisUtterance) { var u = new SpeechSynthesisUtterance(it.en.replace(/\.\.\.|…/g, ' ')); u.lang = 'en-GB'; window.speechSynthesis.speak(u); return; } } catch (x) {}
-        alert('Belum ada MP3 untuk frasa ini dan peranti tiada suara sintetik. Muat naik MP3 di tab TOPIK (+ MP3).'); return;
+        alert('Belum ada MP3 untuk frasa ini dan peranti tiada suara sintetik. Muat naik MP3 di tab FORMULA (+ MP3).'); return;
       } else if (a === 'semak' && q && !q.semak) {
         it = q.s[q.i];
         q.en = (el('ag-en') || {}).value || ''; q.bm = (el('ag-bm') || {}).value || '';
-        q.ok = [r === 'tulis' || agNorm(q.en) === agNorm(it.en), agSamaBm(q.bm, it.bm)];
+        q.ok = [r === 'tulis' || agNorm(q.en) === agNorm(it.en), r === 'pentas' || agSamaBm(q.bm, it.bm)];
         q.semak = true; if (q.ok[0] && q.ok[1]) q.skor++;
       } else if (a === 'betulkan' && q && q.semak && !(q.ok[0] && q.ok[1])) { q.ok = [true, true]; q.skor++; }
       else if (a === 'seterus' && q && q.semak) {
@@ -20053,6 +20066,7 @@
     }
     el('ark-hal-1').onclick = agKlik;
     el('ark-hal-2').onclick = agKlik;
+    el('ark-hal-4').onclick = agKlik; // SPEAKING
 
     // ══ READING (18 Nov): SINONIM · ANTONIM · IDIOM — bank ditulis di APP PHONE (Laci Reading) ══
     // Nota (jawapan) di tab TOPIK Perpustakaan · latihan dalam bentuk AYAT (gaya buku MUET) di ARKED titik 4
@@ -20233,7 +20247,7 @@
         n = rdDue(k).length; buka = n > 0; jum = RD.bank[RD_JENIS[k][0]].length;
         h += '<button type="button" class="mini-kad' + (buka ? '' : ' mini-tutup') + '" data-rd="mula" data-v="' + k + '"><span class="mini-kedai">' + svgKedai(buka ? 'buka' : 'tutup') + '</span>' +
           '<span class="mini-teks">' + RD_JENIS[k][1] + '<span class="gb-sub" style="white-space:pre-line;">' +
-          (buka ? 'BUKA\nSoalan hari ini ' + n + '\nBank ' + jum : jum ? 'TUTUP – SIAP HARI INI\nBank ' + jum : 'TUTUP – BANK KOSONG\nTambah di Reading › TOPIK') +
+          (buka ? 'BUKA\nSoalan hari ini ' + n + '\nBank ' + jum : jum ? 'TUTUP – SIAP HARI INI\nBank ' + jum : 'TUTUP – BANK KOSONG\nTambah di Reading › FORMULA') +
           '</span></span><span class="mini-lv">' + ulLencana((RD.lv[RD_JENIS[k][0]] || 0) + 1) + '</span></button>';
       }
       return h + '<div class="jw-info">Latihan dalam bentuk ayat (gaya buku MUET) · maks ' + RD_BARU + ' soalan baru sehari setiap game · ' + RD_SESI + ' soalan setiap pusingan · lulus 80% → level naik.</div>';
@@ -20548,7 +20562,7 @@
         for (q = 0; q < L.soalan.length; q++) if (L.soalan[q].id === t.getAttribute('data-v')) sb = L.soalan[q];
         if (!sb) return true;
         pr = bcPreset('karangan (Writing Task ' + (sb.task === 2 ? '2 · ' + (sb.jenis || 'esei') : '1 · e-mel / surat') + ')', sb.soalan, sb.karangan, 'tulis');
-        bcSalin(pr, function() { L.presetTeks = ''; L.mesej = 'PRESET BINCANG DISALIN. Tampal ke AI → bincang ayat demi ayat → baiki karangan → nota baru: JANA PUKAL di tab TOPIK.'; lwbSiap(j); },
+        bcSalin(pr, function() { L.presetTeks = ''; L.mesej = 'PRESET BINCANG DISALIN. Tampal ke AI → bincang ayat demi ayat → baiki karangan → nota baru: JANA PUKAL di tab FORMULA.'; lwbSiap(j); },
           function() { L.presetTeks = pr; L.mesej = 'Peranti tak benarkan salin automatik — tekan lama teks di bawah → Pilih semua → Salin.'; lwbSiap(j); });
         return true;
       }
@@ -20577,6 +20591,7 @@
     var UL = { r: 'pawagam', srBuka: false };
     var UL_PANDUAN = {
       pawagam: ['ULANG KAJI HARIAN (LISTENING)', 'Senarai yang perlu DIINGAT untuk <b>developing effective listening skills</b>.'],
+      pentas: ['MINI GAME FOR SPEAKING', 'Setiap fungsi bahasa <b>Oral Presentation</b> (buku) = SATU GAME: lihat maksud BM → taip ungkapan English. Nota di <b>SPEAKING › tab FORMULA</b>.'],
       tulis: ['ULANG KAJI HARIAN (WRITING)', 'Senarai <b>useful expressions</b> &amp; <b>cohesive devices</b> yang perlu DIINGAT untuk <b>Task 1 (e-mel / surat)</b> dan <b>Task 2 (esei)</b>.']
     };
     lukisPanduan = (function(f) {
@@ -20588,7 +20603,7 @@
           'Setiap KUMPULAN nota = SATU GAME (tajuk = fungsi, cth To introduce a new point). Listening: tekan DENGAR → taip apa yang didengar + terjemahan BM. Writing: lihat frasa → taip terjemahan BM.',
           'Lulus 80% → game naik level &amp; diulang lagi ikut jadual (1, 2, 4, 7, 14, 30 hari). Tak lulus → ulang esok. Terjemahan hampir sama? Tekan SAYA RASA BETUL.',
           'Tiada nota perlu diulang → kedai TUTUP sampai Coach buka semula ikut masa.',
-          'Nota baru ditambah di tab TOPIK (Listening / Dewan Tulis) → SALIN PRESET → JANA PUKAL. LIHAT SEMUA NOTA = semua nota, boleh baca &amp; latih bila-bila.'].join('</li><li>') + '</li></ul>';
+          'Nota baru ditambah di tab FORMULA (Listening / Dewan Tulis) → SALIN PRESET → JANA PUKAL. LIHAT SEMUA NOTA = semua nota, boleh baca &amp; latih bila-bila.'].join('</li><li>') + '</li></ul>';
         el('gm-panduan-isi').innerHTML += h;
       };
     })(lukisPanduan);
@@ -20716,7 +20731,7 @@
       pnRumah = 'tulis'; if (pnVersi() < hari) a.push('Writing');
       pnRumah = lama;
       b.style.display = a.length ? '' : 'none';
-      b.innerHTML = '<b>COACH:</b> tambah nota baru hari ini di <b>tab TOPIK</b> (' + a.join(' &amp; ') + ') → SALIN PRESET → JANA PUKAL.';
+      b.innerHTML = '<b>COACH:</b> tambah nota baru hari ini di <b>tab FORMULA</b> (' + a.join(' &amp; ') + ') → SALIN PRESET → JANA PUKAL.';
     }
     bukaCoach = (function(f) { return function() { var r = f.apply(this, arguments); if (!pnData) pnMuatData(); coachDreNota(); return r; }; })(bukaCoach);
 
