@@ -16581,20 +16581,22 @@
     function coachKeKunci(x) {
       if (!x) return;
       if (x.air) { coachAirKeMakmal(x.air); return; }
-      setTimeout(function() { bukaSurau(); el('surau-info').textContent = coachSolatMesej(x.solat); coachAirPopup('Minta maaf, ' + coachSolatMesej(x.solat), 'SURAU', 'OK, SOLAT SEKARANG', SOLAT_TIP); }, 0);
+      // Popup hanya muncul SELEPAS page Surau siap dimuat — Kindle tidak sibuk memuat semasa butang OK ditekan
+      setTimeout(function() { bukaSurau(function() { el('surau-info').textContent = coachSolatMesej(x.solat); coachAirPopup('Minta maaf, ' + coachSolatMesej(x.solat), 'SURAU', 'OK, SOLAT SEKARANG', SOLAT_TIP); }); }, 0);
     }
     // 18 Nov: POPUP bila app bawa pengguna ke Makmal / Surau secara automatik (kunci air / solat)
     function coachAirPopup(teks, tajuk, butang, tip) {
       var p = el('air-popup');
       if (!p) {
         p = document.createElement('div'); p.id = 'air-popup';
-        p.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.45);';
-        p.innerHTML = '<div style="position:absolute;left:5%;right:5%;top:16%;background:#fff;color:#000;border:4px double #000;border-radius:12px;padding:14px 14px 12px;font-size:1.05rem;line-height:1.4;">' +
+        // Kindle: tiada lapisan kelabu separa lutsinar (berat untuk skrin e-ink) — lapisan lutsinar penuh hanya menghalang tekan di belakang
+        p.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;background:transparent;';
+        p.innerHTML = '<div style="position:absolute;left:5%;right:5%;top:8%;max-height:84%;overflow-y:auto;background:#fff;color:#000;border:4px double #000;border-radius:12px;padding:14px 14px 12px;font-size:1.05rem;line-height:1.4;">' +
           '<div id="air-popup-tajuk" style="font-weight:bold;font-size:1.15rem;margin-bottom:6px;"></div><div id="air-popup-teks"></div>' +
           '<div id="air-popup-tip" style="border-left:4px solid #000;padding:2px 0 2px 8px;margin-top:10px;font-size:0.92rem;"></div>' +
           '<button type="button" id="air-popup-ok" style="display:block;width:100%;margin-top:12px;padding:10px;border:2px solid #000;border-radius:8px;background:#000;color:#fff;font-family:inherit;font-size:1rem;font-weight:bold;"></button></div>';
         document.body.appendChild(p);
-        el('air-popup-ok').onclick = function() { el('air-popup').style.display = 'none'; };
+        el('air-popup-ok').onclick = function(e) { if (e) { e.stopPropagation(); e.preventDefault(); } el('air-popup').style.display = 'none'; };
       }
       el('air-popup-tajuk').textContent = tajuk || 'MAKMAL HIDRASI';
       el('air-popup-teks').textContent = teks;
@@ -16958,7 +16960,7 @@
         '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin-top:6px;">' + SOLAT_TIP + '</div></div>';
       box.innerHTML = h;
     }
-    function bukaSurau() { usMuat('screen-surau', 'surau-info', lukisSurau); }
+    function bukaSurau(selepas) { usMuat('screen-surau', 'surau-info', function() { lukisSurau(); if (typeof selepas === 'function') selepas(); }); }
     el('surau-isi').onclick = function(e) {
       var t = e.target;
       while (t && t !== this && !t.getAttribute('data-su')) t = t.parentNode;
