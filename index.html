@@ -17860,8 +17860,45 @@
       if (coachDataAkhir) { coachDataAkhir.reading = puJumlah() * COACH_UNIT_READING; try { localStorage.setItem(coachCacheKunci(), JSON.stringify(coachDataAkhir)); } catch (er) {} }
     }
     var PU_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PU_BTNA = PU_BTN + 'background:#000;color:#fff;';
+    // ══ KERTAS SEBENAR (20 Nov): kertas MUET ditaip semula dari gambar, satu muka surat satu item dalam ms[] · PU_KERTAS_DAY = nombor DAY → id kertas ══
+    var PU_WM = (function() { var a = [], i; for (i = 0; i < 400; i++) a.push('MUET'); return a.join(''); })();
+    var PU_KERTAS = {
+      's1-2024': { t: 'MUET S1 2024 · Paper 3 Reading', ms: [
+        '<div style="font-weight:bold;font-size:0.8rem;">CONFIDENTIAL*</div>' +
+        '<div style="position:relative;overflow:hidden;margin:6px 0 0;padding:8px 6px 10px;text-align:center;">' +
+          '<div style="position:absolute;top:0;left:0;right:0;bottom:0;color:#bbb;font-size:9px;line-height:10px;word-break:break-all;font-family:Arial,sans-serif;">' + PU_WM + '</div>' +
+          '<div style="position:relative;">' +
+            '<div style="display:inline-block;border:3px double #000;background:#fff;font-weight:bold;font-size:0.75rem;padding:2px 6px;font-family:Arial,sans-serif;">MPM</div>' +
+            '<div style="display:flex;align-items:center;margin-top:4px;font-family:Arial,sans-serif;font-weight:bold;"><div style="font-size:1.5rem;">800/3</div><div style="flex:1;"></div><div style="font-size:1.5rem;">MUET S1 2024</div></div>' +
+            '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:1.05rem;margin-top:4px;">MALAYSIAN UNIVERSITY ENGLISH TEST</div>' +
+            '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:1.05rem;margin-top:2px;">PAPER 3 READING</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:center;margin-top:10px;font-size:1.1rem;letter-spacing:1px;">MAJLIS PEPERIKSAAN MALAYSIA</div>' +
+        '<div style="text-align:center;font-size:0.85rem;">(MALAYSIAN EXAMINATIONS COUNCIL)</div>' +
+        '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:2rem;margin-top:18px;">75 Minutes</div>' +
+        '<div style="font-weight:bold;margin-top:10px;">Instructions to candidates:</div>' +
+        '<div style="font-weight:bold;margin-top:8px;">DO NOT OPEN THIS QUESTION PAPER UNTIL YOU ARE TOLD TO DO SO.</div>' +
+        '<div style="font-style:italic;margin:8px 0 0 14px;">There are <b>forty</b> questions in this test.</div>' +
+        '<div style="font-style:italic;margin:4px 0 0 14px;">Indicate the correct answer on the Multiple-choice Answer Sheet provided.</div>' +
+        '<div style="font-style:italic;margin:4px 0 0 14px;">Answer <b>all</b> the questions.</div>'
+      ] }
+    };
+    var PU_KERTAS_DAY = { 1: 's1-2024' };
+    function puLukisKertas() {
+      var K = PU_KERTAS[puUI.baca], n = K.ms.length, m = puUI.ms, nav;
+      if (m >= n) m = puUI.ms = n - 1;
+      nav = '<div style="display:flex;align-items:center;margin:4px 0;">' +
+        '<button type="button" data-pu="ms" data-v="' + (m - 1) + '" style="' + PU_BTN + 'margin:0;' + (m > 0 ? '' : 'visibility:hidden;') + '">‹ SEBELUM</button>' +
+        '<div style="flex:1;text-align:center;font-weight:bold;font-size:0.9rem;">MS ' + (m + 1) + ' / ' + n + '</div>' +
+        '<button type="button" data-pu="ms" data-v="' + (m + 1) + '" style="' + PU_BTN + 'margin:0;' + (m < n - 1 ? '' : 'visibility:hidden;') + '">SETERUSNYA ›</button></div>';
+      return '<button type="button" data-pu="tutup" style="' + PU_BTN + '">‹ DAY ' + puUI.bacaDay + '</button>' +
+        '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + K.t + '</div>' + nav +
+        '<div style="border:2px solid #000;background:#fff;color:#000;padding:10px 10px 14px;font-family:\'Times New Roman\',Times,serif;font-size:1rem;line-height:1.35;">' + K.ms[m] + '</div>' + nav;
+    }
     function lukisPustaka() {
       var h = '<div style="font-weight:bold;font-size:1.15rem;">READING — MUET PAPER 3</div>', i, a, hari = coachHariId();
+      if (puUI.baca && PU_KERTAS[puUI.baca]) { el('pustaka-isi').innerHTML = puLukisKertas(); return; }
       if (!puData) { puMuatData(); el('pustaka-isi').innerHTML = h + '<div>Memuatkan...</div>'; return; }
       var senarai = puHariSenarai();
       if (puUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + puUI.mesej + '</div>';
@@ -17873,6 +17910,7 @@
         if (puUI.mesej) h += '';
         h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">DAY ' + no + ' · ' + d + (d === hari ? ' · HARI INI' : '') + '</div>';
         h += '<div style="font-size:0.85rem;">' + L.length + ' Part = ' + (L.length * COACH_UNIT_READING) + ' unit Reading</div>';
+        if (PU_KERTAS_DAY[no] && PU_KERTAS[PU_KERTAS_DAY[no]]) h += '<button type="button" data-pu="baca" data-v="' + PU_KERTAS_DAY[no] + '" data-d="' + no + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin:6px 0;">BACA KERTAS: ' + PU_KERTAS[PU_KERTAS_DAY[no]].t + ' (' + PU_KERTAS[PU_KERTAS_DAY[no]].ms.length + ' ms) ›</button>';
         if (!L.length) h += '<div style="font-size:0.85rem;margin:4px 0;">Belum ada latihan. Tambah di bawah.</div>';
         for (i = 0; i < L.length; i++) {
           h += '<div style="border:2px solid #000;border-radius:8px;padding:4px 7px;margin:4px 0;display:flex;align-items:center;">' +
@@ -17915,6 +17953,9 @@
       puUI.mesej = '';
       if (a === 'hari') { puUI.hari = v; puUI.part = 0; }
       else if (a === 'balik') { puUI.hari = ''; }
+      else if (a === 'baca') { puUI.baca = v; puUI.bacaDay = t.getAttribute('data-d'); puUI.ms = 0; }
+      else if (a === 'ms') { puUI.ms = +v; }
+      else if (a === 'tutup') { puUI.baca = ''; }
       else if (a === 'part') { var kx = el('pu-kertas').value, mx = el('pu-markah').value; puUI.part = +v; lukisPustaka(); el('pu-kertas').value = kx; el('pu-markah').value = mx; return; }
       else if (a === 'pilihk') { el('pu-kertas').value = v; return; }
       else if (a === 'tambah') {
@@ -17939,7 +17980,7 @@
       try { window.scrollTo(0, 0); } catch (x) {}
     };
     function bukaPustaka() {
-      puUI.hari = ''; puUI.part = 0; puUI.mesej = '';
+      puUI.hari = ''; puUI.part = 0; puUI.mesej = ''; puUI.baca = '';
       usMuat('screen-pustaka', 'pustaka-info', function() { el('pustaka-info').textContent = ''; lukisPustaka(); });
     }
     el('btn-us-pustaka-keluar').onclick = function() { bukaMuet(); };
