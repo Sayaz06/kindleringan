@@ -16533,11 +16533,16 @@
       for (i = 0; i < SUP.senarai.length; i++) peta[SUP.senarai[i].id] = SUP.senarai[i];
       if (!supSlotAir().length) return out;
       sus.sort(function(x, y) { return x.min - y.min; });
+      var tdArr = (coachHariData.hari.supTakDapat || []);
       for (i = 0; i < sus.length; i++) {
         s = peta[sus[i].id]; k = supKunciNama(s.nama);
         var m = sus[i].min, st, r = supRekMakan(s.nama), urut = ke[s.id] = (ke[s.id] || 0) + 1;
         var dah = urut <= r.at.length;
+        var tdKey = k + '|' + m;
+        var tdSkip = false;
+        for (var ti = 0; ti < tdArr.length; ti++) { if (tdArr[ti] === tdKey) { tdSkip = true; break; } }
         if (dah) st = 'SUDAH';
+        else if (tdSkip) st = 'TAK_DAPAT';
         else if (kini >= m + SUP_TENGGANG) st = 'TERLEPAS';
         else if (kini >= m) st = 'SEKARANG';
         else st = 'AKAN';
@@ -16649,11 +16654,12 @@
       else if (!SUP.senarai.length) h += '<div style="font-size:0.85rem;margin:4px 0;">Belum ada suplemen. Tekan EDIT SENARAI SUPLEMEN di bawah.</div>';
       for (i = 0; i < sl.length && supSlotAir().length; i++) {
         x = sl[i];
-        var lbl = { SUDAH: 'SUDAH' + (x.rek && x.rek.lewat ? ' (lewat)' : ''), SEKARANG: 'SEKARANG', AKAN: 'AKAN DATANG', TERLEPAS: 'TERLEPAS · KUNCI', HABIS: 'OUT OF STOCK', SUSUN: 'tak dikira hari ini (susunan baru)' }[x.st];
+        var lbl = { SUDAH: 'SUDAH' + (x.rek && x.rek.lewat ? ' (lewat)' : ''), SEKARANG: 'SEKARANG', AKAN: 'AKAN DATANG', TERLEPAS: 'TERLEPAS · KUNCI', TAK_DAPAT: 'TAK DAPAT (dialih)', HABIS: 'OUT OF STOCK', SUSUN: 'tak dikira hari ini (susunan baru)' }[x.st];
         h += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #000;">' +
           '<div style="flex:1;"><b>' + escKapal(x.nama) + '</b><br><span style="font-size:0.8rem;">' + (x.st === 'HABIS' ? '' : coachTeksMasa(x.min) + ' · ') +
           (x.st === 'TERLEPAS' || x.st === 'HABIS' ? '<b style="background:#000;color:#fff;padding:0 4px;">' + lbl + '</b>' : '<b>' + lbl + '</b>') + '</span></div>' +
           (x.st === 'SEKARANG' || x.st === 'TERLEPAS' || x.st === 'AKAN' ? '<button type="button" data-sp="makan" data-n="' + i + '" data-v="' + x.kunci + '" style="' + (x.st === 'AKAN' ? SUP_BTN : SUP_BTNA) + '">SUDAH MAKAN</button>' : '') +
+          (x.st === 'SEKARANG' || x.st === 'TERLEPAS' ? '<button type="button" data-sp="takdapat" data-n="' + i + '" data-v="' + x.kunci + '|' + x.min + '" style="' + SUP_BTN + '">TAK DAPAT</button>' : '') +
           (x.st === 'SUDAH' ? '<button type="button" data-sp="batal" data-n="' + i + '" data-v="' + x.kunci + '" style="' + SUP_BTN + '">BATAL</button>' : '') + '</div>';
       }
       h += '<button type="button" data-sp="edit" class="btn" style="margin-top:10px;">EDIT SENARAI SUPLEMEN ›</button>';
@@ -16678,6 +16684,15 @@
           m[v] = { at: at, lewat: lw, nama: x.namaAsal };
         });
         SUP.mesej = a === 'makan' ? (x.nama + ' — SUDAH MAKAN.' + (!supTerlepas().length && x.st === 'TERLEPAS' ? ' Kunci dibuka.' : '')) : '';
+        if (!supTerlepas().length && coachKunciMesej.indexOf('SUPLEMEN TERLEPAS') === 0) coachKunciMesej = '';
+        supLukis();
+      } else if (a === 'takdapat') {
+        var tdVal = v, tdList = (coachHariData.hari.supTakDapat || []).slice();
+        if (tdList.indexOf(tdVal) === -1) tdList.push(tdVal);
+        coachSimpanHari({ supTakDapat: tdList }, function() {
+          coachHariData.hari.supTakDapat = tdList;
+        });
+        SUP.mesej = 'Dos dialih — akan muncul semula di slot seterusnya jika ada.';
         if (!supTerlepas().length && coachKunciMesej.indexOf('SUPLEMEN TERLEPAS') === 0) coachKunciMesej = '';
         supLukis();
       }
