@@ -16415,10 +16415,8 @@
         var dK = { tugas: {} };
         dK.tugas[k] = { s: 'TAK_DAPAT', at: Date.now(), sebab: t.getAttribute('data-v') };
         makmalUI.dapat = '';
-        coachSimpanHari(dK, function() {
-          (coachHariData.hari.tugas || (coachHariData.hari.tugas = {}))[k] = dK.tugas[k];
-          lukisTs();
-        });
+        (coachHariData.hari.tugas || (coachHariData.hari.tugas = {}))[k] = dK.tugas[k];
+        coachSimpanHari(dK, function() { lukisTs(); });
         lukisMakmal();
         return;
       }
