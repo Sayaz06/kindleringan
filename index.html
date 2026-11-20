@@ -16412,12 +16412,16 @@
       }
       if (mk === 'dapat') { makmalUI.dapat = k; makmalUI.ml = ''; lukisMakmal(); return; }
       if (mk === 'sebab') {
-        var dK = { tugas: {} };
-        dK.tugas[k] = { s: 'TAK_DAPAT', at: Date.now(), sebab: t.getAttribute('data-v') };
-        makmalUI.dapat = '';
-        (coachHariData.hari.tugas || (coachHariData.hari.tugas = {}))[k] = dK.tugas[k];
+        var nowK = Date.now(), hrK = coachHariData.hari, dK = { tugas: {}, airBuka: nowK };
+        dK.tugas[k] = { s: 'TAK_DAPAT', at: nowK, sebab: t.getAttribute('data-v') };
+        makmalUI.dapat = ''; makmalUI.geser = 0;
+        // TAK DAPAT = macam +1 TEGUK (lewat): buka kunci slot SEKARANG (airBuka) · kunci kembali bila slot seterusnya bermula
+        (hrK.tugas || (hrK.tugas = {}))[k] = dK.tugas[k];
+        hrK.airBuka = nowK;
         coachSimpanHari(dK, function() { lukisTs(); });
+        el('makmal-info').textContent = 'TAK DAPAT · slot ' + k.replace('air', '') + ' direkod. Kunci dibuka sehingga slot seterusnya.';
         lukisMakmal();
+        try { lukisTs(); } catch (e) {}
         return;
       }
       if (mk === 'ml') { makmalSimpanMl(k, parseInt(t.getAttribute('data-v'), 10)); return; }
@@ -16573,6 +16577,7 @@
       if ((hr.tugas || {})[cur.kunci]) return null; // slot ini sudah ditanda (tepat masa / AWAL / pukal) → sudah cover
       mula = d.getTime() - (kini - cur.min) * 60000 - d.getSeconds() * 1000 - d.getMilliseconds();
       for (i = 0; i < m.length; i++) if (m[i].at >= mula) return null;
+      if (hr.airBuka && hr.airBuka >= mula) return null; // TAK DAPAT ditekan dalam slot ini → buka (macam teguk lewat)
       return cur;
     }
     function coachAirMesej(t) {
