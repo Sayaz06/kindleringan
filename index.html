@@ -17937,6 +17937,7 @@
       // ── SENARAI HARI ──
       h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Reading, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = ' + COACH_UNIT_READING + ' unit Reading</b> dalam pai English.<br>Jumlah: <b>' + puJumlah() + ' Part</b> dalam <b>' + senarai.length + ' hari</b>.</div>';
       if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pu="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
+      for (i in PU_KERTAS_DAY) if (PU_KERTAS_DAY.hasOwnProperty(i) && PU_KERTAS[PU_KERTAS_DAY[i]]) h += '<button type="button" data-pu="baca" data-v="' + PU_KERTAS_DAY[i] + '" data-d="' + i + '" style="' + PU_BTN + 'display:block;width:100%;text-align:left;margin-bottom:6px;border-width:3px;">DAY ' + i + ' · BACA KERTAS: ' + PU_KERTAS[PU_KERTAS_DAY[i]].t + ' ›</button>';
       if (!senarai.length) h += '<div style="font-size:0.85rem;">Belum ada latihan.</div>';
       for (i = senarai.length - 1; i >= 0; i--) {
         a = puData.hari[senarai[i]];
@@ -17955,7 +17956,7 @@
       else if (a === 'balik') { puUI.hari = ''; }
       else if (a === 'baca') { puUI.baca = v; puUI.bacaDay = t.getAttribute('data-d'); puUI.ms = 0; }
       else if (a === 'ms') { puUI.ms = +v; }
-      else if (a === 'tutup') { puUI.baca = ''; }
+      else if (a === 'tutup') { puUI.baca = ''; puUI.hari = ''; }
       else if (a === 'part') { var kx = el('pu-kertas').value, mx = el('pu-markah').value; puUI.part = +v; lukisPustaka(); el('pu-kertas').value = kx; el('pu-markah').value = mx; return; }
       else if (a === 'pilihk') { el('pu-kertas').value = v; return; }
       else if (a === 'tambah') {
