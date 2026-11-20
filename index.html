@@ -17862,6 +17862,8 @@
     var PU_BTN = 'padding:6px 10px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;', PU_BTNA = PU_BTN + 'background:#000;color:#fff;';
     // ══ KERTAS SEBENAR (20 Nov): kertas MUET ditaip semula dari gambar, satu muka surat satu item dalam ms[] · PU_KERTAS_DAY = nombor DAY → id kertas ══
     var PU_WM = (function() { var a = [], i; for (i = 0; i < 400; i++) a.push('MUET'); return a.join(''); })();
+    function puSoalan(n, t) { return '<div style="display:flex;align-items:flex-end;margin-top:6px;"><b style="width:22px;">' + n + '</b><div style="flex:1;">' + t + '</div><div style="width:60px;border-bottom:1px solid #000;margin-left:6px;"></div></div>'; }
+    function puKolum(hf, tj, L) { var h = '<td style="border:1px solid #000;vertical-align:top;padding:4px 4px 8px;text-align:center;"><div style="text-align:left;font-weight:bold;">' + hf + '</div><div style="font-weight:bold;margin:2px 0 6px;">' + tj + '</div>', i; for (i = 0; i < L.length; i++) h += '<div style="margin-bottom:7px;">' + L[i] + '</div>'; return h + '</td>'; }
     var PU_KERTAS = {
       's1-2024': { t: 'MUET S1 2024 · Paper 3 Reading', ms: [
         '<div style="font-weight:bold;font-size:0.8rem;">CONFIDENTIAL*</div>' +
@@ -17881,7 +17883,19 @@
         '<div style="font-weight:bold;margin-top:8px;">DO NOT OPEN THIS QUESTION PAPER UNTIL YOU ARE TOLD TO DO SO.</div>' +
         '<div style="font-style:italic;margin:8px 0 0 14px;">There are <b>forty</b> questions in this test.</div>' +
         '<div style="font-style:italic;margin:4px 0 0 14px;">Indicate the correct answer on the Multiple-choice Answer Sheet provided.</div>' +
-        '<div style="font-style:italic;margin:4px 0 0 14px;">Answer <b>all</b> the questions.</div>'
+        '<div style="font-style:italic;margin:4px 0 0 14px;">Answer <b>all</b> the questions.</div>',
+        // MS 2 — Part 1 (tiket)
+        '<div style="font-weight:bold;font-size:0.8rem;">CONFIDENTIAL*</div>' +
+        '<div style="font-weight:bold;margin-top:8px;">Part 1</div>' +
+        '<div style="font-style:italic;margin-top:6px;">Read three short notes on tickets.</div>' +
+        '<div style="font-style:italic;margin-top:4px;">Answer questions <b>1</b> to <b>4</b> based on the short notes on tickets (<b>A</b> to <b>C</b>).</div>' +
+        '<div style="margin-top:8px;">Which ticket</div>' +
+        puSoalan(1, 'comes with drinks?') + puSoalan(2, 'can be a digital ticket?') + puSoalan(3, 'can you use on different dates?') + puSoalan(4, 'can you use to visit many places?') +
+        '<table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:0.82rem;line-height:1.25;table-layout:fixed;"><tr>' +
+          puKolum('A', 'Gondola Ride', ['Child tickets: Age 2-12', 'Children aged 13+ will pay the same price as adults', 'Children must always ride the gondola with an adult', 'Tickets can be used or returned anytime', 'Available as mobile or printed tickets', 'Not included - ride to/from hotel, food or drinks']) +
+          puKolum('B', 'Sky Tower', ['Tickets include:<br>Entrance to Sky Deck (43<sup>rd</sup> floor)<br>Free drinks', 'You will receive a notice about your tickets via email', 'Tickets must be printed', 'Cannot change the date of the tickets', 'Meet in the lobby', 'Please call 012-222 2323 for help']) +
+          puKolum('C', 'Penang Komtar', ['10% OFF with three offers:<br>Entrance to Skywalk, Jurassic Centre and Top Boutique Aquarium', '10% discount on food and drinks', 'Children aged 12 and below can enter for free', 'Children must always be with an adult', 'Tickets cannot be returned after payment', 'Tickets can be used only on the printed date']) +
+        '</tr></table>'
       ] }
     };
     var PU_KERTAS_DAY = { 1: 's1-2024' };
