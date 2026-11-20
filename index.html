@@ -519,7 +519,8 @@
     <button id="btn-go-presenting" class="btn" style="display:none;">Laci Presenting</button>
     <button id="btn-go-laci-writing" class="btn" style="display:none;">Laci Writing</button>
     <button id="btn-go-laci-speaking" class="btn" style="display:none;">Laci Speaking</button>
-    <button id="btn-go-laci-reading" class="btn" style="display:none;">Laci Reading</button>
+    <button id="btn-go-laci-reading" class="btn" style="display:none;">Laci Reading (Petikan)</button>
+    <button id="btn-go-laci-readingq" class="btn" style="display:none;">Laci Reading (Soalan)</button>
     <!-- QURAN — sesi Quran (kemajuan kindle_quran/current), pusing 10 ayat setiap sesi -->
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
     <!-- SOALAN FAKTA: ON → Laci Fakta papar SOALAN sahaja (baris yang ada soalan) · tiada SR -->
@@ -4289,11 +4290,14 @@
         drawers: 'speaking_laci', sr: 'speaking_laci_sr', perk: 'speaking_laci_perkataan' },
       // 20 Nov: READING — perenggan kertas PERPUSTAKAAN (SUDAH BACA PART n) → reading_soalan → kapal → laci
       reading: { label: 'READING', pre: 'rdg', topik: 'reading_topik', soalan: 'reading_soalan', baca: 'reading_baca', kapal: 'reading_kapal',
-        drawers: 'reading_laci', sr: 'reading_laci_sr', perk: 'reading_laci_perkataan' }
+        drawers: 'reading_laci', sr: 'reading_laci_sr', perk: 'reading_laci_perkataan' },
+      // 20 Nov: READING SOALAN — soalan + pilihan jawapan setiap Part (kapal SOALAN di PELABUHAN READING) → Laci Reading (Soalan)
+      readingq: { label: 'READING SOALAN', pre: 'rdq', topik: 'readingq_topik', soalan: 'readingq_soalan', baca: 'reading_baca', kapal: 'readingq_kapal',
+        drawers: 'readingq_laci', sr: 'readingq_laci_sr', perk: 'readingq_laci_perkataan' }
     };
     // ID kapal "tulis-xxx" / "rsn-xxx" / "prs-xxx" → jenis ('' = kapal Laci Bahasa)
-    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs|spk|rdg)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting', spk: 'speaking', rdg: 'reading' }[m[1]] : ''; }
-    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs|spk|rdg)-/, ''); }
+    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs|spk|rdg|rdq)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting', spk: 'speaking', rdg: 'reading', rdq: 'readingq' }[m[1]] : ''; }
+    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs|spk|rdg|rdq)-/, ''); }
     var bahasaSumber = 'bahasa';
     function kolB(n) {
       var J = LJ[bahasaSumber];
@@ -4430,6 +4434,8 @@
     if (_btnLaciSpeaking) _btnLaciSpeaking.onclick = function() { startLaciWriting('speaking'); };
     var _btnLaciReading = document.getElementById('btn-go-laci-reading');
     if (_btnLaciReading) _btnLaciReading.onclick = function() { startLaciWriting('reading'); };
+    var _btnLaciReadingQ = document.getElementById('btn-go-laci-readingq');
+    if (_btnLaciReadingQ) _btnLaciReadingQ.onclick = function() { startLaciWriting('readingq'); };
     document.getElementById('btn-back-menu').onclick = function() {
       isLoading = false;
       showScreen('screen-menu');
@@ -7355,6 +7361,7 @@
     <div class="pj-kotak"><div class="pj-watak" id="gb-watak"></div><div class="pj-cakap" id="gb-cakap"></div></div>
     <button type="button" id="btn-gb-ambil" class="btn btn-primary" style="margin:0 0 8px;display:none;">AMBIL UPAH</button>
     <button type="button" id="btn-gb-mula" class="btn" style="margin:0 0 10px;">PANGGIL KAPAL KOSONG</button>
+    <button type="button" id="btn-gb-mula2" class="btn" style="margin:0 0 10px;display:none;">PANGGIL KAPAL KOSONG (SOALAN)</button>
     <div class="dp-baki">
       <div>Kapal belayar<b id="gb-laluan">-</b></div>
       <div>Kontena<b id="gb-bungkus">-</b></div>
@@ -8978,8 +8985,12 @@
       if (lompatTerus) lompatKeLaluan();
     }
     // Kapal kosong pertama (belum ada kontena langsung)
-    function kapalKosong() {
-      for (var i = 0; i < S.sr.length; i++) if (!bilKontena(i)) return i;
+    // 20 Nov: pre = 'rdg' (petikan) / 'rdq' (soalan) — tapis kapal ikut jenis (PELABUHAN READING) · kosong = semua
+    function kapalKosong(pre) {
+      for (var i = 0; i < S.sr.length; i++) {
+        if (pre && String(S.sr[i].id).indexOf(pre + '-') !== 0) continue;
+        if (!bilKontena(i)) return i;
+      }
       return -1;
     }
     // Skrol ke TEMPAT TAMBAT
@@ -9486,13 +9497,17 @@
         penjaga('gb-watak', 'kapten', 'masuk', n ? 'Kapal ini ada kontena yang belum belayar. Ketik besi pengikat, muat lagi atau belayarkan dulu.' : 'Kapal kosong dah diikat. Ketik besi pengikat untuk bawa ke dermaga.', 'gb-cakap');
         return;
       }
-      var idx = kapalKosong();
-      if (idx < 0) { penjaga('gb-watak', 'kapten', 'masuk', 'Semua kapal dah ada muatan. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap'); return; }
+      var pj = gbPanggilJenis; gbPanggilJenis = '';
+      if (!pj && GB_JENIS[gbHal] === 'reading') pj = 'rdg';
+      var idx = kapalKosong(pj);
+      if (idx < 0) { penjaga('gb-watak', 'kapten', 'masuk', pj === 'rdq' ? 'Tiada kapal SOALAN kosong. Tekan SUDAH BACA PART di PERPUSTAKAAN dulu.' : pj === 'rdg' ? 'Tiada kapal PETIKAN kosong. Tekan SUDAH BACA PART di PERPUSTAKAAN dulu.' : 'Semua kapal dah ada muatan. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap'); return; }
       tambatIdx = idx;
       lukisTambat();
       kapalMasuk();
       penjaga('gb-watak', 'kapten', 'gembira', 'Kapal kosong dah sampai dan diikat! Ketik besi pengikat untuk bawa ke dermaga.', 'gb-cakap');
     };
+    var gbPanggilJenis = '';
+    el('btn-gb-mula2').onclick = function() { gbPanggilJenis = 'rdq'; el('btn-gb-mula').onclick(); };
     el('btn-gb-ambil').onclick = ambilUpah;
     // ══ SIGNBOARD FREE PARKING (sewa dari Kapten) ══
     // Dipasang di jeti tempat tambat → kapal kosong sentiasa ada di atas, tak perlu PANGGIL.
@@ -9516,6 +9531,7 @@
     function lukisPapanBtn() {
       var b = el('btn-gb-papan'), c = el('gb-jaga-cakap');
       el('btn-gb-mula').style.display = PAPAN.ada ? 'none' : '';
+      el('btn-gb-mula2').style.display = (PAPAN.ada || typeof GB_JENIS === 'undefined' || GB_JENIS[gbHal] !== 'reading') ? 'none' : '';
       b.parentNode.style.display = PAPAN.ada ? 'none' : '';
       b.innerHTML = '<i>P</i>Sewa signboard · ' + rm(EKO.PAPAN_SEN) + ' Biru/jam';
       if (c) c.innerHTML = papanCakap();
@@ -14294,7 +14310,7 @@
         teruskan();
       }).catch(function() { teruskan(); });
     }
-    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting', 'btn-go-laci-writing', 'btn-go-laci-speaking', 'btn-go-laci-reading'].forEach(function(id) {
+    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting', 'btn-go-laci-writing', 'btn-go-laci-speaking', 'btn-go-laci-reading', 'btn-go-laci-readingq'].forEach(function(id) {
       var b = el(id);
       if (!b || !b.onclick) return;
       var asal = b.onclick;
@@ -15671,7 +15687,7 @@
     var TS_HALAMAN = TS_HAL_USAHA, tsMod = 'ts', tsHalSimpan = { ts: 0, muet: 0 };
     // ══ TAB LACI (17 Nov) — senarai butang macam MENU · tekan → laci terus dibuka (kunci Health First & kira minit sama macam MENU) ══
     var LC_SENARAI = [['btn-go-bahasa', 'Laci Bahasa'], ['btn-go-sr-bebas', 'SR Bebas (Bahasa)'], ['btn-go-fakta', 'Laci Fakta'],
-      ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing'], ['btn-go-laci-speaking', 'Laci Speaking'], ['btn-go-laci-reading', 'Laci Reading']];
+      ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing'], ['btn-go-laci-speaking', 'Laci Speaking'], ['btn-go-laci-reading', 'Laci Reading (Petikan)'], ['btn-go-laci-readingq', 'Laci Reading (Soalan)']];
     function bukaLc() {
       var h = '', i;
       for (i = 0; i < LC_SENARAI.length; i++) h += '<button type="button" class="btn" data-lc="' + LC_SENARAI[i][0] + '">' + LC_SENARAI[i][1] + '</button>';
@@ -18225,22 +18241,48 @@
       for (i = 0; i < K.ms.length; i++) if (pm[i] === p) a = a.concat(puPerenggan(K.ms[i]));
       return (PU_TEKS[k] = a);
     }
+    // 20 Nov: SOALAN + pilihan jawapan = div yang bermula dengan <b>nombor</b> / <b>A–G</b> (bukan perenggan, bukan graf/jadual)
+    var PU_SOAL = {};
+    function puSoalanHtml(html) {
+      var d = document.createElement('div'), r, i, f, b, t, out = [];
+      d.innerHTML = html;
+      r = d.getElementsByTagName('div');
+      for (i = 0; i < r.length; i++) {
+        f = r[i].firstChild;
+        while (f && f.nodeType === 3 && !/\S/.test(f.nodeValue)) f = f.nextSibling;
+        if (!f || f.nodeType !== 1 || f.tagName !== 'B') continue;
+        b = String(f.textContent || '').replace(/\s+/g, '');
+        if (!/^(\d{1,2}|[A-G])$/.test(b) || r[i].getElementsByTagName('table').length) continue;
+        t = String(r[i].textContent || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+        t = t.slice(b.length).replace(/^\s+/, '');
+        if (tlKira(t) < 1) continue;
+        out.push('(' + b + ') ' + t);
+      }
+      return out;
+    }
+    function puSoalanPart(kid, p) {
+      var k = kid + '|' + p, K = PU_KERTAS[kid], pm, a = [], i;
+      if (PU_SOAL[k]) return PU_SOAL[k];
+      pm = puPartMs(kid);
+      for (i = 0; i < K.ms.length; i++) if (pm[i] === p) a = a.concat(puSoalanHtml(K.ms[i]));
+      return (PU_SOAL[k] = a);
+    }
     function puKeKapal(kid, p) {
-      var K = PU_KERTAS[kid], ay = puTeksPart(kid, p), id = kid + '_p' + p, ub = { sr: {} };
-      if (!K || !ay.length || !currentUser) return;
+      var K = PU_KERTAS[kid], ay = puTeksPart(kid, p), sq = puSoalanPart(kid, p), id = kid + '_p' + p, ub = { sr: {} }, kerja = [];
+      if (!K || (!ay.length && !sq.length) || !currentUser) return;
       ub.sr[id] = { at: Date.now(), mula: coachHariId() };
       puUI.mesej = 'Menghantar Part ' + p + ' ke Pelabuhan Reading...'; lukisPustaka();
-      Promise.all([
-        kol('reading_soalan').doc(id).set({ sid: id, soalan: 'Part ' + p + ' · ' + K.t, karangan: ay.join('\n'), kertas: kid, part: p, at: Date.now() }),
-        kol('coach').doc('reading_baca').set(ub, { merge: true })
-      ]).then(function() { puUI.mesej = 'SUDAH BACA Part ' + p + ' · ' + ay.length + ' perenggan → kapal di PELABUHAN READING.'; lukisPustaka(); })
+      if (ay.length) kerja.push(kol('reading_soalan').doc(id).set({ sid: id, soalan: 'Part ' + p + ' · ' + K.t, karangan: ay.join('\n'), kertas: kid, part: p, at: Date.now() }));
+      if (sq.length) kerja.push(kol('readingq_soalan').doc(id).set({ sid: id, soalan: 'Part ' + p + ' · ' + K.t, karangan: sq.join('\n'), kertas: kid, part: p, at: Date.now() }));
+      kerja.push(kol('coach').doc('reading_baca').set(ub, { merge: true }));
+      Promise.all(kerja).then(function() { puUI.mesej = 'SUDAH BACA Part ' + p + ' → PELABUHAN READING: ' + (ay.length ? 'kapal PETIKAN (' + ay.length + ' perenggan)' : 'tiada petikan') + ' · ' + (sq.length ? 'kapal SOALAN (' + sq.length + ' baris)' : 'tiada soalan') + '.'; lukisPustaka(); })
         .catch(function(e) { puUI.mesej = 'Gagal hantar: ' + ((e && e.message) || e); lukisPustaka(); });
     }
     function puLukisKertas() {
       var K = PU_KERTAS[puUI.baca], n = K.ms.length, m = puUI.ms, nav, pK, bK = '';
       if (m >= n) m = puUI.ms = n - 1;
       pK = puPartMs(puUI.baca)[m];
-      if (pK && puTeksPart(puUI.baca, pK).length) bK = '<button type="button" data-pu="kapal" data-v="' + pK + '" style="' + PU_BTNA + 'display:block;width:100%;margin:8px 0 0;">SUDAH BACA PART ' + pK + ' → PELABUHAN READING ›</button>';
+      if (pK && (puTeksPart(puUI.baca, pK).length || puSoalanPart(puUI.baca, pK).length)) bK = '<button type="button" data-pu="kapal" data-v="' + pK + '" style="' + PU_BTNA + 'display:block;width:100%;margin:8px 0 0;">SUDAH BACA PART ' + pK + ' → PELABUHAN READING ›</button>';
       if (puUI.mesej) bK = '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0 0;">' + puUI.mesej + '</div>' + bK;
       nav = '<div style="display:flex;align-items:center;margin:4px 0;">' +
         '<button type="button" data-pu="ms" data-v="' + (m - 1) + '" style="' + PU_BTN + 'margin:0;' + (m > 0 ? '' : 'visibility:hidden;') + '">‹ SEBELUM</button>' +
@@ -20995,9 +21037,12 @@
     // Kotak BACA KARANGAN (titik 3 & 4 sahaja) — di atas senarai kapal
     (function() { var sc = el('screen-gbank'), t = document.createElement('div'); t.id = 'gb-baca'; sc.insertBefore(t, el('gb-info')); })();
     function gbBacaLukis() {
-      var b = el('gb-baca');
+      var b = el('gb-baca'), rdB = GB_JENIS[gbHal] === 'reading';
+      // 20 Nov: PELABUHAN READING — dua butang: PETIKAN / SOALAN
+      el('btn-gb-mula').textContent = rdB ? 'PANGGIL KAPAL KOSONG (PETIKAN)' : 'PANGGIL KAPAL KOSONG';
+      el('btn-gb-mula2').style.display = (rdB && !PAPAN.ada) ? '' : 'none';
       if (!b) return;
-      b.innerHTML = gbAdaBaca() ? lwbLukis(GB_JENIS[gbHal]) : (GB_JENIS[gbHal] === 'speaking' ? '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.85rem;">Kapal SPEAKING = huraian yang sudah ditekan <b>SUDAH BACA</b> di PENTAS (MUET → Speaking). Buka PENTAS sekali untuk kemas kini senarai kapal.</div>' : GB_JENIS[gbHal] === 'reading' ? '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.85rem;">Kapal READING = Part yang sudah ditekan <b>SUDAH BACA PART</b> semasa BACA KERTAS di PERPUSTAKAAN (MUET → Reading).</div>' : '');
+      b.innerHTML = gbAdaBaca() ? lwbLukis(GB_JENIS[gbHal]) : (GB_JENIS[gbHal] === 'speaking' ? '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.85rem;">Kapal SPEAKING = huraian yang sudah ditekan <b>SUDAH BACA</b> di PENTAS (MUET → Speaking). Buka PENTAS sekali untuk kemas kini senarai kapal.</div>' : GB_JENIS[gbHal] === 'reading' ? '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.85rem;">Kapal READING = Part yang sudah ditekan <b>SUDAH BACA PART</b> semasa BACA KERTAS di PERPUSTAKAAN (MUET → Reading). Setiap Part ada 2 kapal: <b>PETIKAN</b> (teks) dan <b>SOALAN</b> (soalan + pilihan jawapan).</div>' : '');
     }
     el('gb-baca').onclick = function(e) { if (gbAdaBaca()) lwbKlik(e, this, GB_JENIS[gbHal]); };
     function gbTitik() {
@@ -21033,7 +21078,12 @@
     function lwEsc(x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
     function lwTeks(x) { return String(x || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); }
     // Senarai kapal WRITING / REASONING / PRESENTING (karangan yang ada dalam SR bacaan)
+    // 20 Nov: PELABUHAN READING = kapal PETIKAN (reading) + kapal SOALAN (readingq)
     function lwKapal(j, cb) {
+      if (j === 'reading') { lwKapal1('reading', function(a) { lwKapal1('readingq', function(q) { cb(a.concat(q)); }); }); return; }
+      lwKapal1(j, cb);
+    }
+    function lwKapal1(j, cb) {
       var J = LJ[j];
       Promise.all([kol('coach').doc(J.baca).get(), kol(J.soalan).get()]).then(function(r) {
         var sr = (r[0].exists && (r[0].data() || {}).sr) || {}, a = [];
@@ -21041,7 +21091,7 @@
           var s = d.data() || {}, x = sr[s.sid || d.id];
           if (!x || !tlKira(s.karangan)) return;
           var t = lwTeks(s.soalan || '');
-          a.push({ id: J.pre + '-' + d.id, title: (j === 'writing' ? 'T' + (s.task === 2 ? 2 : 1) + ' · ' : j === 'speaking' ? 'P' + (s.part === 2 ? 2 : 1) + ' · ' : '') + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
+          a.push({ id: J.pre + '-' + d.id, title: (j === 'writing' ? 'T' + (s.task === 2 ? 2 : 1) + ' · ' : j === 'speaking' ? 'P' + (s.part === 2 ? 2 : 1) + ' · ' : j === 'reading' ? 'PETIKAN · ' : j === 'readingq' ? 'SOALAN · ' : '') + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
         });
         a.sort(function(x, y) { return x.t - y.t; });
         cb(a);
