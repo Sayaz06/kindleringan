@@ -16218,13 +16218,15 @@
       return akhir ? akhir + COACH_TEGUK_SELANG * 60000 - Date.now() : 0;
     }
     // Slot TERLEPAS → + 1 TEGUK (lewat): 10 ml, tiada Kuning, buang denda slot itu
-    function makmalTegukLewat(k) {
+    // awal = true → MINUM AWAL untuk slot akan datang (sudah cover → slot itu tidak dikunci nanti) · tiada Kuning
+    function makmalTegukLewat(k, awal) {
       var hr = coachHariData.hari, now = Date.now(), tg = hr.tugas || (hr.tugas = {});
       if (tg[k]) return;
       var rekod = { at: now, ml: COACH_TEGUK_ML, slot: k, teguk: 1 }, d = { airV: 2, minum: firebase.firestore.FieldValue.arrayUnion(rekod), tugas: {} };
-      d.tugas[k] = { s: 'BUAT', at: now, ml: COACH_TEGUK_ML, lewat: true, kuning: 0 };
+      d.tugas[k] = { s: 'BUAT', at: now, ml: COACH_TEGUK_ML, kuning: 0 };
+      if (awal) d.tugas[k].awal = true; else d.tugas[k].lewat = true;
       coachSimpanHari(d, function() { hr.airV = 2; (hr.minum || (hr.minum = [])).push(rekod); tg[k] = d.tugas[k]; });
-      el('makmal-info').textContent = '+1 teguk lewat · slot ' + k.replace('air', '') + '.';
+      el('makmal-info').textContent = '+1 teguk ' + (awal ? 'awal' : 'lewat') + ' · slot ' + k.replace('air', '') + (awal ? ' sudah cover — tidak dikunci pada slot itu.' : '.');
       lukisMakmal();
     }
     // 1 SLOT = 1 TEGUK (10 ml) · slot dibuka 5 minit · Kuning setiap 24 teguk tepat masa (= 2 jam)
@@ -16265,14 +16267,15 @@
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:4px 0;font-size:0.9rem;"><b>AIR HARI INI: ' + ml + ' ml</b> (' + minum.length + ' kali)</div>';
       // 18 Nov: SLOT AIR macam MESIN SPIN — roda slot (1 slot = 1 teguk 10 ml / 5 minit) · hanya 5 slot kelihatan, slot SEKARANG di tengah · ▲ ▼ pusing roda
       // Fokus roda = slot PALING ATAS yang belum siap (terlepas / sekarang) — isi dari slot pertama ke bawah
-      var c = -1, cKini = -1, idx, bil = { siap: 0, abai: 0 };
+      var c = -1, cKini = -1, cAwal = -1, idx, bil = { siap: 0, abai: 0 };
       for (i = 0; i < slot.length; i++) {
         var sx = coachStatusTugas(slot[i], kini);
         if (c === -1 && !tg[slot[i].kunci] && (sx === 'SEKARANG' || (sx === 'ABAI' && kini < j.tidur))) c = i;
         if (cKini === -1 && kini < coachTamat(slot[i])) cKini = i;
+        if (cAwal === -1 && !tg[slot[i].kunci] && sx === 'AKAN') cAwal = i; // slot AKAN pertama yang belum ditanda (minum awal)
         if (sx === 'BUAT') bil.siap++; else if (sx === 'ABAI') bil.abai++;
       }
-      if (c === -1) c = cKini === -1 ? slot.length - 1 : cKini;
+      if (c === -1) c = cAwal !== -1 && kini < j.tidur ? cAwal : (cKini === -1 ? slot.length - 1 : cKini);
       idx = Math.max(0, Math.min(slot.length - 1, c + (makmalUI.geser || 0)));
       makmalUI.geser = idx - c;
       h += '<div style="font-weight:bold;margin-top:6px;">SLOT AIR <span style="font-weight:normal;font-size:0.8rem;">· ' + slot.length + ' slot · 1 teguk (' + COACH_TEGUK_ML + ' ml) setiap ' + COACH_TEGUK_SELANG + ' minit · siap ' + bil.siap + ' · terlepas ' + bil.abai + '</span></div>';
@@ -16287,15 +16290,16 @@
           (r && r.s === 'BUAT' ? 'background:#000;color:#fff;' : 'background:#fff;color:' + (tengah ? '#000' : '#555') + ';') + '">' +
           (tengah ? '<span style="position:absolute;left:4px;top:50%;margin-top:-9px;font-size:0.9rem;">&#9654;</span>' : '') +
           '<b>Slot ' + n + '</b> · ' + coachTeksMasa(t.min) + (t.nama.indexOf('TERAKHIR') !== -1 ? ' · TERAKHIR' : '') + ' · <b>' +
-          (r ? (r.s === 'BUAT' ? 'SIAP ' + (r.ml || COACH_TEGUK_ML) + ' ml' + (r.lewat ? ' (lewat)' : '') : r.s === 'GANTI' ? 'GANTI' : 'TAK DAPAT') :
+          (r ? (r.s === 'BUAT' ? 'SIAP ' + (r.ml || COACH_TEGUK_ML) + ' ml' + (r.lewat ? ' (lewat)' : r.awal ? ' (awal)' : '') : r.s === 'GANTI' ? 'GANTI' : 'TAK DAPAT') :
             pra ? 'tidak dikira' : st === 'SEKARANG' ? 'SEKARANG' : st === 'ABAI' ? (kini >= j.tidur ? 'tiada denda' : 'TERLEPAS') : 'nanti') + '</b>';
         if (!r && st === 'SEKARANG') {
           h += '<div><button type="button" data-mk="teguk" data-k="' + k + '" style="' + btnA + (tengah ? 'padding:10px 14px;font-size:1rem;' : '') + '">+ 1 TEGUK (' + COACH_TEGUK_ML + ' ml)</button></div>';
         } else if (!r && st === 'ABAI' && kini < j.tidur) {
           if (makmalUI.dapat === k) h += '<div>Sebab tak dapat: <button type="button" data-mk="sebab" data-k="' + k + '" data-v="SAKIT" style="' + btn + '">SAKIT</button><button type="button" data-mk="sebab" data-k="' + k + '" data-v="LAIN" style="' + btn + '">LAIN</button><button type="button" data-mk="batal" style="' + btn + '">BATAL</button></div>';
           else h += '<div><button type="button" data-mk="lewat" data-k="' + k + '" style="' + btn + '">+ 1 TEGUK (lewat)</button><button type="button" data-mk="dapat" data-k="' + k + '" style="' + btn + '">TAK DAPAT</button></div>';
-        } else if (!r && st === 'AKAN' && kini < j.tidur && tengah) {
-          h += '<div><button type="button" disabled style="' + btnX + '">BELUM SAMPAI MASA</button></div>';
+        } else if (!r && st === 'AKAN' && kini < j.tidur && i === cAwal) {
+          // 20 Nov: minum AWAL — tanda slot akan datang (sudah cover, slot ini tidak dikunci nanti) · tiada TAK DAPAT
+          h += '<div><button type="button" data-mk="awal" data-k="' + k + '" style="' + (tengah ? btnA + 'padding:10px 14px;font-size:1rem;' : btn) + '">+ 1 TEGUK (awal)</button></div>';
         }
         h += '</div>';
       }
@@ -16349,11 +16353,19 @@
       if (k === 'luar') {
         var jT = coachJadualKini(), kiniT = coachMinitKini(), bolehT = Math.floor(ml / COACH_TEGUK_ML), xT;
         d.airV = 2;
-        for (var iT = 0; jT && iT < jT.tugas.length && tebus < bolehT; iT++) {
-          xT = jT.tugas[iT];
-          if (xT.jenis !== 'air' || coachStatusTugas(xT, kiniT) !== 'ABAI') continue;
-          if (!d.tugas) d.tugas = {};
-          d.tugas[xT.kunci] = { s: 'BUAT', at: now, ml: COACH_TEGUK_ML, lewat: true, kuning: 0 }; tebus++;
+        // 20 Nov: TERLEPAS dulu → slot SEKARANG → slot AKAN (awal, sudah cover)
+        var fasaT = ['ABAI', 'SEKARANG', 'AKAN'], fT, stT;
+        for (fT = 0; fT < fasaT.length && tebus < bolehT; fT++) {
+          for (var iT = 0; jT && iT < jT.tugas.length && tebus < bolehT; iT++) {
+            xT = jT.tugas[iT];
+            if (xT.jenis !== 'air' || (d.tugas && d.tugas[xT.kunci])) continue;
+            stT = coachStatusTugas(xT, kiniT);
+            if (stT !== fasaT[fT] || (stT === 'AKAN' && kiniT >= jT.tidur)) continue;
+            if (!d.tugas) d.tugas = {};
+            d.tugas[xT.kunci] = { s: 'BUAT', at: now, ml: COACH_TEGUK_ML, kuning: 0 };
+            if (stT === 'ABAI') d.tugas[xT.kunci].lewat = true; else if (stT === 'AKAN') d.tugas[xT.kunci].awal = true;
+            tebus++;
+          }
         }
       }
       makmalUI.ml = '';
@@ -16362,7 +16374,7 @@
         if (d.airV) hr.airV = 2;
         if (d.tugas) for (var kq in d.tugas) if (d.tugas.hasOwnProperty(kq)) (hr.tugas || (hr.tugas = {}))[kq] = d.tugas[kq];
       });
-      el('makmal-info').textContent = '+' + ml + ' ml direkod' + (k === 'luar' ? ' (luar jadual)' + (tebus ? ' · tebus ' + tebus + ' teguk terlepas.' : '.') : ' — slot ' + k.replace('air', '') + (lewat ? ' (lewat).' : '.'));
+      el('makmal-info').textContent = '+' + ml + ' ml direkod' + (k === 'luar' ? ' (luar jadual)' + (tebus ? ' · cover ' + tebus + ' slot (terlepas → sekarang → akan datang).' : '.') : ' — slot ' + k.replace('air', '') + (lewat ? ' (lewat).' : '.'));
       lukisMakmal();
       if (sen) {
         var b = db.batch();
@@ -16386,6 +16398,7 @@
       if (mk === 'turun') { makmalUI.geser = (makmalUI.geser || 0) + 1; lukisMakmal(); return; }
       if (mk === 'kini') { makmalUI.geser = 0; lukisMakmal(); return; }
       if (mk === 'lewat') { makmalUI.geser = 0; makmalTegukLewat(k); return; }
+      if (mk === 'awal') { makmalUI.geser = 0; makmalTegukLewat(k, true); return; }
       if (mk === 'pukal') { makmalUI.teguk = (makmalUI.teguk || 0) + parseInt(t.getAttribute('data-v'), 10); lukisMakmal(); return; }
       if (mk === 'pukalin') {
         var inpP = document.getElementById('makmal-ml'), nP = parseInt(((inpP && inpP.value) || '').replace(/[^0-9]/g, ''), 10);
@@ -16551,6 +16564,7 @@
       if (!j || kini >= j.tidur) return null;
       for (i = 0; i < j.tugas.length; i++) { t = j.tugas[i]; if (t.jenis === 'air' && kini >= t.min && kini < coachTamat(t)) { cur = t; break; } }
       if (!cur) return null;
+      if ((hr.tugas || {})[cur.kunci]) return null; // slot ini sudah ditanda (tepat masa / AWAL / pukal) → sudah cover
       mula = d.getTime() - (kini - cur.min) * 60000 - d.getSeconds() * 1000 - d.getMilliseconds();
       for (i = 0; i < m.length; i++) if (m[i].at >= mula) return null;
       return cur;
