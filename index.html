@@ -17061,7 +17061,56 @@
     //   Bentuk: { 'id-kertas': { t: 'tajuk', ms: [ 'html muka surat 1', 'html muka surat 2', ... ] } } · kosong = butang BACA KERTAS tidak dipapar
     var PN_KERTAS = {};
     var PT_KERTAS = {};
-    var TL_KERTAS = {};
+    // 21 Nov: KERTAS WRITING (soalan sahaja — jawapan ditulis di app phone)
+    var TL_WM = (function() { var a = [], i; for (i = 0; i < 400; i++) a.push('MUET'); return a.join(''); })();
+    var TL_KERTAS = {
+      's1-2024': { t: 'MUET S1 2024 · Paper 4 Writing', ms: [
+        // MS 1 — kulit
+        '<div style="font-weight:bold;font-size:0.8rem;">CONFIDENTIAL*</div>' +
+        '<div style="position:relative;overflow:hidden;margin:6px 0 0;padding:8px 6px 10px;text-align:center;">' +
+          '<div style="position:absolute;top:0;left:0;right:0;bottom:0;color:#bbb;font-size:9px;line-height:10px;word-break:break-all;font-family:Arial,sans-serif;">' + TL_WM + '</div>' +
+          '<div style="position:relative;">' +
+            '<div style="display:inline-block;border:3px double #000;background:#fff;font-weight:bold;font-size:0.75rem;padding:2px 6px;font-family:Arial,sans-serif;">MPM</div>' +
+            '<div style="display:table;width:100%;margin-top:4px;font-family:Arial,sans-serif;font-weight:bold;"><div style="display:table-cell;text-align:left;font-size:1.5rem;">800/4</div><div style="display:table-cell;text-align:right;font-size:1.5rem;">MUET S1 2024</div></div>' +
+            '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:1.05rem;margin-top:4px;">MALAYSIAN UNIVERSITY ENGLISH TEST</div>' +
+            '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:1.05rem;margin-top:2px;">PAPER 4 WRITING</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:center;margin-top:10px;font-size:1.1rem;letter-spacing:1px;">MAJLIS PEPERIKSAAN MALAYSIA</div>' +
+        '<div style="text-align:center;font-size:0.85rem;">(MALAYSIAN EXAMINATIONS COUNCIL)</div>' +
+        '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:2rem;margin-top:18px;">75 Minutes</div>' +
+        '<div style="font-weight:bold;margin-top:10px;">Instructions to candidates:</div>' +
+        '<div style="font-weight:bold;margin-top:8px;">DO NOT OPEN THIS QUESTION PAPER UNTIL YOU ARE TOLD TO DO SO.</div>' +
+        '<div style="font-style:italic;margin:8px 0 0 14px;">Answer <b>both</b> Tasks 1 and 2.</div>' +
+        '<div style="font-style:italic;margin:4px 0 0 14px;">You will be assessed on task fulfilment, organisation, structure and lexis.</div>' +
+        '<div style="border-top:1px solid #000;margin-top:24px;padding-top:4px;text-align:center;font-weight:bold;font-size:0.85rem;">This question paper consists of 3 printed pages and 1 blank page.</div>' +
+        '<div style="text-align:center;font-size:0.8rem;">&copy; Majlis Peperiksaan Malaysia 2024</div>',
+        // MS 2 — Task 1 (email Cindy + nota) · Task 2 (esei)
+        '<div style="font-weight:bold;font-size:0.8rem;">CONFIDENTIAL*</div>' +
+        '<div style="font-weight:bold;margin-top:8px;">Task 1</div>' +
+        '<div style="font-style:italic;margin-top:6px;">You are advised to spend about <b>25 minutes</b> on this task.</div>' +
+        '<div style="margin-top:6px;">Your friend, Cindy is taking part in a cooking competition. Read the following email from her asking you for some advice.</div>' +
+        '<table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85rem;line-height:1.3;table-layout:fixed;">' +
+          '<tr><td style="width:74%;background:#000;color:#fff;padding:3px 6px;border:1px solid #000;">New Message<span style="float:right;">_ X</span></td><td style="width:26%;"></td></tr>' +
+          '<tr><td style="border:1px solid #000;padding:0;"><table style="width:100%;border-collapse:collapse;"><tr><td style="width:32%;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 5px;">From:</td><td style="border-bottom:1px solid #000;padding:3px 5px;">Cindy &lt;cindy@zmail.com&gt;</td></tr><tr><td style="border-right:1px solid #000;padding:3px 5px;">Subject:</td><td style="padding:3px 5px;">Need Your Help!</td></tr></table></td><td style="vertical-align:bottom;padding-left:6px;font-weight:bold;">Notes:</td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;padding:8px 6px 0;font-style:italic;">Hi Nora,</td><td></td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;padding:8px 6px 0;font-style:italic;">How are you? I have not heard from you for some time now. You must be very busy.</td><td style="vertical-align:bottom;padding-left:6px;">&rarr; Yes, ...</td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;padding:8px 6px 0;font-style:italic;">Anyway, I will be taking part in a cooking competition organised by the district&#39;s Lions Club. I am excited as this will be my first time taking part in a cooking competition.</td><td style="vertical-align:bottom;padding-left:6px;">&rarr; Great! ...</td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;padding:8px 6px 0;font-style:italic;">I cannot decide on what to cook for the competition. I need to prepare two dishes for afternoon tea. Can you give me some suggestions?</td><td style="vertical-align:bottom;padding-left:6px;">&rarr; Suggest two</td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;padding:8px 6px 0;font-style:italic;">I also need to present my dishes in an interesting way. I am thinking of buying recipe books to get some ideas. Do you think that will be helpful?</td><td style="vertical-align:bottom;padding-left:6px;">&rarr; Tell Cindy</td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;padding:8px 6px 0;font-style:italic;">Please help me out. Looking forward to your reply. Bye.</td><td></td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;padding:8px 6px 0;font-style:italic;">Your friend,</td><td></td></tr>' +
+          '<tr><td style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:6px 6px 8px;font-style:italic;font-weight:bold;font-family:\'Brush Script MT\',cursive;">Cindy</td><td></td></tr>' +
+        '</table>' +
+        '<div style="display:table;width:100%;margin-top:6px;"><div style="display:table-cell;">Using <b>all the notes</b> given, write a reply of <b>at least 100 words</b> in an appropriate style.</div><div style="display:table-cell;width:40px;text-align:right;vertical-align:top;">[30]</div></div>' +
+        '<div style="font-weight:bold;margin-top:14px;">Task 2</div>' +
+        '<div style="font-style:italic;margin-top:6px;">You are advised to spend about <b>50 minutes</b> on this task.</div>' +
+        '<div style="margin-top:6px;">You watched a forum which focused on the challenges of living in today&#39;s world. The panellists were experts on mental health. One of the panellists made the following comment:</div>' +
+        '<div style="font-style:italic;text-align:center;margin:10px 0;">&ldquo;Education on mental health is necessary in the 21<sup>st</sup> century.&rdquo;</div>' +
+        '<div style="display:table;width:100%;"><div style="display:table-cell;">Write an essay expressing your opinion on the comment. Write <b>at least 250 words</b>.</div><div style="display:table-cell;width:40px;text-align:right;vertical-align:top;">[60]</div></div>' +
+        '<div style="margin-top:16px;font-weight:bold;font-size:0.8rem;">MUET SESSION 1 2024 - 800/4</div>'
+      ] }
+    };
     var KT = { pn: { K: PN_KERTAS, lukis: function() { lukisPwKertas(); } }, pt: { K: PT_KERTAS, lukis: function() { lukisPentas(); } }, tl: { K: TL_KERTAS, lukis: function() { lukisTulis(); } } };
     var KT_UI = { pn: { baca: '', ms: 0 }, pt: { baca: '', ms: 0 }, tl: { baca: '', ms: 0 } };
     var KT_BTN = 'padding:5px 9px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
