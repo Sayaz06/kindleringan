@@ -16579,7 +16579,7 @@
     }
     // Kawasan dikunci KUNCI AIR: semua bangunan (kecuali MAKMAL), laci, game, arked, harbour, kedai, MUET.
     //   Kunci hanya bila pengguna dari LUAR (Tasks / Menu / Coach / Makmal…) cuba masuk — yang sedang di dalam TIDAK dikeluarkan.
-    var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|nutrisi|sup-edit|bilik|hj|bp|ul-|gb|tpl)/;
+    var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|bilik|hj|bp|ul-|gb|tpl)/;
     function coachAirKeMakmal(ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); coachAirPopup('Minta maaf, ' + coachAirMesej(ak)); }, 0); }
     // ══ KUNCI SOLAT (18 Nov): sudah masuk waktu (azan) tetapi solat waktu itu belum ditanda SUDAH di SURAU → semua dikunci macam KUNCI AIR (Surau sahaja dibuka) ══
     var SOLAT_TIP = 'TIP: Kalau rasa berat nak solat, rasa malas untuk solat betul-betul lepas azan — terus SUJUD atas sejadah. Sujud lama-lama sampailah rasa boleh bangun. Masa lebih sejam bersujud pun tak apa — sebab ia buat kita tak lari kepada benda-benda dopamin, iaitu pelarian daripada solat awal waktu.';
@@ -16626,11 +16626,14 @@
     }
     window.supHalang = function(id) {
       var ak, sk, a = document.querySelector('.screen.active'), dari = a ? a.id : '';
+      // Kunci AIR/SOLAT — Makmal & Surau terbuka; Nutrisi/Suplemen terbuka (suplemen sistem berasingan)
       if (AIR_SKRIN_KUNCI.test(id || '') && !AIR_SKRIN_KUNCI.test(dari)) {
         sk = coachSolatKunci();
-        if (sk) { if (!/^screen-surau/.test(id)) { coachKeKunci({ solat: sk }); return true; } } // Surau sahaja dibuka
+        if (sk) { if (!/^screen-surau/.test(id)) { coachKeKunci({ solat: sk }); return true; } }
         else if ((ak = coachAirKunci())) { coachAirKeMakmal(ak); return true; }
       }
+      // Kunci SUPLEMEN — Makmal terbuka (minum air tidak dihalang)
+      if (/^screen-makmal/.test(id || '')) return false;
       if (!SUP_SKRIN_KUNCI.test(id || '')) return false;
       if (!supTerlepas().length) return false;
       coachKunciMesej = supMesejKunci();
@@ -16686,6 +16689,7 @@
         SUP.mesej = a === 'makan' ? (x.nama + ' — SUDAH MAKAN.' + (!supTerlepas().length && x.st === 'TERLEPAS' ? ' Kunci dibuka.' : '')) : '';
         if (!supTerlepas().length && coachKunciMesej.indexOf('SUPLEMEN TERLEPAS') === 0) coachKunciMesej = '';
         supLukis();
+        if (!supTerlepas().length) lukisTs();
       } else if (a === 'takdapat') {
         var tdVal = v, tdList = (coachHariData.hari.supTakDapat || []).slice();
         if (tdList.indexOf(tdVal) === -1) tdList.push(tdVal);
@@ -16695,6 +16699,7 @@
         SUP.mesej = 'Dos dialih — akan muncul semula di slot seterusnya jika ada.';
         if (!supTerlepas().length && coachKunciMesej.indexOf('SUPLEMEN TERLEPAS') === 0) coachKunciMesej = '';
         supLukis();
+        if (!supTerlepas().length) lukisTs();
       }
     }
     // ── PAGE EDIT SENARAI SUPLEMEN: tambah nama + berapa kali sehari · HABIS / ADA STOK · PADAM (masa disusun app) ──
