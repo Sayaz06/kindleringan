@@ -17056,6 +17056,46 @@
       lukisSurau();
       usBayar(sen, 'surau', 'Solat ' + nama + (sen < 0 ? ' (batal)' : ''), 'surau-info');
     };
+    // ══ KERTAS MUET (20 Nov) — setiap bangunan ada senarai kertas SENDIRI (asing dari Reading / PU_KERTAS) ══
+    //   PN_KERTAS = Listening (Pawagam) · PT_KERTAS = Speaking (Pentas) · TL_KERTAS = Writing (Dewan Tulis)
+    //   Bentuk: { 'id-kertas': { t: 'tajuk', ms: [ 'html muka surat 1', 'html muka surat 2', ... ] } } · kosong = butang BACA KERTAS tidak dipapar
+    var PN_KERTAS = {};
+    var PT_KERTAS = {};
+    var TL_KERTAS = {};
+    var KT = { pn: { K: PN_KERTAS, lukis: function() { lukisPwKertas(); } }, pt: { K: PT_KERTAS, lukis: function() { lukisPentas(); } }, tl: { K: TL_KERTAS, lukis: function() { lukisTulis(); } } };
+    var KT_UI = { pn: { baca: '', ms: 0 }, pt: { baca: '', ms: 0 }, tl: { baca: '', ms: 0 } };
+    var KT_BTN = 'padding:5px 9px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
+    var KT_BTNA = 'padding:5px 9px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#000;color:#fff;';
+    function ktBaca(b) { var u = KT_UI[b]; return !!(u.baca && KT[b].K[u.baca]); }
+    function ktSenarai(b) {
+      var K = KT[b].K, h = '', id;
+      for (id in K) if (K.hasOwnProperty(id) && K[id].ms && K[id].ms.length) h += '<button type="button" data-kt="baca" data-v="' + id + '" style="' + KT_BTNA + 'display:block;width:100%;text-align:left;margin:6px 0;">BACA KERTAS: ' + K[id].t + ' (' + K[id].ms.length + ' ms) ›</button>';
+      return h;
+    }
+    function ktLukis(b) {
+      var u = KT_UI[b], K = KT[b].K[u.baca], n = K.ms.length, m = u.ms, nav;
+      if (m >= n) m = u.ms = n - 1;
+      nav = '<div style="display:table;width:100%;margin:4px 0;"><div style="display:table-cell;width:34%;">' +
+        (m > 0 ? '<button type="button" data-kt="ms" data-v="' + (m - 1) + '" style="' + KT_BTN + 'margin:0;">‹ SEBELUM</button>' : '') + '</div>' +
+        '<div style="display:table-cell;text-align:center;vertical-align:middle;font-weight:bold;font-size:0.9rem;">MS ' + (m + 1) + ' / ' + n + '</div>' +
+        '<div style="display:table-cell;width:34%;text-align:right;">' + (m < n - 1 ? '<button type="button" data-kt="ms" data-v="' + (m + 1) + '" style="' + KT_BTN + 'margin:0;">SETERUSNYA ›</button>' : '') + '</div></div>';
+      return '<button type="button" data-kt="tutup" style="' + KT_BTN + '">‹ KEMBALI</button>' +
+        '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + K.t + '</div>' + nav +
+        '<div style="border:2px solid #000;background:#fff;color:#000;padding:10px 10px 14px;font-family:\'Times New Roman\',Times,serif;font-size:1rem;line-height:1.35;">' + K.ms[m] + '</div>' + nav;
+    }
+    // true = klik butang kertas (sudah diurus) · false = teruskan ke pengendali asal bangunan
+    function ktKlik(e, box, b) {
+      var t = e.target, a, v;
+      while (t && t !== box && !(t.getAttribute && t.getAttribute('data-kt'))) t = t.parentNode;
+      if (!t || t === box) return false;
+      a = t.getAttribute('data-kt'); v = t.getAttribute('data-v');
+      if (a === 'baca') { KT_UI[b].baca = v; KT_UI[b].ms = 0; }
+      else if (a === 'ms') KT_UI[b].ms = +v;
+      else if (a === 'tutup') KT_UI[b].baca = '';
+      KT[b].lukis();
+      try { window.scrollTo(0, 0); } catch (er) {}
+      return true;
+    }
     // ── PAWAGAM (listening) — guna #coach-usaha (coachLukisUsaha) ──
     function bukaPawagam() {
       pnTukarRumah('pawagam');
@@ -17103,6 +17143,7 @@
     function lukisPwKertas() {
       var box = el('pw-kertas'), h = '<div style="font-weight:bold;font-size:1.15rem;">LISTENING — KERTAS MUET (PAPER 1)</div>', i, a, hari = coachHariId();
       pwLukisPai(); // pai duduk di ATAS titik (18 Nov)
+      if (ktBaca('pn')) { box.innerHTML = ktLukis('pn'); return; } // 20 Nov: BACA KERTAS MUET Listening
       if (!pwData) { box.innerHTML = h + '<div>Memuatkan...</div>'; pwPastiData(); return; }
       var senarai = pwHariSenarai();
       if (pwUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + puE(pwUI.mesej) + '</div>';
@@ -17135,6 +17176,7 @@
         box.innerHTML = h; return;
       }
       h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Listening, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = ' + PW_MINIT_PART + ' minit Listening</b> (masuk pai English & Ringgit Kuning Pawagam).<br>Jumlah: <b>' + pwJumlah() + ' Part</b></div>';
+      h += ktSenarai('pn');
       var km = pwKira();
       h += '<div style="font-size:0.9rem;">MUET hari ini: <b>' + pwJm(pwKMin(hari)) + '</b> · terkumpul: <b>' + pwJm(km.K) + '</b></div>' + pwKalk('MUET', km.K, km.s1, km.J, true);
       if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pw="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
@@ -17147,6 +17189,7 @@
       box.innerHTML = h;
     }
     el('pw-kertas').onclick = function(e) {
+      if (ktKlik(e, this, 'pn')) return;
       var t = e.target;
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pw'))) t = t.parentNode;
       if (!t || t === this || !currentUser) return;
@@ -17612,6 +17655,7 @@
       return out;
     }
     function lukisPentas() {
+      if (ktBaca('pt')) { el('pentas-isi').innerHTML = ktLukis('pt'); return; } // 20 Nov: BACA KERTAS MUET Speaking
       if (ptUI.cid) { if (!ptUI.rumah) ptUI.rumah = 1; lukisPentasLama(); return; } // CONTOH dari buku (paparan lama)
       var TJ = '<div style="font-weight:bold;font-size:1.15rem;margin-top:4px;">SPEAKING — BACA HURAIAN</div>', h, hari = coachHariId(), U, due = [], baru = [], i, j, x, s, seterus = '', t;
       if (PB.contoh) { // 18 Nov: page CONTOH KARANGAN DARIPADA BUKU
@@ -17622,7 +17666,7 @@
         }
         el('pentas-isi').innerHTML = h; return;
       }
-      h = '<div style="text-align:right;"><button type="button" data-pb="contoh" style="padding:3px 8px;font-size:0.75rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;">Lihat contoh karangan</button></div>' + TJ;
+      h = '<div style="text-align:right;"><button type="button" data-pb="contoh" style="padding:3px 8px;font-size:0.75rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;">Lihat contoh karangan</button></div>' + TJ + ktSenarai('pt');
       if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan...</div>'; return; }
       if (!PB.dimuat) { pbMuat(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan huraian...</div>'; return; }
       U = pbUrutan();
@@ -17940,6 +17984,11 @@
           try { window.scrollTo(0, 0); } catch (er) {}
         }).catch(function(er) { t.disabled = false; alert('Gagal simpan: ' + ((er && er.message) || er)); });
       };
+    })();
+    // 20 Nov: BACA KERTAS MUET Speaking — diurus dulu sebelum pengendali Pentas
+    (function() {
+      var asal = el('pentas-isi').onclick;
+      el('pentas-isi').onclick = function(e) { if (ktKlik(e, this, 'pt')) return; return asal.call(this, e); };
     })();
     el('btn-us-pentas-keluar').onclick = function() { ptHenti(); bukaMuet(); };
     el('btn-us-pentas-coach').onclick = function() { bukaCoach(false); };
@@ -18744,9 +18793,10 @@
       var TJ = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>';
       // 17 Nov: HARI INI = LACI WRITING (baca karangan dari app phone ikut SR) · Daily Repetition → ARKED WRITING
       // Tulis topik / soalan / karangan → app phone (Laci Writing). Latihan menulis lama (rumah Task 1 / Task 2) tidak dipapar lagi.
-      el('tulis-isi').innerHTML = TJ + lwbLukis(); // 18 Nov: DAILY REPETITION → ARKED WRITING dipindah ke tab TOPIK
+      if (ktBaca('tl')) { el('tulis-isi').innerHTML = ktLukis('tl'); return; } // 20 Nov: BACA KERTAS MUET Writing
+      el('tulis-isi').innerHTML = TJ + ktSenarai('tl') + lwbLukis(); // 18 Nov: DAILY REPETITION → ARKED WRITING dipindah ke tab TOPIK
     }
-    el('tulis-isi').onclick = function(e) { lwbKlik(e, this); };
+    el('tulis-isi').onclick = function(e) { if (ktKlik(e, this, 'tl')) return; lwbKlik(e, this); };
     function bukaTulis() {
       pnTukarRumah('tulis');
       lwb.dimuat = false; lwb.mesej = ''; lwb.presetTeks = ''; // muat semula karangan dari app phone setiap kali dibuka
