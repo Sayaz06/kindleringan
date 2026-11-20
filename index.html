@@ -16586,7 +16586,8 @@
     // Kawasan dikunci KUNCI AIR: semua bangunan (kecuali MAKMAL), laci, game, arked, harbour, kedai, MUET.
     //   Kunci hanya bila pengguna dari LUAR (Tasks / Menu / Coach / Makmal…) cuba masuk — yang sedang di dalam TIDAK dikeluarkan.
     var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|bilik|hj|bp|ul-|gb|tpl)/;
-    function coachAirKeMakmal(ak) { makmalUI.pesan = coachAirMesej(ak); setTimeout(function() { bukaMakmal(); coachAirPopup('Minta maaf, ' + coachAirMesej(ak)); }, 0); }
+    // 20 Nov: POPUP dulu di skrin semasa → tekan OK, MINUM SEKARANG → baru pergi ke MAKMAL
+    function coachAirKeMakmal(ak) { setTimeout(function() { coachAirPopup('Minta maaf, ' + coachAirMesej(ak), '', '', '', function() { makmalUI.pesan = coachAirMesej(ak); bukaMakmal(); }); }, 0); }
     // ══ KUNCI SOLAT (18 Nov): sudah masuk waktu (azan) tetapi solat waktu itu belum ditanda SUDAH di SURAU → semua dikunci macam KUNCI AIR (Surau sahaja dibuka) ══
     var SOLAT_TIP = 'TIP: Kalau rasa berat nak solat, rasa malas untuk solat betul-betul lepas azan — terus SUJUD atas sejadah. Sujud lama-lama sampailah rasa boleh bangun. Masa lebih sejam bersujud pun tak apa — sebab ia buat kita tak lari kepada benda-benda dopamin, iaitu pelarian daripada solat awal waktu.';
     function coachSolatKunci() {
@@ -16606,11 +16607,12 @@
     function coachKeKunci(x) {
       if (!x) return;
       if (x.air) { coachAirKeMakmal(x.air); return; }
-      // Popup hanya muncul SELEPAS page Surau siap dimuat — Kindle tidak sibuk memuat semasa butang OK ditekan
-      setTimeout(function() { bukaSurau(function() { el('surau-info').textContent = coachSolatMesej(x.solat); coachAirPopup('Minta maaf, ' + coachSolatMesej(x.solat), 'SURAU', 'OK, SOLAT SEKARANG', SOLAT_TIP); }); }, 0);
+      // 20 Nov: POPUP dulu di skrin semasa → tekan OK, SOLAT SEKARANG → baru pergi ke SURAU
+      setTimeout(function() { coachAirPopup('Minta maaf, ' + coachSolatMesej(x.solat), 'SURAU', 'OK, SOLAT SEKARANG', SOLAT_TIP, function() { bukaSurau(function() { el('surau-info').textContent = coachSolatMesej(x.solat); }); }); }, 0);
     }
     // 18 Nov: POPUP bila app bawa pengguna ke Makmal / Surau secara automatik (kunci air / solat)
-    function coachAirPopup(teks, tajuk, butang, tip) {
+    // 20 Nov: lepas = fungsi dijalankan SELEPAS butang OK ditekan (buka Makmal / Surau)
+    function coachAirPopup(teks, tajuk, butang, tip, lepas) {
       var p = el('air-popup');
       if (!p) {
         p = document.createElement('div'); p.id = 'air-popup';
@@ -16621,8 +16623,14 @@
           '<div id="air-popup-tip" style="border-left:4px solid #000;padding:2px 0 2px 8px;margin-top:10px;font-size:0.92rem;"></div>' +
           '<button type="button" id="air-popup-ok" style="display:block;width:100%;margin-top:12px;padding:10px;border:2px solid #000;border-radius:8px;background:#000;color:#fff;font-family:inherit;font-size:1rem;font-weight:bold;"></button></div>';
         document.body.appendChild(p);
-        el('air-popup-ok').onclick = function(e) { if (e) { e.stopPropagation(); e.preventDefault(); } el('air-popup').style.display = 'none'; };
+        el('air-popup-ok').onclick = function(e) {
+          if (e) { e.stopPropagation(); e.preventDefault(); }
+          var pp = el('air-popup'), fn = pp._lepas;
+          pp.style.display = 'none'; pp._lepas = null;
+          if (typeof fn === 'function') setTimeout(fn, 0);
+        };
       }
+      p._lepas = lepas || null;
       el('air-popup-tajuk').textContent = tajuk || 'MAKMAL HIDRASI';
       el('air-popup-teks').textContent = teks;
       el('air-popup-tip').textContent = tip || '';
