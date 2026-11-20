@@ -518,6 +518,7 @@
     <button id="btn-go-reasoning" class="btn" style="display:none;">Laci Reasoning</button>
     <button id="btn-go-presenting" class="btn" style="display:none;">Laci Presenting</button>
     <button id="btn-go-laci-writing" class="btn" style="display:none;">Laci Writing</button>
+    <button id="btn-go-laci-speaking" class="btn" style="display:none;">Laci Speaking</button>
     <!-- QURAN — sesi Quran (kemajuan kindle_quran/current), pusing 10 ayat setiap sesi -->
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
     <!-- SOALAN FAKTA: ON → Laci Fakta papar SOALAN sahaja (baris yang ada soalan) · tiada SR -->
@@ -4281,11 +4282,14 @@
       reasoning: { label: 'REASONING', pre: 'rsn', topik: 'reasoning_topik', soalan: 'reasoning_soalan', baca: 'reasoning_baca', kapal: 'reasoning_kapal',
         drawers: 'reasoning_laci', sr: 'reasoning_laci_sr', perk: 'reasoning_laci_perkataan' },
       presenting: { label: 'PRESENTING', pre: 'prs', topik: 'presenting_topik', soalan: 'presenting_soalan', baca: 'presenting_baca', kapal: 'presenting_kapal',
-        drawers: 'presenting_laci', sr: 'presenting_laci_sr', perk: 'presenting_laci_perkataan' }
+        drawers: 'presenting_laci', sr: 'presenting_laci_sr', perk: 'presenting_laci_perkataan' },
+      // 20 Nov: SPEAKING — huraian PENTAS (SUDAH BACA) → cermin speaking_soalan → kapal → laci
+      speaking: { label: 'SPEAKING', pre: 'spk', topik: 'speaking_topik', soalan: 'speaking_soalan', baca: 'pentas_baca', kapal: 'speaking_kapal',
+        drawers: 'speaking_laci', sr: 'speaking_laci_sr', perk: 'speaking_laci_perkataan' }
     };
     // ID kapal "tulis-xxx" / "rsn-xxx" / "prs-xxx" → jenis ('' = kapal Laci Bahasa)
-    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting' }[m[1]] : ''; }
-    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs)-/, ''); }
+    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs|spk)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting', spk: 'speaking' }[m[1]] : ''; }
+    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs|spk)-/, ''); }
     var bahasaSumber = 'bahasa';
     function kolB(n) {
       var J = LJ[bahasaSumber];
@@ -4418,6 +4422,8 @@
     }
     var _btnLaciWriting = document.getElementById('btn-go-laci-writing');
     if (_btnLaciWriting) _btnLaciWriting.onclick = function() { startLaciWriting('writing'); };
+    var _btnLaciSpeaking = document.getElementById('btn-go-laci-speaking');
+    if (_btnLaciSpeaking) _btnLaciSpeaking.onclick = function() { startLaciWriting('speaking'); };
     document.getElementById('btn-back-menu').onclick = function() {
       isLoading = false;
       showScreen('screen-menu');
@@ -7426,9 +7432,9 @@
     // Senarai laci SR (ID laci + tajuk) — dari bahasa_sr_queue
     function muatSR(paksa, cb) {
       // 17 Nov: S.srB = kapal Laci Bahasa · S.srT = kapal karangan (PELABUHAN WRITING) · S.sr = senarai yang sedang dipapar
-      // S.srK[1] WRITING · S.srK[2] REASONING · S.srK[3] PRESENTING (dibaca baru setiap kali)
+      // S.srK[1] WRITING · S.srK[2] REASONING · S.srK[3] PRESENTING · S.srK[4] SPEAKING (dibaca baru setiap kali)
       var tulis = function() {
-        var J = ['', 'writing', 'reasoning', 'presenting'], n = 0, h;
+        var J = ['', 'writing', 'reasoning', 'presenting', 'speaking'], n = 0, h;
         S.srK = S.srK || {};
         for (h = 1; h < J.length; h++) (function(h) {
           lwKapal(J[h], function(a) {
@@ -14282,7 +14288,7 @@
         teruskan();
       }).catch(function() { teruskan(); });
     }
-    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting', 'btn-go-laci-writing'].forEach(function(id) {
+    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting', 'btn-go-laci-writing', 'btn-go-laci-speaking'].forEach(function(id) {
       var b = el(id);
       if (!b || !b.onclick) return;
       var asal = b.onclick;
@@ -15659,7 +15665,7 @@
     var TS_HALAMAN = TS_HAL_USAHA, tsMod = 'ts', tsHalSimpan = { ts: 0, muet: 0 };
     // ══ TAB LACI (17 Nov) — senarai butang macam MENU · tekan → laci terus dibuka (kunci Health First & kira minit sama macam MENU) ══
     var LC_SENARAI = [['btn-go-bahasa', 'Laci Bahasa'], ['btn-go-sr-bebas', 'SR Bebas (Bahasa)'], ['btn-go-fakta', 'Laci Fakta'],
-      ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing']];
+      ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing'], ['btn-go-laci-speaking', 'Laci Speaking']];
     function bukaLc() {
       var h = '', i;
       for (i = 0; i < LC_SENARAI.length; i++) h += '<button type="button" class="btn" data-lc="' + LC_SENARAI[i][0] + '">' + LC_SENARAI[i][1] + '</button>';
@@ -17547,11 +17553,35 @@
       Promise.all([kol('pentas_karangan').get(), kol('coach').doc('pentas_baca').get()]).then(function(r) {
         PB.kar = {}; r[0].forEach(function(d) { PB.kar[d.id] = d.data() || {}; });
         PB.sr = (r[1].exists && (r[1].data() || {}).sr) || {};
-        PB.dimuat = true; PB.muat = false; lukisPentas();
+        PB.dimuat = true; PB.muat = false; PB.cermin = false; lukisPentas();
       }).catch(function(e) { PB.muat = false; PB.dimuat = true; PB.mesej = 'Gagal memuat: ' + ((e && e.message) || e); lukisPentas(); });
     }
     function pbH(s) { var r = PB.kar[ptKunci(s)]; return (r && r.h && typeof r.h === 'object') ? r.h : {}; }
     function pbAdaH(s) { var h = pbH(s), x; for (x in h) if (h.hasOwnProperty(x) && String(h[x] || '').replace(/\s+/g, '')) return true; return false; }
+    // 20 Nov: CERMIN huraian (yang sudah SUDAH BACA) → speaking_soalan/{id} { sid, soalan, karangan, part } — sumber kapal PELABUHAN SPEAKING
+    function spkKarangan(s) {
+      var hs = pbH(s), a = [], i;
+      if (s.part === 1) { for (i = 0; i < (s.isi || []).length; i++) if (hs[String(i)]) a.push(String(hs[String(i)])); }
+      else { for (i = 0; i < (s.pilihan || []).length; i++) if (hs['p' + i]) a.push(String(hs['p' + i])); }
+      return a.join('\n');
+    }
+    function spkDocId(id) { return String(id).replace(/\//g, '_'); }
+    function spkCermin(s) {
+      return kol('speaking_soalan').doc(spkDocId(s.id)).set({ sid: s.id, soalan: s.soalan || '', karangan: spkKarangan(s), part: s.part === 2 ? 2 : 1, tema: s.tema || '', at: Date.now() });
+    }
+    function spkSegerak(U) {
+      if (PB.cermin || !currentUser) return;
+      PB.cermin = true;
+      kol('speaking_soalan').get().then(function(snap) {
+        var ada = {}, i, s, d;
+        snap.forEach(function(x) { ada[x.id] = x.data() || {}; });
+        for (i = 0; i < U.length; i++) {
+          s = U[i]; if (!PB.sr[s.id]) continue;
+          d = ada[spkDocId(s.id)];
+          if (!d || d.karangan !== spkKarangan(s) || d.soalan !== (s.soalan || '')) spkCermin(s).catch(function() {});
+        }
+      }).catch(function() { PB.cermin = false; });
+    }
     function pbUrutan() {
       var B = ptBank(), per = {}, out = [], maks = 0, i, q, s;
       for (i = 0; i < B.T.length; i++) per[B.T[i]] = [];
@@ -17574,6 +17604,7 @@
       if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan...</div>'; return; }
       if (!PB.dimuat) { pbMuat(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan huraian...</div>'; return; }
       U = pbUrutan();
+      spkSegerak(U);
       for (i = 0; i < U.length; i++) { x = PB.sr[U[i].id]; if (!x) baru.push(U[i]); else if (x.due <= hari) due.push(U[i]); else if (!seterus || x.due < seterus) seterus = x.due; }
       due.sort(function(a, b) { return PB.sr[a.id].due < PB.sr[b.id].due ? -1 : (PB.sr[a.id].due > PB.sr[b.id].due ? 1 : 0); });
       h += '<div style="font-size:0.8rem;">' + U.length + ' soalan berhuraian · ' + (U.length - baru.length) + ' dalam SR · ' + due.length + ' ulang kaji + ' + baru.length + ' baru</div>';
@@ -17881,6 +17912,7 @@
         t.disabled = true;
         kol('coach').doc('pentas_baca').set(ub, { merge: true }).then(function() {
           PB.sr[id] = rek;
+          try { var sqC = ptBank().S[id]; if (sqC) spkCermin(sqC).catch(function() {}); } catch (erC) {}
           PB.mesej = (x ? 'Ulang kaji siap' : 'Masuk SR') + ' · baca semula ' + rek.due;
           lukisPentas();
           try { window.scrollTo(0, 0); } catch (er) {}
@@ -20903,8 +20935,10 @@
     // DALAM KAPAL: setiap ayat (dipecah ikut titik) diterjemah ke BM → tekan PEMANDU → DERMAGA (padan perkataan macam biasa).
     // Data: writing_kapal/{soalanId} { ayat: [{ en, bm }], updatedAt } · kontena: game_bank/tulis-{soalanId}
     // 17 Nov: titik 3 PELABUHAN REASONING · titik 4 PELABUHAN PRESENTING (karangan dari app phone; BACA dulu di atas → jadi kapal)
-    var GB_HAL = ['PEJABAT PELABUHAN', 'PELABUHAN WRITING', 'PELABUHAN REASONING', 'PELABUHAN PRESENTING'];
-    var GB_JENIS = ['', 'writing', 'reasoning', 'presenting'];
+    // 20 Nov: titik 5 PELABUHAN SPEAKING (huraian PENTAS yang sudah SUDAH BACA — baca di PENTAS, bukan di sini)
+    var GB_HAL = ['PEJABAT PELABUHAN', 'PELABUHAN WRITING', 'PELABUHAN REASONING', 'PELABUHAN PRESENTING', 'PELABUHAN SPEAKING'];
+    var GB_JENIS = ['', 'writing', 'reasoning', 'presenting', 'speaking'];
+    function gbAdaBaca() { return gbHal === 2 || gbHal === 3; }
     var gbHal = 0;
     (function() { var sc = el('screen-gbank'), t = document.createElement('div'); t.id = 'gb-titik'; t.className = 'hl-titik'; sc.insertBefore(t, sc.querySelector('.gm-alat')); })();
     // Kotak BACA KARANGAN (titik 3 & 4 sahaja) — di atas senarai kapal
@@ -20912,13 +20946,13 @@
     function gbBacaLukis() {
       var b = el('gb-baca');
       if (!b) return;
-      b.innerHTML = gbHal > 1 ? lwbLukis(GB_JENIS[gbHal]) : '';
+      b.innerHTML = gbAdaBaca() ? lwbLukis(GB_JENIS[gbHal]) : (GB_JENIS[gbHal] === 'speaking' ? '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.85rem;">Kapal SPEAKING = huraian yang sudah ditekan <b>SUDAH BACA</b> di PENTAS (MUET → Speaking). Buka PENTAS sekali untuk kemas kini senarai kapal.</div>' : '');
     }
-    el('gb-baca').onclick = function(e) { if (gbHal > 1) lwbKlik(e, this, GB_JENIS[gbHal]); };
+    el('gb-baca').onclick = function(e) { if (gbAdaBaca()) lwbKlik(e, this, GB_JENIS[gbHal]); };
     function gbTitik() {
       hlTitik('gb-titik', GB_HAL.length, gbHal);
       el('screen-gbank').querySelector('.gm-alat-tajuk').textContent = GB_HAL[gbHal];
-      if (gbHal > 1) lwbS(GB_JENIS[gbHal]).dimuat = false; // muat semula karangan dari app phone
+      if (gbAdaBaca()) lwbS(GB_JENIS[gbHal]).dimuat = false; // muat semula karangan dari app phone
       gbBacaLukis();
     }
     function gbPergi(i) {
@@ -20953,10 +20987,10 @@
       Promise.all([kol('coach').doc(J.baca).get(), kol(J.soalan).get()]).then(function(r) {
         var sr = (r[0].exists && (r[0].data() || {}).sr) || {}, a = [];
         r[1].forEach(function(d) {
-          var s = d.data() || {}, x = sr[d.id];
+          var s = d.data() || {}, x = sr[s.sid || d.id];
           if (!x || !tlKira(s.karangan)) return;
           var t = lwTeks(s.soalan || '');
-          a.push({ id: J.pre + '-' + d.id, title: (j === 'writing' ? 'T' + (s.task === 2 ? 2 : 1) + ' · ' : '') + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
+          a.push({ id: J.pre + '-' + d.id, title: (j === 'writing' ? 'T' + (s.task === 2 ? 2 : 1) + ' · ' : j === 'speaking' ? 'P' + (s.part === 2 ? 2 : 1) + ' · ' : '') + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
         });
         a.sort(function(x, y) { return x.t - y.t; });
         cb(a);
