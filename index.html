@@ -17109,7 +17109,36 @@
         '<div style="font-style:italic;margin:4px 0 0 14px;">You will be given time to read the questions when the test begins.</div>' +
         '<div style="border-top:1px solid #000;margin-top:24px;padding-top:4px;text-align:center;font-weight:bold;font-size:0.85rem;">This question paper consists of 7 printed pages and 1 blank page.</div>' +
         '<div style="text-align:center;font-size:0.8rem;">&copy; Majlis Peperiksaan Malaysia 2024</div>' +
-        '<div style="display:table;width:100%;margin-top:14px;font-size:0.8rem;"><div style="display:table-cell;">MUET SESSION 1 2024 - 800/1</div><div style="display:table-cell;text-align:right;font-weight:bold;">[Turn over</div></div>'
+        '<div style="display:table;width:100%;margin-top:14px;font-size:0.8rem;"><div style="display:table-cell;">MUET SESSION 1 2024 - 800/1</div><div style="display:table-cell;text-align:right;font-weight:bold;">[Turn over</div></div>',
+        // MS 2 — Part I (soalan 1–6)
+        '<div style="font-weight:bold;font-size:0.8rem;">CONFIDENTIAL*</div>' +
+        '<div style="font-weight:bold;margin-top:8px;">Part I</div>' +
+        '<div style="font-style:italic;margin-top:6px;">Listen to a conversation between Rahim and his mother in the kitchen.&nbsp; As you listen, choose the correct answer for questions <b style="font-style:normal;">1</b> to <b style="font-style:normal;">7</b>.</div>' +
+        '<div style="margin-top:10px;padding-left:24px;text-indent:-24px;"><b>1</b>&nbsp;&nbsp;&nbsp;Rahim&#39;s mother is</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>A</b>&nbsp;&nbsp;&nbsp;asking Rahim to help her</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>B</b>&nbsp;&nbsp;&nbsp;washing dishes after dinner</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>C</b>&nbsp;&nbsp;&nbsp;inviting guests over for a meal</div>' +
+        '<div style="margin-top:10px;padding-left:24px;text-indent:-24px;"><b>2</b>&nbsp;&nbsp;&nbsp;Rahim wants his mother to</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>A</b>&nbsp;&nbsp;&nbsp;leave her job</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>B</b>&nbsp;&nbsp;&nbsp;keep her money</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>C</b>&nbsp;&nbsp;&nbsp;do less work in the house</div>' +
+        '<div style="margin-top:10px;padding-left:24px;text-indent:-24px;"><b>3</b>&nbsp;&nbsp;&nbsp;Johari is a good child because he</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>A</b>&nbsp;&nbsp;&nbsp;cares for his family</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>B</b>&nbsp;&nbsp;&nbsp;wants to enter college</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>C</b>&nbsp;&nbsp;&nbsp;listens to Rahim&#39;s advice</div>' +
+        '<div style="margin-top:10px;padding-left:24px;text-indent:-24px;"><b>4</b>&nbsp;&nbsp;&nbsp;Rahim&#39;s mother suggests that he should</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>A</b>&nbsp;&nbsp;&nbsp;buy perfumes</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>B</b>&nbsp;&nbsp;&nbsp;look after Jasmine</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>C</b>&nbsp;&nbsp;&nbsp;get a new backpack</div>' +
+        '<div style="margin-top:10px;padding-left:24px;text-indent:-24px;"><b>5</b>&nbsp;&nbsp;&nbsp;Rahim&#39;s mother is scared because</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>A</b>&nbsp;&nbsp;&nbsp;she lost her maid</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>B</b>&nbsp;&nbsp;&nbsp;she cannot call her husband</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>C</b>&nbsp;&nbsp;&nbsp;she is alone most of the time</div>' +
+        '<div style="margin-top:10px;padding-left:24px;text-indent:-24px;"><b>6</b>&nbsp;&nbsp;&nbsp;Rahim&#39;s mother is grateful for the dishwasher because</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>A</b>&nbsp;&nbsp;&nbsp;her backache will reduce</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>B</b>&nbsp;&nbsp;&nbsp;her hands will become soft again</div>' +
+        '<div style="margin-top:4px;padding-left:48px;text-indent:-24px;"><b>C</b>&nbsp;&nbsp;&nbsp;her husband will pay for the electricity bill</div>' +
+        '<div style="margin-top:16px;font-size:0.8rem;">MUET SESSION 1 2024 - 800/1</div>'
       ] }
     };
     // 21 Nov: KERTAS SPEAKING (Booklet 1 = kad soalan calon A–D)
@@ -17279,7 +17308,7 @@
       }
       h = ktSenarai(b);
       k.innerHTML = '<div style="font-weight:bold;font-size:1.05rem;">KERTAS MUET</div><div style="font-size:0.8rem;">Kertas sebenar dalam app (asing dari app phone).' + (KT_LJ[b] ? ' Baca → <b>SUDAH BACA KERTAS</b> → kapal KERTAS MUET di ' + KT_LJ[b][1] + '.' : '') + '</div>' + (h || (dua ? '<div style="font-size:0.85rem;margin-top:6px;">Belum ada kertas.</div>' : ''));
-      if (!dua) { k.style.display = (h && !ktBaca(b) && utama.style.display !== 'none') ? '' : 'none'; return; }
+      if (!dua) { k.style.display = (h && !ktBaca(b) && KT_HARI.pn !== false && pwHal === 0) ? '' : 'none'; return; } // 21 Nov: kotak lama Listening sentiasa disorok
       hari = KT_HARI[b] !== false; hal = KT_HAL[b];
       for (i = 0; i < KT_HAL_NAMA.length; i++) ht += '<button type="button" class="hlt' + (i === hal ? ' on' : '') + '" data-hl="' + i + '"><span></span></button>';
       tt = el('kt-titik-' + b);
@@ -17405,7 +17434,8 @@
       var box = el('pw-kertas'), h = '<div style="font-weight:bold;font-size:1.15rem;">LISTENING — KERTAS MUET (PAPER 1)</div>', i, a, hari = coachHariId();
       pwLukisPai(); // pai duduk di ATAS titik (18 Nov)
       ktKotak('pn');
-      if (ktBaca('pn')) { box.innerHTML = ktLukis('pn'); return; } // 20 Nov: BACA KERTAS MUET Listening
+      if (ktBaca('pn')) { box.style.display = ''; box.innerHTML = ktLukis('pn'); return; } // 20 Nov: BACA KERTAS MUET Listening
+      box.innerHTML = ''; box.style.display = 'none'; return; // 21 Nov: kotak latihan lama (catat Part / minit) DIBUANG — guna kotak KERTAS MUET
       if (!pwData) { box.innerHTML = h + '<div>Memuatkan...</div>'; pwPastiData(); return; }
       var senarai = pwHariSenarai();
       if (pwUI.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + puE(pwUI.mesej) + '</div>';
