@@ -17254,7 +17254,7 @@
       hari = KT_HARI[b] !== false; hal = KT_HAL[b];
       for (i = 0; i < KT_HAL_NAMA.length; i++) ht += '<button type="button" class="hlt' + (i === hal ? ' on' : '') + '" data-hl="' + i + '"><span></span></button>';
       tt = el('kt-titik-' + b);
-      tt.innerHTML = ht + '<div style="font-size:0.75rem;font-weight:bold;text-align:center;width:100%;">' + KT_HAL_NAMA[hal] + '</div>';
+      tt.innerHTML = ht; // 21 Nov: tiada label bawah titik
       tt.style.display = hari ? '' : 'none';
       k.style.display = (hari && hal === 0 && !ktBaca(b)) ? '' : 'none';
       utama.style.display = (hari && (hal === 1 || ktBaca(b))) ? '' : 'none';
@@ -17351,7 +17351,7 @@
       pwHal = i;
       var t = el('pw-titik'), h = '', k;
       for (k = 0; k < PW_HAL.length; k++) h += '<button type="button" class="hlt' + (k === i ? ' on' : '') + '" data-hl="' + k + '"><span></span></button>';
-      t.innerHTML = h + '<div style="font-size:0.75rem;font-weight:bold;text-align:center;width:100%;">' + PW_HAL[i] + '</div>';
+      t.innerHTML = h; // 21 Nov: tiada label bawah titik
       el('pw-kertas').style.display = i === 0 ? '' : 'none';
       el('coach-usaha').style.display = i === 1 ? '' : 'none';
       try { ktKotak('pn'); } catch (eK) {}
