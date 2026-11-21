@@ -4306,11 +4306,14 @@
         drawers: 'ptkertas_laci', sr: 'ptkertas_laci_sr', perk: 'ptkertas_laci_perkataan' },
       // 21 Nov: LISTENING KERTAS MUET (Pawagam) → PELABUHAN LISTENING → Laci Listening (Kertas MUET)
       pnkertas: { label: 'LISTENING KERTAS MUET', pre: 'pnk', topik: 'pnkertas_topik', soalan: 'pnkertas_soalan', baca: 'kertas_baca', kapal: 'pnkertas_kapal',
-        drawers: 'pnkertas_laci', sr: 'pnkertas_laci_sr', perk: 'pnkertas_laci_perkataan' }
+        drawers: 'pnkertas_laci', sr: 'pnkertas_laci_sr', perk: 'pnkertas_laci_perkataan' },
+      // 22 Nov (Fasa 5): READING BUKAN MUET — petikan ditulis di app phone (readingb_topik / readingb_soalan) → PERPUSTAKAAN titik BUKAN MUET → KILANG → Laci Reading
+      readingb: { label: 'READING BUKAN MUET', pre: 'rdb', topik: 'readingb_topik', soalan: 'readingb_soalan', baca: 'readingb_baca', kapal: 'readingb_kapal',
+        drawers: 'readingb_laci', sr: 'readingb_laci_sr', perk: 'readingb_laci_perkataan' }
     };
     // ID kapal "tulis-xxx" / "rsn-xxx" / "prs-xxx" → jenis ('' = kapal Laci Bahasa)
-    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs|spk|rdg|rdq|tlk|ptk|pnk)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting', spk: 'speaking', rdg: 'reading', rdq: 'readingq', tlk: 'tlkertas', ptk: 'ptkertas', pnk: 'pnkertas' }[m[1]] : ''; }
-    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs|spk|rdg|rdq|tlk|ptk|pnk)-/, ''); }
+    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs|spk|rdg|rdq|rdb|tlk|ptk|pnk)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting', spk: 'speaking', rdg: 'reading', rdq: 'readingq', rdb: 'readingb', tlk: 'tlkertas', ptk: 'ptkertas', pnk: 'pnkertas' }[m[1]] : ''; }
+    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs|spk|rdg|rdq|rdb|tlk|ptk|pnk)-/, ''); }
     var bahasaSumber = 'bahasa';
     function kolB(n) {
       var J = LJ[bahasaSumber];
@@ -4328,8 +4331,8 @@
     // Bina / kemas kini laci writing dari ayat DISIMPAN di DALAM KAPAL
     // 22 Nov (Fasa 2): LACI GABUNG ikut bidang — Writing = app phone + kertas MUET · Speaking = app phone + kertas MUET · Reading = petikan + soalan
     //   Semua laci bidang disimpan dalam koleksi laci UTAMA (LJ[bidang].drawers / .sr). ID laci sumber kedua = awalan sumber + '_' (cth tlk_abc_1).
-    var LJ_AHLI = { writing: ['writing', 'tlkertas'], speaking: ['speaking', 'ptkertas'], reading: ['reading', 'readingq'] };
-    var LJ_AHLI_TAG = { writing: 'APP · ', tlkertas: 'KERTAS · ', speaking: 'APP · ', ptkertas: 'KERTAS · ', reading: 'PETIKAN · ', readingq: 'SOALAN · ' };
+    var LJ_AHLI = { writing: ['writing', 'tlkertas'], speaking: ['speaking', 'ptkertas'], reading: ['reading', 'readingq', 'readingb'] }; // 22 Nov: + Reading bukan MUET
+    var LJ_AHLI_TAG = { writing: 'APP · ', tlkertas: 'KERTAS · ', speaking: 'APP · ', ptkertas: 'KERTAS · ', reading: 'PETIKAN · ', readingq: 'SOALAN · ', readingb: 'BUKAN MUET · ' };
     function lwlSegerak() {
       var u = db.collection('users').doc(currentUser.uid), j0 = LJ[bahasaSumber] ? bahasaSumber : 'writing', J = LJ[j0], ahli = LJ_AHLI[j0] || [j0], baca = [], m;
       for (m = 0; m < ahli.length; m++) baca.push(u.collection(LJ[ahli[m]].kapal).get(), u.collection(LJ[ahli[m]].soalan).get());
@@ -7138,7 +7141,20 @@
       <button type="button" id="btn-us-pustaka-coach" class="gm-kecil">Coach</button>
     </div>
     <div id="pustaka-info" class="jw-info"></div>
+    <div id="pu-titik" class="hl-titik"></div>
     <div id="pustaka-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:30px;"></div>
+  </div>
+  <!-- 22 Nov (Fasa 5): bangunan REASONING / PRESENTING dalam tab MUET — baca karangan app phone → SUDAH BACA → KILANG -->
+  <div id="screen-lwbb" class="screen">
+    <div class="status-bar" id="lwbb-status">REASONING</div>
+    <div class="gm-alat">
+      <button type="button" id="btn-lwbb-keluar" class="gm-kecil">‹ MUET</button>
+      <span class="gm-alat-tajuk" id="lwbb-tajuk">REASONING</span>
+      <button type="button" id="btn-lwbb-coach" class="gm-kecil">Coach</button>
+    </div>
+    <div id="lwbb-info" class="jw-info"></div>
+    <div id="lwbb-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
     <div style="height:30px;"></div>
   </div>
   <!-- DEWAN TULIS (Writing English — MUET Paper 4) — bangunan BELAJAR (17 Nov) -->
@@ -7485,7 +7501,7 @@
     var ARK_B = '';
     var ARK_KOL_SR = { game_sr: 1, game_sr_memori: 1, game_sr_duri: 1, game_sr_betulsalah: 1, game_sr_jutawan: 1, game_sr_indeks: 1 };
     var ARK_STAT_DOC = { padan: 1, memori: 1, duri: 1, betulsalah: 1, jutawan: 1 }, ARK_STAT_LV = { main: 1, lulus: 1, terbaik: 1, ulangi: 1 };
-    var ARK_BID_DARI = { tlkertas: 'writing', ptkertas: 'speaking', readingq: 'reading' };
+    var ARK_BID_DARI = { tlkertas: 'writing', ptkertas: 'speaking', readingq: 'reading', readingb: 'reading' };
     function kol0(n) { return db.collection('users').doc(currentUser.uid).collection(n); }
     function kol(n) {
       if (!ARK_B) return kol0(n);
@@ -15790,8 +15806,8 @@
     // USAHA BERHALAMAN: [tajuk, senarai kunci bangunan] — tekan titik kanan / sapu atas-bawah untuk tukar page (tiada skrol)
     var TS_HAL_USAHA = [['KESIHATAN & IBADAH', ['gym', 'taman', 'makmal', 'nutrisi', 'tidur', 'surau']]]; // 18 Nov: satu page 3 × 2
     // 18 Nov: tab MUET sendiri (sebelah TASKS) — baris 1 INPUT (Listening · Reading) · baris 2 OUTPUT (Speaking · Writing)
-    var TS_HAL_MUET = [['ENGLISH MUET', ['pawagam', 'pustaka', 'pentas', 'tulis']]];
-    var TS_MUET_TAJUK = { pawagam: ['ENGLISH MUET INPUT', 'TEST FOCUS STUDENT'], pentas: ['ENGLISH MUET OUTPUT', 'TEST KREATIVITI PERFORMANCE STUDENT'] };
+    var TS_HAL_MUET = [['ENGLISH MUET', ['pawagam', 'pustaka', 'pentas', 'tulis', 'reasoning', 'presenting']]]; // 22 Nov: + REASONING & PRESENTING
+    var TS_MUET_TAJUK = { pawagam: ['ENGLISH MUET INPUT', 'TEST FOCUS STUDENT'], pentas: ['ENGLISH MUET OUTPUT', 'TEST KREATIVITI PERFORMANCE STUDENT'], reasoning: ['REASONING & PRESENTING', 'KARANGAN DARI APP PHONE'] };
     var TS_HALAMAN = TS_HAL_USAHA, tsMod = 'ts', tsHalSimpan = { ts: 0, muet: 0 };
     // ══ TAB LACI (17 Nov) — senarai butang macam MENU · tekan → laci terus dibuka (kunci Health First & kira minit sama macam MENU) ══
     var LC_SENARAI = [['btn-go-bahasa', 'Laci Bahasa'], ['btn-go-sr-bebas', 'SR Bebas (Bahasa)'], ['btn-go-fakta', 'Laci Fakta'],
@@ -15963,7 +15979,7 @@
         if (b[0] === 'surau' || b[0] === 'pawagam') {
           try { if (coachHariData.id === coachHariId()) { var hu = coachHariData.hari; sub = b[0] === 'surau' ? 'Solat hari ini ' + (typeof hu.solat === 'number' ? hu.solat : 0) + '/5' : 'Listening hari ini ' + (hu.listening || 0) + ' min'; } } catch (e) {}
         }
-        if (TS_LACI[b[0]]) {
+        if (TS_LACI[b[0]] && !(tsMod === 'muet' && LJ[b[0]])) {
           try {
             var dL = coachDataAkhir || {}, mbL = (coachHariData.id === coachHariId() ? (coachHariData.hari.minitBelajar || {}) : {});
             if (b[0] === 'bahasa') sub = 'Ayat ' + (dL.ayat || 0) + ' · ' + (mbL.bahasa || 0) + ' min hari ini';
@@ -15973,7 +15989,8 @@
           } catch (e) {}
         }
         var tanda = '';
-        try { tanda = TS_LACI[b[0]] ? (kunciLaci ? 'DIKUNCI' : '') : tsTanda(b[0]); } catch (e) {}
+        if (tsMod === 'muet' && LJ[b[0]]) sub = 'Baca karangan app phone'; // 22 Nov: bangunan REASONING / PRESENTING (bukan laci)
+        try { tanda = (TS_LACI[b[0]] && !(tsMod === 'muet' && LJ[b[0]])) ? (kunciLaci ? 'DIKUNCI' : '') : tsTanda(b[0]); } catch (e) {}
         try { if (coachSolatKunci()) tanda = b[0] === 'surau' ? 'SOLAT DULU' : 'DIKUNCI'; else if (coachAirKunci()) tanda = b[0] === 'makmal' ? 'MINUM DULU' : 'DIKUNCI'; } catch (e) {} // KUNCI SOLAT / AIR
         // Tanda = cop di tengah bumbung, tutup simbol bangunan (gaya cop SOLD, 12 Nov) — tidak menolak bangunan ke bawah
         var cop = '';
@@ -16002,7 +16019,7 @@
       for (q = 0; q < tbT.length; q++) tbT[q].className = tbT[q].getAttribute('data-gm-tab') === m ? 'gm-aktif' : '';
       showScreen('screen-ts');
       try { window.scrollTo(0, 0); } catch (e) {}
-      el('ts-info').textContent = m === 'muet' ? 'Baris atas INPUT (Listening · Reading) · baris bawah OUTPUT (Speaking · Writing). Tekan PETI SURAT di tepi bangunan untuk TEMPLAT.' : 'Buat tugas di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).';
+      el('ts-info').textContent = m === 'muet' ? 'INPUT (Listening · Reading) · OUTPUT (Speaking · Writing) · REASONING & PRESENTING (karangan app phone). Tekan PETI SURAT di tepi bangunan untuk TEMPLAT.' : 'Buat tugas di setiap bangunan → dapat Ringgit Kuning (belanja di PARTY).';
       lukisTs();
       Promise.all([coachMuatData(false), coachMuatHari()]).then(function(r) {
         coachDataAkhir = r[0];
@@ -16023,6 +16040,7 @@
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-ts'))) t = t.parentNode;
       if (!t || t === this) return;
       var k = t.getAttribute('data-ts');
+      if (tsMod === 'muet' && (k === 'reasoning' || k === 'presenting')) { bukaLwbB(k); return; } // 22 Nov: bangunan MUET (bukan laci)
       if (TS_LACI[k]) { var bL = el(TS_LACI[k]); if (bL) bL.click(); return; } // laci → ikut kunci Health First butang MENU
       if (k === 'gym') { bukaGym(); return; }
       if (k === 'taman') { bukaTaman(); return; }
@@ -16612,7 +16630,7 @@
     // DIKUNCI sampai dimakan (lewat pun buka serta-merta). HABIS (out of stock) → tidak dikira & tidak disusun sampai ADA STOK.
     var SUP = { senarai: [], dimuat: false, buka: false, mesej: '', baruKali: 1, baruNama: '', sah: '' };
     var SUP_TENGGANG = 30;
-    var SUP_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|pawagam|pentas|pustaka|tulis|pn-nota|hj|bp|ul-|gb-kapal|gbank|kilang)/;
+    var SUP_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|pawagam|pentas|pustaka|tulis|pn-nota|hj|bp|ul-|gb-kapal|gbank|kilang|lwbb)/;
     function supMuat() {
       if (!currentUser) return Promise.resolve();
       return kol('coach').doc('suplemen').get().then(function(s) {
@@ -16721,7 +16739,7 @@
     }
     // Kawasan dikunci KUNCI AIR: semua bangunan (kecuali MAKMAL), laci, game, arked, harbour, kedai, MUET.
     //   Kunci hanya bila pengguna dari LUAR (Tasks / Menu / Coach / Makmal…) cuba masuk — yang sedang di dalam TIDAK dikeluarkan.
-    var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|bilik|hj|bp|ul-|gb|tpl|kilang)/;
+    var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|bilik|hj|bp|ul-|gb|tpl|kilang|lwbb)/;
     // 20 Nov: POPUP dulu di skrin semasa → tekan OK, MINUM SEKARANG → baru pergi ke MAKMAL
     function coachAirKeMakmal(ak) { setTimeout(function() { coachAirPopup('Minta maaf, ' + coachAirMesej(ak), '', '', '', function() { makmalUI.pesan = coachAirMesej(ak); bukaMakmal(); }); }, 0); }
     // ══ KUNCI SOLAT (18 Nov): sudah masuk waktu (azan) tetapi solat waktu itu belum ditanda SUDAH di SURAU → semua dikunci macam KUNCI AIR (Surau sahaja dibuka) ══
@@ -18846,8 +18864,13 @@
         '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + K.t + '</div>' + nav +
         '<div style="border:2px solid #000;background:#fff;color:#000;padding:10px 10px 14px;font-family:\'Times New Roman\',Times,serif;font-size:1rem;line-height:1.35;">' + K.ms[m] + '</div>' + nav + bK;
     }
+    // 22 Nov (Fasa 5): titik 0 KERTAS MUET (kandungan asal) · titik 1 BUKAN MUET (petikan app phone → SUDAH BACA → KILANG READING)
+    var PU_HAL = 0;
+    el('pu-titik').onclick = function(e) { var v = hlCari(e.target, this, 'data-hl'); if (v === null) return; PU_HAL = +v; puUI.mesej = ''; lwbS('readingb').dimuat = false; lukisPustaka(); try { window.scrollTo(0, 0); } catch (er) {} };
     function lukisPustaka() {
       var h = '<div style="font-weight:bold;font-size:1.15rem;">READING — MUET PAPER 3</div>', i, a, hari = coachHariId();
+      hlTitik('pu-titik', 2, PU_HAL); el('pu-titik').style.display = puUI.baca ? 'none' : '';
+      if (PU_HAL === 1 && !puUI.baca) { el('pustaka-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">READING — BUKAN MUET</div><div style="font-size:0.85rem;">Petikan (tahap UPSR ke atas) ditulis di app phone. Baca → <b>SUDAH BACA</b> → bahan masuk <b>KILANG READING</b>.</div>' + lwbLukis('readingb'); return; }
       if (puUI.baca && PU_KERTAS[puUI.baca]) { el('pustaka-isi').innerHTML = puLukisKertas(); return; }
       if (!puData) { puMuatData(); el('pustaka-isi').innerHTML = h + '<div>Memuatkan...</div>'; return; }
       var senarai = puHariSenarai();
@@ -18897,6 +18920,7 @@
       el('pustaka-isi').innerHTML = h;
     }
     el('pustaka-isi').onclick = function(e) {
+      if (PU_HAL === 1 && !puUI.baca) { lwbKlik(e, this, 'readingb'); return; } // 22 Nov: BUKAN MUET
       var t = e.target;
       while (t && t !== this && !(t.getAttribute && t.getAttribute('data-pu'))) t = t.parentNode;
       if (!t || t === this) return;
@@ -21620,7 +21644,7 @@
     // 21 Nov: titik 7 PELABUHAN LISTENING (kertas MUET Listening — tekan SUDAH BACA KERTAS di PAWAGAM)
     var GB_HAL = ['PEJABAT PELABUHAN', 'PELABUHAN WRITING', 'PELABUHAN REASONING', 'PELABUHAN PRESENTING', 'PELABUHAN SPEAKING', 'PELABUHAN READING', 'PELABUHAN LISTENING'];
     var GB_JENIS = ['', 'writing', 'reasoning', 'presenting', 'speaking', 'reading', 'pnkertas'];
-    function gbAdaBaca() { return gbHal === 2 || gbHal === 3; }
+    function gbAdaBaca() { return false; } // 22 Nov (Fasa 5): BACA KARANGAN Reasoning / Presenting dipindah ke bangunan dalam tab MUET
     var gbHal = 0;
     (function() { var sc = el('screen-gbank'), t = document.createElement('div'); t.id = 'gb-titik'; t.className = 'hl-titik'; sc.insertBefore(t, sc.querySelector('.gm-alat')); })();
     // Kotak BACA KARANGAN (titik 3 & 4 sahaja) — di atas senarai kapal
@@ -21820,7 +21844,7 @@
     var KL_HAL = [
       ['WRITING', [['writing', 'APP PHONE'], ['tlkertas', 'KERTAS MUET']]],
       ['SPEAKING', [['speaking', 'APP PHONE'], ['ptkertas', 'KERTAS MUET']]],
-      ['READING', [['reading', 'PETIKAN'], ['readingq', 'SOALAN']]],
+      ['READING', [['reading', 'PETIKAN'], ['readingq', 'SOALAN'], ['readingb', 'BUKAN MUET']]],
       ['LISTENING', [['pnkertas', 'KERTAS MUET']]],
       ['REASONING', [['reasoning', 'APP PHONE']]],
       ['PRESENTING', [['presenting', 'APP PHONE']]]
@@ -21834,8 +21858,9 @@
       reading: 'Tekan SUDAH BACA PART semasa BACA KERTAS di PERPUSTAKAAN.',
       readingq: 'Tekan SUDAH BACA PART semasa BACA KERTAS di PERPUSTAKAAN.',
       pnkertas: 'Tekan SUDAH BACA KERTAS di PAWAGAM.',
-      reasoning: 'Tulis di app phone, kemudian baca dan tekan SUDAH BACA di PELABUHAN (titik REASONING).',
-      presenting: 'Tulis di app phone, kemudian baca dan tekan SUDAH BACA di PELABUHAN (titik PRESENTING).'
+      reasoning: 'Tulis di app phone, kemudian baca dan tekan SUDAH BACA di bangunan REASONING (tab MUET).',
+      presenting: 'Tulis di app phone, kemudian baca dan tekan SUDAH BACA di bangunan PRESENTING (tab MUET).',
+      readingb: 'Tulis petikan di app phone (Laci Reading bukan MUET), kemudian tekan SUDAH BACA di PERPUSTAKAAN (titik BUKAN MUET).'
     };
     function bukaKilang() { KL.data = {}; KL.muat = ''; showScreen('screen-kilang'); try { window.scrollTo(0, 0); } catch (e) {} klLukis(); }
     function klJ() { return KL_HAL[KL.hal][1][KL.sb[KL.hal]][0]; }
@@ -21890,11 +21915,12 @@
       tlkertas: ['DEWAN TULIS (KERTAS MUET)', function() { KT_HAL.tl = 0; KT_UI.tl.baca = ''; bukaTulis(); }],
       speaking: ['PENTAS (APP PHONE)', function() { KT_HAL.pt = 1; KT_UI.pt.baca = ''; bukaPentas(); }],
       ptkertas: ['PENTAS (KERTAS MUET)', function() { KT_HAL.pt = 0; KT_UI.pt.baca = ''; bukaPentas(); }],
-      reading: ['PERPUSTAKAAN', function() { bukaPustaka(); }],
-      readingq: ['PERPUSTAKAAN', function() { bukaPustaka(); }],
+      reading: ['PERPUSTAKAAN', function() { PU_HAL = 0; bukaPustaka(); }],
+      readingq: ['PERPUSTAKAAN', function() { PU_HAL = 0; bukaPustaka(); }],
+      readingb: ['PERPUSTAKAAN (BUKAN MUET)', function() { PU_HAL = 1; bukaPustaka(); }],
       pnkertas: ['PAWAGAM', function() { bukaPawagam(); }],
-      reasoning: ['PELABUHAN REASONING (BACA KARANGAN)', function() { tambatIdx = -1; gbHal = 2; bukaBank(false); }],
-      presenting: ['PELABUHAN PRESENTING (BACA KARANGAN)', function() { tambatIdx = -1; gbHal = 3; bukaBank(false); }]
+      reasoning: ['BANGUNAN REASONING (MUET)', function() { bukaLwbB('reasoning'); }],
+      presenting: ['BANGUNAN PRESENTING (MUET)', function() { bukaLwbB('presenting'); }]
     };
     el('kl-titik').onclick = function(e) { var t = hlCari(e.target, this, 'data-hl'); if (t === null) return; KL.hal = +t; KL.mesej = ''; klLukis(); };
     el('kl-isi').onclick = function(e) {
@@ -22008,7 +22034,21 @@
     // 17 Nov: bacaan yang SAMA untuk REASONING & PRESENTING (Pelabuhan titik 3 & 4) — j = 'writing' / 'reasoning' / 'presenting'
     var lwbSemua = { writing: lwb };
     function lwbS(j) { j = j || 'writing'; return lwbSemua[j] || (lwbSemua[j] = { topik: [], soalan: [], sr: {}, dimuat: false, muat: false, mesej: '' }); }
-    function lwbSiap(j) { if ((j || 'writing') === 'writing') lukisTulis(); else gbBacaLukis(); }
+    function lwbSiap(j) { j = j || 'writing'; if (j === 'writing') lukisTulis(); else if (j === 'readingb') lukisPustaka(); else lukisLwbB(); }
+    // 22 Nov (Fasa 5): bangunan REASONING / PRESENTING (tab MUET) — baca karangan app phone → SUDAH BACA → KILANG
+    var LWBB = { j: 'reasoning' };
+    function bukaLwbB(j) {
+      LWBB.j = LJ[j] ? j : 'reasoning'; lwbS(LWBB.j).dimuat = false; lwbS(LWBB.j).mesej = ''; lwbS(LWBB.j).presetTeks = '';
+      el('lwbb-status').textContent = LJ[LWBB.j].label; el('lwbb-tajuk').textContent = LJ[LWBB.j].label;
+      usMuat('screen-lwbb', 'lwbb-info', function() { el('lwbb-info').textContent = ''; lukisLwbB(); });
+    }
+    function lukisLwbB() {
+      var J = LJ[LWBB.j];
+      el('lwbb-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">' + J.label + ' — DARI APP PHONE</div><div style="font-size:0.85rem;">Tulis di app phone (Laci ' + J.label.charAt(0) + J.label.slice(1).toLowerCase() + '). Baca → <b>SUDAH BACA</b> → bahan masuk <b>KILANG ' + J.label + '</b>.</div>' + lwbLukis(LWBB.j);
+    }
+    el('lwbb-isi').onclick = function(e) { lwbKlik(e, this, LWBB.j); };
+    el('btn-lwbb-keluar').onclick = function() { bukaMuet(); };
+    el('btn-lwbb-coach').onclick = function() { bukaCoach(false); };
     function lwbSusun(a, b) { return ((a.createdAt || 0) - (b.createdAt || 0)) || (a.id < b.id ? -1 : 1); }
     function lwbMuat(j) {
       j = j || 'writing';
@@ -22069,7 +22109,7 @@
       j = j || 'writing';
       var L = lwbS(j), J = LJ[j], nm = J.label.charAt(0) + J.label.slice(1).toLowerCase();
       var h = '', hari = coachHariId(), U, due = [], baru = [], i, x, s, seterus = '';
-      h += '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:10px 0 4px;"><div style="font-weight:bold;font-size:1.15rem;">' + (j === 'writing' ? 'LACI WRITING' : 'BACA KARANGAN ' + J.label) + '</div>';
+      h += '<div style="border:3px solid #000;border-radius:10px;padding:6px 8px;margin:10px 0 4px;"><div style="font-weight:bold;font-size:1.15rem;">' + (j === 'writing' ? 'LACI WRITING' : j === 'readingb' ? 'BACA PETIKAN' : 'BACA KARANGAN ' + J.label) + '</div>';
       if (!L.dimuat) { lwbMuat(j); return h + '<div style="font-size:0.85rem;">Memuatkan karangan...</div></div>'; }
       U = lwbUrutan(j);
       for (i = 0; i < U.length; i++) { x = L.sr[U[i].id]; if (!x) baru.push(U[i]); else if (x.due <= hari) due.push(U[i]); else if (!seterus || x.due < seterus) seterus = x.due; }
@@ -22113,8 +22153,7 @@
       kol('coach').doc(J.baca).set(ub, { merge: true }).then(function() {
         L.sr[id] = rek;
         L.mesej = (x ? 'Ulang kaji siap' : 'Masuk SR') + ' · baca semula ' + rek.due + (x ? '' : ' · bahannya kini di KILANG ' + J.label);
-        if (j === 'writing') lukisTulis();
-        else gbBacaLukis(); // 22 Nov: karangan dibaca → bahan KILANG (bukan terus kapal)
+        lwbSiap(j); // 22 Nov: karangan dibaca → bahan KILANG (bukan terus kapal)
         try { window.scrollTo(0, 0); } catch (er) {}
       }).catch(function(er) { t.disabled = false; alert('Gagal simpan: ' + ((er && er.message) || er)); });
       return true;
