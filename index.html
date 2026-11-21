@@ -7479,7 +7479,42 @@
     var L = null; // laci yang sedang dipadankan
 
     function el(id) { return document.getElementById(id); }
-    function kol(n) { return db.collection('users').doc(currentUser.uid).collection(n); }
+    // 22 Nov (Fasa 3): ARKED BIDANG — 5 game SAMA, tetapi SR & level ikut bidang. ARK_B = '' (Vocab kamus / Laci Bahasa) atau
+    //   'writing' / 'speaking' / 'reading' / 'pnkertas' / 'reasoning' / 'presenting'. Koleksi SR game → nama + '_' + bidang.
+    //   game_stat (padan / memori / duri / betulsalah / jutawan): LEVEL (main, lulus, terbaik, ulangi) → dokumen + '_' + bidang · mata wang & tetapan KEKAL dikongsi.
+    var ARK_B = '';
+    var ARK_KOL_SR = { game_sr: 1, game_sr_memori: 1, game_sr_duri: 1, game_sr_betulsalah: 1, game_sr_jutawan: 1, game_sr_indeks: 1 };
+    var ARK_STAT_DOC = { padan: 1, memori: 1, duri: 1, betulsalah: 1, jutawan: 1 }, ARK_STAT_LV = { main: 1, lulus: 1, terbaik: 1, ulangi: 1 };
+    var ARK_BID_DARI = { tlkertas: 'writing', ptkertas: 'speaking', readingq: 'reading' };
+    function kol0(n) { return db.collection('users').doc(currentUser.uid).collection(n); }
+    function kol(n) {
+      if (!ARK_B) return kol0(n);
+      if (ARK_KOL_SR[n]) return kol0(n + '_' + ARK_B);
+      var c = kol0(n);
+      if (n !== 'game_stat') return c;
+      var d0 = c.doc, b = ARK_B;
+      c.doc = function(id) { var r = d0.apply(c, arguments); if (ARK_STAT_DOC[id]) arkStatBalut(r, id, b); return r; };
+      return c;
+    }
+    function arkStatBalut(r, id, b) {
+      var rB = kol0('game_stat').doc(id + '_' + b), get0 = r.get, set0 = r.set;
+      r.get = function() {
+        return Promise.all([get0.call(r), rB.get()]).then(function(x) {
+          var d = x[0].exists ? (x[0].data() || {}) : {}, v = x[1].exists ? (x[1].data() || {}) : {}, k;
+          for (k in ARK_STAT_LV) { if (v.hasOwnProperty(k)) d[k] = v[k]; else delete d[k]; }
+          return { exists: true, id: id, data: function() { return d; } };
+        });
+      };
+      r.set = function(v, opt) {
+        var a = {}, lv = {}, na = 0, nl = 0, k, p = [];
+        for (k in v) if (v.hasOwnProperty(k)) { if (ARK_STAT_LV[k]) { lv[k] = v[k]; nl++; } else if (k !== 'updatedAt') { a[k] = v[k]; na++; } }
+        if (nl) { lv.updatedAt = Date.now(); p.push(rB.set(lv, { merge: true })); }
+        if (na) { a.updatedAt = Date.now(); p.push(set0.call(r, a, opt)); }
+        return Promise.all(p);
+      };
+    }
+    // Kontena milik arked semasa: Vocab kamus = kapal Laci Bahasa · arked bidang = kapal bidang itu
+    function arkBankOk(id) { var j = ljJenisKapal(id); j = ARK_BID_DARI[j] || j; return j === ARK_B; }
     function muatLokal() {
       if (S.uid === currentUser.uid) return;
       try {
@@ -7491,7 +7526,7 @@
     }
     function simpanLokal() {
       // Simpan senarai kapal BAHASA sahaja sebagai sr (kapal WRITING sentiasa dibaca baru)
-      try { var o = {}, k; for (k in S) if (S.hasOwnProperty(k) && k !== 'srT' && k !== 'srK') o[k] = S[k]; if (S.srB) o.sr = S.srB; localStorage.setItem(KUNCI, JSON.stringify(o)); } catch (e) {}
+      try { var o = {}, k; for (k in S) if (S.hasOwnProperty(k) && k !== 'srT' && k !== 'srK') o[k] = S[k]; if (S.srB) o.sr = S.srB; if (ARK_B) { o.gsr = {}; o.gsrTs = 0; } localStorage.setItem(KUNCI, JSON.stringify(o)); } catch (e) {}
     }
     // Senarai laci SR (ID laci + tajuk) — dari bahasa_sr_queue
     function muatSR(paksa, cb) {
@@ -7577,6 +7612,7 @@
       for (i = 0; i < urutan.length; i++) dahAda[urutan[i]] = 1;
       for (id in S.bank) if (!dahAda[id]) urutan.push(id);
       for (i = 0; i < urutan.length; i++) {
+        if (!arkBankOk(urutan[i])) continue; // 22 Nov: kontena ikut arked (Vocab kamus / bidang)
         var p = S.bank[urutan[i]].pasangan || [];
         for (j = 0; j < p.length; j++) {
           if (!p[j].en || !p[j].bm) continue;
@@ -9751,12 +9787,12 @@
     function jwLokal() {
       if (JW.uid === currentUser.uid) return;
       var d = {};
-      try { d = JSON.parse(localStorage.getItem('game_jutawan_v2') || '{}') || {}; } catch (e) { d = {}; }
+      try { d = JSON.parse(localStorage.getItem('game_jutawan_v2' + (ARK_B ? '_' + ARK_B : '')) || '{}') || {}; } catch (e) { d = {}; }
       if (d.uid === currentUser.uid) JW = { uid: d.uid, gsr: d.gsr || {}, gsrTs: d.gsrTs || 0, main: d.main || 0, lulus: d.lulus || 0, terbaik: d.terbaik || 0, dolar: d.dolar || 0, ulangi: d.ulangi || {} };
       else JW = { uid: currentUser.uid, gsr: {}, gsrTs: 0, main: 0, lulus: 0, terbaik: 0, dolar: 0, ulangi: {} };
     }
     function jwSimpan() {
-      try { localStorage.setItem('game_jutawan_v2', JSON.stringify(JW)); } catch (e) {}
+      try { localStorage.setItem('game_jutawan_v2' + (ARK_B ? '_' + ARK_B : ''), JSON.stringify(JW)); } catch (e) {}
     }
     function jwSimpanStat() {
       jwSimpan();
@@ -10231,16 +10267,20 @@
     }
     // 21 Nov: VOCAB KAMUS = bilangan vocab yang SUDAH masuk SR dalam game PALING RENDAH antara 5 game arked asas (indeks game_sr_indeks)
     var COACH_GAME_KOL = { padan: 'game_sr', memori: 'game_sr_memori', duri: 'game_sr_duri', betulsalah: 'game_sr_betulsalah', jutawan: 'game_sr_jutawan' };
-    function coachVocab() {
-      var janji = [], i;
-      for (i = 0; i < COACH_GAME.length; i++) janji.push(muatIndeks(COACH_GAME_KOL[COACH_GAME[i][0]]).catch(function() { return {}; }));
-      return Promise.all(janji).then(function(res) {
-        var min = null, nama = '', k, n, x;
-        for (k = 0; k < res.length; k++) {
-          n = 0;
-          for (x in res[k]) if (res[k].hasOwnProperty(x)) n++;
-          if (min === null || n < min) { min = n; nama = COACH_GAME[k][1]; }
-        }
+    function coachVocab() { return arkKiraSR(''); } // 22 Nov: sentiasa arked asas (tidak terikut arked bidang yang sedang dibuka)
+    // 22 Nov: bilangan vocab SR dalam game PALING RENDAH antara 5 game untuk arked b ('' = Vocab kamus) — terus dari Firebase (tak ikut ARK_B semasa)
+    function arkKiraSR(b) {
+      var sfx = b ? '_' + b : '', janji = [], i;
+      for (i = 0; i < COACH_GAME.length; i++) (function(k) {
+        janji.push(kol0('game_sr_indeks' + sfx).doc(k).get().then(function(s) {
+          var d = (s && s.exists) ? s.data() : null;
+          if (d && d.v === 1 && d.ids) return d.ids.length;
+          return kol0(k + sfx).get().then(function(q) { return q.size || 0; });
+        }).catch(function() { return 0; }));
+      })(COACH_GAME_KOL[COACH_GAME[i][0]]);
+      return Promise.all(janji).then(function(r) {
+        var min = null, nama = '', k;
+        for (k = 0; k < r.length; k++) if (min === null || r[k] < min) { min = r[k]; nama = COACH_GAME[k][1]; }
         return { n: min || 0, game: nama };
       });
     }
@@ -21192,6 +21232,22 @@
     var ARK_HAL = [['MINI GAME', ''], ['MINI GAME FOR LISTENING', 'pawagam'], ['MINI GAME FOR WRITING', 'tulis'], ['MINI GAME FOR READING', 'pustaka'], ['MINI GAME FOR SPEAKING', 'pentas']];
     var arkHal = 0, arkDreBuka = false, arkDariNota = false;
     hlSediakan('screen-mini', 'ark-titik', 'ark-hal-', ARK_HAL.length);
+    // 22 Nov (Fasa 3): ARKED = 7 titik (VOCAB KAMUS + 6 bidang, game SAMA, SR ikut bidang) · ARKED FORMULA = halaman 1–4 lama (asing)
+    var ARK_BID = ['', 'writing', 'speaking', 'reading', 'pnkertas', 'reasoning', 'presenting'];
+    var ARK_BID_NAMA = ['VOCAB KAMUS', 'WRITING', 'SPEAKING', 'READING', 'LISTENING', 'REASONING', 'PRESENTING'];
+    var arkBi = 0, arkHalF = 1;
+    (function() { var sc = el('screen-mini'), t = document.createElement('div'); t.id = 'ark-mod'; t.style.cssText = 'display:table;width:100%;table-layout:fixed;margin:6px 0 2px;'; sc.insertBefore(t, el('ark-titik')); })();
+    function arkModLukis() {
+      var B = 'display:block;width:100%;padding:7px 4px;border:2px solid #000;border-radius:8px;font-weight:bold;font-size:0.9rem;font-family:inherit;';
+      el('ark-mod').innerHTML = '<div style="display:table-row;"><div style="display:table-cell;padding-right:3px;"><button type="button" data-ark-mod="0" style="' + B + (arkHal ? 'background:#fff;color:#000;' : 'background:#000;color:#fff;') + '">ARKED</button></div>' +
+        '<div style="display:table-cell;padding-left:3px;"><button type="button" data-ark-mod="1" style="' + B + (arkHal ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">ARKED FORMULA</button></div></div>';
+    }
+    el('ark-mod').onclick = function(e) { var v = hlCari(e.target, this, 'data-ark-mod'); if (v === null) return; if (v === '0') { arkHal = 0; bukaMini(); } else arkPergi(arkHalF || 1); };
+    // Tukar arked aktif → kosongkan cache SR game (dimuat semula ikut bidang)
+    function arkSetB(b) {
+      if (b === ARK_B) return;
+      ARK_B = b; S.gsr = {}; S.gsrTs = 0; JW.uid = '';
+    }
     var ARK_IKON = {
       pawagam: '<svg viewBox="0 0 64 56" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="56" height="40" rx="4" fill="#fff" stroke="#000" stroke-width="3"/><path d="M14 22h7l9-7v26l-9-7h-7z" fill="#000"/><path d="M36 20q5 8 0 16M42 15q9 13 0 26" fill="none" stroke="#000" stroke-width="3"/></svg>',
       tulis: '<svg viewBox="0 0 64 56" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="8" width="56" height="40" rx="4" fill="#fff" stroke="#000" stroke-width="3"/><path d="M12 20h24M12 28h24M12 36h16" stroke="#000" stroke-width="3"/><path d="M40 40l2-8 12-12 6 6-12 12z" fill="#000"/></svg>'
@@ -21204,7 +21260,7 @@
       return n;
     }
     function arkAktif() { return el('screen-mini').className.indexOf('active') !== -1; }
-    function arkLukisTitik() { rdMuat(); hlTitik('ark-titik', ARK_HAL.length, arkHal, [0, arkPerlu('pawagam'), arkPerlu('tulis'), rdPerlu(), arkPerlu('pentas')]); }
+    function arkLukisTitik() { rdMuat(); arkModLukis(); if (!arkHal) { hlTitik('ark-titik', ARK_BID.length, arkBi); return; } hlTitik('ark-titik', ARK_HAL.length - 1, arkHal - 1, [arkPerlu('pawagam'), arkPerlu('tulis'), rdPerlu(), arkPerlu('pentas')]); }
     function arkLukis() {
       var p = ARK_HAL[arkHal], box = el('ark-hal-' + arkHal), h = '', n;
       arkLukisTitik();
@@ -21219,10 +21275,12 @@
       var k;
       if (i < 0 || i >= ARK_HAL.length) return;
       if (i !== arkHal) { pnHentiMasa(); arkDreBuka = false; }
-      arkHal = i;
+      arkHal = i; if (i) arkHalF = i;
       for (k = 0; k < ARK_HAL.length; k++) el('ark-hal-' + k).style.display = k === i ? '' : 'none';
-      el('screen-mini').querySelector('.gm-alat-tajuk').textContent = ARK_HAL[i][0];
-      var sb = el('screen-mini').querySelector('.status-bar'); if (sb) sb.textContent = ARK_HAL[i][0];
+      var tj = i ? ARK_HAL[i][0] : 'ARKED ' + ARK_BID_NAMA[arkBi]; // 22 Nov: ARKED bidang
+      el('screen-mini').querySelector('.gm-alat-tajuk').textContent = tj;
+      var sb = el('screen-mini').querySelector('.status-bar'); if (sb) sb.textContent = tj;
+      if (!i) el('btn-mini-undur').textContent = 'VOCAB TIADA? ‹ PERGI KE ' + (ARK_B ? 'PELABUHAN ' + ARK_BID_NAMA[arkBi] : 'PEJABAT PELABUHAN');
       var pd = el('screen-mini').querySelector('[data-panduan]');
       var rdg = ARK_HAL[i][1] === 'pustaka';
       if (pd) { pd.style.display = (!i || (ARK_HAL[i][1] && !rdg)) ? '' : 'none'; pd.setAttribute('data-panduan', i ? 'pd-ulang-' + ARK_HAL[i][1] : 'pd-mini'); }
@@ -21232,16 +21290,22 @@
       arkLukis();
       try { window.scrollTo(0, 0); } catch (e) {}
     }
-    el('ark-titik').onclick = function(e) { var v = hlCari(e.target, this, 'data-hl'); if (v !== null) arkPergi(+v); };
+    el('ark-titik').onclick = function(e) {
+      var v = hlCari(e.target, this, 'data-hl');
+      if (v === null) return;
+      if (!arkHal) { if (+v !== arkBi) { arkBi = +v; bukaMini(); } return; } // ARKED: titik = bidang
+      arkPergi(+v + 1); // ARKED FORMULA: titik 1–4
+    };
     for (var arkI = 1; arkI < ARK_HAL.length; arkI++) {
       el('ark-hal-' + arkI).onclick = function(e) {
         var r = hlCari(e.target, this, 'data-ark-kad');
         if (r) bukaUlLevel(r); // kad ULANG KAJI HARIAN → page level
       };
     }
-    bukaMini = (function(f) { return function() { var r = f.apply(this, arguments); arkPergi(arkHal); return r; }; })(bukaMini);
+    bukaMini = (function(f) { return function() { if (!arkHal) arkSetB(ARK_BID[arkBi]); var r = f.apply(this, arguments); arkPergi(arkHal); return r; }; })(bukaMini);
     // Buka ARKED terus ke halaman tertentu (butang di LATIHAN LISTENING / WRITING)
     function bukaArked(i) { arkHal = i; bukaMini(); }
+
 
     // ══ GAME NOTA (18 Nov) — ARKED Listening / Writing: SETIAP KUMPULAN nota = SATU GAME (tajuk = fungsi, cth "To introduce a new point") ══
     //   LISTENING: tekan DENGAR (MP3) → taip apa yang didengar + taip terjemahan BM · WRITING: lihat frasa → taip terjemahan BM
@@ -21585,7 +21649,11 @@
       if (gbAdaBaca()) lwbKlik(e, this, GB_JENIS[gbHal]);
     };
     // 22 Nov: UNDUR dari ARKED (mini game asas = Vocab kamus) → PEJABAT PELABUHAN (kapal Laci Bahasa)
-    el('btn-mini-undur').onclick = function() { if (layar) return; if (gbHal !== 0) tambatIdx = -1; gbHal = 0; bukaBank(false); };
+    el('btn-mini-undur').onclick = function() { // 22 Nov: arked bidang → PELABUHAN bidang yang sama
+      var h = ARK_B ? GB_JENIS.indexOf(ARK_B) : 0;
+      if (layar || h < 0) return;
+      if (gbHal !== h) tambatIdx = -1; gbHal = h; bukaBank(false);
+    };
     function gbTitik() {
       hlTitik('gb-titik', GB_HAL.length, gbHal);
       el('screen-gbank').querySelector('.gm-alat-tajuk').textContent = GB_HAL[gbHal];
