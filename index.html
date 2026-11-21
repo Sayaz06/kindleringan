@@ -17225,18 +17225,39 @@
     // 21 Nov: KOTAK KERTAS MUET ASING (di atas kotak app phone) · SUDAH BACA KERTAS → kapal KERTAS MUET di PELABUHAN
     var KT_KOTAK = { pn: 'pw-kertas', pt: 'pentas-isi', tl: 'tulis-isi' };
     var KT_LJ = { tl: ['tlkertas', 'PELABUHAN WRITING'], pt: ['ptkertas', 'PELABUHAN SPEAKING'], pn: ['pnkertas', 'PELABUHAN LISTENING'] };
+    // 21 Nov: SPEAKING & WRITING — 2 titik macam Pawagam: [0] KERTAS MUET · [1] DARI APP PHONE (kandungan lama)
+    var KT_HAL = { pt: 0, tl: 0 }, KT_HARI = { pn: true, pt: true, tl: true }, KT_HAL_NAMA = ['KERTAS MUET', 'DARI APP PHONE'];
     function ktKotak(b) {
-      var utama = el(KT_KOTAK[b]), k = el('kt-kotak-' + b), h;
+      var utama = el(KT_KOTAK[b]), k = el('kt-kotak-' + b), h, tt, dua = b !== 'pn', hari, hal, i, ht = '';
       if (!utama) return;
       if (!k) {
         k = document.createElement('div'); k.id = 'kt-kotak-' + b;
         k.style.cssText = 'border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;';
         utama.parentNode.insertBefore(k, utama);
         k.onclick = function(e) { ktKlik(e, this, b); };
+        if (dua) {
+          tt = document.createElement('div'); tt.id = 'kt-titik-' + b; tt.className = 'hl-titik'; tt.style.marginTop = '6px';
+          k.parentNode.insertBefore(tt, k);
+          tt.onclick = function(e) {
+            var t = e.target;
+            while (t && t !== this && !(t.getAttribute && t.getAttribute('data-hl') !== null)) t = t.parentNode;
+            if (!t || t === this) return;
+            KT_HAL[b] = +t.getAttribute('data-hl'); KT_UI[b].baca = ''; KT_UI[b].mesej = '';
+            KT[b].lukis();
+            try { window.scrollTo(0, 0); } catch (er) {}
+          };
+        }
       }
       h = ktSenarai(b);
-      k.innerHTML = '<div style="font-weight:bold;font-size:1.05rem;">KERTAS MUET</div><div style="font-size:0.8rem;">Kertas sebenar dalam app (asing dari app phone).' + (KT_LJ[b] ? ' Baca → <b>SUDAH BACA KERTAS</b> → kapal KERTAS MUET di ' + KT_LJ[b][1] + '.' : '') + '</div>' + h;
-      k.style.display = (h && !ktBaca(b) && utama.style.display !== 'none') ? '' : 'none';
+      k.innerHTML = '<div style="font-weight:bold;font-size:1.05rem;">KERTAS MUET</div><div style="font-size:0.8rem;">Kertas sebenar dalam app (asing dari app phone).' + (KT_LJ[b] ? ' Baca → <b>SUDAH BACA KERTAS</b> → kapal KERTAS MUET di ' + KT_LJ[b][1] + '.' : '') + '</div>' + (h || (dua ? '<div style="font-size:0.85rem;margin-top:6px;">Belum ada kertas.</div>' : ''));
+      if (!dua) { k.style.display = (h && !ktBaca(b) && utama.style.display !== 'none') ? '' : 'none'; return; }
+      hari = KT_HARI[b] !== false; hal = KT_HAL[b];
+      for (i = 0; i < KT_HAL_NAMA.length; i++) ht += '<button type="button" class="hlt' + (i === hal ? ' on' : '') + '" data-hl="' + i + '"><span></span></button>';
+      tt = el('kt-titik-' + b);
+      tt.innerHTML = ht + '<div style="font-size:0.75rem;font-weight:bold;text-align:center;width:100%;">' + KT_HAL_NAMA[hal] + '</div>';
+      tt.style.display = hari ? '' : 'none';
+      k.style.display = (hari && hal === 0 && !ktBaca(b)) ? '' : 'none';
+      utama.style.display = (hari && (hal === 1 || ktBaca(b))) ? '' : 'none';
     }
     function ktKotakSemua() { ktKotak('pn'); ktKotak('pt'); ktKotak('tl'); }
     // Teks kertas untuk kapal: blok teks paling dalam (div / td), buang tajuk kulit, CONFIDENTIAL, nota kaki, label pendek & ulangan
@@ -19873,7 +19894,7 @@
       el(b[2]).style.display = lain ? 'none' : '';
       el(b[3]).style.display = lain ? 'none' : '';
       tp.style.display = lain ? '' : 'none';
-      try { ktKotakSemua(); } catch (eK) {}
+      try { KT_HARI[{ pentas: 'pt', tulis: 'tl', pawagam: 'pn' }[k] || 'x'] = !lain; ktKotakSemua(); } catch (eK) {}
       if (tab === 'tips') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TIPS</div>' + USAHA_TIPS[k](); } catch (e) { tp.textContent = 'Tips tidak dapat dipapar.'; } }
       if (tab === 'format') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">FORMAT</div>' + USAHA_FORMAT[k](); } catch (e) { tp.textContent = 'Format tidak dapat dipapar.'; } }
       if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = k === 'tulis' ? pnLukisTopikTulis() : k === 'pustaka' ? rdLukisTopik() : k === 'pentas' ? pnLukisTopikSpeaking() : pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
