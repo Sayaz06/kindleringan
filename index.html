@@ -10169,13 +10169,13 @@
     var COACH_MUSIM = {
       CUTI: {
         // 17 Nov (dipersetujui): 4 kemahiran MUET + sokongan. Unit: Listening 1 min · Speaking 1 huraian isi (Pentas) · Presenting 1 ayat · Reading 1 Part = 10 unit · Ayat 1 ayat · Vocab level · Reasoning 1 entri · Writing (POSPON — unit ditetapkan bila HARI INI Dewan Tulis siap)
-        // 21 Nov: pai baru — AYAT & LISTENING dibuang dari pai (listening: kekal untuk sasaran PAWAGAM sahaja, sistem minit). 6 bidang = 100%.
-        english: { listening: 20, pentas: 15, presenting: 8, reading: 23, tulis: 23, vocab: 15, reasoning: 16 },
+        // 22 Nov: pai baru — AYAT dibuang · LISTENING kekal dalam pai, dikira guna MINIT. 7 bidang = 100%.
+        english: { listening: 20, pentas: 12, presenting: 7, reading: 18, tulis: 18, vocab: 12, reasoning: 13 },
         englishKuliah: [50, 50]
       }
     };
     var COACH_BIDANG = [
-      ['pentas', 'Speaking'], ['presenting', 'Presenting'], ['reading', 'Reading'], ['tulis', 'Writing'], ['vocab', 'Vocab kamus'], ['reasoning', 'Reasoning']
+      ['listening', 'Listening (min)'], ['pentas', 'Speaking'], ['presenting', 'Presenting'], ['reading', 'Reading'], ['tulis', 'Writing'], ['vocab', 'Vocab kamus'], ['reasoning', 'Reasoning']
     ];
     var COACH_POSPON = {}; // 17 Nov: Writing DIBUKA — unit = 1 ayat Laci Writing yang sudah masuk SR (usaha terakhir)
     var COACH_UNIT_READING = 10; // 1 Part latihan Reading = 10 unit (≈ 10 min usaha)
@@ -10639,6 +10639,19 @@
         return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" font-size="' + sz + '" font-weight="bold" text-anchor="' + anchor + '" fill="#000">' + nama + '</text>' +
           '<text x="' + x.toFixed(1) + '" y="' + (y + sz + 1).toFixed(1) + '" font-size="' + sz + '" text-anchor="' + anchor + '" fill="#000">' + p + '</text>';
       }
+      // 22 Nov: label DALAM hirisan ditulis ikut jejari — bermula dari PUSAT ke arah lilitan, saiz kecil (textPath, tanpa transform)
+      function jejari(am, nama, p) {
+        var kanan = Math.cos(am) >= 0, dx = Math.cos(am), dy = Math.sin(am), r0 = 16, r1 = r - 3, h = '', k, b, sx, sy, ex, ey, id;
+        var bx = kanan ? -dy : dy, by = kanan ? dx : -dx; // arah "bawah" teks
+        var baris = [[nama, -1, 'bold'], [p, 9, 'normal']];
+        for (k = 0; k < baris.length; k++) {
+          b = baris[k][1]; id = 'cpj' + (coachPieN++);
+          sx = cx + dx * r0 + bx * b; sy = cy + dy * r0 + by * b; ex = cx + dx * r1 + bx * b; ey = cy + dy * r1 + by * b;
+          h += '<defs><path id="' + id + '" d="' + (kanan ? 'M' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' L' + ex.toFixed(1) + ' ' + ey.toFixed(1) : 'M' + ex.toFixed(1) + ' ' + ey.toFixed(1) + ' L' + sx.toFixed(1) + ' ' + sy.toFixed(1)) + '"/></defs>' +
+            '<text font-size="9" font-weight="' + baris[k][2] + '" fill="#000"><textPath xlink:href="#' + id + '" href="#' + id + '"' + (kanan ? ' startOffset="0"' : ' startOffset="100%" text-anchor="end"') + '>' + baris[k][0] + '</textPath></text>';
+        }
+        return h;
+      }
       for (i = 0; i < hirisan.length; i++) {
         var v = vis[i];
         if (!v) continue;
@@ -10651,7 +10664,7 @@
         var a1 = a0 + v / jumV * 2 * Math.PI, besar = a1 - a0 > Math.PI ? 1 : 0, am = (a0 + a1) / 2;
         s += '<path d="M' + cx + ' ' + cy + ' L' + (cx + r * Math.cos(a0)).toFixed(2) + ' ' + (cy + r * Math.sin(a0)).toFixed(2) + ' A' + r + ' ' + r + ' 0 ' + besar + ' 1 ' +
           (cx + r * Math.cos(a1)).toFixed(2) + ' ' + (cy + r * Math.sin(a1)).toFixed(2) + ' Z" fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>';
-        if (!opt.luar && v / jumV >= 0.2) s += teks(cx + r * 0.58 * Math.cos(am), cy + r * 0.58 * Math.sin(am) - 4, hirisan[i].n, hirisan[i].t || pc[i] + '%', 'middle', 13);
+        if (!opt.luar && v / jumV >= 0.2) s += jejari(am, hirisan[i].n, hirisan[i].t || pc[i] + '%');
         else luar.push({ am: am, n: hirisan[i].n, p: hirisan[i].t || pc[i] + '%', kanan: Math.cos(am) >= 0, y: cy + (r + 18) * Math.sin(am) });
         a0 = a1;
       }
@@ -10666,8 +10679,9 @@
             teks(x1 + (sisi ? 3 : -3), o.y - 4, o.n, o.p, sisi ? 'start' : 'end', 11);
         }
       });
-      return kepala + '<div style="text-align:center;"><svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>';
+      return kepala + '<div style="text-align:center;"><svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + s + '</svg></div>';
     }
+    var coachPieN = 0;
     function coachKotakPai(tajuk, isi) {
       return '<div style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:6px 0;"><div style="font-weight:bold;margin-bottom:3px;">' + tajuk + '</div>' + isi + '</div>';
     }
@@ -14195,7 +14209,6 @@
       var unit = { listening: d.listening || 0, pentas: d.pentas || 0, reading: d.reading || 0, tulis: d.tulis || 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
       var J = 0, i, L = unit.listening, K = Math.min(L, pwKMin());
       for (i = 0; i < COACH_BIDANG.length; i++) if (!COACH_POSPON[COACH_BIDANG[i][0]]) J += unit[COACH_BIDANG[i][0]] || 0;
-      J += L; // 21 Nov: Listening tiada lagi dalam pai English — minit tetap dikira di sini (PAWAGAM, sistem masa)
       return { sas: sas, s1: sas / 2, J: J, L: L, K: K, V: L - K };
     }
     function pwKalk(nama, N, s, J, part) {
