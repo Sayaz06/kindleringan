@@ -521,6 +521,8 @@
     <button id="btn-go-laci-speaking" class="btn" style="display:none;">Laci Speaking</button>
     <button id="btn-go-laci-reading" class="btn" style="display:none;">Laci Reading (Petikan)</button>
     <button id="btn-go-laci-readingq" class="btn" style="display:none;">Laci Reading (Soalan)</button>
+    <button id="btn-go-laci-tlkertas" class="btn" style="display:none;">Laci Writing (Kertas MUET)</button>
+    <button id="btn-go-laci-ptkertas" class="btn" style="display:none;">Laci Speaking (Kertas MUET)</button>
     <!-- QURAN — sesi Quran (kemajuan kindle_quran/current), pusing 10 ayat setiap sesi -->
     <button id="btn-go-quran" class="btn">[ QURAN ]</button>
     <!-- SOALAN FAKTA: ON → Laci Fakta papar SOALAN sahaja (baris yang ada soalan) · tiada SR -->
@@ -4293,11 +4295,16 @@
         drawers: 'reading_laci', sr: 'reading_laci_sr', perk: 'reading_laci_perkataan' },
       // 20 Nov: READING SOALAN — soalan + pilihan jawapan setiap Part (kapal SOALAN di PELABUHAN READING) → Laci Reading (Soalan)
       readingq: { label: 'READING SOALAN', pre: 'rdq', topik: 'readingq_topik', soalan: 'readingq_soalan', baca: 'reading_baca', kapal: 'readingq_kapal',
-        drawers: 'readingq_laci', sr: 'readingq_laci_sr', perk: 'readingq_laci_perkataan' }
+        drawers: 'readingq_laci', sr: 'readingq_laci_sr', perk: 'readingq_laci_perkataan' },
+      // 21 Nov: KERTAS MUET (dalam app) — Writing / Speaking · SUDAH BACA KERTAS → kapal KERTAS MUET → laci sendiri (asing dari app phone)
+      tlkertas: { label: 'WRITING KERTAS MUET', pre: 'tlk', topik: 'tlkertas_topik', soalan: 'tlkertas_soalan', baca: 'kertas_baca', kapal: 'tlkertas_kapal',
+        drawers: 'tlkertas_laci', sr: 'tlkertas_laci_sr', perk: 'tlkertas_laci_perkataan' },
+      ptkertas: { label: 'SPEAKING KERTAS MUET', pre: 'ptk', topik: 'ptkertas_topik', soalan: 'ptkertas_soalan', baca: 'kertas_baca', kapal: 'ptkertas_kapal',
+        drawers: 'ptkertas_laci', sr: 'ptkertas_laci_sr', perk: 'ptkertas_laci_perkataan' }
     };
     // ID kapal "tulis-xxx" / "rsn-xxx" / "prs-xxx" → jenis ('' = kapal Laci Bahasa)
-    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs|spk|rdg|rdq)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting', spk: 'speaking', rdg: 'reading', rdq: 'readingq' }[m[1]] : ''; }
-    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs|spk|rdg|rdq)-/, ''); }
+    function ljJenisKapal(id) { var m = /^(tulis|rsn|prs|spk|rdg|rdq|tlk|ptk)-/.exec(String(id || '')); return m ? { tulis: 'writing', rsn: 'reasoning', prs: 'presenting', spk: 'speaking', rdg: 'reading', rdq: 'readingq', tlk: 'tlkertas', ptk: 'ptkertas' }[m[1]] : ''; }
+    function ljIdKapal(id) { return String(id || '').replace(/^(tulis|rsn|prs|spk|rdg|rdq|tlk|ptk)-/, ''); }
     var bahasaSumber = 'bahasa';
     function kolB(n) {
       var J = LJ[bahasaSumber];
@@ -4436,6 +4443,10 @@
     if (_btnLaciReading) _btnLaciReading.onclick = function() { startLaciWriting('reading'); };
     var _btnLaciReadingQ = document.getElementById('btn-go-laci-readingq');
     if (_btnLaciReadingQ) _btnLaciReadingQ.onclick = function() { startLaciWriting('readingq'); };
+    var _btnLaciTlK = document.getElementById('btn-go-laci-tlkertas');
+    if (_btnLaciTlK) _btnLaciTlK.onclick = function() { startLaciWriting('tlkertas'); };
+    var _btnLaciPtK = document.getElementById('btn-go-laci-ptkertas');
+    if (_btnLaciPtK) _btnLaciPtK.onclick = function() { startLaciWriting('ptkertas'); };
     document.getElementById('btn-back-menu').onclick = function() {
       isLoading = false;
       showScreen('screen-menu');
@@ -9497,17 +9508,23 @@
         penjaga('gb-watak', 'kapten', 'masuk', n ? 'Kapal ini ada kontena yang belum belayar. Ketik besi pengikat, muat lagi atau belayarkan dulu.' : 'Kapal kosong dah diikat. Ketik besi pengikat untuk bawa ke dermaga.', 'gb-cakap');
         return;
       }
-      var pj = gbPanggilJenis; gbPanggilJenis = '';
-      if (!pj && GB_JENIS[gbHal] === 'reading') pj = 'rdg';
+      var pj = gbPanggilJenis, gd = GB_DUA[GB_JENIS[gbHal]]; gbPanggilJenis = '';
+      if (!pj && gd) pj = gd[0];
       var idx = kapalKosong(pj);
-      if (idx < 0) { penjaga('gb-watak', 'kapten', 'masuk', pj === 'rdq' ? 'Tiada kapal SOALAN kosong. Tekan SUDAH BACA PART di PERPUSTAKAAN dulu.' : pj === 'rdg' ? 'Tiada kapal PETIKAN kosong. Tekan SUDAH BACA PART di PERPUSTAKAAN dulu.' : 'Semua kapal dah ada muatan. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap'); return; }
+      if (idx < 0) { penjaga('gb-watak', 'kapten', 'masuk', (gd && pj) ? 'Tiada kapal ' + (pj === gd[1] ? gd[3] : gd[2]) + ' kosong. ' + (pj === gd[1] ? gd[5] : gd[4]) : 'Semua kapal dah ada muatan. Hebat! Tunggu laci baru masuk SR.', 'gb-cakap'); return; }
       tambatIdx = idx;
       lukisTambat();
       kapalMasuk();
       penjaga('gb-watak', 'kapten', 'gembira', 'Kapal kosong dah sampai dan diikat! Ketik besi pengikat untuk bawa ke dermaga.', 'gb-cakap');
     };
     var gbPanggilJenis = '';
-    el('btn-gb-mula2').onclick = function() { gbPanggilJenis = 'rdq'; el('btn-gb-mula').onclick(); };
+    // 21 Nov: pelabuhan yang ada DUA jenis kapal → [pre1, pre2, label1, label2, cara dapat 1, cara dapat 2]
+    var GB_DUA = {
+      writing: ['tulis', 'tlk', 'APP PHONE', 'KERTAS MUET', 'Tulis karangan di app phone & baca di DEWAN TULIS dulu.', 'Tekan SUDAH BACA KERTAS di DEWAN TULIS dulu.'],
+      speaking: ['spk', 'ptk', 'APP PHONE', 'KERTAS MUET', 'Tekan SUDAH BACA huraian di PENTAS dulu.', 'Tekan SUDAH BACA KERTAS di PENTAS dulu.'],
+      reading: ['rdg', 'rdq', 'PETIKAN', 'SOALAN', 'Tekan SUDAH BACA PART di PERPUSTAKAAN dulu.', 'Tekan SUDAH BACA PART di PERPUSTAKAAN dulu.']
+    };
+    el('btn-gb-mula2').onclick = function() { var gd = GB_DUA[GB_JENIS[gbHal]]; if (!gd) return; gbPanggilJenis = gd[1]; el('btn-gb-mula').onclick(); };
     el('btn-gb-ambil').onclick = ambilUpah;
     // ══ SIGNBOARD FREE PARKING (sewa dari Kapten) ══
     // Dipasang di jeti tempat tambat → kapal kosong sentiasa ada di atas, tak perlu PANGGIL.
@@ -9531,7 +9548,7 @@
     function lukisPapanBtn() {
       var b = el('btn-gb-papan'), c = el('gb-jaga-cakap');
       el('btn-gb-mula').style.display = PAPAN.ada ? 'none' : '';
-      el('btn-gb-mula2').style.display = (PAPAN.ada || typeof GB_JENIS === 'undefined' || GB_JENIS[gbHal] !== 'reading') ? 'none' : '';
+      el('btn-gb-mula2').style.display = (PAPAN.ada || typeof GB_JENIS === 'undefined' || !GB_DUA[GB_JENIS[gbHal]]) ? 'none' : '';
       b.parentNode.style.display = PAPAN.ada ? 'none' : '';
       b.innerHTML = '<i>P</i>Sewa signboard · ' + rm(EKO.PAPAN_SEN) + ' Biru/jam';
       if (c) c.innerHTML = papanCakap();
@@ -14310,7 +14327,7 @@
         teruskan();
       }).catch(function() { teruskan(); });
     }
-    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting', 'btn-go-laci-writing', 'btn-go-laci-speaking', 'btn-go-laci-reading', 'btn-go-laci-readingq'].forEach(function(id) {
+    ['btn-go-bahasa', 'btn-go-sr-bebas', 'btn-go-fakta', 'btn-go-reasoning', 'btn-go-presenting', 'btn-go-laci-writing', 'btn-go-laci-speaking', 'btn-go-laci-reading', 'btn-go-laci-readingq', 'btn-go-laci-tlkertas', 'btn-go-laci-ptkertas'].forEach(function(id) {
       var b = el(id);
       if (!b || !b.onclick) return;
       var asal = b.onclick;
@@ -15687,7 +15704,7 @@
     var TS_HALAMAN = TS_HAL_USAHA, tsMod = 'ts', tsHalSimpan = { ts: 0, muet: 0 };
     // ══ TAB LACI (17 Nov) — senarai butang macam MENU · tekan → laci terus dibuka (kunci Health First & kira minit sama macam MENU) ══
     var LC_SENARAI = [['btn-go-bahasa', 'Laci Bahasa'], ['btn-go-sr-bebas', 'SR Bebas (Bahasa)'], ['btn-go-fakta', 'Laci Fakta'],
-      ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing'], ['btn-go-laci-speaking', 'Laci Speaking'], ['btn-go-laci-reading', 'Laci Reading (Petikan)'], ['btn-go-laci-readingq', 'Laci Reading (Soalan)']];
+      ['btn-go-reasoning', 'Laci Reasoning'], ['btn-go-presenting', 'Laci Presenting'], ['btn-go-laci-writing', 'Laci Writing'], ['btn-go-laci-speaking', 'Laci Speaking'], ['btn-go-laci-reading', 'Laci Reading (Petikan)'], ['btn-go-laci-readingq', 'Laci Reading (Soalan)'], ['btn-go-laci-tlkertas', 'Laci Writing (Kertas MUET)'], ['btn-go-laci-ptkertas', 'Laci Speaking (Kertas MUET)']];
     function bukaLc() {
       var h = '', i;
       for (i = 0; i < LC_SENARAI.length; i++) h += '<button type="button" class="btn" data-lc="' + LC_SENARAI[i][0] + '">' + LC_SENARAI[i][1] + '</button>';
@@ -17198,7 +17215,53 @@
       ] }
     };
     var KT = { pn: { K: PN_KERTAS, lukis: function() { lukisPwKertas(); } }, pt: { K: PT_KERTAS, lukis: function() { lukisPentas(); } }, tl: { K: TL_KERTAS, lukis: function() { lukisTulis(); } } };
-    var KT_UI = { pn: { baca: '', ms: 0 }, pt: { baca: '', ms: 0 }, tl: { baca: '', ms: 0 } };
+    var KT_UI = { pn: { baca: '', ms: 0, mesej: '' }, pt: { baca: '', ms: 0, mesej: '' }, tl: { baca: '', ms: 0, mesej: '' } };
+    // 21 Nov: KOTAK KERTAS MUET ASING (di atas kotak app phone) · SUDAH BACA KERTAS → kapal KERTAS MUET di PELABUHAN
+    var KT_KOTAK = { pn: 'pw-kertas', pt: 'pentas-isi', tl: 'tulis-isi' };
+    var KT_LJ = { tl: ['tlkertas', 'PELABUHAN WRITING'], pt: ['ptkertas', 'PELABUHAN SPEAKING'] };
+    function ktKotak(b) {
+      var utama = el(KT_KOTAK[b]), k = el('kt-kotak-' + b), h;
+      if (!utama) return;
+      if (!k) {
+        k = document.createElement('div'); k.id = 'kt-kotak-' + b;
+        k.style.cssText = 'border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;';
+        utama.parentNode.insertBefore(k, utama);
+        k.onclick = function(e) { ktKlik(e, this, b); };
+      }
+      h = ktSenarai(b);
+      k.innerHTML = '<div style="font-weight:bold;font-size:1.05rem;">KERTAS MUET</div><div style="font-size:0.8rem;">Kertas sebenar dalam app (asing dari app phone).' + (KT_LJ[b] ? ' Baca → <b>SUDAH BACA KERTAS</b> → kapal KERTAS MUET di ' + KT_LJ[b][1] + '.' : '') + '</div>' + h;
+      k.style.display = (h && !ktBaca(b) && utama.style.display !== 'none') ? '' : 'none';
+    }
+    function ktKotakSemua() { ktKotak('pn'); ktKotak('pt'); ktKotak('tl'); }
+    // Teks kertas untuk kapal: blok teks paling dalam (div / td), buang tajuk kulit, CONFIDENTIAL, nota kaki, label pendek & ulangan
+    function ktTeks(b, kid) {
+      var K = KT[b].K[kid], out = [], ada = {}, i, j, d, r, x, buang = /^(CONFIDENTIAL|MUET SESSION|MUET S\d|MALAYSIAN|MAJLIS|\(MALAYSIAN|PAPER \d|BOOKLET|DO NOT OPEN|This question|\u00a9|Instructions to|New Message|\d+\/\d)|@/;
+      for (i = 0; i < K.ms.length; i++) {
+        d = document.createElement('div'); d.innerHTML = K.ms[i];
+        r = d.getElementsByTagName('*');
+        for (j = 0; j < r.length; j++) {
+          if (r[j].tagName !== 'DIV' && r[j].tagName !== 'TD') continue;
+          if (r[j].getElementsByTagName('div').length || r[j].getElementsByTagName('td').length || r[j].getElementsByTagName('svg').length) continue;
+          x = String(r[j].textContent || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+          if (!x || buang.test(x) || tlKira(x) < 3 || ada[x] || /^(MUET)+/.test(x)) continue;
+          ada[x] = 1; out.push(x);
+        }
+      }
+      return out;
+    }
+    function ktKeKapal(b) {
+      var kid = KT_UI[b].baca, K = KT[b].K[kid], J = KT_LJ[b], ay, sid = b + '_' + kid, ub = { sr: {} };
+      if (!K || !J || !currentUser) return;
+      ay = ktTeks(b, kid);
+      if (!ay.length) return;
+      ub.sr[sid] = { at: Date.now(), mula: coachHariId() };
+      KT_UI[b].mesej = 'Menghantar ke ' + J[1] + '...'; KT[b].lukis();
+      Promise.all([
+        kol(LJ[J[0]].soalan).doc(kid).set({ sid: sid, soalan: K.t, karangan: ay.join('\n'), kertas: kid, at: Date.now() }),
+        kol('coach').doc('kertas_baca').set(ub, { merge: true })
+      ]).then(function() { KT_UI[b].mesej = 'SUDAH BACA · ' + ay.length + ' baris → kapal KERTAS MUET di ' + J[1] + '.'; KT[b].lukis(); })
+        .catch(function(e) { KT_UI[b].mesej = 'Gagal hantar: ' + ((e && e.message) || e); KT[b].lukis(); });
+    }
     var KT_BTN = 'padding:5px 9px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
     var KT_BTNA = 'padding:5px 9px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#000;color:#fff;';
     function ktBaca(b) { var u = KT_UI[b]; return !!(u.baca && KT[b].K[u.baca]); }
@@ -17215,8 +17278,10 @@
         '<div style="display:table-cell;text-align:center;vertical-align:middle;font-weight:bold;font-size:0.9rem;">MS ' + (m + 1) + ' / ' + n + '</div>' +
         '<div style="display:table-cell;width:34%;text-align:right;">' + (m < n - 1 ? '<button type="button" data-kt="ms" data-v="' + (m + 1) + '" style="' + KT_BTN + 'margin:0;">SETERUSNYA ›</button>' : '') + '</div></div>';
       return '<button type="button" data-kt="tutup" style="' + KT_BTN + '">‹ KEMBALI</button>' +
-        '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + K.t + '</div>' + nav +
-        '<div style="border:2px solid #000;background:#fff;color:#000;padding:10px 10px 14px;font-family:\'Times New Roman\',Times,serif;font-size:1rem;line-height:1.35;">' + K.ms[m] + '</div>' + nav;
+        '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + K.t + '</div>' +
+        (u.mesej ? '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + u.mesej + '</div>' : '') + nav +
+        '<div style="border:2px solid #000;background:#fff;color:#000;padding:10px 10px 14px;font-family:\'Times New Roman\',Times,serif;font-size:1rem;line-height:1.35;">' + K.ms[m] + '</div>' + nav +
+        (KT_LJ[b] ? '<button type="button" data-kt="kapal" style="' + KT_BTNA + 'display:block;width:100%;margin:8px 0 0;">SUDAH BACA KERTAS → ' + KT_LJ[b][1] + ' ›</button>' : '');
     }
     // true = klik butang kertas (sudah diurus) · false = teruskan ke pengendali asal bangunan
     function ktKlik(e, box, b) {
@@ -17224,10 +17289,13 @@
       while (t && t !== box && !(t.getAttribute && t.getAttribute('data-kt'))) t = t.parentNode;
       if (!t || t === box) return false;
       a = t.getAttribute('data-kt'); v = t.getAttribute('data-v');
+      if (a === 'kapal') { ktKeKapal(b); return true; }
+      KT_UI[b].mesej = '';
       if (a === 'baca') { KT_UI[b].baca = v; KT_UI[b].ms = 0; }
       else if (a === 'ms') KT_UI[b].ms = +v;
       else if (a === 'tutup') KT_UI[b].baca = '';
       KT[b].lukis();
+      ktKotak(b);
       try { window.scrollTo(0, 0); } catch (er) {}
       return true;
     }
@@ -17258,6 +17326,7 @@
       t.innerHTML = h + '<div style="font-size:0.75rem;font-weight:bold;text-align:center;width:100%;">' + PW_HAL[i] + '</div>';
       el('pw-kertas').style.display = i === 0 ? '' : 'none';
       el('coach-usaha').style.display = i === 1 ? '' : 'none';
+      try { ktKotak('pn'); } catch (eK) {}
       if (i === 0) lukisPwKertas(); else coachLukisUsaha();
     }
     el('pw-titik').onclick = function(e) { var t = e.target; while (t && t !== this && !(t.getAttribute && t.getAttribute('data-hl') !== null)) t = t.parentNode; if (t && t !== this) { usahaTab('pawagam', 'hari'); pwPergi(+t.getAttribute('data-hl')); } };
@@ -17278,6 +17347,7 @@
     function lukisPwKertas() {
       var box = el('pw-kertas'), h = '<div style="font-weight:bold;font-size:1.15rem;">LISTENING — KERTAS MUET (PAPER 1)</div>', i, a, hari = coachHariId();
       pwLukisPai(); // pai duduk di ATAS titik (18 Nov)
+      ktKotak('pn');
       if (ktBaca('pn')) { box.innerHTML = ktLukis('pn'); return; } // 20 Nov: BACA KERTAS MUET Listening
       if (!pwData) { box.innerHTML = h + '<div>Memuatkan...</div>'; pwPastiData(); return; }
       var senarai = pwHariSenarai();
@@ -17311,7 +17381,6 @@
         box.innerHTML = h; return;
       }
       h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Listening, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = ' + PW_MINIT_PART + ' minit Listening</b> (masuk pai English & Ringgit Kuning Pawagam).<br>Jumlah: <b>' + pwJumlah() + ' Part</b></div>';
-      h += ktSenarai('pn');
       var km = pwKira();
       h += '<div style="font-size:0.9rem;">MUET hari ini: <b>' + pwJm(pwKMin(hari)) + '</b> · terkumpul: <b>' + pwJm(km.K) + '</b></div>' + pwKalk('MUET', km.K, km.s1, km.J, true);
       if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pw="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
@@ -17790,6 +17859,7 @@
       return out;
     }
     function lukisPentas() {
+      ktKotak('pt');
       if (ktBaca('pt')) { el('pentas-isi').innerHTML = ktLukis('pt'); return; } // 20 Nov: BACA KERTAS MUET Speaking
       if (ptUI.cid) { if (!ptUI.rumah) ptUI.rumah = 1; lukisPentasLama(); return; } // CONTOH dari buku (paparan lama)
       var TJ = '<div style="font-weight:bold;font-size:1.15rem;margin-top:4px;">SPEAKING — BACA HURAIAN</div>', h, hari = coachHariId(), U, due = [], baru = [], i, j, x, s, seterus = '', t;
@@ -17801,7 +17871,7 @@
         }
         el('pentas-isi').innerHTML = h; return;
       }
-      h = '<div style="text-align:right;"><button type="button" data-pb="contoh" style="padding:3px 8px;font-size:0.75rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;">Lihat contoh karangan</button></div>' + TJ + ktSenarai('pt');
+      h = '<div style="text-align:right;"><button type="button" data-pb="contoh" style="padding:3px 8px;font-size:0.75rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;">Lihat contoh karangan</button></div>' + TJ;
       if (!ptData) { ptMuatData(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan...</div>'; return; }
       if (!PB.dimuat) { pbMuat(); el('pentas-isi').innerHTML = TJ + '<div>Memuatkan huraian...</div>'; return; }
       U = pbUrutan();
@@ -18928,8 +18998,9 @@
       var TJ = '<div style="font-weight:bold;font-size:1.15rem;">WRITING — MUET PAPER 4</div>';
       // 17 Nov: HARI INI = LACI WRITING (baca karangan dari app phone ikut SR) · Daily Repetition → ARKED WRITING
       // Tulis topik / soalan / karangan → app phone (Laci Writing). Latihan menulis lama (rumah Task 1 / Task 2) tidak dipapar lagi.
+      ktKotak('tl');
       if (ktBaca('tl')) { el('tulis-isi').innerHTML = ktLukis('tl'); return; } // 20 Nov: BACA KERTAS MUET Writing
-      el('tulis-isi').innerHTML = TJ + ktSenarai('tl') + lwbLukis(); // 18 Nov: DAILY REPETITION → ARKED WRITING dipindah ke tab TOPIK
+      el('tulis-isi').innerHTML = TJ + lwbLukis(); // 18 Nov: DAILY REPETITION → ARKED WRITING dipindah ke tab TOPIK
     }
     el('tulis-isi').onclick = function(e) { if (ktKlik(e, this, 'tl')) return; lwbKlik(e, this); };
     function bukaTulis() {
@@ -19795,6 +19866,7 @@
       el(b[2]).style.display = lain ? 'none' : '';
       el(b[3]).style.display = lain ? 'none' : '';
       tp.style.display = lain ? '' : 'none';
+      try { ktKotakSemua(); } catch (eK) {}
       if (tab === 'tips') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">TIPS</div>' + USAHA_TIPS[k](); } catch (e) { tp.textContent = 'Tips tidak dapat dipapar.'; } }
       if (tab === 'format') { try { tp.innerHTML = '<div style="font-weight:bold;font-size:1.1rem;margin-bottom:4px;">FORMAT</div>' + USAHA_FORMAT[k](); } catch (e) { tp.textContent = 'Format tidak dapat dipapar.'; } }
       if (tab === 'topik') { pnUI.mesej = ''; try { tp.innerHTML = k === 'tulis' ? pnLukisTopikTulis() : k === 'pustaka' ? rdLukisTopik() : k === 'pentas' ? pnLukisTopikSpeaking() : pnLukisTopik(); } catch (e) { tp.textContent = 'Topik tidak dapat dipapar.'; } }
@@ -21222,10 +21294,11 @@
     // Kotak BACA KARANGAN (titik 3 & 4 sahaja) — di atas senarai kapal
     (function() { var sc = el('screen-gbank'), t = document.createElement('div'); t.id = 'gb-baca'; sc.insertBefore(t, el('gb-info')); })();
     function gbBacaLukis() {
-      var b = el('gb-baca'), rdB = GB_JENIS[gbHal] === 'reading';
-      // 20 Nov: PELABUHAN READING — dua butang: PETIKAN / SOALAN
-      el('btn-gb-mula').textContent = rdB ? 'PANGGIL KAPAL KOSONG (PETIKAN)' : 'PANGGIL KAPAL KOSONG';
-      el('btn-gb-mula2').style.display = (rdB && !PAPAN.ada) ? '' : 'none';
+      var b = el('gb-baca'), gd = GB_DUA[GB_JENIS[gbHal]];
+      // 20 Nov: PELABUHAN READING — dua butang: PETIKAN / SOALAN · 21 Nov: WRITING & SPEAKING — APP PHONE / KERTAS MUET
+      el('btn-gb-mula').textContent = gd ? 'PANGGIL KAPAL KOSONG (' + gd[2] + ')' : 'PANGGIL KAPAL KOSONG';
+      el('btn-gb-mula2').textContent = gd ? 'PANGGIL KAPAL KOSONG (' + gd[3] + ')' : '';
+      el('btn-gb-mula2').style.display = (gd && !PAPAN.ada) ? '' : 'none';
       if (!b) return;
       b.innerHTML = gbAdaBaca() ? lwbLukis(GB_JENIS[gbHal]) : (GB_JENIS[gbHal] === 'speaking' ? '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.85rem;">Kapal SPEAKING = huraian yang sudah ditekan <b>SUDAH BACA</b> di PENTAS (MUET → Speaking). Buka PENTAS sekali untuk kemas kini senarai kapal.</div>' : GB_JENIS[gbHal] === 'reading' ? '<div style="border-left:4px solid #000;padding:2px 0 2px 8px;margin:4px 0;font-size:0.85rem;">Kapal READING = Part yang sudah ditekan <b>SUDAH BACA PART</b> semasa BACA KERTAS di PERPUSTAKAAN (MUET → Reading). Setiap Part ada 2 kapal: <b>PETIKAN</b> (teks) dan <b>SOALAN</b> (soalan + pilihan jawapan).</div>' : '');
     }
@@ -21266,6 +21339,9 @@
     // 20 Nov: PELABUHAN READING = kapal PETIKAN (reading) + kapal SOALAN (readingq)
     function lwKapal(j, cb) {
       if (j === 'reading') { lwKapal1('reading', function(a) { lwKapal1('readingq', function(q) { cb(a.concat(q)); }); }); return; }
+      // 21 Nov: PELABUHAN WRITING / SPEAKING = kapal APP PHONE + kapal KERTAS MUET
+      if (j === 'writing') { lwKapal1('writing', function(a) { lwKapal1('tlkertas', function(q) { cb(a.concat(q)); }); }); return; }
+      if (j === 'speaking') { lwKapal1('speaking', function(a) { lwKapal1('ptkertas', function(q) { cb(a.concat(q)); }); }); return; }
       lwKapal1(j, cb);
     }
     function lwKapal1(j, cb) {
@@ -21276,7 +21352,7 @@
           var s = d.data() || {}, x = sr[s.sid || d.id];
           if (!x || !tlKira(s.karangan)) return;
           var t = lwTeks(s.soalan || '');
-          a.push({ id: J.pre + '-' + d.id, title: (j === 'writing' ? 'T' + (s.task === 2 ? 2 : 1) + ' · ' : j === 'speaking' ? 'P' + (s.part === 2 ? 2 : 1) + ' · ' : j === 'reading' ? 'PETIKAN · ' : j === 'readingq' ? 'SOALAN · ' : '') + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
+          a.push({ id: J.pre + '-' + d.id, title: (j === 'writing' ? 'T' + (s.task === 2 ? 2 : 1) + ' · ' : j === 'speaking' ? 'P' + (s.part === 2 ? 2 : 1) + ' · ' : j === 'reading' ? 'PETIKAN · ' : j === 'readingq' ? 'SOALAN · ' : (j === 'tlkertas' || j === 'ptkertas') ? 'KERTAS · ' : '') + (t.length > 40 ? t.slice(0, 40) + '...' : t || '(tanpa soalan)'), t: x.at || s.createdAt || 0 });
         });
         a.sort(function(x, y) { return x.t - y.t; });
         cb(a);
