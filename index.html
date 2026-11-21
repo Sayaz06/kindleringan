@@ -7362,6 +7362,18 @@
     <div id="gk-isi"></div>
     <div style="height:30px;"></div>
   </div>
+  <!-- KILANG (21 Nov · Fasa 1): teks panjang (app phone / kertas MUET) → AYAT + terjemahan BM → LACI bidang -->
+  <div id="screen-kilang" class="screen">
+    <div class="status-bar">KILANG</div>
+    <div class="gm-tab">
+      <button type="button" data-gm-tab="pos">PELABUHAN</button>
+      <button type="button" data-gm-tab="kl" class="gm-aktif">KILANG</button>
+      <button type="button" data-gm-tab="mini">MINI GAME</button>
+    </div>
+    <div id="kl-titik" class="hl-titik"></div>
+    <div id="kl-isi" style="border:2px solid #000;border-radius:8px;padding:6px 8px;margin:4px 0;"></div>
+    <div style="height:60px;"></div>
+  </div>
   <div id="screen-gbank" class="screen">
     <div class="status-bar" id="gb-status">PELABUHAN</div>
     <div class="gm-tab">
@@ -14405,6 +14417,7 @@
       if (k === 'menu') showScreen('screen-menu');
       else if (k === 'coach') bukaCoach(false);
       else if (k === 'pos') bukaBank(false);
+      else if (k === 'kl') bukaKilang();
       else if (k === 'mini') bukaMini();
       else if (k === 'mx') bukaMx();
       else if (k === 'kd') bukaKd();
@@ -16527,7 +16540,7 @@
     // DIKUNCI sampai dimakan (lewat pun buka serta-merta). HABIS (out of stock) → tidak dikira & tidak disusun sampai ADA STOK.
     var SUP = { senarai: [], dimuat: false, buka: false, mesej: '', baruKali: 1, baruNama: '', sah: '' };
     var SUP_TENGGANG = 30;
-    var SUP_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|pawagam|pentas|pustaka|tulis|pn-nota|hj|bp|ul-|gb-kapal|gbank)/;
+    var SUP_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|pawagam|pentas|pustaka|tulis|pn-nota|hj|bp|ul-|gb-kapal|gbank|kilang)/;
     function supMuat() {
       if (!currentUser) return Promise.resolve();
       return kol('coach').doc('suplemen').get().then(function(s) {
@@ -16636,7 +16649,7 @@
     }
     // Kawasan dikunci KUNCI AIR: semua bangunan (kecuali MAKMAL), laci, game, arked, harbour, kedai, MUET.
     //   Kunci hanya bila pengguna dari LUAR (Tasks / Menu / Coach / Makmal…) cuba masuk — yang sedang di dalam TIDAK dikeluarkan.
-    var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|bilik|hj|bp|ul-|gb|tpl)/;
+    var AIR_SKRIN_KUNCI = /^screen-(play|soalan-fakta|game|gp-|mm|dr|bs|cx|gsr|mini|jw-|mx|kd|lc|us|surau|pawagam|pentas|pustaka|tulis|pn-nota|gym|taman|bilik|hj|bp|ul-|gb|tpl|kilang)/;
     // 20 Nov: POPUP dulu di skrin semasa → tekan OK, MINUM SEKARANG → baru pergi ke MAKMAL
     function coachAirKeMakmal(ak) { setTimeout(function() { coachAirPopup('Minta maaf, ' + coachAirMesej(ak), '', '', '', function() { makmalUI.pesan = coachAirMesej(ak); bukaMakmal(); }); }, 0); }
     // ══ KUNCI SOLAT (18 Nov): sudah masuk waktu (azan) tetapi solat waktu itu belum ditanda SUDAH di SURAU → semua dikunci macam KUNCI AIR (Surau sahaja dibuka) ══
@@ -20585,7 +20598,7 @@
     setInterval(function() { if (document.querySelector('.screen.active .mw-bar, .screen.active .gc-bar')) mwLukis(); }, 1000);
     (function() {
       var t = document.querySelectorAll('.gm-tab'), i, b, s, bar, x;
-      var TAB_EN = { pos: 'HARBOUR', mini: 'ARCADE', kd: 'SHOP', ts: 'TASKS', muet: 'MUET', lc: 'DRAWER', atur: 'RULES' };
+      var TAB_EN = { pos: 'HARBOUR', kl: 'KILANG', mini: 'ARCADE', kd: 'SHOP', ts: 'TASKS', muet: 'MUET', lc: 'DRAWER', atur: 'RULES' };
       for (i = 0; i < t.length; i++) {
         x = t[i].querySelector('[data-gm-tab="mx"]');
         if (x) x.parentNode.removeChild(x);
@@ -20619,6 +20632,13 @@
           b.type = 'button'; b.setAttribute('data-gm-tab', 'muet'); b.textContent = 'MUET';
           x = t[i].querySelector('[data-gm-tab="ts"]');
           t[i].insertBefore(b, x ? x.nextSibling : null);
+        }
+        // 21 Nov: tab KILANG terus selepas HARBOUR
+        if (!t[i].querySelector('[data-gm-tab="kl"]')) {
+          b = document.createElement('button');
+          b.type = 'button'; b.setAttribute('data-gm-tab', 'kl'); b.textContent = 'KILANG';
+          x = t[i].querySelector('[data-gm-tab="pos"]');
+          t[i].insertBefore(b, x ? x.nextSibling : t[i].firstChild);
         }
         // 18 Nov: PERATURAN (RULES) bukan lagi tab — kini butang di bar atas, kiri PROFIL
         x = t[i].querySelector('[data-gm-tab="atur"]');
@@ -21546,7 +21566,7 @@
       for (i = 0; i < baris.length; i++) {
         s = baris[i].replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
         if (!s) continue;
-        s = s.replace(/\b(Dr|Mr|Mrs|Ms|Prof|St|No|vs|etc|Jr|Sr)\./g, '$1' + Q).replace(/\b(e)\.(g)\./gi, '$1' + Q + '$2' + Q).replace(/\b(i)\.(e)\./gi, '$1' + Q + '$2' + Q).replace(/(\d)\.(\d)/g, '$1' + Q + '$2');
+        s = s.replace(/\b(Dr|Mr|Mrs|Ms|Prof|St|No|vs|etc|Jr|Sr)\./g, '$1' + Q).replace(/\b(e)\.(g)\./gi, '$1' + Q + '$2' + Q).replace(/\b(i)\.(e)\./gi, '$1' + Q + '$2' + Q).replace(/(\d)\.(\d)/g, '$1' + Q + '$2').replace(/\b([apAP])\.([mM])\.(?=\s+[a-z])/g, '$1' + Q + '$2' + Q); // 21 Nov: a.m. / p.m. di tengah ayat tidak dipotong
         m = s.match(/[^.!?]+(?:[.!?]+["'’”)\]]*|$)/g) || [s];
         for (j = 0; j < m.length; j++) { a = m[j].split(Q).join('.').replace(/^\s+|\s+$/g, ''); if (a) out.push(a); }
       }
@@ -21584,15 +21604,16 @@
       '<circle cx="40" cy="18" r="8" fill="#fff"/><path d="M40 26 V54 M40 54 L32 76 M40 54 L48 76 M40 34 L66 42 M40 34 L64 50"/>' +
       '<circle cx="80" cy="46" r="18"/><circle cx="80" cy="46" r="4" fill="#000"/><path d="M80 22 V70 M56 46 H104 M63 29 L97 63 M97 29 L63 63"/>' +
       '<path d="M10 84 H112"/></g></svg>';
-    function bukaDalamKapal(l) {
+    function bukaDalamKapal(l, kilang) {
       GK.l = l; GK.j = ljJenisKapal(l.id) || 'writing'; GK.id = ljIdKapal(l.id); GK.mesej = '';
+      GK.kilang = !!kilang; GK.beku = false; GK.ai = ''; GK.preset = ''; klGkTajuk(); // 21 Nov: mod KILANG (terjemah → laci, tiada pemandu)
       showScreen('screen-gb-kapal');
       try { window.scrollTo(0, 0); } catch (e) {}
       el('gk-isi').innerHTML = '';
       el('gk-info').textContent = 'Kapal belayar... memuatkan karangan.';
       Promise.all([kol(LJ[GK.j].soalan).doc(GK.id).get(), kol(LJ[GK.j].kapal).doc(GK.id).get()]).then(function(r) {
         var s = r[0].exists ? (r[0].data() || {}) : {}, k = r[1].exists ? (r[1].data() || {}) : {}, lama = {}, i;
-        GK.soalan = s; GK.ayat = lwPecah(s.karangan); GK.bm = {}; GK.ok = {}; GK.salah = -1;
+        GK.soalan = s; GK.beku = !!(k.beku && k.ayat && k.ayat.length); GK.ayat = GK.beku ? klEnSenarai(k.ayat) : lwPecah(s.karangan); GK.bm = {}; GK.ok = {}; GK.salah = -1;
         var lamaOk = {};
         for (i = 0; i < (k.ayat || []).length; i++) { lama[lwNorm(k.ayat[i].en)] = k.ayat[i].bm || ''; if (k.ayat[i].ok) lamaOk[lwNorm(k.ayat[i].en)] = 1; }
         for (i = 0; i < GK.ayat.length; i++) { GK.bm[i] = lama[lwNorm(GK.ayat[i])] || ''; if (lamaOk[lwNorm(GK.ayat[i])] && GK.bm[i]) GK.ok[i] = 1; }
@@ -21621,8 +21642,9 @@
     function gkLukis() {
       var s = GK.soalan || {}, h = '', i, siap = gkSiap();
       // 17 Nov: nota DALAM KAPAL paling atas (bawah ‹ Pelabuhan · DALAM KAPAL), kemudian pemandangan laut
+      if (GK.kilang) h += klGkNota(); else
       h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:0 0 6px;background:#eee;font-size:0.9rem;">Anda di <b>DALAM KAPAL</b>. Tulis sendiri terjemahan BM penuh setiap ayat, kemudian tekan <b>SIMPAN</b> — ayat itu turun ke bawah &amp; kapal makin dekat ke dermaga. Semua disimpan → tekan <b>PEMANDU</b>.</div>';
-      h += '<div style="border:3px solid #000;border-radius:12px;padding:4px 6px 2px;margin:0 0 6px;">' + gkLaut() +
+      h += '<div style="border:3px solid #000;border-radius:12px;padding:4px 6px 2px;margin:0 0 6px;">' + (GK.kilang ? '' : gkLaut()) +
         '<div id="gk-kira" style="text-align:center;font-weight:bold;font-size:0.95rem;margin:2px 0;"></div></div>';
       h += '<div style="font-size:0.85rem;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;"><b>' + (GK.j === 'writing' ? 'TASK ' + (s.task === 2 ? 2 : 1) : LJ[GK.j].label) + '</b> · ' + lwEsc(lwTeks(s.soalan)) + '</div>';
       if (!GK.ayat.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;">Karangan ini kosong. Tulis dulu di app phone (Laci ' + LJ[GK.j].label.charAt(0) + LJ[GK.j].label.slice(1).toLowerCase() + ').</div>';
@@ -21638,10 +21660,11 @@
           '<div style="flex:1 1 auto;min-width:0;"><div style="font-size:1rem;">' + lwEsc(GK.ayat[i]) + '</div>' +
           '<textarea data-gk="' + i + '" rows="2" placeholder="Terjemahan BM ayat ini"' + (GK.ok[i] ? ' readonly' : '') + ' style="width:100%;box-sizing:border-box;margin-top:4px;font-size:0.95rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;' + (GK.ok[i] ? 'background:#eee;' : '') + '">' + lwEsc(GK.bm[i] || '') + '</textarea>' +
           (GK.salah === i ? '<div style="font-size:0.8rem;font-weight:bold;">Tulis terjemahan dulu, baru SIMPAN.</div>' : '') +
-          '<div style="text-align:right;margin-top:4px;"><button type="button" data-gk-ok="' + i + '" style="' + (GK.ok[i] ? PN_BTN : PN_BTNA) + 'margin:0;">' + (GK.ok[i] ? '✓ DISIMPAN · BATAL' : 'SIMPAN') + '</button></div></div></div>';
+          '<div style="text-align:right;margin-top:4px;">' + (GK.kilang && !GK.ok[i] && i + 1 < GK.ayat.length && !GK.ok[i + 1] ? '<button type="button" data-gk-sambung="' + i + '" style="' + PN_BTN + 'margin:0 6px 0 0;">SAMBUNG AYAT ' + (i + 2) + '</button>' : '') + '<button type="button" data-gk-ok="' + i + '" style="' + (GK.ok[i] ? PN_BTN : PN_BTNA) + 'margin:0;">' + (GK.ok[i] ? '✓ DISIMPAN · BATAL' : 'SIMPAN') + '</button></div></div></div>';
       }
       if (GK.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + lwEsc(GK.mesej) + '</div>';
-      if (GK.ayat.length) h += '<button type="button" data-gk-pemandu="1" style="display:block;width:100%;margin:10px 0;padding:6px;border:3px solid #000;border-radius:10px;background:#fff;color:#000;font-family:inherit;">' +
+      if (GK.ayat.length && GK.kilang) h += '<button type="button" data-gk-kl="balik" style="display:block;width:100%;margin:10px 0;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#000;color:#fff;font-weight:bold;font-size:1.05rem;font-family:inherit;">SIAP · KEMBALI KE KILANG ›</button>';
+      if (GK.ayat.length && !GK.kilang) h += '<button type="button" data-gk-pemandu="1" style="display:block;width:100%;margin:10px 0;padding:6px;border:3px solid #000;border-radius:10px;background:#fff;color:#000;font-family:inherit;">' +
         GK_PEMANDU + '<div style="font-weight:bold;font-size:1.05rem;">PEMANDU · BELAYAR KE DERMAGA ›</div></button>';
       el('gk-isi').innerHTML = h;
       gkKemas();
@@ -21649,15 +21672,17 @@
     // Kemas kini kiraan + kedudukan kapal TANPA lukis semula (kotak taip tidak hilang fokus)
     function gkKemas() {
       var n = gkSiap(), k = el('gk-kira'), kp = el('gk-kapal');
+      if (k && GK.kilang) { k.textContent = n + ' / ' + GK.ayat.length + ' ayat disimpan ke LACI' + (n === GK.ayat.length && n ? ' · SIAP!' : ''); return; }
       if (k) k.textContent = n + ' / ' + GK.ayat.length + ' ayat disimpan' + (n === GK.ayat.length && n ? ' · DERMAGA SUDAH DEKAT!' : ' · ' + (GK.ayat.length ? Math.round(n / GK.ayat.length * 100) : 0) + '% pelayaran');
       if (kp) kp.setAttribute('transform', 'translate(' + gkX(n) + ',0)');
     }
     function gkSimpan(cb) {
       var ay = [], i;
       for (i = 0; i < GK.ayat.length; i++) ay.push({ en: GK.ayat[i], bm: String(GK.bm[i] || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''), ok: !!GK.ok[i] });
-      kol(LJ[GK.j].kapal).doc(GK.id).set({ ayat: ay, updatedAt: Date.now() }).then(function() { cb(true); }).catch(function(e) { GK.mesej = 'Gagal simpan: ' + ((e && e.message) || e); gkLukis(); cb(false); });
+      kol(LJ[GK.j].kapal).doc(GK.id).set({ ayat: ay, beku: !!GK.beku, updatedAt: Date.now() }).then(function() { cb(true); }).catch(function(e) { GK.mesej = 'Gagal simpan: ' + ((e && e.message) || e); gkLukis(); cb(false); });
     }
     el('gk-isi').onclick = function(e) {
+      if (klGkKlik(e, this)) return; // 21 Nov: butang KILANG (SAMBUNG / AI / SIAP)
       var ok = hlCari(e.target, this, 'data-gk-ok');
       if (ok !== null) { // SIMPAN ayat → turun ke bawah · BATAL → naik semula ikut nombor
         gkBaca(); ok = +ok;
@@ -21675,7 +21700,163 @@
       GK.mesej = 'Belayar ke dermaga...'; gkLukis();
       gkSimpan(function(ok) { if (ok) bukaLaci(GK.l); });
     };
-    el('btn-gkp-balik').onclick = function() { gkBaca(); gkSimpan(function() {}); bukaBank(false); }; // simpan draf terjemahan (id gkp — btn-gk-balik milik Kaunter Tiket)
+    el('btn-gkp-balik').onclick = function() { gkBaca(); gkSimpan(function() {}); if (GK.kilang) bukaKilang(); else bukaBank(false); }; // simpan draf terjemahan (id gkp — btn-gk-balik milik Kaunter Tiket)
+    // ══ KILANG (21 Nov · Fasa 1) — teks panjang (app phone / kertas MUET) → AYAT + terjemahan BM → LACI bidang ══
+    //   Ayat dipecah AUTOMATIK (lwPecah). Terjemah: taip sendiri ATAU SALIN PRESET → AI → JANA PUKAL. SAMBUNG = cantum ayat terpotong (beku).
+    //   Guna semula koleksi *_kapal (ayat {en, bm, ok}) — terjemahan lama terus muncul. Bahan = yang sudah SUDAH BACA (syarat sama macam kapal).
+    //   Laci dibina dari ayat DISIMPAN (setiap 5 ayat = 1 laci) — Laci Writing / Speaking / Reading / Listening / Reasoning / Presenting.
+    var KL_HAL = [
+      ['WRITING', [['writing', 'APP PHONE'], ['tlkertas', 'KERTAS MUET']]],
+      ['SPEAKING', [['speaking', 'APP PHONE'], ['ptkertas', 'KERTAS MUET']]],
+      ['READING', [['reading', 'PETIKAN'], ['readingq', 'SOALAN']]],
+      ['LISTENING', [['pnkertas', 'KERTAS MUET']]],
+      ['REASONING', [['reasoning', 'APP PHONE']]],
+      ['PRESENTING', [['presenting', 'APP PHONE']]]
+    ];
+    var KL = { hal: 0, sb: [0, 0, 0, 0, 0, 0], data: {}, muat: '', mesej: '' };
+    var KL_KOSONG = {
+      writing: 'Tulis karangan di app phone, kemudian baca dan tekan SUDAH BACA di DEWAN TULIS (titik DARI APP PHONE).',
+      tlkertas: 'Tekan SUDAH BACA KERTAS di DEWAN TULIS (titik KERTAS MUET).',
+      speaking: 'Tulis huraian di app phone, kemudian tekan SUDAH BACA di PENTAS (titik DARI APP PHONE).',
+      ptkertas: 'Tekan SUDAH BACA KERTAS di PENTAS (titik KERTAS MUET).',
+      reading: 'Tekan SUDAH BACA PART semasa BACA KERTAS di PERPUSTAKAAN.',
+      readingq: 'Tekan SUDAH BACA PART semasa BACA KERTAS di PERPUSTAKAAN.',
+      pnkertas: 'Tekan SUDAH BACA KERTAS di PAWAGAM.',
+      reasoning: 'Tulis di app phone, kemudian baca dan tekan SUDAH BACA di PELABUHAN (titik REASONING).',
+      presenting: 'Tulis di app phone, kemudian baca dan tekan SUDAH BACA di PELABUHAN (titik PRESENTING).'
+    };
+    function bukaKilang() { KL.data = {}; KL.muat = ''; showScreen('screen-kilang'); try { window.scrollTo(0, 0); } catch (e) {} klLukis(); }
+    function klJ() { return KL_HAL[KL.hal][1][KL.sb[KL.hal]][0]; }
+    function klEnSenarai(ay) { var a = [], i; for (i = 0; i < ay.length; i++) if (ay[i] && ay[i].en) a.push(String(ay[i].en)); return a; }
+    function klMuat(j) {
+      var J = LJ[j];
+      KL.muat = j;
+      Promise.all([kol('coach').doc(J.baca).get(), kol(J.soalan).get(), kol(J.kapal).get()]).then(function(r) {
+        var sr = (r[0].exists && (r[0].data() || {}).sr) || {}, kp = {}, a = [];
+        r[2].forEach(function(d) { kp[d.id] = d.data() || {}; });
+        r[1].forEach(function(d) {
+          var s = d.data() || {}, x = sr[s.sid || d.id], k = kp[d.id] || {}, jum, n = 0, i, t;
+          if (!x || !tlKira(s.karangan)) return;
+          jum = (k.beku && k.ayat && k.ayat.length) ? k.ayat.length : lwPecah(s.karangan).length;
+          for (i = 0; i < (k.ayat || []).length; i++) if (k.ayat[i] && k.ayat[i].ok && String(k.ayat[i].bm || '').replace(/\s+/g, '')) n++;
+          t = lwTeks(s.soalan || '');
+          a.push({ id: J.pre + '-' + d.id, t: t.length > 70 ? t.slice(0, 70) + '...' : (t || '(tanpa tajuk)'), jum: jum, siap: Math.min(n, jum), at: x.at || s.createdAt || 0 });
+        });
+        a.sort(function(p, q) { return p.at - q.at; });
+        KL.data[j] = a; if (KL.muat === j) KL.muat = '';
+        klLukis();
+      }).catch(function(e) { KL.data[j] = []; KL.muat = ''; KL.mesej = 'Gagal memuat: ' + ((e && e.message) || e); klLukis(); });
+    }
+    function klLukis() {
+      var B = KL_HAL[KL.hal], j = klJ(), h = '', i, a, ti = '', BT = 'padding:6px 8px;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;font-family:inherit;width:100%;';
+      if (!el('screen-kilang')) return;
+      for (i = 0; i < KL_HAL.length; i++) ti += '<button type="button" class="hlt' + (i === KL.hal ? ' on' : '') + '" data-hl="' + i + '"><span></span></button>';
+      el('kl-titik').innerHTML = ti;
+      h += '<div style="font-weight:bold;font-size:1.15rem;">KILANG ' + B[0] + '</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Teks panjang dipecah jadi <b>ayat</b> secara automatik. Terjemah setiap ayat (taip sendiri atau guna AI) → <b>SIMPAN</b> → ayat masuk <b>LACI ' + B[0] + '</b> (setiap 5 ayat = 1 laci).</div>';
+      if (B[1].length > 1) {
+        h += '<div style="display:table;width:100%;table-layout:fixed;margin:4px 0 6px;"><div style="display:table-row;">';
+        for (i = 0; i < B[1].length; i++) h += '<div style="display:table-cell;padding:0 ' + (i ? '0 0 4px' : '4px 0 0') + ';"><button type="button" data-kl-sb="' + i + '" style="' + BT + (i === KL.sb[KL.hal] ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + B[1][i][1] + '</button></div>';
+        h += '</div></div>';
+      }
+      if (KL.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + lwEsc(KL.mesej) + '</div>';
+      a = KL.data[j];
+      if (!a) { if (KL.muat !== j) klMuat(j); h += '<div style="margin-top:6px;">Memuatkan...</div>'; }
+      else if (!a.length) h += '<div style="border:1px dashed #000;border-radius:6px;padding:6px;margin-top:6px;font-size:0.9rem;">Belum ada bahan. ' + (KL_KOSONG[j] || '') + '</div>';
+      else for (i = 0; i < a.length; i++) {
+        h += '<button type="button" data-kl-buka="' + lwEsc(a[i].id) + '" style="display:block;width:100%;text-align:left;margin:6px 0;padding:7px 9px;border:' + (a[i].jum && a[i].siap >= a[i].jum ? '2px dashed' : '3px solid') + ' #000;border-radius:8px;background:#fff;color:#000;font-family:inherit;">' +
+          '<div style="font-weight:bold;font-size:0.95rem;">' + lwEsc(a[i].t) + '</div>' +
+          '<div style="font-size:0.85rem;margin-top:2px;">' + a[i].siap + ' / ' + a[i].jum + ' ayat diterjemah' + (a[i].jum && a[i].siap >= a[i].jum ? ' · <b>SIAP</b>' : ' ›') + '</div></button>';
+      }
+      el('kl-isi').innerHTML = h;
+    }
+    el('kl-titik').onclick = function(e) { var t = hlCari(e.target, this, 'data-hl'); if (t === null) return; KL.hal = +t; KL.mesej = ''; klLukis(); };
+    el('kl-isi').onclick = function(e) {
+      var v = hlCari(e.target, this, 'data-kl-sb');
+      if (v !== null) { KL.sb[KL.hal] = +v; KL.mesej = ''; klLukis(); return; }
+      v = hlCari(e.target, this, 'data-kl-buka');
+      if (v !== null) bukaDalamKapal({ id: v }, true);
+    };
+    // ── Skrin terjemah (DALAM KAPAL) dalam mod KILANG ──
+    function klGkTajuk() {
+      var sc = el('screen-gb-kapal'), sb = sc && sc.querySelector('.status-bar'), tj = sc && sc.querySelector('.gm-alat-tajuk');
+      el('btn-gkp-balik').textContent = GK.kilang ? '‹ Kilang' : '‹ Pelabuhan';
+      if (sb) sb.textContent = GK.kilang ? 'KILANG · TERJEMAH AYAT' : 'DALAM KAPAL · PELAYARAN KE DERMAGA';
+      if (tj) tj.textContent = GK.kilang ? 'KILANG' : 'DALAM KAPAL';
+    }
+    function klBelum() { var a = [], i; for (i = 0; i < GK.ayat.length; i++) if (!GK.ok[i]) a.push(i); return a; }
+    function klGkNota() {
+      var BT = 'padding:5px 9px;margin:4px 6px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;font-family:inherit;', b = klBelum(), adaBm = 0, i, h;
+      for (i = 0; i < b.length; i++) if (String(GK.bm[b[i]] || '').replace(/\s+/g, '')) adaBm++;
+      h = '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:0 0 6px;background:#eee;font-size:0.9rem;">Anda di <b>KILANG</b>. Ayat sudah dipecah secara automatik. Tulis terjemahan BM setiap ayat (atau guna AI di bawah), kemudian tekan <b>SIMPAN</b> — ayat masuk <b>LACI</b>. Ayat terpotong salah → tekan <b>SAMBUNG</b>.</div>';
+      h += '<div style="border:2px solid #000;border-radius:8px;padding:5px 7px;margin:0 0 6px;"><div style="font-weight:bold;">TERJEMAH DENGAN AI (pilihan)</div>' +
+        '<div style="font-size:0.8rem;">SALIN PRESET → tampal ke AI → salin jawapan → JANA PUKAL → tampal → ISI KOTAK. Semak, kemudian SIMPAN.</div>' +
+        '<button type="button" data-gk-kl="preset" style="' + BT + 'background:#000;color:#fff;"' + (b.length ? '' : ' disabled') + '>SALIN PRESET (' + b.length + ' ayat)</button>' +
+        '<button type="button" data-gk-kl="pukal" style="' + BT + (GK.ai === 'pukal' ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">JANA PUKAL</button>' +
+        (adaBm ? '<button type="button" data-gk-kl="semua" style="' + BT + 'background:#fff;color:#000;">SIMPAN SEMUA (' + adaBm + ')</button>' : '');
+      if (GK.ai === 'pukal') h += '<textarea id="gk-pukal" rows="6" placeholder="Tampal jawapan AI di sini (T: ayat = terjemahan)" style="width:100%;box-sizing:border-box;margin-top:6px;font-size:0.9rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;"></textarea>' +
+        '<button type="button" data-gk-kl="isi" style="' + BT + 'background:#000;color:#fff;">ISI KOTAK</button>';
+      if (GK.ai === 'teks') h += '<div style="font-size:0.8rem;font-weight:bold;margin-top:6px;">Peranti tak benarkan salin automatik. Tekan lama teks → Pilih semua → Salin.</div><textarea readonly rows="6" style="width:100%;box-sizing:border-box;font-size:0.8rem;font-family:inherit;border:2px solid #000;border-radius:6px;padding:4px;">' + lwEsc(GK.preset) + '</textarea>';
+      return h + '</div>';
+    }
+    function klPreset() {
+      var b = klBelum(), L = [], i;
+      L.push('Terjemah setiap ayat English di bawah ke Bahasa Melayu (terjemahan penuh, bahasa biasa, maksud tepat).');
+      L.push('Jawab SATU baris untuk SETIAP ayat, ikut format ini sahaja (ayat English ditulis TEPAT sama):');
+      L.push('T: ayat English = terjemahan BM');
+      L.push('Jangan tambah tajuk, nombor atau penerangan lain.');
+      L.push('');
+      for (i = 0; i < b.length; i++) L.push(String(GK.ayat[b[i]]).replace(/=/g, '-'));
+      return L.join('\n');
+    }
+    function klKunci(x) { return String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+    function klGkKlik(e, box) {
+      var v = hlCari(e.target, box, 'data-gk-sambung'), i, n, m, baris, peta = {}, j;
+      if (v !== null) { // SAMBUNG ayat i dengan ayat i+1 → senarai ayat DIBEKU (tidak dipecah semula)
+        gkBaca(); v = +v;
+        if (v + 1 >= GK.ayat.length) return true;
+        GK.ayat[v] = GK.ayat[v] + ' ' + GK.ayat[v + 1];
+        GK.bm[v] = String((GK.bm[v] || '') + ' ' + (GK.bm[v + 1] || '')).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+        delete GK.ok[v];
+        for (i = v + 1; i < GK.ayat.length - 1; i++) { GK.ayat[i] = GK.ayat[i + 1]; GK.bm[i] = GK.bm[i + 1]; if (GK.ok[i + 1]) GK.ok[i] = 1; else delete GK.ok[i]; }
+        n = GK.ayat.length - 1; GK.ayat.length = n; delete GK.bm[n]; delete GK.ok[n];
+        GK.beku = true; GK.mesej = 'Ayat ' + (v + 1) + ' & ' + (v + 2) + ' disambung.';
+        gkLukis(); gkSimpan(function() {});
+        return true;
+      }
+      v = hlCari(e.target, box, 'data-gk-kl');
+      if (v === null) return false;
+      gkBaca();
+      if (v === 'balik') { gkSimpan(function() { bukaKilang(); }); return true; }
+      if (v === 'pukal') { GK.ai = GK.ai === 'pukal' ? '' : 'pukal'; GK.mesej = ''; gkLukis(); return true; }
+      if (v === 'preset') {
+        GK.preset = klPreset();
+        bcSalin(GK.preset, function() { GK.ai = ''; GK.mesej = 'PRESET DISALIN. Tampal ke AI → salin jawapan → tekan JANA PUKAL → tampal → ISI KOTAK.'; gkLukis(); },
+          function() { GK.ai = 'teks'; GK.mesej = ''; gkLukis(); });
+        return true;
+      }
+      if (v === 'isi') {
+        baris = String((el('gk-pukal') || {}).value || '').split(/\r?\n/); n = 0;
+        for (i = 0; i < GK.ayat.length; i++) if (!GK.ok[i]) peta[klKunci(GK.ayat[i])] = i;
+        for (i = 0; i < baris.length; i++) {
+          m = /^\s*T\s*:\s*(.+?)\s*=\s*(.+?)\s*$/.exec(baris[i]);
+          if (!m) continue;
+          j = peta[klKunci(m[1])];
+          if (j === undefined) j = peta[klKunci(m[1].replace(/-/g, '='))];
+          if (j !== undefined) { GK.bm[j] = m[2]; n++; }
+        }
+        GK.ai = ''; GK.mesej = n ? n + ' terjemahan diisi ke kotak. Semak, kemudian SIMPAN (atau SIMPAN SEMUA).' : 'Tiada baris "T: ayat = terjemahan" yang sepadan. Pastikan ayat English ditulis tepat sama.';
+        gkLukis(); if (n) gkSimpan(function() {});
+        return true;
+      }
+      if (v === 'semua') {
+        n = 0;
+        for (i = 0; i < GK.ayat.length; i++) if (!GK.ok[i] && String(GK.bm[i] || '').replace(/\s+/g, '')) { GK.ok[i] = 1; n++; }
+        GK.mesej = n + ' ayat disimpan ke LACI.'; gkLukis(); gkSimpan(function() {});
+        return true;
+      }
+      return true;
+    }
     // Taip → kiraan & kapal bergerak terus · keluar dari kotak (atau berhenti menaip 3 saat) → simpan sendiri
     var gkKotor = false, gkT = null;
     function gkSimpanSenyap() { if (!gkKotor || !GK.id) return; gkKotor = false; gkSimpan(function() {}); }
