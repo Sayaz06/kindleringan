@@ -10169,12 +10169,13 @@
     var COACH_MUSIM = {
       CUTI: {
         // 17 Nov (dipersetujui): 4 kemahiran MUET + sokongan. Unit: Listening 1 min · Speaking 1 huraian isi (Pentas) · Presenting 1 ayat · Reading 1 Part = 10 unit · Ayat 1 ayat · Vocab level · Reasoning 1 entri · Writing (POSPON — unit ditetapkan bila HARI INI Dewan Tulis siap)
-        english: { listening: 20, pentas: 10, presenting: 5, reading: 15, tulis: 15, ayat: 15, vocab: 10, reasoning: 10 },
+        // 21 Nov: pai baru — AYAT & LISTENING dibuang dari pai (listening: kekal untuk sasaran PAWAGAM sahaja, sistem minit). 6 bidang = 100%.
+        english: { listening: 20, pentas: 15, presenting: 8, reading: 23, tulis: 23, vocab: 15, reasoning: 16 },
         englishKuliah: [50, 50]
       }
     };
     var COACH_BIDANG = [
-      ['listening', 'Listening'], ['pentas', 'Speaking'], ['presenting', 'Presenting'], ['reading', 'Reading'], ['tulis', 'Writing'], ['ayat', 'Ayat'], ['vocab', 'Vocab'], ['reasoning', 'Reasoning']
+      ['pentas', 'Speaking'], ['presenting', 'Presenting'], ['reading', 'Reading'], ['tulis', 'Writing'], ['vocab', 'Vocab kamus'], ['reasoning', 'Reasoning']
     ];
     var COACH_POSPON = {}; // 17 Nov: Writing DIBUKA — unit = 1 ayat Laci Writing yang sudah masuk SR (usaha terakhir)
     var COACH_UNIT_READING = 10; // 1 Part latihan Reading = 10 unit (≈ 10 min usaha)
@@ -10210,20 +10211,22 @@
         return n;
       }).catch(function() { return 0; });
     }
+    // 21 Nov: VOCAB KAMUS = bilangan vocab yang SUDAH masuk SR dalam game PALING RENDAH antara 5 game arked asas (indeks game_sr_indeks)
+    var COACH_GAME_KOL = { padan: 'game_sr', memori: 'game_sr_memori', duri: 'game_sr_duri', betulsalah: 'game_sr_betulsalah', jutawan: 'game_sr_jutawan' };
     function coachVocab() {
-      var janji = [];
-      for (var i = 0; i < COACH_GAME.length; i++) janji.push(kol('game_stat').doc(COACH_GAME[i][0]).get());
+      var janji = [], i;
+      for (i = 0; i < COACH_GAME.length; i++) janji.push(muatIndeks(COACH_GAME_KOL[COACH_GAME[i][0]]).catch(function() { return {}; }));
       return Promise.all(janji).then(function(res) {
-        var min = null, nama = '';
-        for (var k = 0; k < res.length; k++) {
-          var d = (res[k] && res[k].exists) ? res[k].data() : {};
-          var lv = (d.lulus || 0) + 1;
-          if (min === null || lv < min) { min = lv; nama = COACH_GAME[k][1]; }
+        var min = null, nama = '', k, n, x;
+        for (k = 0; k < res.length; k++) {
+          n = 0;
+          for (x in res[k]) if (res[k].hasOwnProperty(x)) n++;
+          if (min === null || n < min) { min = n; nama = COACH_GAME[k][1]; }
         }
-        return { level: min || 1, game: nama };
+        return { n: min || 0, game: nama };
       });
     }
-    function coachCacheKunci() { return 'coach_kiraan2_' + currentUser.uid; }
+    function coachCacheKunci() { return 'coach_kiraan3_' + currentUser.uid; } // 21 Nov: kiraan3 — vocab kini bilangan SR (bukan level)
     // Tunggu RESET MULA (sekali) siap dulu supaya progres GYM lama tidak dibaca dari cache
     function coachMuatData(paksa) { return coachResetMula().then(function() { return coachMuatData0(paksa); }); }
     function coachMuatData0(paksa) {
@@ -10248,7 +10251,7 @@
         var stok = (r[6] && r[6].exists) ? r[6].data() : {};
         var data = {
           at: Date.now(), ayat: r[0], kuliah: r[1], reasoning: r[2], presenting: r[3], tulis: r[11] || 0, fokusBF: t.fokusBF || '',
-          vocab: r[4].level, vocabGame: r[4].game, musim: t.musim || 'CUTI', listening: stok.listening || 0,
+          vocab: r[4].n, vocabGame: r[4].game, musim: t.musim || 'CUTI', listening: stok.listening || 0,
           profil: (r[7] && r[7].exists) ? r[7].data() : null,
           senaman: (r[8] && r[8].exists) ? r[8].data() : {}
         };
@@ -10931,7 +10934,7 @@
         k = COACH_BIDANG[i][0];
         var pos = !!COACH_POSPON[k];
         var pct = (!pos && jumlahEn) ? Math.round((unit[k] || 0) * 100 / jumlahEn) : 0;
-        var label = COACH_BIDANG[i][1] + (k === 'vocab' && data.vocabGame ? ' (level terendah: ' + data.vocabGame + ')' : '');
+        var label = COACH_BIDANG[i][1] + (k === 'vocab' && data.vocabGame ? ' (game terendah: ' + data.vocabGame + ')' : '');
         htmlEn += coachBar(label, pos ? null : (unit[k] || 0), pct, set.english[k], pos);
         if (!pos && set.english[k] - pct > fokusBeza) { fokusBeza = set.english[k] - pct; fokus = COACH_BIDANG[i][1]; }
       }
@@ -10973,7 +10976,7 @@
       var pE = coachPeratus(nE), legE = '';
       for (i2 = 0; i2 < kE.length; i2++) {
         var bd = COACH_BIDANG[kE[i2]], sas = set.english[bd[0]];
-        legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : (bd[0] === 'reading' ? ' unit = ' + Math.round(nE[i2] / COACH_UNIT_READING) + ' Part' : (bd[0] === 'pentas' ? ' huraian' : ''))) + ')</span><br>';
+        legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : (bd[0] === 'reading' ? ' unit = ' + Math.round(nE[i2] / COACH_UNIT_READING) + ' Part' : (bd[0] === 'pentas' ? ' huraian' : (bd[0] === 'vocab' ? ' vocab SR' + (data.vocabGame ? ' · ' + data.vocabGame : '') : '')))) + ')</span><br>';
       }
       isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
         coachPie(cS, '(c) ENGLISH SASARAN') +
@@ -13155,7 +13158,7 @@
       }
       L.push('Solat: ' + (solN ? sol.join(' · ') + ' · purata ' + Math.round(solJ / solN * 10) / 10 : 'tiada rekod'));
       L.push('Listening: ' + (lis.length ? lis.join(' · ') + ' · jumlah ' + lisJ + ' min' : 'tiada') + ' · stok terkumpul ' + (dA.listening || 0) + ' min');
-      L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Fakta ' + (dA.kuliah || 0) + ' · Reasoning ' + (dA.reasoning || 0) + ' · Presenting ' + (dA.presenting || 0) + ' · Vocab level ' + (dA.vocab || 1) + (dA.vocabGame ? ' (' + dA.vocabGame + ')' : ''));
+      L.push('Stok laci: Ayat ' + (dA.ayat || 0) + ' · Fakta ' + (dA.kuliah || 0) + ' · Reasoning ' + (dA.reasoning || 0) + ' · Presenting ' + (dA.presenting || 0) + ' · Vocab kamus ' + (dA.vocab || 0) + ' vocab SR' + (dA.vocabGame ? ' (' + dA.vocabGame + ')' : ''));
       var pai = el('coach-pai') ? el('coach-pai').innerHTML.replace(/<\/div>/g, ' | ').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/\s+/g, ' ').replace(/(\s*\|\s*)+/g, ' | ').trim() : '';
       if (pai) L.push('Pai hari ini: ' + pai);
       // 8. SKRIN LEWAT (anggaran dari sentuhan selepas masa malapkan lampu)
@@ -14192,6 +14195,7 @@
       var unit = { listening: d.listening || 0, pentas: d.pentas || 0, reading: d.reading || 0, tulis: d.tulis || 0, ayat: d.ayat || 0, vocab: d.vocab || 0, reasoning: d.reasoning || 0, presenting: d.presenting || 0 };
       var J = 0, i, L = unit.listening, K = Math.min(L, pwKMin());
       for (i = 0; i < COACH_BIDANG.length; i++) if (!COACH_POSPON[COACH_BIDANG[i][0]]) J += unit[COACH_BIDANG[i][0]] || 0;
+      J += L; // 21 Nov: Listening tiada lagi dalam pai English — minit tetap dikira di sini (PAWAGAM, sistem masa)
       return { sas: sas, s1: sas / 2, J: J, L: L, K: K, V: L - K };
     }
     function pwKalk(nama, N, s, J, part) {
