@@ -17082,7 +17082,36 @@
     // ══ KERTAS MUET (20 Nov) — setiap bangunan ada senarai kertas SENDIRI (asing dari Reading / PU_KERTAS) ══
     //   PN_KERTAS = Listening (Pawagam) · PT_KERTAS = Speaking (Pentas) · TL_KERTAS = Writing (Dewan Tulis)
     //   Bentuk: { 'id-kertas': { t: 'tajuk', ms: [ 'html muka surat 1', 'html muka surat 2', ... ] } } · kosong = butang BACA KERTAS tidak dipapar
-    var PN_KERTAS = {};
+    // 21 Nov: KERTAS LISTENING (soalan sahaja — audio didengar berasingan)
+    var PN_WM = (function() { var a = [], i; for (i = 0; i < 400; i++) a.push('MUET'); return a.join(''); })();
+    var PN_KERTAS = {
+      's1-2024': { t: 'MUET S1 2024 · Paper 1 Listening', ms: [
+        // MS 1 — kulit
+        '<div style="font-weight:bold;font-size:0.8rem;">CONFIDENTIAL*</div>' +
+        '<div style="position:relative;overflow:hidden;margin:6px 0 0;padding:8px 6px 10px;text-align:center;">' +
+          '<div style="position:absolute;top:0;left:0;right:0;bottom:0;color:#bbb;font-size:9px;line-height:10px;word-break:break-all;font-family:Arial,sans-serif;">' + PN_WM + '</div>' +
+          '<div style="position:relative;">' +
+            '<div style="display:inline-block;border:3px double #000;background:#fff;font-weight:bold;font-size:0.75rem;padding:2px 6px;font-family:Arial,sans-serif;">MPM</div>' +
+            '<div style="display:table;width:100%;margin-top:4px;font-family:Arial,sans-serif;font-weight:bold;"><div style="display:table-cell;text-align:left;font-size:1.5rem;">800/1</div><div style="display:table-cell;text-align:right;font-size:1.5rem;">MUET S1 2024</div></div>' +
+            '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:1.05rem;margin-top:4px;">MALAYSIAN UNIVERSITY ENGLISH TEST</div>' +
+            '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:1.05rem;margin-top:2px;">PAPER 1 LISTENING</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:center;margin-top:10px;font-size:1.1rem;letter-spacing:1px;">MAJLIS PEPERIKSAAN MALAYSIA</div>' +
+        '<div style="text-align:center;font-size:0.85rem;">(MALAYSIAN EXAMINATIONS COUNCIL)</div>' +
+        '<div style="font-family:Arial,sans-serif;font-weight:bold;font-size:2rem;margin-top:18px;">50 Minutes</div>' +
+        '<div style="font-weight:bold;margin-top:10px;">Instructions to candidates:</div>' +
+        '<div style="font-weight:bold;margin-top:8px;">DO NOT OPEN THIS QUESTION PAPER UNTIL YOU ARE TOLD TO DO SO.</div>' +
+        '<div style="font-style:italic;margin:8px 0 0 14px;">The test consists of <b>five</b> parts: Part I, Part II, Part III, Part IV and Part V.</div>' +
+        '<div style="font-style:italic;margin:4px 0 0 14px;">Each part comprises a recording.</div>' +
+        '<div style="font-style:italic;margin:4px 0 0 14px;">You will listen to each recording twice.</div>' +
+        '<div style="font-style:italic;margin:4px 0 0 14px;">Answer the questions as you listen and indicate your answers on the Multiple-choice Answer Sheet provided.</div>' +
+        '<div style="font-style:italic;margin:4px 0 0 14px;">You will be given time to read the questions when the test begins.</div>' +
+        '<div style="border-top:1px solid #000;margin-top:24px;padding-top:4px;text-align:center;font-weight:bold;font-size:0.85rem;">This question paper consists of 7 printed pages and 1 blank page.</div>' +
+        '<div style="text-align:center;font-size:0.8rem;">&copy; Majlis Peperiksaan Malaysia 2024</div>' +
+        '<div style="display:table;width:100%;margin-top:14px;font-size:0.8rem;"><div style="display:table-cell;">MUET SESSION 1 2024 - 800/1</div><div style="display:table-cell;text-align:right;font-weight:bold;">[Turn over</div></div>'
+      ] }
+    };
     // 21 Nov: KERTAS SPEAKING (Booklet 1 = kad soalan calon A–D)
     var PT_WM = (function() { var a = [], i; for (i = 0; i < 400; i++) a.push('MUET'); return a.join(''); })();
     var PT_KERTAS = {
