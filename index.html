@@ -6085,8 +6085,8 @@
     .dp-btn .dp-utama { background: #000; color: #fff; }
     /* NAVIGASI GAME: tab tetap di atas (kedudukan sama setiap skrin) + butang kecil untuk benda bukan rutin */
     .gm-tab { display: flex; border: 2px solid #000; border-radius: 8px; overflow: hidden; margin: 2px 0 8px; }
-    .gm-tab button { flex: 1 1 0; min-width: 0; padding: 10px 2px; border: 0; border-right: 2px solid #000; background: #fff; color: #000;
-      font-family: inherit; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
+    .gm-tab button { flex: 1 1 0; min-width: 0; padding: 6px 1px; border: 0; border-right: 2px solid #000; background: #fff; color: #000;
+      font-family: inherit; font-size: 0.6rem; font-weight: bold; cursor: pointer; overflow: hidden; } /* 23 Nov: tab dibelah dua (nama atas · nombor bawah) */
     .gm-tab button:last-child { border-right: 0; }
     .gm-tab button.gm-aktif { background: #000; color: #fff; }
     .gm-alat { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; }
@@ -6147,9 +6147,9 @@
     .mx-titik button.mx-on { color: #000; }
     .mx-titik button.mx-on .mx-bulat { background: #000; border-color: #000; }
     /* KEDAI ITEM: Merah (harga dunia sebenar) · Biru (reward) · Hijau (kesihatan + kad sticker harian) */
-    .gm-tab button { font-size: 0.74rem; padding: 10px 1px; }
-    /* 4 tab: PERATURAN · PELABUHAN · ARKED · KEDAI */
-    .gm-tab button { font-size: 0.66rem; letter-spacing: 0; }
+    .gm-tab button { font-size: 0.6rem; padding: 6px 1px; }
+    /* 4 tab: PERATURAN · PELABUHAN · ARKED · KEDAI · 23 Nov: tab dibelah dua → tulisan lebih kecil supaya HARBOUR / DRAWER muat */
+    .gm-tab button { font-size: 0.6rem; letter-spacing: 0; }
     /* BUKU PERATURAN PENTING (keselamatan Firebase) */
     .at-tajuk { margin: 4px 0 2px; font-size: 1.3rem; font-weight: bold; letter-spacing: 2px; text-align: center; }
     .at-sub { margin: 0 0 10px; font-size: 0.75rem; text-align: center; }
@@ -22022,10 +22022,10 @@
         for (k = 0; k < COACH_GAME.length; k++) baca.push(lpfIds(b, COACH_GAME_KOL[COACH_GAME[k][0]]));
       }
       Promise.all(baca).then(function(r) {
-        var bank = {}, out = {}, jK = 0, jP = 0;
+        var bank = {}, out = {}, jK = 0, jP = 0, jL = 0, jA = 0, jM = 0;
         r[0].forEach(function(d) { bank[d.id] = (d.data() || {}).pasangan || []; });
         for (i = 0; i < peta.length; i++) (function(P) {
-          var J = LJ[P.b], srSet = {}, o = { kilang: 0, laci: 0, kapal: 0, arked: 0 }, x = P.mula, set = {}, min = -1, gi, id, p, q, jb, mi;
+          var J = LJ[P.b], srSet = {}, o = { kilang: 0, laci: 0, kapal: 0, arked: 0, baru: 0 }, x = P.mula, set = {}, min = -1, gi, id, p, q, jb, mi;
           r[x].forEach(function(d) { var v = d.data() || {}; srSet[v.drawerId || d.id] = 1; }); x++;
           for (mi = 0; mi < P.ahli.length; mi++) {
             var rS = r[x], rK = r[x + 1], rB = r[x + 2], sr = (rB && rB.exists && (rB.data() || {}).sr) || {}, kp = {}, awal = mi ? LJ[P.ahli[mi]].pre + '_' : '';
@@ -22033,6 +22033,7 @@
             rK.forEach(function(d) { kp[d.id] = d.data() || {}; });
             rS.forEach(function(d) {
               var s = d.data() || {}, kk = kp[d.id] || {}, ay = kk.ayat || [], jum, n = 0, t;
+              if (tlKira(s.karangan) && !sr[s.sid || d.id]) o.baru++; // 23 Nov: bahan belum SUDAH BACA (tab MUET)
               if (!sr[s.sid || d.id] || !tlKira(s.karangan)) return;
               jum = (kk.beku && ay.length) ? ay.length : lwPecah(s.karangan).length;
               for (t = 0; t < ay.length; t++) if (ay[t] && ay[t].ok && String(ay[t].bm || '').replace(/\s+/g, '')) n++;
@@ -22056,23 +22057,42 @@
             if (jb !== P.b) continue;
             for (q = 0; q < bank[id].length; q++) if (!set[kunciPasangan(bank[id][q].en, bank[id][q].bm)]) o.arked++;
           }
-          out[P.b] = o; jK += o.kilang; jP += o.kapal;
+          out[P.b] = o; jK += o.kilang; jP += o.kapal; jL += o.laci; jA += o.arked; jM += o.baru;
         })(peta[i]);
-        STA.data = out; STA.at = Date.now(); STA.muat = false; STA.jK = jK; STA.jP = jP; STA.mesej = '';
+        STA.data = out; STA.at = Date.now(); STA.muat = false; STA.jK = jK; STA.jP = jP; STA.jL = jL; STA.jA = jA; STA.jM = jM; STA.mesej = '';
         staLencana(); if (cb) cb();
       }).catch(function(e) { STA.muat = false; STA.mesej = 'Gagal kira: ' + ((e && e.message) || e); if (cb) cb(); });
     }
-    // Lencana pada tab (23 Nov): kotak dibelah dua — ATAS nama tab · BAWAH nombor (0 bila kosong)
-    //   KILANG = bahan belum habis diterjemah · HARBOUR = kapal menunggu
+    // Lencana pada tab (23 Nov): SEMUA tab dibelah dua — ATAS nama tab · BAWAH nombor (0 bila kosong · SHOP '-')
+    //   HARBOUR = kapal menunggu · KILANG = bahan belum habis diterjemah · ARCADE = vocab belum SR · TASKS = bangunan belum siap hari ini
+    //   MUET = bahan app phone belum SUDAH BACA · DRAWER = laci belum SR
+    var STA_TAB = { pos: 'HARBOUR', kl: 'KILANG', mini: 'ARCADE', kd: 'SHOP', ts: 'TASKS', muet: 'MUET', lc: 'DRAWER' };
+    function staTugas() {
+      var b = ['gym', 'taman', 'makmal', 'nutrisi', 'tidur'], n = 0, i, j, t, ada, q;
+      try {
+        if (coachHariData.id !== coachHariId() || !coachHariData.hari.laporanAt) return '-';
+        j = coachJadualKini();
+        for (i = 0; i < b.length; i++) {
+          ada = b[i] === 'nutrisi';
+          if (!ada && j && TS_JENIS[b[i]]) for (q = 0; q < j.tugas.length; q++) if (TS_JENIS[b[i]].indexOf(j.tugas[q].jenis) !== -1) ada = true;
+          if (ada && tsTanda(b[i]) !== 'SIAP') n++;
+        }
+        if (coachSolatKunci()) n++; // SURAU: solat waktu ini belum ditanda
+      } catch (e) { return '-'; }
+      return n;
+    }
     function staLencana() {
-      var t = document.querySelectorAll('[data-gm-tab="kl"], [data-gm-tab="pos"]'), i, k;
+      var t = document.querySelectorAll('.gm-tab button[data-gm-tab]'), i, k, v;
       for (i = 0; i < t.length; i++) {
         k = t[i].getAttribute('data-gm-tab');
-        t[i].innerHTML = '<span style="display:block;font-size:0.9em;letter-spacing:-0.3px;">' + (k === 'kl' ? 'KILANG' : 'HARBOUR') + '</span>' +
-          '<span style="display:block;border-top:1px solid;margin-top:3px;padding-top:2px;font-size:0.85rem;">' + ((k === 'kl' ? STA.jK : STA.jP) || 0) + '</span>';
+        if (!STA_TAB[k]) continue;
+        v = k === 'pos' ? STA.jP : k === 'kl' ? STA.jK : k === 'mini' ? STA.jA : k === 'lc' ? STA.jL : k === 'muet' ? STA.jM : k === 'ts' ? staTugas() : '-';
+        t[i].innerHTML = '<span style="display:block;letter-spacing:-0.5px;">' + STA_TAB[k] + '</span>' +
+          '<span style="display:block;border-top:1px solid;margin-top:3px;padding-top:2px;font-size:0.8rem;">' + (v || (v === '-' ? '-' : 0)) + '</span>';
       }
     }
     staLencana(); // terus papar 0 dahulu, nombor sebenar menyusul selepas dikira
+    setInterval(staLencana, 60000); // TASKS berubah ikut masa — kemas kini setiap minit (tiada bacaan Firebase)
     function bukaSta() { showScreen('screen-sta'); try { window.scrollTo(0, 0); } catch (e) {} staLukis(); staKira(false, staLukis); }
     function staLukis() {
       var h = '', i, b, o, S0 = 'display:table-cell;border-bottom:1px solid #000;padding:6px 2px;text-align:center;vertical-align:middle;', BT = 'display:block;width:100%;padding:6px 0;border:2px solid #000;border-radius:6px;font-weight:bold;font-size:0.95rem;font-family:inherit;';
