@@ -22062,14 +22062,17 @@
         staLencana(); if (cb) cb();
       }).catch(function(e) { STA.muat = false; STA.mesej = 'Gagal kira: ' + ((e && e.message) || e); if (cb) cb(); });
     }
-    // Lencana pada tab: KILANG n (bahan belum diterjemah) · HARBOUR n (kapal menunggu)
+    // Lencana pada tab (23 Nov): kotak dibelah dua — ATAS nama tab · BAWAH nombor (0 bila kosong)
+    //   KILANG = bahan belum habis diterjemah · HARBOUR = kapal menunggu
     function staLencana() {
       var t = document.querySelectorAll('[data-gm-tab="kl"], [data-gm-tab="pos"]'), i, k;
       for (i = 0; i < t.length; i++) {
         k = t[i].getAttribute('data-gm-tab');
-        t[i].textContent = k === 'kl' ? 'KILANG' + (STA.jK ? ' ' + STA.jK : '') : 'HARBOUR' + (STA.jP ? ' ' + STA.jP : '');
+        t[i].innerHTML = '<span style="display:block;font-size:0.9em;letter-spacing:-0.3px;">' + (k === 'kl' ? 'KILANG' : 'HARBOUR') + '</span>' +
+          '<span style="display:block;border-top:1px solid;margin-top:3px;padding-top:2px;font-size:0.85rem;">' + ((k === 'kl' ? STA.jK : STA.jP) || 0) + '</span>';
       }
     }
+    staLencana(); // terus papar 0 dahulu, nombor sebenar menyusul selepas dikira
     function bukaSta() { showScreen('screen-sta'); try { window.scrollTo(0, 0); } catch (e) {} staLukis(); staKira(false, staLukis); }
     function staLukis() {
       var h = '', i, b, o, S0 = 'display:table-cell;border-bottom:1px solid #000;padding:6px 2px;text-align:center;vertical-align:middle;', BT = 'display:block;width:100%;padding:6px 0;border:2px solid #000;border-radius:6px;font-weight:bold;font-size:0.95rem;font-family:inherit;';
