@@ -10859,8 +10859,21 @@
       try { window.scrollTo(0, 0); } catch (e) {}
       lukisTugas();
     }
+    // 22 Nov (Fasa B): butang di bawah pai (b) — bidang paling ketinggalan → terus ke ARKED bidang itu (kosong? guna butang UNDUR)
+    //   Listening dikira guna minit → ke PAWAGAM. [label, fungsi]
+    var COACH_FOKUS_KE = {
+      listening: ['PAWAGAM', function() { bukaPawagam(); }],
+      vocab: ['ARKED VOCAB KAMUS', function() { arkHal = 0; arkBi = 0; bukaMini(); }],
+      tulis: ['ARKED WRITING', function() { arkHal = 0; arkBi = ARK_BID.indexOf('writing'); bukaMini(); }],
+      pentas: ['ARKED SPEAKING', function() { arkHal = 0; arkBi = ARK_BID.indexOf('speaking'); bukaMini(); }],
+      reading: ['ARKED READING', function() { arkHal = 0; arkBi = ARK_BID.indexOf('reading'); bukaMini(); }],
+      reasoning: ['ARKED REASONING', function() { arkHal = 0; arkBi = ARK_BID.indexOf('reasoning'); bukaMini(); }],
+      presenting: ['ARKED PRESENTING', function() { arkHal = 0; arkBi = ARK_BID.indexOf('presenting'); bukaMini(); }]
+    };
     el('coach-pai').onclick = function(e) {
       var t = e.target;
+      var ck = hlCari(t, this, 'data-coach-ke');
+      if (ck !== null) { if (COACH_FOKUS_KE[ck]) COACH_FOKUS_KE[ck][1](); return; } // 22 Nov: FOKUS → ARKED
       // 17 Nov: butang FOKUS Bahasa / Fakta dalam PAI 2
       var f = t;
       while (f && f !== this && !(f.getAttribute && f.getAttribute('data-fokusbf'))) f = f.parentNode;
@@ -11041,14 +11054,14 @@
         if (!COACH_POSPON[k]) jumlahEn += (unit[k] || 0);
       }
       // English: peratus stok terkumpul (bidang POSPON tidak dikira) · sasaran KEKAL asal
-      var htmlEn = '', fokus = '', fokusBeza = 0;
+      var htmlEn = '', fokus = '', fokusBeza = 0, fokusK = '';
       for (i = 0; i < COACH_BIDANG.length; i++) {
         k = COACH_BIDANG[i][0];
         var pos = !!COACH_POSPON[k];
         var pct = (!pos && jumlahEn) ? Math.round((unit[k] || 0) * 100 / jumlahEn) : 0;
         var label = COACH_BIDANG[i][1] + (data.gameB && data.gameB[k] ? ' (game terendah: ' + data.gameB[k] + ')' : '');
         htmlEn += coachBar(label, pos ? null : (unit[k] || 0), pct, set.english[k], pos);
-        if (!pos && set.english[k] - pct > fokusBeza) { fokusBeza = set.english[k] - pct; fokus = COACH_BIDANG[i][1]; }
+        if (!pos && set.english[k] - pct > fokusBeza) { fokusBeza = set.english[k] - pct; fokus = COACH_BIDANG[i][1]; fokusK = k; }
       }
       // USAHA: BAHASA vs FAKTA — MINIT belajar HARI INI (dicatat automatik dalam laci) · sasaran 50:50
       //   Bahasa = minit Laci Bahasa + SR Bebas + Reasoning + Presenting + Listening (PAWAGAM) · Fakta = minit Laci Fakta
@@ -11091,6 +11104,7 @@
         legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : ' vocab SR' + (data.gameB && data.gameB[bd[0]] ? ' · ' + data.gameB[bd[0]] : '')) + ')</span><br>';
       }
       isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
+        (COACH_FOKUS_KE[fokusK] ? '<button type="button" data-coach-ke="' + fokusK + '" style="display:block;width:100%;margin:4px 0 8px;padding:9px 6px;border:3px solid #000;border-radius:10px;background:#000;color:#fff;font-weight:bold;font-size:1rem;font-family:inherit;">FOKUS ' + fokus.toUpperCase() + ' · PERGI KE ' + COACH_FOKUS_KE[fokusK][0] + ' ›</button>' : '') +
         coachPie(cS, '(c) ENGLISH SASARAN') +
         '<div style="font-size:0.8rem;">Bandingkan pai (b) dengan (c): hirisan yang sama nama patut sama besar.</div>' +
         '<div style="margin:5px 0;font-size:0.85rem;border-top:1px solid #000;padding-top:4px;"><b>Solat</b> · ' + (solat ? 'purata ' + solat.purata + '/5 (7 hari) · <b>' + solat.st + '</b>' : 'belum direkod') + '</div>';
