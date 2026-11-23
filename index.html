@@ -22026,6 +22026,9 @@
     //   · ARKED (vocab kontena belum SR dalam game terendah). Tekan nombor → terus ke peringkat itu. Jumlah KILANG & KAPAL → lencana pada tab.
     var STA_B = [['writing', 'WRITING', 0], ['speaking', 'SPEAKING', 1], ['reading', 'READING', 2], ['pnkertas', 'LISTENING', 3], ['reasoning', 'REASONING', 4], ['presenting', 'PRESENTING', 5]];
     var STA = { data: null, at: 0, muat: false, mesej: '' };
+    // 24 Nov: PERINGKAT PERTAMA = APP PHONE · tekan → Kindle tulis coach/phone_buka → app phone bila dibuka terus masuk laci itu
+    var STA_PHONE = { writing: 'writing', speaking: 'speaking', reading: 'reading', reasoning: 'reasoning', presenting: 'presenting' };
+    var STA_PHONE_KIRA = { writing: 1, reasoning: 1, presenting: 1 }; // bidang yang boleh dikira (soalan belum ada karangan)
     function staKira(paksa, cb) {
       if (!currentUser) return;
       if (STA.muat) return;
@@ -22043,7 +22046,7 @@
         var bank = {}, out = {}, jK = 0, jP = 0, jL = 0, jA = 0, jM = 0;
         r[0].forEach(function(d) { bank[d.id] = (d.data() || {}).pasangan || []; });
         for (i = 0; i < peta.length; i++) (function(P) {
-          var J = LJ[P.b], srSet = {}, o = { kilang: 0, laci: 0, kapal: 0, arked: 0, baru: 0 }, x = P.mula, set = {}, min = -1, gi, id, p, q, jb, mi;
+          var J = LJ[P.b], srSet = {}, o = { kilang: 0, laci: 0, kapal: 0, arked: 0, baru: 0, phone: 0 }, x = P.mula, set = {}, min = -1, gi, id, p, q, jb, mi;
           r[x].forEach(function(d) { var v = d.data() || {}; srSet[v.drawerId || d.id] = 1; }); x++;
           for (mi = 0; mi < P.ahli.length; mi++) {
             var rS = r[x], rK = r[x + 1], rB = r[x + 2], sr = (rB && rB.exists && (rB.data() || {}).sr) || {}, kp = {}, awal = mi ? LJ[P.ahli[mi]].pre + '_' : '';
@@ -22051,6 +22054,7 @@
             rK.forEach(function(d) { kp[d.id] = d.data() || {}; });
             rS.forEach(function(d) {
               var s = d.data() || {}, kk = kp[d.id] || {}, ay = kk.ayat || [], jum, n = 0, t;
+              if (!mi && STA_PHONE_KIRA[P.b] && !tlKira(s.karangan)) o.phone++; // 24 Nov: soalan app phone belum ditulis karangan
               if (tlKira(s.karangan) && !sr[s.sid || d.id]) o.baru++; // 23 Nov: bahan belum SUDAH BACA (tab MUET)
               if (!sr[s.sid || d.id] || !tlKira(s.karangan)) return;
               jum = (kk.beku && ay.length) ? ay.length : lwPecah(s.karangan).length;
@@ -22115,14 +22119,16 @@
     function staLukis() {
       var h = '', i, b, o, S0 = 'display:table-cell;border-bottom:1px solid #000;padding:6px 2px;text-align:center;vertical-align:middle;', BT = 'display:block;width:100%;padding:6px 0;border:2px solid #000;border-radius:6px;font-weight:bold;font-size:0.95rem;font-family:inherit;';
       h += '<div style="font-weight:bold;font-size:1.15rem;">STATUS ALIRAN</div>';
-      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Berapa yang menunggu di setiap peringkat. Tekan nombor untuk terus ke situ. <b>KILANG</b> = bahan belum habis diterjemah · <b>LACI</b> = laci belum SR · <b>KAPAL</b> = laci SR belum jadi kontena · <b>ARKED</b> = vocab belum SR (game terendah).</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Berapa yang menunggu di setiap peringkat. Tekan nombor untuk terus ke situ. <b>PHONE</b> = soalan belum ditulis karangan (tekan → app phone terus buka laci itu) · <b>KILANG</b> = bahan belum habis diterjemah · <b>LACI</b> = laci belum SR · <b>KAPAL</b> = laci SR belum jadi kontena · <b>ARKED</b> = vocab belum SR (game terendah).</div>';
       if (STA.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + lwEsc(STA.mesej) + '</div>';
       if (!STA.data) { el('sta-isi').innerHTML = h + '<div>Mengira...</div>'; return; }
       h += '<div style="display:table;width:100%;table-layout:fixed;"><div style="display:table-row;font-weight:bold;font-size:0.75rem;">' +
-        '<div style="' + S0 + 'width:30%;text-align:left;">BIDANG</div><div style="' + S0 + '">KILANG</div><div style="' + S0 + '">LACI</div><div style="' + S0 + '">KAPAL</div><div style="' + S0 + '">ARKED</div></div>';
+        '<div style="' + S0 + 'width:24%;text-align:left;">BIDANG</div><div style="' + S0 + '">PHONE</div><div style="' + S0 + '">KILANG</div><div style="' + S0 + '">LACI</div><div style="' + S0 + '">KAPAL</div><div style="' + S0 + '">ARKED</div></div>';
       for (i = 0; i < STA_B.length; i++) {
-        b = STA_B[i]; o = STA.data[b[0]] || { kilang: 0, laci: 0, kapal: 0, arked: 0 };
-        h += '<div style="display:table-row;"><div style="' + S0 + 'text-align:left;font-weight:bold;font-size:0.8rem;">' + b[1] + '</div>' +
+        b = STA_B[i]; o = STA.data[b[0]] || { kilang: 0, laci: 0, kapal: 0, arked: 0, phone: 0 };
+        h += '<div style="display:table-row;"><div style="' + S0 + 'text-align:left;font-weight:bold;font-size:0.75rem;">' + b[1] + '</div>' +
+          (!STA_PHONE[b[0]] ? '<div style="' + S0 + '">-</div>' : STA_PHONE_KIRA[b[0]] ? staSel(b[0], 'phone', o.phone, S0, BT) :
+            '<div style="' + S0 + '"><button type="button" data-sta="' + b[0] + '|phone" style="' + BT + 'background:#fff;color:#000;font-size:0.75rem;">BUKA</button></div>') +
           staSel(b[0], 'kilang', o.kilang, S0, BT) + staSel(b[0], 'laci', o.laci, S0, BT) + staSel(b[0], 'kapal', o.kapal, S0, BT) + staSel(b[0], 'arked', o.arked, S0, BT) + '</div>';
       }
       h += '</div><div style="font-size:0.75rem;margin-top:6px;">Dikira ' + new Date(STA.at).toTimeString().slice(0, 5) + ' · tekan Segar untuk kira semula.</div>';
@@ -22137,6 +22143,14 @@
       b = v.split('|')[0]; p = v.split('|')[1];
       for (i = 0; i < STA_B.length; i++) if (STA_B[i][0] === b) g = STA_B[i];
       if (!g) return;
+      if (p === 'phone') { // 24 Nov: hantar isyarat ke app phone — buka app phone (dalam 30 minit) → terus masuk laci ini
+        if (!STA_PHONE[b]) return;
+        STA.mesej = 'Menghantar ke app phone...'; staLukis();
+        kol('coach').doc('phone_buka').set({ laci: STA_PHONE[b], at: Date.now(), dah: false }).then(function() {
+          STA.mesej = 'Siap. Buka APP PHONE sekarang (dalam 30 minit) — terus masuk LACI ' + g[1] + '.'; staLukis();
+        }).catch(function(e2) { STA.mesej = 'Gagal hantar: ' + ((e2 && e2.message) || e2); staLukis(); });
+        return;
+      }
       if (p === 'kilang') { window.klUndurKe(g[2]); return; }
       if (p === 'laci') { bl = el(GB_LACI_BTN[GB_JENIS.indexOf(b)]); if (bl) bl.click(); return; }
       if (p === 'kapal') { if (layar) return; tambatIdx = -1; gbHal = GB_JENIS.indexOf(b); bukaBank(false); return; }
