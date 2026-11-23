@@ -16732,6 +16732,9 @@
       var kini = coachMinitKini(), out = [], sus = supSusun(), i, s, k, peta = {}, ke = {};
       for (i = 0; i < SUP.senarai.length; i++) peta[SUP.senarai[i].id] = SUP.senarai[i];
       if (!supSlotAir().length) return out;
+      // 24 Nov: TUNDA (belum makan pagi) → SEMUA dos hari ini dilonjak supTunda minit (tidak melepasi slot air terakhir)
+      var sTunda = coachHariData.hari.supTunda || 0, sAkhir = supSlotAir()[supSlotAir().length - 1];
+      for (i = 0; i < sus.length; i++) if (sTunda) sus[i].min = Math.max(sus[i].min, Math.min(sus[i].min + sTunda, sAkhir));
       sus.sort(function(x, y) { return x.min - y.min; });
       var tdArr = (coachHariData.hari.supTakDapat || []);
       for (i = 0; i < sus.length; i++) {
@@ -16860,8 +16863,9 @@
       var h = '<div style="font-weight:bold;font-size:1.1rem;">SUPLEMEN (KETAT)</div>' +
         '<div style="font-size:0.8rem;border-left:4px solid #000;padding-left:6px;margin:4px 0 8px;">Masa disusun oleh APP pada slot AIR (makan dengan segelas air). Terlepas SATU dos (lepas ' + SUP_TENGGANG + ' min) → semua laci, ARKED, game, Pawagam, Pentas, Perpustakaan & Dewan Tulis DIKUNCI sampai dimakan.</div>';
       if (SUP.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;font-weight:bold;">' + escKapal(SUP.mesej) + '</div>';
-      var sl = supSlotHari(), i, x;
+      var sl = supSlotHari(), i, x, tn = coachHariData.hari.supTunda || 0;
       h += '<div style="font-weight:bold;margin-top:6px;border-bottom:2px solid #000;">HARI INI</div>';
+      if (tn) h += '<div style="font-size:0.85rem;border:2px dashed #000;border-radius:6px;padding:3px 6px;margin:4px 0;">Semua suplemen hari ini <b>dilonjak +' + tn + ' min</b> (belum makan pagi).</div>';
       if (!supSlotAir().length) h += '<div style="font-size:0.85rem;margin:4px 0;">Isi LAPORAN PAGI dulu — app susun masa suplemen ikut waktu bangun.</div>';
       else if (!SUP.senarai.length) h += '<div style="font-size:0.85rem;margin:4px 0;">Belum ada suplemen. Tekan EDIT SENARAI SUPLEMEN di bawah.</div>';
       for (i = 0; i < sl.length && supSlotAir().length; i++) {
@@ -16872,6 +16876,7 @@
           (x.st === 'TERLEPAS' || x.st === 'HABIS' ? '<b style="background:#000;color:#fff;padding:0 4px;">' + lbl + '</b>' : '<b>' + lbl + '</b>') + '</span></div>' +
           (x.st === 'SEKARANG' || x.st === 'TERLEPAS' || x.st === 'AKAN' ? '<button type="button" data-sp="makan" data-n="' + i + '" data-v="' + x.kunci + '" style="' + (x.st === 'AKAN' ? SUP_BTN : SUP_BTNA) + '">SUDAH MAKAN</button>' : '') +
           (x.st === 'SEKARANG' || x.st === 'TERLEPAS' ? '<button type="button" data-sp="takdapat" data-n="' + i + '" data-v="' + x.kunci + '|' + x.min + '" style="' + SUP_BTN + '">TAK DAPAT</button>' : '') +
+          (i === 0 && (x.st === 'SEKARANG' || x.st === 'TERLEPAS' || x.st === 'AKAN') ? '<br><button type="button" data-sp="tunda" style="' + SUP_BTN + 'margin-top:4px;">TUNDA · BELUM MAKAN PAGI</button>' : '') + // 24 Nov: dos PERTAMA sahaja
           (x.st === 'SUDAH' ? '<button type="button" data-sp="batal" data-n="' + i + '" data-v="' + x.kunci + '" style="' + SUP_BTN + '">BATAL</button>' : '') + '</div>';
       }
       h += '<button type="button" data-sp="edit" class="btn" style="margin-top:10px;">EDIT SENARAI SUPLEMEN ›</button>';
@@ -16883,6 +16888,19 @@
       if (!t || t === tp) return;
       var a = t.getAttribute('data-sp'), v = t.getAttribute('data-v'), o;
       if (a === 'edit') { bukaSupEdit(); return; }
+      // 24 Nov: TUNDA dos PERTAMA (belum makan pagi) → dos pertama jadi 30 min dari sekarang, SEMUA dos lain dilonjak sama banyak
+      if (a === 'tunda') {
+        var slT = supSlotHari(), lama = coachHariData.hari.supTunda || 0, f = slT[0], baru;
+        if (!f || f.st === 'HABIS' || f.st === 'SUDAH') return;
+        baru = Math.max(lama, coachMinitKini() + 30 - (f.min - lama));
+        coachSimpanHari({ supTunda: baru }, function() { coachHariData.hari.supTunda = baru; });
+        coachHariData.hari.supTunda = baru;
+        SUP.mesej = 'Ditunda (belum makan pagi) — semua suplemen hari ini dilonjak +' + baru + ' min. Dos pertama kini ' + coachTeksMasa(f.min - lama + baru) + '.';
+        if (!supTerlepas().length && coachKunciMesej.indexOf('SUPLEMEN TERLEPAS') === 0) coachKunciMesej = '';
+        supLukis();
+        if (!supTerlepas().length) lukisTs();
+        return;
+      }
       if (a === 'makan' || a === 'batal') {
         var x = null, sl = supSlotHari(), q, n = +t.getAttribute('data-n');
         for (q = 0; q < sl.length; q++) if (sl[q].kunci === v && q === n) x = sl[q];
