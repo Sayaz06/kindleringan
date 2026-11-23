@@ -22119,20 +22119,27 @@
     function staLukis() {
       var h = '', i, b, o, S0 = 'display:table-cell;border-bottom:1px solid #000;padding:6px 2px;text-align:center;vertical-align:middle;', BT = 'display:block;width:100%;padding:6px 0;border:2px solid #000;border-radius:6px;font-weight:bold;font-size:0.95rem;font-family:inherit;';
       h += '<div style="font-weight:bold;font-size:1.15rem;">STATUS ALIRAN</div>';
-      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Berapa yang menunggu di setiap peringkat. Tekan nombor untuk terus ke situ. <b>PHONE</b> = soalan belum ditulis karangan (tekan → app phone terus buka laci itu) · <b>KILANG</b> = bahan belum habis diterjemah · <b>LACI</b> = laci belum SR · <b>KAPAL</b> = laci SR belum jadi kontena · <b>ARKED</b> = vocab belum SR (game terendah).</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Berapa yang menunggu di setiap peringkat. Tekan nombor untuk terus ke situ. <b>Logo APP PHONE</b> di bawah nama bidang = soalan belum ditulis karangan (tekan → app phone terus buka laci itu) · <b>KILANG</b> = bahan belum habis diterjemah · <b>LACI</b> = laci belum SR · <b>KAPAL</b> = laci SR belum jadi kontena · <b>ARKED</b> = vocab belum SR (game terendah).</div>';
       if (STA.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + lwEsc(STA.mesej) + '</div>';
       if (!STA.data) { el('sta-isi').innerHTML = h + '<div>Mengira...</div>'; return; }
       h += '<div style="display:table;width:100%;table-layout:fixed;"><div style="display:table-row;font-weight:bold;font-size:0.75rem;">' +
-        '<div style="' + S0 + 'width:24%;text-align:left;">BIDANG</div><div style="' + S0 + '">PHONE</div><div style="' + S0 + '">KILANG</div><div style="' + S0 + '">LACI</div><div style="' + S0 + '">KAPAL</div><div style="' + S0 + '">ARKED</div></div>';
+        '<div style="' + S0 + 'width:30%;text-align:left;">BIDANG</div><div style="' + S0 + '">KILANG</div><div style="' + S0 + '">LACI</div><div style="' + S0 + '">KAPAL</div><div style="' + S0 + '">ARKED</div></div>';
       for (i = 0; i < STA_B.length; i++) {
         b = STA_B[i]; o = STA.data[b[0]] || { kilang: 0, laci: 0, kapal: 0, arked: 0, phone: 0 };
-        h += '<div style="display:table-row;"><div style="' + S0 + 'text-align:left;font-weight:bold;font-size:0.75rem;">' + b[1] + '</div>' +
-          (!STA_PHONE[b[0]] ? '<div style="' + S0 + '">-</div>' : STA_PHONE_KIRA[b[0]] ? staSel(b[0], 'phone', o.phone, S0, BT) :
-            '<div style="' + S0 + '"><button type="button" data-sta="' + b[0] + '|phone" style="' + BT + 'background:#fff;color:#000;font-size:0.75rem;">BUKA</button></div>') +
+        h += '<div style="display:table-row;"><div style="' + S0 + 'text-align:left;font-weight:bold;font-size:0.8rem;">' + b[1] + staLogoPhone(b[0], o.phone) + '</div>' +
           staSel(b[0], 'kilang', o.kilang, S0, BT) + staSel(b[0], 'laci', o.laci, S0, BT) + staSel(b[0], 'kapal', o.kapal, S0, BT) + staSel(b[0], 'arked', o.arked, S0, BT) + '</div>';
       }
       h += '</div><div style="font-size:0.75rem;margin-top:6px;">Dikira ' + new Date(STA.at).toTimeString().slice(0, 5) + ' · tekan Segar untuk kira semula.</div>';
       el('sta-isi').innerHTML = h;
+    }
+    // 24 Nov: LOGO APP PHONE di bawah nama bidang (lukisan CSS — tiada emoji) · tekan → app phone terus buka laci bidang itu
+    function staLogoPhone(b, n) {
+      if (!STA_PHONE[b]) return '';
+      var hitam = STA_PHONE_KIRA[b] && n;
+      return '<button type="button" data-sta="' + b + '|phone" style="display:block;margin-top:4px;padding:3px 5px;border:2px solid #000;border-radius:6px;font-family:inherit;font-weight:bold;font-size:0.65rem;text-align:left;' + (hitam ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' +
+        '<span style="display:inline-block;vertical-align:middle;width:9px;height:15px;border:2px solid ' + (hitam ? '#fff' : '#000') + ';border-radius:3px;margin-right:4px;position:relative;">' +
+        '<span style="position:absolute;left:2px;right:2px;bottom:1px;height:2px;background:' + (hitam ? '#fff' : '#000') + ';"></span></span>' +
+        '<span style="vertical-align:middle;">APP PHONE' + (STA_PHONE_KIRA[b] ? ' ' + (n || 0) : '') + '</span></button>';
     }
     function staSel(b, p, n, S0, BT) {
       return '<div style="' + S0 + '"><button type="button" data-sta="' + b + '|' + p + '" style="' + BT + (n ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;border-style:dashed;') + '">' + (n || '-') + '</button></div>';
