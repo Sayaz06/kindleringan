@@ -11161,6 +11161,7 @@
       if (paksa) el('coach-bubble').textContent = 'Mengira semula...';
       Promise.all([coachMuatData(paksa), coachMuatHari()]).then(function(r) {
         coachLukis(r[0]);
+        if (!STA.data) staKira(false, function() { if (el('screen-coach').className.indexOf('active') >= 0 && coachDataAkhir) coachLukis(coachDataAkhir); }); // 25 Nov: langkah coach ikut STATUS ALIRAN
         // Laporan pagi belum diisi hari ini → tunjuk panel terus
         if (!coachHariData.hari.laporanAt && !coachLap) coachMulaLaporan();
       }).catch(function(e) {
@@ -13435,6 +13436,8 @@
     var coachGoFn = null;
     var coachBF = { fokus: 'seimbang', sas: [50, 50], english: '' }; // diisi coachLukis — dipakai bubble (butang FOKUS Pai 2)
     function coachFokusGo(f) {
+      var kB = coachKunciB(f); // 25 Nov: bidang English → langkah seterusnya ikut STATUS ALIRAN (bukan tempat lama)
+      if (kB) return cpdLangkah(kB).b;
       var m = {
         Listening: ['KE PAWAGAM → + LISTENING', function() { bukaPawagam(); }],
         Reading: ['KE PERPUSTAKAAN → + TAMBAH LATIHAN', function() { bukaPustaka(); }],
@@ -13449,6 +13452,8 @@
       return m[f] || null;
     }
     function coachFokusTeks(f) {
+      var kB = coachKunciB(f);
+      if (kB) return CPD_RINGKAS[kB];
       return {
         Listening: 'tonton video English, kemudian report minit (+ LISTENING)',
         Reading: 'buat latihan kertas MUET Reading, kemudian catat Part di Perpustakaan',
@@ -13548,6 +13553,7 @@
           babak('Pukul 5 dah! Masa senaman.\nHari ni ' + coachSenHari().g + ' ' + coachSenHari().s + '. Lepas habis stesen, jangan lupa FACE.', 'gembira', [['JOM KE GYM', function() { bukaGym(); }]]);
         } else if (aktif && aktif.jenis === 'fokus') {
           babak('Masa FOKUS 90 minit.\nHari ni buat ' + (fokus || 'usaha') + ' — ' + coachFokusTeks(fokus) + '.\nSatu kerja je. Telefon jauhkan; Kindle ni boleh guna.', 'diam', goF ? [goF] : []);
+          coachBabakBelajar(coachKunciB(fokus), babak); // 25 Nov: cara kira pai + langkah seterusnya
         } else if (aktif && (aktif.jenis === 'matahari' || aktif.jenis === 'petang')) {
           babak((aktif.jenis === 'matahari' ? 'Pagi-pagi ni, keluar kejap ambil cahaya matahari.' : 'Petang ni, keluar ambil cahaya kejap.') + '\nSekurang-kurangnya ' + COACH_TAMAN_MIN[aktif.jenis] + ' minit kat luar. Tekan KELUAR masa pergi, DAH MASUK masa balik.', 'masuk',
             [['JOM KE TAMAN', function() { bukaTaman(); }]]);
@@ -13558,6 +13564,7 @@
           coachBabakTerlepas(abai, babak, true);
         } else {
           babak('Tak ada tugas kesihatan sekarang. Bagus!\nJom belajar: ' + (fokus || 'teruskan') + ' — ' + coachFokusTeks(fokus) + '.', 'gembira', goF ? [goF] : []);
+          coachBabakBelajar(coachKunciB(fokus), babak); // 25 Nov: cara kira pai + langkah seterusnya
         }
         if (aktif && abai.length && !kk.kunci) { // susulan selepas tugas aktif
           coachBabakTerlepas(abai, babak, false);
@@ -18967,7 +18974,7 @@
         el('pustaka-isi').innerHTML = h; return;
       }
       // ── SENARAI HARI ──
-      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Buat latihan kertas MUET Reading, kemudian catat <b>tajuk kertas + Part</b> di sini. <b>1 Part = ' + COACH_UNIT_READING + ' unit Reading</b> dalam pai English.<br>Jumlah: <b>' + puJumlah() + ' Part</b> dalam <b>' + senarai.length + ' hari</b>.</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Pilih <b>DAY → BACA KERTAS</b> → baca setiap Part → <b>SUDAH BACA PART</b> → bahan masuk <b>KILANG READING</b> (dikira automatik). Pai Reading naik bila vocab SR di <b>ARKED READING</b>.<br>Catatan Part di bawah = rekod peribadi sahaja (tidak dikira dalam pai). Jumlah: <b>' + puJumlah() + ' Part</b> dalam <b>' + senarai.length + ' hari</b>.</div>';
       if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pu="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
       for (i in PU_KERTAS_DAY) if (PU_KERTAS_DAY.hasOwnProperty(i) && PU_KERTAS[PU_KERTAS_DAY[i]]) h += '<button type="button" data-pu="baca" data-v="' + PU_KERTAS_DAY[i] + '" data-d="' + i + '" style="' + PU_BTN + 'display:block;width:100%;text-align:left;margin-bottom:6px;border-width:3px;">DAY ' + i + ' · BACA KERTAS: ' + PU_KERTAS[PU_KERTAS_DAY[i]].t + ' ›</button>';
       if (!senarai.length) h += '<div style="font-size:0.85rem;">Belum ada latihan.</div>';
@@ -22166,6 +22173,179 @@
     el('btn-go-sta').onclick = function() { if (currentUser) bukaSta(); };
     el('btn-sta-keluar').onclick = function() { bukaCoach(false); }; // 23 Nov: kembali ke COACH
     el('btn-sta-segar').onclick = function() { STA.data = null; staLukis(); staKira(true, staLukis); };
+    // ══ COACH PANDUAN (25 Nov) — coach SAMBUNG di setiap bangunan: apa nak buat di page ini + butang ke peringkat seterusnya ══
+    //   Kunci coach (pai) → kunci aliran (LJ / STA_B). Pai English: Listening = MINIT · lain = vocab SR dalam game PALING RENDAH Arked bidang.
+    var CPD_LJ = { tulis: 'writing', pentas: 'speaking', reading: 'reading', reasoning: 'reasoning', presenting: 'presenting', listening: 'pnkertas', vocab: '' };
+    var CPD_NAMA = { tulis: 'WRITING', pentas: 'SPEAKING', reading: 'READING', reasoning: 'REASONING', presenting: 'PRESENTING', listening: 'LISTENING', vocab: 'VOCAB KAMUS' };
+    var CPD_RINGKAS = {
+      listening: 'tonton / dengar English di PAWAGAM, kemudian report minit (+ LISTENING)',
+      vocab: 'main game terendah di ARKED VOCAB KAMUS',
+      tulis: 'ikut aliran WRITING sampai ARKED WRITING (pai naik bila vocab SR di game terendah)',
+      pentas: 'ikut aliran SPEAKING sampai ARKED SPEAKING (pai naik bila vocab SR di game terendah)',
+      reading: 'ikut aliran READING sampai ARKED READING (pai naik bila vocab SR di game terendah)',
+      reasoning: 'ikut aliran REASONING sampai ARKED REASONING (pai naik bila vocab SR di game terendah)',
+      presenting: 'ikut aliran PRESENTING sampai ARKED PRESENTING (pai naik bila vocab SR di game terendah)'
+    };
+    var CPD = { b: '', at: 0, tutup: {}, laci: '', laciAt: 0, laciAktif: '', idAkhir: '', btn: [] };
+    function coachKunciB(f) {
+      var i, lama = { Listening: 'listening', Vocab: 'vocab', Writing: 'tulis', Speaking: 'pentas' };
+      if (!f) return '';
+      for (i = 0; i < COACH_BIDANG.length; i++) if (COACH_BIDANG[i][1] === f || COACH_BIDANG[i][0] === f) return COACH_BIDANG[i][0];
+      return lama[f] || '';
+    }
+    function cpdDariLj(j) { var k; for (k in CPD_LJ) if (CPD_LJ.hasOwnProperty(k) && CPD_LJ[k] === j) return k; return ''; }
+    function cpdUtama(j) { var i; for (i = 0; i < STA_B.length; i++) if ((LJ_AHLI[STA_B[i][0]] || [STA_B[i][0]]).indexOf(j) >= 0) return STA_B[i][0]; return ''; }
+    function cpdMisi(k) { CPD.b = k; CPD.at = Date.now(); CPD.tutup = {}; }
+    function cpdGame() { var i, a = []; for (i = 0; i < COACH_GAME.length; i++) a.push(COACH_GAME[i][1]); return a.join(', '); }
+    // Pergi ke peringkat aliran (sama seperti STATUS ALIRAN)
+    function cpdPergi(b, p) {
+      var i, g = null, bl, s;
+      if (p === 'phone') { cpdPhone(b); return; }
+      if (p === 'sta') { bukaSta(); return; }
+      if (b === '' && p === 'arked') { arkHal = 0; arkBi = 0; bukaMini(); return; }
+      if (b === '' && p === 'kapal') { if (layar) return; tambatIdx = -1; gbHal = 0; bukaBank(false); return; }
+      for (i = 0; i < STA_B.length; i++) if (STA_B[i][0] === b) g = STA_B[i];
+      if (!g) return;
+      if (p === 'sumber') { s = KL_SUMBER[(LJ_AHLI[b] || [b])[0]]; if (s) s[1](); return; }
+      if (p === 'kilang') { window.klUndurKe(g[2]); return; }
+      if (p === 'laci') { bl = el(GB_LACI_BTN[GB_JENIS.indexOf(b)]); if (bl) bl.click(); return; }
+      if (p === 'kapal') { if (layar) return; tambatIdx = -1; gbHal = GB_JENIS.indexOf(b); bukaBank(false); return; }
+      arkHal = 0; arkBi = ARK_BID.indexOf(b); bukaMini();
+    }
+    function cpdPhone(b) {
+      if (!STA_PHONE[b]) return;
+      kol('coach').doc('phone_buka').set({ laci: STA_PHONE[b], at: Date.now(), dah: false }).then(function() {
+        alert('Siap. Buka APP PHONE sekarang (dalam 30 minit) — terus masuk soalan ' + (CPD_NAMA[cpdDariLj(b)] || b.toUpperCase()) + '.');
+      }).catch(function(e) { alert('Gagal hantar ke app phone: ' + ((e && e.message) || e)); });
+    }
+    // Cara pai bidang dikira (dengan nombor semasa)
+    function cpdKiraTeks(k) {
+      var nm = CPD_NAMA[k] || '', d = coachDataAkhir || {}, set = COACH_MUSIM[coachMusim] || COACH_MUSIM.CUTI, sas = set.english ? set.english[k] : '', n = d[k] || 0, g = d.gameB && d.gameB[k];
+      if (k === 'listening') return 'Macam mana pai LISTENING dikira?\nIkut MINIT awak tonton / dengar English (report + LISTENING di PAWAGAM).\nSekarang: ' + n + ' min · sasaran ' + sas + '% daripada pai English.';
+      return 'Macam mana pai ' + nm + ' dikira?\nBilangan vocab ' + nm + ' yang dah SR dalam game PALING RENDAH di ARKED ' + nm + ' (5 game: ' + cpdGame() + ').\n' +
+        'Sekarang: ' + n + ' vocab' + (g ? ' · game terendah ' + g : '') + ' · sasaran ' + sas + '%.\n' +
+        'Jadi main SEMUA 5 game — game yang paling sikit SR itulah yang dikira.\n' +
+        (k === 'vocab' ? 'Vocab kamus datang dari PEJABAT PELABUHAN (kapal Laci Bahasa).' : 'Vocab sampai ke ARKED ikut aliran: SUMBER → KILANG → LACI → PELABUHAN → ARKED. Membaca / mencatat sahaja tak naikkan pai.');
+    }
+    // Langkah seterusnya — peringkat PALING DEKAT dengan pai dulu (ARKED → PELABUHAN → LACI → KILANG → SUMBER → APP PHONE)
+    function cpdLangkah(k) {
+      var lj = CPD_LJ[k], nm = CPD_NAMA[k] || '', d = (STA.data && lj) ? STA.data[lj] : null, g = coachDataAkhir && coachDataAkhir.gameB && coachDataAkhir.gameB[k];
+      var pergi = function(lbl, p) { return [lbl, function() { cpdMisi(k); cpdPergi(lj, p); }]; };
+      if (k === 'listening') return { t: 'Pergi PAWAGAM, tonton / dengar video English, kemudian tekan + LISTENING dan report minit.', b: ['KE PAWAGAM ›', function() { cpdMisi(k); bukaPawagam(); }] };
+      if (k === 'vocab') return { t: 'Pergi ARKED VOCAB KAMUS, main game paling rendah dulu' + (g ? ' (' + g + ')' : '') + '. Vocab tiada? PEJABAT PELABUHAN.', b: pergi('KE ARKED VOCAB KAMUS ›', 'arked') };
+      if (!d) return { t: 'Saya tengah kira di mana bahan ' + nm + ' tersangkut. Buka STATUS ALIRAN untuk lihat.', b: pergi('STATUS ALIRAN ›', 'sta') };
+      if (d.arked) return { t: 'Langkah seterusnya: ARKED ' + nm + '.\n' + d.arked + ' vocab belum SR di game terendah' + (g ? ' (' + g + ')' : '') + ' — ini yang terus naikkan pai. Main game itu dulu.', b: pergi('KE ARKED ' + nm + ' ›', 'arked') };
+      if (d.kapal) return { t: 'Langkah seterusnya: PELABUHAN ' + nm + '.\n' + d.kapal + ' laci dah SR tapi belum jadi kontena. Buka kapal → padankan perkataan di dermaga → vocab masuk ARKED.', b: pergi('KE PELABUHAN ' + nm + ' ›', 'kapal') };
+      if (d.laci) return { t: 'Langkah seterusnya: LACI ' + nm + '.\n' + d.laci + ' laci belum SR. Ulang kaji sampai masuk SR — baru jadi kapal di PELABUHAN.', b: pergi('KE LACI ' + nm + ' ›', 'laci') };
+      if (d.kilang) return { t: 'Langkah seterusnya: KILANG ' + nm + '.\n' + d.kilang + ' bahan belum habis diterjemah. Terjemah setiap ayat → SIMPAN → ayat masuk LACI.', b: pergi('KE KILANG ' + nm + ' ›', 'kilang') };
+      if (d.baru) return { t: 'Langkah seterusnya: baca bahan ' + nm + '.\n' + d.baru + ' bahan belum dibaca. Baca → SUDAH BACA → masuk KILANG.', b: pergi('KE ' + ((KL_SUMBER[(LJ_AHLI[lj] || [lj])[0]] || ['SUMBER'])[0]) + ' ›', 'sumber') };
+      if (d.phone) return { t: 'Langkah seterusnya: APP PHONE.\n' + d.phone + ' soalan ' + nm + ' belum ada karangan. Tulis di app phone (atau guna PRESET AI di sana).', b: pergi('HANTAR KE APP PHONE ›', 'phone') };
+      return { t: 'Semua bahan ' + nm + ' dah habis diproses. Tambah bahan baru: ' + (STA_PHONE[lj] ? 'tulis soalan / karangan di APP PHONE, atau ' : '') + 'baca kertas MUET di ' + ((KL_SUMBER[(LJ_AHLI[lj] || [lj])[0]] || ['bangunan sumber'])[0]).replace(/\s*\(.*\)$/, '') + '.', b: STA_PHONE[lj] ? pergi('HANTAR KE APP PHONE ›', 'phone') : pergi('KE BANGUNAN SUMBER ›', 'sumber') };
+    }
+    // Babak coach utama: cara kira + langkah seterusnya
+    function coachBabakBelajar(k, babak) {
+      if (!k) { babak('Pai English awak dah SEIMBANG. Teruskan main game terendah di ARKED bidang yang awak suka.\nBandingkan pai (b) dengan (c) bawah saya — hirisan sama nama patut sama besar.', 'gembira'); return; }
+      var L = cpdLangkah(k);
+      babak(cpdKiraTeks(k), 'masuk');
+      babak(L.t + '\nSampai sana, saya sambung terangkan apa nak buat.', 'gembira', [L.b]);
+    }
+    // Konteks page: bidang + peringkat
+    function cpdKonteks(id) {
+      var lj = null, p = '';
+      if (id === 'screen-pustaka') { lj = 'reading'; p = 'sumber'; }
+      else if (id === 'screen-tulis') { lj = 'writing'; p = 'sumber'; }
+      else if (id === 'screen-pentas') { lj = 'speaking'; p = 'sumber'; }
+      else if (id === 'screen-lwbb') { lj = LWBB.j; p = 'sumber'; }
+      else if (id === 'screen-pawagam') { lj = 'pnkertas'; p = 'pawagam'; }
+      else if (id === 'screen-kilang') { lj = STA_B[KL.hal] ? STA_B[KL.hal][0] : ''; p = 'kilang'; }
+      else if (id === 'screen-play' && CPD.laciAktif) { lj = cpdUtama(CPD.laciAktif); p = 'laci'; if (!lj) return null; }
+      else if (id === 'screen-gbank') { lj = GB_JENIS[gbHal] || ''; p = 'kapal'; }
+      else if (id === 'screen-gb-kapal') { lj = GB_JENIS[gbHal] || ''; p = 'dermaga'; }
+      else if (id === 'screen-mini') { lj = ARK_BID[arkBi] || ''; p = 'arked'; }
+      else if (id === 'screen-lpf') { lj = ''; p = 'lpf'; }
+      else if (id === 'screen-sta') { lj = ''; p = 'sta'; }
+      if (lj === null) return null;
+      var k = cpdDariLj(lj);
+      return { lj: lj, p: p, k: k, nm: CPD_NAMA[k] || '' };
+    }
+    function cpdTeks(K) {
+      var nm = K.nm, lj = K.lj, k = K.k, t = '', B = [], misi = CPD.b && Date.now() - CPD.at < 6 * 3600000 ? CPD.b : '';
+      var pergi = function(lbl, b, p) { B.push([lbl, function() { cpdPergi(b, p); }]); };
+      if (K.p === 'sumber') {
+        if (lj === 'reading') t = 'Ini PERPUSTAKAAN — sumber READING.\n• Titik KERTAS MUET: pilih DAY → BACA KERTAS → baca setiap Part → tekan SUDAH BACA PART. Bahan terus masuk KILANG READING (automatik — tak perlu catat).\n• Titik BUKAN MUET: petikan yang awak tulis di app phone → baca → SUDAH BACA.\nPai Reading belum naik di sini — ia naik bila vocab SR di ARKED READING.';
+        else if (lj === 'writing') t = 'Ini DEWAN TULIS — sumber WRITING.\n• Titik KERTAS MUET: baca soalan + jawapan → SUDAH BACA → KILANG WRITING.\n• Titik DARI APP PHONE: karangan yang awak tulis di app phone → baca → SUDAH BACA → KILANG WRITING.\nTiada karangan? Tulis di app phone (ada PRESET AI kalau malas fikir).';
+        else if (lj === 'speaking') t = 'Ini PENTAS — sumber SPEAKING.\n• Titik KERTAS MUET: baca soalan + jawapan → SUDAH BACA → KILANG SPEAKING.\n• Titik APP PHONE: huraian yang awak tulis di app phone (Laci Speaking) → baca → SUDAH BACA → KILANG SPEAKING.\nHuraian belum ada? Tulis di app phone (ada PRESET AI).';
+        else t = 'Ini bangunan ' + nm + ' — karangan dari app phone.\nBaca karangan penuh → tekan SUDAH BACA → ayat masuk KILANG ' + nm + '.\nTiada karangan? Tulis di app phone (ada PRESET AI).';
+        pergi('KE KILANG ' + nm + ' ›', lj, 'kilang');
+        if (STA_PHONE[lj]) pergi('APP PHONE ›', lj, 'phone');
+      } else if (K.p === 'pawagam') {
+        t = 'Ini PAWAGAM — LISTENING.\nPai Listening dikira ikut MINIT: tonton / dengar English, kemudian tekan + LISTENING dan report minit.\nKertas MUET Listening: baca → SUDAH BACA → KILANG LISTENING (untuk vocab; pai tetap ikut minit).';
+      } else if (K.p === 'kilang') {
+        t = 'Ini KILANG ' + nm + '.\n1. Pilih sumber di atas (jika ada lebih dari satu), kemudian tekan bahan yang belum SIAP.\n2. Terjemah setiap ayat ke BM — taip sendiri, atau SALIN PRESET → AI → tampal jawapan.\n3. Tekan SIMPAN. Setiap 5 ayat = 1 laci di LACI ' + nm + '.\nBahan tiada? Tekan BAHAN TIADA di bawah.';
+        pergi('SIAP · KE LACI ' + nm + ' ›', lj, 'laci');
+      } else if (K.p === 'laci') {
+        t = 'Ini LACI ' + nm + '.\nUlang kaji setiap laci (ayat English ↔ BM). Laci yang dah diulang kaji masuk SR → jadi KAPAL di PELABUHAN ' + nm + '.\nLaci lama akan muncul semula ikut jadual SR — ulang bila diminta.';
+        pergi('SIAP · KE PELABUHAN ' + nm + ' ›', lj, 'kapal');
+      } else if (K.p === 'kapal') {
+        t = 'Ini PELABUHAN ' + (nm || '(PEJABAT)') + '.\nSetiap KAPAL = satu laci yang dah SR. Tekan kapal → DERMAGA: padankan perkataan English dengan BM → jadi KONTENA → vocab masuk ARKED ' + (nm || 'VOCAB KAMUS') + '.\nTiada kapal? Laci belum SR — pergi LACI dulu.';
+        pergi('KE ARKED ' + (nm || 'VOCAB KAMUS') + ' ›', lj, 'arked');
+        if (lj) pergi('‹ LACI ' + nm, lj, 'laci');
+      } else if (K.p === 'dermaga') {
+        t = 'Ini DERMAGA.\nPadankan setiap perkataan English dengan maksud BM. Bila semua dah padan, kontena belayar → vocab masuk ARKED ' + (nm || 'VOCAB KAMUS') + '.';
+      } else if (K.p === 'arked') {
+        t = 'Ini ARKED.\n1. Pilih titik bidang di atas (contoh READING).\n2. Main 5 game: ' + cpdGame() + '.\nPai dikira = vocab SR dalam game PALING RENDAH — jadi main game yang paling sikit SR dulu' + (k && coachDataAkhir && coachDataAkhir.gameB && coachDataAkhir.gameB[k] ? ' (' + nm + ': ' + coachDataAkhir.gameB[k] + ')' : '') + '.\nVocab tiada? Tekan VOCAB TIADA › PELABUHAN di bawah.';
+      } else if (K.p === 'lpf') {
+        t = 'Ini LAST PERFORMANCE.\nEssay Reasoning / Presenting terbuka bila SEMUA vocab essay dah SR di game terendah ARKED. Baca essay penuh, hafal, latih perform.\nYang belum terbuka tunjuk langkah yang tinggal.';
+        pergi('STATUS ALIRAN ›', '', 'sta');
+      } else if (K.p === 'sta') {
+        t = 'Ini STATUS ALIRAN.\nSetiap baris = satu bidang. Nombor = bahan menunggu di peringkat itu.\nKerja dari KANAN ke kiri: ARKED dulu (terus naikkan pai), kemudian KAPAL, LACI, KILANG. Semua kosong? Mula dari APP PHONE (logo di bawah nama bidang).';
+      }
+      if (misi && misi !== k && K.p !== 'sta' && K.p !== 'lpf') {
+        var L = cpdLangkah(misi);
+        t += '\n\nMisi coach: ' + CPD_NAMA[misi] + '. ' + L.t;
+        B.push(L.b);
+      } else if (misi && misi === k) t = 'Misi coach: ' + nm + '.\n' + t;
+      return { t: t, b: B };
+    }
+    function cpdLukis(id) {
+      var sc = el(id), lama = el('cpd-box');
+      if (!sc || sc.className.indexOf('active') < 0) return;
+      if (id === 'screen-play') { if (Date.now() - CPD.laciAt < 4000) CPD.laciAktif = CPD.laci; else if (CPD.idAkhir !== 'screen-play') CPD.laciAktif = ''; }
+      else CPD.laciAktif = '';
+      CPD.idAkhir = id;
+      if (lama && lama.parentNode) lama.parentNode.removeChild(lama);
+      if (!currentUser) return;
+      var K = cpdKonteks(id); if (!K) return;
+      if (!STA.data && !STA.muat) staKira(false, function() { if (CPD.idAkhir === id) cpdLukis(id); });
+      var T = cpdTeks(K), tutup = !!CPD.tutup[id], i, h, BT = 'padding:4px 9px;margin:4px 4px 0 0;font-family:inherit;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:10px;';
+      CPD.btn = T.b;
+      h = '<div style="overflow:hidden;"><span style="background:#000;color:#fff;font-weight:bold;font-size:0.8rem;padding:1px 7px;border-radius:5px;">COACH</span>' +
+        (tutup ? '<span style="font-size:0.8rem;"> apa nak buat di sini?</span>' : '') +
+        '<button type="button" data-cpd="tutup" style="float:right;' + BT + 'margin:0;background:#fff;color:#000;">' + (tutup ? 'BUKA' : 'TUTUP') + '</button></div>';
+      if (!tutup) {
+        h += '<div style="white-space:pre-line;font-size:0.9rem;line-height:1.35;margin-top:4px;">' + lwEsc(T.t) + '</div>';
+        for (i = 0; i < T.b.length; i++) if (T.b[i]) h += '<button type="button" data-cpd="' + i + '" style="' + BT + (i === 0 ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + lwEsc(T.b[i][0]) + '</button>';
+      }
+      var box = document.createElement('div');
+      box.id = 'cpd-box';
+      box.style.cssText = 'border:3px solid #000;border-radius:10px;padding:5px 8px 7px;margin:4px 0 8px;background:#fff;color:#000;';
+      box.innerHTML = h;
+      box.onclick = function(e) {
+        var t = e.target;
+        while (t && t !== box && !(t.getAttribute && t.getAttribute('data-cpd'))) t = t.parentNode;
+        if (!t || t === box) return;
+        var v = t.getAttribute('data-cpd');
+        if (v === 'tutup') { CPD.tutup[id] = !CPD.tutup[id]; cpdLukis(id); return; }
+        if (CPD.btn[+v]) CPD.btn[+v][1]();
+      };
+      sc.insertBefore(box, sc.firstChild);
+    }
+    // Sambung ke showScreen (global) & startLaciWriting — coach muncul di setiap bangunan
+    (function() {
+      var ssAsal = window.showScreen, slwAsal = window.startLaciWriting;
+      if (typeof ssAsal === 'function') window.showScreen = function(id) { ssAsal(id); try { cpdLukis(id); } catch (e) {} };
+      if (typeof slwAsal === 'function') window.startLaciWriting = function(j) { CPD.laci = j; CPD.laciAt = Date.now(); return slwAsal(j); };
+    })();
     // Lencana dikemas kini sendiri: 8 saat selepas buka app, kemudian setiap 30 minit (dan setiap kali STATUS dibuka)
     setTimeout(function() { staKira(false); }, 8000);
     setInterval(function() { if (currentUser && Date.now() - STA.at > 1800000) staKira(true); }, 60000);
