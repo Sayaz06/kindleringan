@@ -18948,7 +18948,7 @@
         h = '<button type="button" data-pu="balik" style="' + PU_BTN + '">‹ SENARAI HARI</button>' + h;
         if (puUI.mesej) h += '';
         h += '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">DAY ' + no + ' · ' + d + (d === hari ? ' · HARI INI' : '') + '</div>';
-        h += '<div style="font-size:0.85rem;">' + L.length + ' Part = ' + (L.length * COACH_UNIT_READING) + ' unit Reading</div>';
+        h += '<div style="font-size:0.85rem;">' + L.length + ' Part dicatat · rekod peribadi sahaja (pai Reading dikira dari ARKED READING)</div>';
         if (PU_KERTAS_DAY[no] && PU_KERTAS[PU_KERTAS_DAY[no]]) h += '<button type="button" data-pu="baca" data-v="' + PU_KERTAS_DAY[no] + '" data-d="' + no + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin:6px 0;">BACA KERTAS: ' + PU_KERTAS[PU_KERTAS_DAY[no]].t + ' (' + PU_KERTAS[PU_KERTAS_DAY[no]].ms.length + ' ms) ›</button>';
         if (!L.length) h += '<div style="font-size:0.85rem;margin:4px 0;">Belum ada latihan. Tambah di bawah.</div>';
         for (i = 0; i < L.length; i++) {
@@ -19009,7 +19009,7 @@
         var ix = puData.kertas.indexOf(k); if (ix >= 0) puData.kertas.splice(ix, 1); puData.kertas.push(k);
         if (puData.kertas.length > 30) puData.kertas = puData.kertas.slice(-30);
         puUI.part = 0;
-        puSimpan('Ditambah: ' + k + ' · Part ' + puData.hari[puUI.hari][puData.hari[puUI.hari].length - 1].p + ' (+' + COACH_UNIT_READING + ' unit Reading).');
+        puSimpan('Ditambah: ' + k + ' · Part ' + puData.hari[puUI.hari][puData.hari[puUI.hari].length - 1].p + ' (rekod peribadi).');
       }
       else if (a === 'buang') {
         var L = puData.hari[puUI.hari] || [], it = L[+v];
