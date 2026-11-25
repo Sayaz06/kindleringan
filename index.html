@@ -21837,8 +21837,12 @@
       if (GK.mesej) h += '<div style="border:2px solid #000;border-radius:6px;padding:4px 6px;margin:6px 0;font-weight:bold;">' + lwEsc(GK.mesej) + '</div>';
       if (GK.ayat.length) h += '<button type="button" data-gk-kl="balik" style="display:block;width:100%;margin:10px 0;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#000;color:#fff;font-weight:bold;font-size:1.05rem;font-family:inherit;">SIAP · KEMBALI KE KILANG ›</button>';
       el('gk-isi').innerHTML = h;
+      gkTinggiSemua();
       gkKemas();
     }
+    // 25 Nov: kotak terjemahan melebar sendiri ikut panjang ayat (tak perlu tarik manual)
+    function gkTinggi(t) { if (!t || t.tagName !== 'TEXTAREA') return; t.style.overflow = 'hidden'; t.style.resize = 'none'; t.style.height = 'auto'; if (t.scrollHeight > 0) t.style.height = (t.scrollHeight + 6) + 'px'; else t.style.height = ''; }
+    function gkTinggiSemua() { var a = el('gk-isi').querySelectorAll('textarea'), i; for (i = 0; i < a.length; i++) gkTinggi(a[i]); }
     // Kemas kini kiraan TANPA lukis semula (kotak taip tidak hilang fokus)
     function gkKemas() {
       var n = gkSiap(), k = el('gk-kira');
@@ -22755,7 +22759,8 @@
     var gkKotor = false, gkT = null;
     function gkSimpanSenyap() { if (!gkKotor || !GK.id) return; gkKotor = false; gkSimpan(function() {}); }
     el('gk-isi').addEventListener('input', function(e) {
-      var t = e.target; if (!t || !t.getAttribute || t.getAttribute('data-gk') === null) return;
+      var t = e.target; gkTinggi(t);
+      if (!t || !t.getAttribute || t.getAttribute('data-gk') === null) return;
       GK.bm[+t.getAttribute('data-gk')] = t.value; gkKotor = true; gkKemas();
       if (gkT) clearTimeout(gkT); gkT = setTimeout(gkSimpanSenyap, 3000);
     }, false);
