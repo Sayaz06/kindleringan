@@ -10273,7 +10273,7 @@
       }
     };
     var COACH_BIDANG = [
-      ['listening', 'Listening (min)'], ['pentas', 'Speaking'], ['presenting', 'Presenting'], ['reading', 'Reading'], ['tulis', 'Writing'], ['vocab', 'Vocab kamus'], ['reasoning', 'Reasoning']
+      ['listening', 'Listening'], ['pentas', 'Speaking'], ['presenting', 'Presenting'], ['reading', 'Reading'], ['tulis', 'Writing'], ['vocab', 'Vocab kamus'], ['reasoning', 'Reasoning']
     ];
     var COACH_POSPON = {}; // 17 Nov: Writing DIBUKA — unit = 1 ayat Laci Writing yang sudah masuk SR (usaha terakhir)
     var COACH_UNIT_READING = 10; // 1 Part latihan Reading = 10 unit (≈ 10 min usaha)
@@ -10862,7 +10862,7 @@
     // 22 Nov (Fasa B): butang di bawah pai (b) — bidang paling ketinggalan → terus ke ARKED bidang itu (kosong? guna butang UNDUR)
     //   Listening dikira guna minit → ke PAWAGAM. [label, fungsi]
     var COACH_FOKUS_KE = {
-      listening: ['PAWAGAM', function() { bukaPawagam(); }],
+      listening: ['BANGUNAN LISTENING', function() { pwHal = cpdLsInfo().kertas ? 0 : 1; KT_UI.pn.baca = ''; bukaPawagam(); }], // 25 Nov: terus ke bahagian (KERTAS / VIDEO) yang lebih ketinggalan
       vocab: ['ARKED VOCAB KAMUS', function() { arkHal = 0; arkBi = 0; bukaMini(); }],
       tulis: ['ARKED WRITING', function() { arkHal = 0; arkBi = ARK_BID.indexOf('writing'); bukaMini(); }],
       pentas: ['ARKED SPEAKING', function() { arkHal = 0; arkBi = ARK_BID.indexOf('speaking'); bukaMini(); }],
@@ -10872,6 +10872,7 @@
     };
     el('coach-pai').onclick = function(e) {
       var t = e.target;
+      if (hlCari(t, this, 'data-ketat') !== null) { ketatTukar(); return; } // 25 Nov: MOD KETAT
       var ck = hlCari(t, this, 'data-coach-ke');
       if (ck !== null) { cpdMisi(ck); if (COACH_FOKUS_KE[ck]) COACH_FOKUS_KE[ck][1](); return; } // 22 Nov: FOKUS → ARKED · 25 Nov: jadi MISI coach
       // 17 Nov: butang FOKUS Bahasa / Fakta dalam PAI 2
@@ -11091,7 +11092,7 @@
         coachPie([{ v: minBahasa, n: 'Bahasa' }, { v: minFakta, n: 'Fakta' }], '(a) BAHASA vs FAKTA · minit hari ini') +
         '<div style="font-size:0.85rem;line-height:1.5;"><b>Bahasa ' + pEK[0] + '%</b> · ' + minBahasa + ' min (sasaran ' + sasBF[0] + '%)' + (stEn ? ' · <b>' + stEn + '</b>' : (fokusBF === 'fakta' ? ' · tidak dinilai' : '')) + '<br>' +
         '<b>Fakta ' + pEK[1] + '%</b> · ' + minFakta + ' min (sasaran ' + sasBF[1] + '%)' + (stKu ? ' · <b>' + stKu + '</b>' : (fokusBF === 'bahasa' ? ' · tidak dinilai' : '')) + '</div>' +
-        '<div style="font-size:0.8rem;">Minit dicatat sendiri. Bahasa = Laci Bahasa, SR Bebas, Reasoning, Writing, ARKED + Pelabuhan (game) + Listening (PAWAGAM). Fakta = Laci Fakta. Presenting tidak dikira. Bermula semula setiap hari.</div>';
+        '<div style="font-size:0.8rem;">Minit dicatat sendiri. Bahasa = Laci Bahasa, SR Bebas, Reasoning, Writing, ARKED + Pelabuhan (game) + Listening (bangunan LISTENING). Fakta = Laci Fakta. Presenting tidak dikira. Bermula semula setiap hari.</div>';
       var nE = [], cE = [], cS = [], kE = [];
       for (i2 = 0; i2 < COACH_BIDANG.length; i2++) {
         var kb = COACH_BIDANG[i2][0];
@@ -11103,7 +11104,7 @@
         var bd = COACH_BIDANG[kE[i2]], sas = set.english[bd[0]];
         legE += '<b>' + bd[1] + ' ' + pE[i2] + '%</b> / sasaran ' + sas + '% · <b>' + coachStatus(pE[i2] - sas) + '</b> <span style="font-size:0.75rem;">(' + nE[i2] + (bd[0] === 'listening' ? ' min' : ' vocab SR' + (data.gameB && data.gameB[bd[0]] ? ' · ' + data.gameB[bd[0]] : '')) + ')</span><br>';
       }
-      isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
+      isi2 += '<div style="border-top:1px solid #000;margin-top:6px;"></div>' + ketatBar() + coachPie(cE, '(b) ENGLISH SEKARANG' + (fokus ? ' · Fokus: ' + fokus : ' · SEIMBANG')) +
         (COACH_FOKUS_KE[fokusK] ? '<button type="button" data-coach-ke="' + fokusK + '" style="display:block;width:100%;margin:4px 0 8px;padding:9px 6px;border:3px solid #000;border-radius:10px;background:#000;color:#fff;font-weight:bold;font-size:1rem;font-family:inherit;">FOKUS ' + fokus.toUpperCase() + ' · PERGI KE ' + COACH_FOKUS_KE[fokusK][0] + ' ›</button>' : '') +
         coachPie(cS, '(c) ENGLISH SASARAN') +
         '<div style="font-size:0.8rem;">Bandingkan pai (b) dengan (c): hirisan yang sama nama patut sama besar.</div>' +
@@ -13438,15 +13439,8 @@
     function coachFokusGo(f) {
       var kB = coachKunciB(f); // 25 Nov: bidang English → langkah seterusnya ikut STATUS ALIRAN (bukan tempat lama)
       if (kB) return cpdLangkah(kB).b;
-      var m = {
-        Listening: ['KE PAWAGAM → + LISTENING', function() { bukaPawagam(); }],
-        Reading: ['KE BANGUNAN READING ›', function() { bukaPustaka(); }],
-        Speaking: ['KE PENTAS → TULIS HURAIAN', function() { bukaPentas(); }],
-        Writing: ['BUKA LACI WRITING', function() { el('btn-go-laci-writing').click(); }],
+      var m = { // 25 Nov: bidang English sentiasa ikut cpdLangkah di atas — baki di sini bukan English
         Ayat: ['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }],
-        Vocab: ['MAIN GAME VOCAB', function() { bukaMini(); }],
-        Reasoning: ['BUKA LACI REASONING', function() { el('btn-go-reasoning').click(); }],
-        Presenting: ['BUKA LACI PRESENTING', function() { el('btn-go-presenting').click(); }],
         Fakta: ['BUKA LACI FAKTA', function() { el('btn-go-fakta').click(); }]
       };
       return m[f] || null;
@@ -13454,15 +13448,8 @@
     function coachFokusTeks(f) {
       var kB = coachKunciB(f);
       if (kB) return CPD_RINGKAS[kB];
-      return {
-        Listening: 'tonton video English, kemudian report minit (+ LISTENING)',
-        Reading: 'buat latihan kertas MUET Reading, kemudian catat Part di Perpustakaan',
-        Speaking: 'tulis huraian isi di Pentas (Individual / Group)',
-        Writing: 'baca karangan (LATIHAN WRITING), terjemah ayat di DALAM KAPAL (Pelabuhan Writing), kemudian ulang kaji Laci Writing',
+      return { // 25 Nov: bidang English ikut CPD_RINGKAS di atas
         Ayat: 'ulang kaji ayat di Laci Bahasa',
-        Vocab: 'main game vocab (level terendah)',
-        Reasoning: 'baca karangan & terjemah ayat di Pelabuhan Reasoning, kemudian ulang kaji Laci Reasoning',
-        Presenting: 'baca karangan & terjemah ayat di Pelabuhan Presenting, kemudian ulang kaji Laci Presenting',
         Fakta: 'ulang kaji di Laci Fakta'
       }[f] || 'teruskan usaha';
     }
@@ -14380,7 +14367,7 @@
       var kotak = function(w) { return '<span style="display:inline-block;width:12px;height:12px;border:2px solid #000;background:' + w + ';vertical-align:middle;margin-right:4px;"></span>'; };
       return '<div style="font-weight:bold;">LISTENING vs ENGLISH LAIN</div>' +
         '<div style="text-align:center;"><svg viewBox="-110 -10 470 245" style="width:100%;max-width:380px;" xmlns="http://www.w3.org/2000/svg">' + s + '</svg></div>' +
-        '<div style="font-size:0.85rem;">' + kotak('#555') + 'MUET (kertas): <b>' + Math.round(fm * 100) + '%</b> · sasaran ' + k.s1 + '% · ' + pwJm(k.K) + '</div>' +
+        '<div style="font-size:0.85rem;">' + kotak('#555') + 'Kertas MUET: <b>' + Math.round(fm * 100) + '%</b> · sasaran ' + k.s1 + '% · ' + pwJm(k.K) + '</div>' +
         '<div style="font-size:0.85rem;">' + kotak('#bbb') + 'Video: <b>' + Math.round(fv * 100) + '%</b> · sasaran ' + k.s1 + '% · ' + pwJm(k.V) + '</div>';
     }
     function pwLukisPai() {
@@ -17608,7 +17595,7 @@
         }
       }
       h = ktSenarai(b);
-      k.innerHTML = '<div style="font-weight:bold;font-size:1.05rem;">KERTAS MUET</div><div style="font-size:0.8rem;">Kertas sebenar dalam app (asing dari app phone).' + (KT_LJ[b] ? ' Baca → <b>SUDAH BACA KERTAS</b> → bahan KERTAS MUET di ' + KT_LJ[b][1] + '.' : '') + '</div>' + (h || (dua ? '<div style="font-size:0.85rem;margin-top:6px;">Belum ada kertas.</div>' : ''));
+      k.innerHTML = '<div style="font-weight:bold;font-size:1.05rem;">KERTAS MUET</div><div style="font-size:0.8rem;">' + (b === 'pn' ? ktNotaPn() : 'Kertas MUET sebenar dalam app, berasingan daripada app phone.' + (KT_LJ[b] ? ' Baca kertas sampai habis, kemudian tekan <b>SUDAH BACA KERTAS</b>. Bahannya dihantar ke <b>' + KT_LJ[b][1] + '</b>, sumber KERTAS MUET.' : '')) + '</div>' + (h || (dua ? '<div style="font-size:0.85rem;margin-top:6px;">Belum ada kertas.</div>' : ''));
       if (!dua) { k.style.display = (h && !ktBaca(b) && KT_HARI.pn !== false && pwHal === 0) ? '' : 'none'; return; } // 21 Nov: kotak lama Listening sentiasa disorok
       hari = KT_HARI[b] !== false; hal = KT_HAL[b];
       for (i = 0; i < KT_HAL_NAMA.length; i++) ht += '<button type="button" class="hlt' + (i === hal ? ' on' : '') + '" data-hl="' + i + '"><span></span></button>';
@@ -17645,7 +17632,11 @@
       Promise.all([
         kol(LJ[J[0]].soalan).doc(kid).set({ sid: sid, soalan: K.t, karangan: ay.join('\n'), kertas: kid, at: Date.now() }),
         kol('coach').doc('kertas_baca').set(ub, { merge: true })
-      ]).then(function() { KT_UI[b].mesej = 'SUDAH BACA · ' + ay.length + ' baris → bahan KERTAS MUET di ' + J[1] + '.'; KT[b].lukis(); })
+      ]).then(function() {
+        KT_UI[b].mesej = 'SUDAH BACA. ' + ay.length + ' baris dihantar ke ' + J[1] + ', sumber KERTAS MUET.'; KT[b].lukis();
+        if (b === 'pn') ktPnMinit(kid).then(function(m) { KT_UI.pn.mesej += m ? ' ' + m + ' minit ditambah ke pai LISTENING, bahagian KERTAS MUET.' : ' Minit kertas ini sudah dikira hari ini.'; KT.pn.lukis(); }) // 25 Nov
+          .catch(function(e2) { KT_UI.pn.mesej += ' Gagal tambah minit: ' + ((e2 && e2.message) || e2); KT.pn.lukis(); });
+      })
         .catch(function(e) { KT_UI[b].mesej = 'Gagal hantar: ' + ((e && e.message) || e); KT[b].lukis(); });
     }
     var KT_BTN = 'padding:5px 9px;margin:4px 4px 0 0;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:6px;background:#fff;color:#000;';
@@ -17668,7 +17659,7 @@
         '<div style="font-weight:bold;font-size:1.05rem;margin:6px 0 2px;">' + K.t + '</div>' +
         (u.mesej ? '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + u.mesej + '</div>' : '') + nav +
         '<div style="border:2px solid #000;background:#fff;color:#000;padding:10px 10px 14px;font-family:\'Times New Roman\',Times,serif;font-size:1rem;line-height:1.35;">' + K.ms[m] + '</div>' + nav +
-        (KT_LJ[b] ? '<button type="button" data-kt="kapal" style="' + KT_BTNA + 'display:block;width:100%;margin:8px 0 0;">SUDAH BACA KERTAS → ' + KT_LJ[b][1] + ' ›</button>' : '');
+        (KT_LJ[b] ? '<button type="button" data-kt="kapal" style="' + KT_BTNA + 'display:block;width:100%;margin:8px 0 0;">SUDAH BACA KERTAS (HANTAR KE ' + KT_LJ[b][1] + ')</button>' : '');
     }
     // true = klik butang kertas (sudah diurus) · false = teruskan ke pengendali asal bangunan
     function ktKlik(e, box, b) {
@@ -21886,7 +21877,7 @@
       ptkertas: 'Bahan sumber KERTAS MUET datang daripada kertas MUET Speaking dalam app. Buka bangunan SPEAKING di tab MUET, tekan titik pertama (KERTAS MUET), baca kertas itu dan tekan SUDAH BACA KERTAS.',
       reading: 'Bahan sumber PETIKAN datang daripada kertas MUET Reading. Buka bangunan READING di tab MUET, tekan BACA KERTAS, kemudian tekan SUDAH BACA PART selepas habis membaca setiap Part.',
       readingq: 'Bahan sumber SOALAN datang daripada soalan kertas MUET Reading. Buka bangunan READING di tab MUET, tekan BACA KERTAS, kemudian tekan SUDAH BACA PART selepas habis membaca setiap Part.',
-      pnkertas: 'Bahan datang daripada kertas MUET Listening. Buka bangunan LISTENING di tab MUET, tekan titik pertama (KERTAS LISTENING), baca kertas itu dan tekan SUDAH BACA KERTAS.',
+      pnkertas: 'Bahan datang daripada kertas MUET Listening. Buka bangunan LISTENING di tab MUET, tekan titik pertama (KERTAS LISTENING), jawab kertas itu sambil mendengar audionya, kemudian tekan SUDAH BACA KERTAS.',
       reasoning: 'Bahan datang daripada karangan Reasoning yang awak tulis di app phone (Laci Reasoning). Tulis karangan di app phone dahulu. Kemudian buka bangunan REASONING di tab MUET, baca karangan itu dan tekan SUDAH BACA.',
       presenting: 'Bahan datang daripada karangan Presenting yang awak tulis di app phone (Laci Presenting). Tulis karangan di app phone dahulu. Kemudian buka bangunan PRESENTING di tab MUET, baca karangan itu dan tekan SUDAH BACA.',
       readingb: 'Bahan sumber BUKAN MUET datang daripada petikan yang awak tulis di app phone (Laci Reading Bukan MUET). Tulis petikan di app phone dahulu. Kemudian buka bangunan READING di tab MUET, tekan titik kedua (BUKAN MUET), baca petikan itu dan tekan SUDAH BACA.'
@@ -22124,14 +22115,14 @@
     function staLukis() {
       var h = '', i, b, o, S0 = 'display:table-cell;border-bottom:1px solid #000;padding:6px 2px;text-align:center;vertical-align:middle;', BT = 'display:block;width:100%;padding:6px 0;border:2px solid #000;border-radius:6px;font-weight:bold;font-size:0.95rem;font-family:inherit;';
       h += '<div style="font-weight:bold;font-size:1.15rem;">STATUS ALIRAN</div>';
-      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Berapa yang menunggu di setiap peringkat. Tekan nombor untuk terus ke situ. <b>Logo APP PHONE</b> di bawah nama bidang = soalan belum ditulis karangan (tekan → app phone terus buka laci itu) · <b>KILANG</b> = bahan belum habis diterjemah · <b>LACI</b> = laci belum SR · <b>KAPAL</b> = laci SR belum jadi kontena · <b>ARKED</b> = vocab belum SR (game terendah).</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Jadual ini menunjukkan berapa bahan yang sedang menunggu di setiap peringkat. Tekan nombor untuk terus ke peringkat itu.<br>Butang <b>APP PHONE</b> di bawah nama bidang membuka app phone terus pada laci bidang itu. Nombor pada butang ialah soalan yang belum ada karangan.<br><b>KILANG</b>: bahan yang belum habis diterjemah. <b>LACI</b>: laci yang belum masuk SR. <b>KAPAL</b>: laci yang sudah SR tetapi belum dijadikan kontena. <b>ARKED</b>: vocab yang belum SR dalam game paling rendah.</div>';
       if (STA.mesej) h += '<div style="font-weight:bold;border:2px solid #000;border-radius:6px;padding:4px 6px;margin:4px 0;">' + lwEsc(STA.mesej) + '</div>';
       if (!STA.data) { el('sta-isi').innerHTML = h + '<div>Mengira...</div>'; return; }
       h += '<div style="display:table;width:100%;table-layout:fixed;"><div style="display:table-row;font-weight:bold;font-size:0.75rem;">' +
         '<div style="' + S0 + 'width:30%;text-align:left;">BIDANG</div><div style="' + S0 + '">KILANG</div><div style="' + S0 + '">LACI</div><div style="' + S0 + '">KAPAL</div><div style="' + S0 + '">ARKED</div></div>';
       for (i = 0; i < STA_B.length; i++) {
         b = STA_B[i]; o = STA.data[b[0]] || { kilang: 0, laci: 0, kapal: 0, arked: 0, phone: 0 };
-        h += '<div style="display:table-row;"><div style="' + S0 + 'text-align:left;font-weight:bold;font-size:0.8rem;">' + b[1] + staLogoPhone(b[0], o.phone) + '</div>' +
+        h += '<div style="display:table-row;"><div style="' + S0 + 'text-align:left;font-weight:bold;font-size:0.8rem;">' + b[1] + (ketatBlok(cpdDariLj(b[0])) ? '<div style="display:table;margin-top:3px;padding:1px 5px;background:#000;color:#fff;border-radius:4px;font-size:0.65rem;">DIKUNCI</div>' : '') + staLogoPhone(b[0], o.phone) + '</div>' +
           staSel(b[0], 'kilang', o.kilang, S0, BT) + staSel(b[0], 'laci', o.laci, S0, BT) + staSel(b[0], 'kapal', o.kapal, S0, BT) + staSel(b[0], 'arked', o.arked, S0, BT) + '</div>';
       }
       h += '</div><div style="font-size:0.75rem;margin-top:6px;">Dikira ' + new Date(STA.at).toTimeString().slice(0, 5) + ' · tekan Segar untuk kira semula.</div>';
@@ -22177,7 +22168,7 @@
     var CPD_LJ = { tulis: 'writing', pentas: 'speaking', reading: 'reading', reasoning: 'reasoning', presenting: 'presenting', listening: 'pnkertas', vocab: '' };
     var CPD_NAMA = { tulis: 'WRITING', pentas: 'SPEAKING', reading: 'READING', reasoning: 'REASONING', presenting: 'PRESENTING', listening: 'LISTENING', vocab: 'VOCAB KAMUS' };
     var CPD_RINGKAS = {
-      listening: 'tonton atau dengar video English, kemudian rekod minitnya di bangunan LISTENING',
+      listening: 'jawab kertas MUET Listening atau tonton video English, kemudian rekod di bangunan LISTENING',
       vocab: 'main game di ARKED VOCAB KAMUS, mulakan dengan game yang paling rendah',
       tulis: 'ikut aliran WRITING sampai ke ARKED WRITING',
       pentas: 'ikut aliran SPEAKING sampai ke ARKED SPEAKING',
@@ -22247,7 +22238,14 @@
     // Cara pai bidang dikira (dengan nombor semasa)
     function cpdKiraTeks(k) {
       var nm = CPD_NAMA[k] || '', d = coachDataAkhir || {}, set = COACH_MUSIM[coachMusim] || COACH_MUSIM.CUTI, sas = set.english ? set.english[k] : '', n = d[k] || 0, g = d.gameB && d.gameB[k];
-      if (k === 'listening') return 'Macam mana pai LISTENING dikira?\nPai LISTENING dikira mengikut jumlah minit awak menonton atau mendengar video English. Minit itu direkod di bangunan LISTENING, halaman VIDEO, dengan butang + LISTENING.\nSekarang: ' + n + ' minit. Sasaran LISTENING ialah ' + sas + ' peratus daripada pai English.';
+      if (k === 'listening') { // 25 Nov: sasaran dibahagi dua — KERTAS MUET + VIDEO
+        var kv = pwKira(), fm = kv.J ? Math.round(kv.K * 100 / kv.J) : 0, fv = kv.J ? Math.round(kv.V * 100 / kv.J) : 0;
+        if (!pwData) pwPastiData();
+        return 'Macam mana pai LISTENING dikira?\nPai LISTENING dikira daripada jumlah minit listening. Sasarannya ' + sas + ' peratus daripada pai English, dibahagi dua sama rata.\n' +
+          'Separuh pertama, ' + kv.s1 + ' peratus, daripada kertas MUET Listening. Selepas menjawab kertas sambil mendengar audionya, tekan SUDAH BACA KERTAS. ' + PW_MINIT_PART + ' minit ditambah bagi setiap Part.\n' +
+          'Separuh kedua, ' + kv.s1 + ' peratus, daripada video English. Minitnya direkod dengan butang + LISTENING di halaman VIDEO.\n' +
+          (pwData ? 'Sekarang: kertas MUET ' + pwJm(kv.K) + ' (' + fm + ' peratus), video ' + pwJm(kv.V) + ' (' + fv + ' peratus).' : 'Sekarang: jumlah ' + pwJm(n) + '.');
+      }
       return 'Macam mana pai ' + nm + ' dikira?\nPai ' + nm + ' dikira daripada bilangan vocab ' + nm + ' yang sudah masuk SR di ARKED ' + nm + '. Di arked ada lima game: ' + cpdGame() + '. Yang dikira hanyalah game yang paling sedikit vocab SR.\n' +
         'Sekarang: ' + n + ' vocab' + (g ? ', dan game yang paling rendah ialah ' + g : '') + '. Sasaran ' + nm + ' ialah ' + sas + ' peratus daripada pai English.';
     }
@@ -22260,7 +22258,15 @@
       var lj = CPD_LJ[k], nm = CPD_NAMA[k] || '', d = (STA.data && lj) ? STA.data[lj] : null, g = coachDataAkhir && coachDataAkhir.gameB && coachDataAkhir.gameB[k], bg = CPD_BANGUNAN[lj];
       var sbP = KL_SUMBER[lj === 'reading' ? 'readingb' : (LJ_AHLI[lj] || [lj])[0]], sbK = KL_SUMBER[CPD_KERTAS[lj]]; // bangunan sumber: titik APP PHONE / titik KERTAS MUET
       var pergi = function(lbl, p) { return [lbl, function() { cpdMisi(k); cpdPergi(lj, p); }]; };
-      if (k === 'listening') return { t: 'Langkah seterusnya: tonton atau dengar video English, kemudian rekod minitnya di bangunan LISTENING, halaman VIDEO.', b: pergi('KE LISTENING (VIDEO) ›', 'video') };
+      var kc = ketatBlok(k) ? ketatKira().cadang : '', Lc, Li; // 25 Nov: MOD KETAT — bidang dikunci → bidang yang paling perlu
+      if (kc && kc !== k) { Lc = cpdLangkah(kc); return { t: nm + ' sedang dikunci oleh MOD KETAT kerana sudah melebihi sasaran. Naikkan bidang lain dahulu. Bidang yang paling jauh di bawah sasaran ialah ' + CPD_NAMA[kc] + '.\n' + Lc.t, b: Lc.b }; }
+      if (k === 'listening') {
+        if (!pwData) { pwPastiData(); return { t: 'Langkah seterusnya: LISTENING.\nJawab kertas MUET Listening sambil mendengar audionya, atau tonton video English. Kedua-duanya direkod di bangunan LISTENING.', b: ['KE BANGUNAN LISTENING ›', function() { cpdMisi(k); bukaPawagam(); }] }; }
+        Li = cpdLsInfo();
+        if (Li.kertas) return { t: 'Langkah seterusnya: kertas MUET Listening.\nBahagian KERTAS MUET baru ' + Li.fm + ' peratus, sedangkan sasarannya ' + Li.s1 + ' peratus. Bahagian VIDEO pula ' + Li.fv + ' peratus. Buka kertas MUET Listening, mainkan audionya dan jawab soalan, kemudian tekan SUDAH BACA KERTAS. Setiap Part memberi ' + PW_MINIT_PART + ' minit.',
+          b: ['KE KERTAS LISTENING ›', function() { cpdMisi(k); pwHal = 0; KT_UI.pn.baca = ''; bukaPawagam(); }] };
+        return { t: 'Langkah seterusnya: video English.\nBahagian VIDEO ' + Li.fv + ' peratus, sasaran ' + Li.s1 + ' peratus.' + (Li.dah ? ' Kertas MUET Listening sudah dikira hari ini.' : '') + ' Tonton atau dengar video English, kemudian rekod minitnya dengan butang + LISTENING di halaman VIDEO.', b: pergi('KE LISTENING (VIDEO) ›', 'video') };
+      }
       if (k === 'vocab') return { t: 'Langkah seterusnya: main game di ARKED VOCAB KAMUS' + (g ? ', mulakan dengan game ' + g : '') + '.', b: pergi('KE ARKED VOCAB KAMUS ›', 'arked') };
       if (!d) return { t: 'Saya sedang menyemak di mana bahan ' + nm + ' sedang menunggu. Buka STATUS ALIRAN untuk melihatnya.', b: pergi('STATUS ALIRAN ›', 'sta') };
       if (d.arked) return { t: 'Langkah seterusnya: ARKED ' + nm + '.\nAda ' + d.arked + ' vocab yang belum masuk SR' + (g ? ' dalam game ' + g : '') + '. Inilah yang terus menaikkan pai, jadi mulakan dengan game itu.', b: pergi('KE ARKED ' + nm + ' ›', 'arked') };
@@ -22322,7 +22328,7 @@
         else if (CPD_BANGUNAN[mb]) bm = [['KE BANGUNAN ' + CPD_BANGUNAN[mb][0] + ' ›', CPD_BANGUNAN[mb][1]]];
         tb('Ini tab MUET. Ada enam bangunan sumber di sini: LISTENING, READING, SPEAKING, WRITING, REASONING dan PRESENTING.\nSetiap bangunan menyimpan bahan English untuk dibaca. Bahan datang daripada kertas MUET dalam app, dan daripada karangan yang awak tulis di app phone.' +
           (misi ? '\n\nMisi daripada Coach: ' + CPD_NAMA[misi] + '. ' + (misi === 'vocab' ? 'Misi ini tidak memerlukan bangunan di sini. Terus ke ARKED VOCAB KAMUS.' : misi === 'listening' ? 'Masuk bangunan LISTENING dan buka halaman VIDEO.' : 'Tekan bangunan ' + (CPD_BANGUNAN[mb] ? CPD_BANGUNAN[mb][0] : CPD_NAMA[misi]) + '.') : ''), bm);
-        tb('Cara guna bangunan:\nLangkah 1. Tekan bangunan untuk masuk.\nLangkah 2. Baca bahan sampai habis.\nLangkah 3. Tekan butang SUDAH BACA. Bahan itu dihantar ke KILANG untuk diterjemah.\nMembaca sahaja belum menaikkan pai English. Pai naik bila vocab bahan itu sampai ke ARKED.');
+        tb('Cara guna bangunan:\nLangkah 1. Tekan bangunan untuk masuk.\nLangkah 2. Baca bahan sampai habis.\nLangkah 3. Tekan butang SUDAH BACA. Bahan itu dihantar ke KILANG untuk diterjemah.\nMembaca sahaja belum menaikkan pai English. Pai naik bila vocab bahan itu sampai ke ARKED.\nKecuali LISTENING: pai LISTENING dikira daripada minit. Kertas MUET Listening yang selesai dijawab, dan minit video English, terus menambah pai LISTENING.');
         if (STA.data) for (i = 0; i < STA_B.length; i++) { x = STA.data[STA_B[i][0]]; if (x && x.baru) ada.push(STA_B[i][1] + ' (' + x.baru + ')'); }
         tb(!STA.data ? 'Saya sedang menyemak bahan yang belum dibaca.' : ada.length ? 'Karangan daripada app phone yang belum dibaca: ' + cpdSenarai(ada) + '. Masuk bangunan itu untuk membacanya.' :
           'Semua karangan daripada app phone sudah dibaca. Untuk bahan baru, tulis di app phone, atau baca kertas MUET di bangunan.', [cpdB('STATUS ALIRAN ›', '', 'sta')]);
@@ -22382,21 +22388,27 @@
         return B;
       }
       if (K.p === 'pawagam') {
-        var intP = 'Bangunan ini ada dua halaman. Titik bulat di bawah kotak ini menukar halaman: titik pertama untuk KERTAS LISTENING, titik kedua untuk VIDEO. ' + CPD_TITIK;
+        var intP = 'Bangunan ini ada dua halaman. Titik bulat di bawah kotak ini menukar halaman: titik pertama untuk KERTAS LISTENING, titik kedua untuk VIDEO. ' + CPD_TITIK, Lp = cpdLsInfo(), sasP = 'Sasaran LISTENING ialah ' + Lp.sas + ' peratus daripada pai English, dibahagi dua: ';
         if (pwHal === 1) {
-          n = (coachHariData.hari && coachHariData.hari.listening) || 0;
-          tb(mis + 'Anda di bangunan LISTENING, halaman VIDEO.\n' + intP + '\nPai LISTENING dikira daripada minit di halaman ini. Hari ini awak sudah merekod ' + n + ' minit.');
-          tb('Cara merekod minit:\nLangkah 1. Tonton atau dengar video English (contohnya di YouTube).\nLangkah 2. Kembali ke sini dan tekan butang + LISTENING.\nLangkah 3. Taip jumlah minit, kemudian tekan SIMPAN.\nMinit itu terus masuk ke pai LISTENING.');
+          n = Math.max(0, ((coachHariData.hari && coachHariData.hari.listening) || 0) - (pwData ? pwKMin(coachHariId()) : 0));
+          tb(mis + 'Anda di bangunan LISTENING, halaman VIDEO.\n' + intP + '\n' + sasP + Lp.s1 + ' peratus daripada video di halaman ini, dan ' + Lp.s1 + ' peratus daripada kertas MUET di halaman KERTAS LISTENING.' +
+            (pwData ? '\nVideo terkumpul: ' + pwJm(Lp.V) + ' (' + Lp.fv + ' peratus). Video hari ini: ' + pwJm(n) + '.' : ''));
+          tb('Cara merekod minit video:\nLangkah 1. Tonton atau dengar video English, contohnya di YouTube.\nLangkah 2. Kembali ke sini dan tekan butang + LISTENING.\nLangkah 3. Taip jumlah minit, kemudian tekan SIMPAN.\nMinit itu terus masuk ke pai LISTENING, bahagian VIDEO.');
+          if (pwData && Lp.kertas) tb('Bahagian VIDEO sudah ' + Lp.fv + ' peratus, manakala bahagian KERTAS MUET baru ' + Lp.fm + ' peratus. Supaya seimbang, buat kertas MUET Listening dahulu.', [['BUKA HALAMAN KERTAS LISTENING ›', function() { KT_UI.pn.baca = ''; pwPergi(0); }]]);
           return B;
         }
         if (ktBaca('pn')) {
-          x = KT.pn.K[KT_UI.pn.baca];
-          tb(mis + 'Awak sedang membaca kertas ' + x.t + ', muka surat ' + (Math.min(KT_UI.pn.ms, x.ms.length - 1) + 1) + ' daripada ' + x.ms.length + '.\nBaca skrip dengan teliti, kemudian tekan SUDAH BACA KERTAS di bawah. Bahan dihantar ke KILANG LISTENING.', [cpdBK('pnkertas', 'pnkertas')]);
+          x = KT.pn.K[KT_UI.pn.baca]; q = ktPnPart(KT_UI.pn.baca);
+          tb(mis + 'Awak sedang menjawab kertas ' + x.t + ', muka surat ' + (Math.min(KT_UI.pn.ms, x.ms.length - 1) + 1) + ' daripada ' + x.ms.length + '.\nKertas ini soalan sahaja. Mainkan audionya secara berasingan dan jawab soalan di sini. Tekan SETERUSNYA untuk muka surat berikutnya.');
+          tb('Bila selesai, tekan SUDAH BACA KERTAS di bawah muka surat. Dua perkara berlaku:\nPertama, teks kertas dihantar ke KILANG LISTENING untuk belajar vocab.\nKedua, ' + (q * PW_MINIT_PART) + ' minit (' + q + ' Part, ' + PW_MINIT_PART + ' minit setiap Part) ditambah ke pai LISTENING, bahagian KERTAS MUET.' +
+            (ktPnSudah(KT_UI.pn.baca) ? '\nKertas ini sudah dikira hari ini, jadi minitnya tidak ditambah lagi. Ia boleh dikira semula esok.' : '\nMinit setiap kertas dikira sekali sehari.'), [cpdBK('pnkertas', 'pnkertas')]);
           return B;
         }
         tb(mis + 'Anda di bangunan LISTENING, halaman KERTAS LISTENING.\n' + intP);
-        tb('Kertas MUET Listening di sini untuk belajar vocab. Tekan butang DAY yang tertulis BACA KERTAS, baca skripnya, kemudian tekan SUDAH BACA KERTAS. Bahan dihantar ke KILANG LISTENING.\nPenting: halaman ini tidak menambah minit pai LISTENING.', [cpdBK('pnkertas', 'pnkertas')]);
-        tb('Untuk menaikkan pai LISTENING, buka halaman VIDEO (titik kedua), tonton video English, kemudian rekod minitnya dengan butang + LISTENING.', [['BUKA HALAMAN VIDEO ›', function() { pwPergi(1); }]]);
+        tb('Cara buat kertas MUET Listening:\nLangkah 1. Tekan butang DAY yang tertulis BACA KERTAS.\nLangkah 2. Mainkan audio kertas itu secara berasingan, kemudian jawab soalan di sini.\nLangkah 3. Tekan SUDAH BACA KERTAS bila selesai.\nSetiap Part memberi ' + PW_MINIT_PART + ' minit kepada pai LISTENING, bahagian KERTAS MUET. Teks kertas juga dihantar ke KILANG LISTENING untuk belajar vocab.', [cpdBK('pnkertas', 'pnkertas')]);
+        tb(sasP + Lp.s1 + ' peratus daripada kertas MUET di halaman ini, dan ' + Lp.s1 + ' peratus daripada video di halaman VIDEO.' +
+          (pwData ? '\nKertas MUET terkumpul: ' + pwJm(Lp.K) + ' (' + Lp.fm + ' peratus). Video terkumpul: ' + pwJm(Lp.V) + ' (' + Lp.fv + ' peratus).' : '') +
+          (Lp.dah ? '\nSemua kertas sudah dikira hari ini. Untuk menambah minit lagi hari ini, gunakan halaman VIDEO.' : ''), [['BUKA HALAMAN VIDEO ›', function() { pwPergi(1); }]]);
         return B;
       }
       if (K.p === 'lwbb') {
@@ -22470,7 +22482,7 @@
         }
         var g = coachDataAkhir && coachDataAkhir.gameB && coachDataAkhir.gameB[K.k], gm = [['padan', 'Padan'], ['jw', 'Jutawan'], ['mm', 'Memori'], ['dr', 'Duri'], ['bs', 'Betul/Salah']], bk = [], tt = [];
         tb(mis + 'Anda di ARKED ' + nm + '.\nButang ARKED dan ARKED FORMULA di bawah kotak ini menukar jenis arked. Titik bulat di bawahnya menukar bidang, mengikut susunan: VOCAB KAMUS, WRITING, SPEAKING, READING, LISTENING, REASONING dan PRESENTING. ' + CPD_TITIK +
-          (K.k === 'listening' ? '\nNota: pai LISTENING dikira mengikut minit video, bukan daripada arked ini. Arked LISTENING membantu awak menghafal vocab sahaja.' : ''));
+          (K.k === 'listening' ? '\nNota: pai LISTENING dikira daripada minit kertas MUET Listening dan minit video, bukan daripada arked ini. Arked LISTENING membantu awak menghafal vocab sahaja.' : ''));
         if (CPD.stokB !== ARK_B) tb('Saya sedang menyemak stok kedai game.');
         else {
           for (i = 0; i < gm.length; i++) (STOK[gm[i][0]] && STOK[gm[i][0]].buka ? bk : tt).push(gm[i][1]);
@@ -22650,6 +22662,259 @@
       };
       if (typeof slwAsal === 'function') window.startLaciWriting = function(j) { CPD.laci = j; CPD.laciAt = Date.now(); return slwAsal(j); };
     })();
+    // ══ MOD KETAT (25 Nov) — bidang English yang MELEBIHI sasaran lebih daripada KETAT_HAD peratus DIKUNCI di semua tempat ══
+    //   Ikut pai (b) ENGLISH SEKARANG (coachPeratus, sama dengan pai). Kunci terbuka sendiri bila peratus turun ke sasaran + had.
+    //   Tetapan: coach/ketat.aktif (+ localStorage) · senarai kunci ditulis ke coach/ketat { blok[], cadang } untuk APP PHONE.
+    //   Page banyak bidang (KILANG, PELABUHAN, ARKED, LAST PERFORMANCE) → dibuka pada titik bidang yang paling perlu · bangunan / laci / titik → ditolak.
+    var KETAT_HAD = 5;
+    var KETAT = { aktif: false, dimuat: false, siap: false, ditukar: false, sig: '', segar: false, kunciLama: null, popB: [] };
+    var KETAT_TS = { pawagam: 'listening', pustaka: 'reading', pentas: 'pentas', tulis: 'tulis', reasoning: 'reasoning', presenting: 'presenting' };
+    var KETAT_PHONE = { writing: 'tulis', speaking: 'pentas', readingb: 'reading', reasoning: 'reasoning', presenting: 'presenting' };
+    function ketatLs() { return 'coach_ketat_' + (currentUser ? currentUser.uid : ''); }
+    function ketatMuat() {
+      if (KETAT.dimuat || !currentUser) return;
+      KETAT.dimuat = true;
+      try { KETAT.aktif = localStorage.getItem(ketatLs()) === '1'; } catch (e) {}
+      kol('coach').doc('ketat').get().then(function(s) {
+        var d = s && s.exists ? (s.data() || {}) : {};
+        KETAT.siap = true; KETAT.sig = d.sig || '';
+        if (!KETAT.ditukar && typeof d.aktif === 'boolean' && d.aktif !== KETAT.aktif) {
+          KETAT.aktif = d.aktif;
+          try { localStorage.setItem(ketatLs(), KETAT.aktif ? '1' : '0'); } catch (e) {}
+          if (coachDataAkhir) coachLukisSemula();
+        }
+        ketatSemak(false);
+      }).catch(function() { KETAT.siap = true; });
+    }
+    // Peratus setiap bidang (sama dengan pai b) + bidang dikunci + cadangan (paling jauh di bawah sasaran, tidak dikunci)
+    function ketatKira() {
+      var d = coachDataAkhir, out = { blok: {}, senarai: [], info: {}, cadang: '' }, set, kE = [], nE = [], J = 0, i, k, pE, best = '';
+      if (!d) return out;
+      set = COACH_MUSIM[COACH_MUSIM[d.musim] ? d.musim : 'CUTI'];
+      for (i = 0; i < COACH_BIDANG.length; i++) { k = COACH_BIDANG[i][0]; if (COACH_POSPON[k]) continue; kE.push(k); nE.push(d[k] || 0); J += d[k] || 0; }
+      if (!J) return out;
+      pE = coachPeratus(nE);
+      for (i = 0; i < kE.length; i++) {
+        k = kE[i]; out.info[k] = [pE[i], set.english[k] || 0];
+        if (KETAT.aktif && pE[i] - (set.english[k] || 0) > KETAT_HAD) { out.blok[k] = 1; out.senarai.push(k); }
+      }
+      for (i = 0; i < kE.length; i++) { k = kE[i]; if (!out.blok[k] && (!best || out.info[k][1] - out.info[k][0] > out.info[best][1] - out.info[best][0])) best = k; }
+      out.cadang = best;
+      return out;
+    }
+    function ketatBlok(k) { return !!(k && KETAT.aktif && ketatKira().blok[k]); }
+    function ketatNama(k) { return CPD_NAMA[k] || String(k || '').toUpperCase(); }
+    function ketatDariLj(j) { return cpdDariLj(cpdUtama(j) || j); }
+    function ketatPilih(a) {
+      var K = ketatKira(), i, k, best = '';
+      for (i = 0; i < a.length; i++) { k = a[i]; if (!k || K.blok[k] || !K.info[k]) continue; if (!best || K.info[k][1] - K.info[k][0] > K.info[best][1] - K.info[best][0]) best = k; }
+      return best;
+    }
+    function ketatTeksBlok(K) { var a = [], i, k; for (i = 0; i < K.senarai.length; i++) { k = K.senarai[i]; a.push(ketatNama(k) + ' (' + K.info[k][0] + ' peratus, sasaran ' + K.info[k][1] + ' peratus)'); } return cpdSenarai(a); }
+    // POPUP (gaya #lp-popup: lapisan putih penuh — tiada lapisan lut sinar untuk Kindle)
+    function ketatPop(k, mod, ganti) {
+      var K = ketatKira(), x = K.info[k] || [0, 0], nm = ketatNama(k), c = K.cadang, t = [], B = [], tajuk, Lc, h, i, p = el('ketat-pop');
+      if (mod === 'hidup') {
+        tajuk = 'MOD KETAT DIHIDUPKAN';
+        t.push('Mulai sekarang, bidang English yang melebihi sasaran lebih daripada ' + KETAT_HAD + ' peratus dikunci di semua tempat: bangunan di tab MUET, KILANG, LACI, PELABUHAN, ARKED, LAST PERFORMANCE, STATUS ALIRAN dan app phone.');
+        t.push(K.senarai.length ? 'Dikunci sekarang: ' + ketatTeksBlok(K) + '.' : 'Tiada bidang dikunci sekarang. Semua bidang English masih dalam had.');
+        t.push('Kunci terbuka sendiri bila peratus bidang itu turun ke sasarannya ditambah ' + KETAT_HAD + ' peratus, atau kurang. Peratusnya turun bila bidang lain naik.');
+      } else {
+        tajuk = 'MOD KETAT: ' + nm + ' DIKUNCI';
+        t.push('Pai ' + nm + ' sekarang ' + x[0] + ' peratus, sedangkan sasarannya ' + x[1] + ' peratus. Ia sudah melebihi sasaran lebih daripada ' + KETAT_HAD + ' peratus.');
+        t.push(mod === 'baru' ? nm + ' baru sahaja melepasi had itu, jadi semua aliran ' + nm + ' dikunci mulai sekarang supaya pai English kembali seimbang.' + (ganti ? ' ' + ganti : '')
+          : 'Jadi semua aliran ' + nm + ' dikunci buat sementara, supaya pai English kembali seimbang.' + (ganti ? ' Saya bukakan ' + ganti + ' sebagai ganti.' : ''));
+        t.push('Kunci ini terbuka sendiri bila ' + nm + ' turun ke ' + (x[1] + KETAT_HAD) + ' peratus atau kurang. Peratusnya turun bila bidang lain naik.');
+      }
+      if (c && K.info[c]) {
+        t.push('Bidang yang paling jauh di bawah sasaran sekarang ialah ' + ketatNama(c) + ': ' + K.info[c][0] + ' peratus, sasaran ' + K.info[c][1] + ' peratus. Mulakan di situ.');
+        try { Lc = cpdLangkah(c); if (Lc && Lc.b) B.push(Lc.b); } catch (e) {}
+      }
+      t.push('Mod Ketat boleh dimatikan di page COACH, di atas pai (b).');
+      if (!p) {
+        p = document.createElement('div'); p.id = 'ketat-pop';
+        p.style.cssText = 'display:none;position:fixed;left:0;top:0;right:0;bottom:0;z-index:10001;background:#fff;color:#000;overflow:auto;-webkit-overflow-scrolling:touch;';
+        p.onclick = function(e) {
+          var v = hlCari(e.target, p, 'data-ketat-pop'), f;
+          if (v === null) return;
+          p.style.display = 'none';
+          f = v === 'tutup' ? null : KETAT.popB[+v];
+          if (f) f[1]();
+        };
+        document.body.appendChild(p);
+      }
+      KETAT.popB = B;
+      h = '<div style="margin:24px 12px;padding:12px;border:3px solid #000;border-radius:12px;background:#fff;">' +
+        '<div style="background:#000;color:#fff;font-weight:bold;padding:5px 8px;border-radius:4px;letter-spacing:1px;">' + lwEsc(tajuk) + '</div>';
+      for (i = 0; i < t.length; i++) h += '<div style="font-size:0.95rem;line-height:1.45;margin-top:8px;">' + lwEsc(t[i]) + '</div>';
+      for (i = 0; i < B.length; i++) h += '<button type="button" data-ketat-pop="' + i + '" style="display:block;width:100%;margin-top:12px;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#000;color:#fff;font-weight:bold;font-size:1rem;font-family:inherit;">' + lwEsc(B[i][0]) + '</button>';
+      h += '<button type="button" data-ketat-pop="tutup" style="display:block;width:100%;margin-top:8px;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#fff;color:#000;font-weight:bold;font-size:1rem;font-family:inherit;">FAHAM</button></div>';
+      p.innerHTML = h; p.style.display = 'block';
+      try { p.scrollTop = 0; } catch (e) {}
+    }
+    function ketatTolak(k) { if (!ketatBlok(k)) return false; ketatPop(k, 'tolak'); return true; }
+    // Bar MOD KETAT di page COACH (di atas pai b)
+    function ketatBar() {
+      var K = ketatKira(), BT = 'float:right;padding:6px 10px;border:2px solid #000;border-radius:8px;font-weight:bold;font-size:0.85rem;font-family:inherit;';
+      return '<div style="border:' + (KETAT.aktif ? 3 : 2) + 'px solid #000;border-radius:8px;padding:5px 7px;margin:8px 0 4px;"><div style="overflow:hidden;">' +
+        '<button type="button" data-ketat="1" style="' + BT + (KETAT.aktif ? 'background:#fff;color:#000;' : 'background:#000;color:#fff;') + '">' + (KETAT.aktif ? 'MATIKAN' : 'HIDUPKAN') + '</button>' +
+        '<div style="font-weight:bold;padding-top:5px;">MOD KETAT: ' + (KETAT.aktif ? 'HIDUP' : 'MATI') + '</div></div>' +
+        '<div style="font-size:0.8rem;margin-top:3px;">' + (KETAT.aktif ?
+          (K.senarai.length ? 'Dikunci sekarang: <b>' + lwEsc(ketatTeksBlok(K)) + '</b>. Bidang ini tidak boleh dibuka di mana-mana, termasuk app phone, sehingga peratusnya turun ke sasaran ditambah ' + KETAT_HAD + ' peratus.'
+            : 'Tiada bidang dikunci sekarang. Semua bidang English masih dalam had, iaitu tidak lebih daripada ' + KETAT_HAD + ' peratus di atas sasaran.')
+          : 'Bila dihidupkan, bidang English yang melebihi sasaran lebih daripada ' + KETAT_HAD + ' peratus dikunci di semua tempat, termasuk app phone, sehingga pai kembali seimbang.') + '</div></div>';
+    }
+    function ketatTukar() {
+      if (!currentUser) return;
+      KETAT.aktif = !KETAT.aktif; KETAT.ditukar = true; KETAT.dimuat = true;
+      try { localStorage.setItem(ketatLs(), KETAT.aktif ? '1' : '0'); } catch (e) {}
+      kol('coach').doc('ketat').set({ aktif: KETAT.aktif, at: Date.now() }, { merge: true }).catch(function() {});
+      if (coachDataAkhir) coachLukis(coachDataAkhir); else ketatSemak(false);
+      if (KETAT.aktif) ketatPop('', 'hidup');
+    }
+    // Kira semula kunci · tulis ke Firebase (untuk app phone) bila berubah · usir = keluar dari page yang BARU dikunci
+    function ketatSemak(usir) {
+      if (!currentUser) return;
+      var K = ketatKira(), lama = KETAT.kunciLama, baru = [], blok = [], i, k, sig, a, Kc;
+      KETAT.kunciLama = K.blok;
+      sig = KETAT.aktif ? '1|' + ketatTeksBlok(K) + '|' + K.cadang + '|' + (K.cadang && K.info[K.cadang] ? K.info[K.cadang].join('/') : '') : '0';
+      if (KETAT.siap && sig !== KETAT.sig) {
+        KETAT.sig = sig;
+        for (i = 0; i < K.senarai.length; i++) { k = K.senarai[i]; blok.push({ k: k, nama: ketatNama(k), p: K.info[k][0], s: K.info[k][1] }); }
+        kol('coach').doc('ketat').set({ aktif: KETAT.aktif, had: KETAT_HAD, blok: blok, sig: sig, at: Date.now(),
+          cadang: K.cadang && K.info[K.cadang] ? { k: K.cadang, nama: ketatNama(K.cadang), p: K.info[K.cadang][0], s: K.info[K.cadang][1] } : null }, { merge: true }).catch(function() {});
+      }
+      if (!usir || !lama) return;
+      for (i = 0; i < K.senarai.length; i++) if (!lama[K.senarai[i]]) baru.push(K.senarai[i]);
+      if (!baru.length) return;
+      a = document.querySelector('.screen.active'); if (!a) return;
+      Kc = cpdKonteks(a.id);
+      if (!Kc || !Kc.k || Kc.p === 'muet' || Kc.p === 'sta' || baru.indexOf(Kc.k) < 0) return;
+      if (Kc.p === 'arked') { if (!arkHal) bukaMini(); return; }
+      if (Kc.p === 'kilang') { bukaKilang(); return; }
+      if (Kc.p === 'kapal') { if (!layar) bukaBank(false); return; }
+      if (Kc.p === 'lpf') { bukaLpf(); return; }
+      if (['pustaka', 'tulis', 'pentas', 'lwbb', 'pawagam'].indexOf(Kc.p) >= 0) { bukaMuet(); ketatPop(Kc.k, 'baru', 'Saya bawa awak kembali ke tab MUET.'); return; }
+      ketatPop(Kc.k, 'baru', 'Awak boleh habiskan kerja yang sedang dibuat, tetapi page ini tidak boleh dibuka semula sehingga peratus ' + ketatNama(Kc.k) + ' turun.');
+    }
+    // Data coach lebih 15 minit (main game di ARKED dll.) → kira semula di belakang supaya kunci sentiasa terkini
+    function ketatSegar() {
+      if (!KETAT.aktif || KETAT.segar || !currentUser || (coachDataAkhir && Date.now() - coachDataAkhir.at < COACH_SEGAR_MS)) return;
+      KETAT.segar = true;
+      coachMuatData(false).then(function(d) { KETAT.segar = false; if (d) { coachDataAkhir = d; ketatSemak(true); } }).catch(function() { KETAT.segar = false; });
+    }
+    // Kotak COACH: babak MOD KETAT di page banyak bidang / page yang baru dikunci
+    function ketatBabak(K) {
+      var Kz, c, Lc, t = '', nota = { muet: 'Bangunan bertanda DIKUNCI tidak boleh dibuka.', sta: 'Baris bertanda DIKUNCI tidak boleh ditekan.', kilang: 'Titik kilang bidang itu tidak boleh dibuka.',
+        kapal: 'Titik pelabuhan bidang itu tidak boleh dibuka.', arked: 'Titik arked bidang itu tidak boleh dibuka.', lpf: 'Titik bidang itu tidak boleh dibuka.' };
+      if (!KETAT.aktif || (K.p === 'arked' && arkHal)) return null;
+      Kz = ketatKira(); if (!Kz.senarai.length) return null;
+      if (K.p !== 'muet' && K.p !== 'sta' && K.k && Kz.blok[K.k]) t = 'MOD KETAT: ' + K.nm + ' kini dikunci kerana sudah melebihi sasaran lebih daripada ' + KETAT_HAD + ' peratus. Awak boleh habiskan kerja yang sedang dibuat, tetapi page ini tidak boleh dibuka semula sehingga peratusnya turun.';
+      else if (nota[K.p]) t = 'MOD KETAT sedang hidup. Dikunci sekarang: ' + ketatTeksBlok(Kz) + '.\n' + nota[K.p];
+      else return null;
+      c = Kz.cadang;
+      if (c && Kz.info[c]) { t += '\nBidang yang paling perlu dinaikkan ialah ' + ketatNama(c) + ': ' + Kz.info[c][0] + ' peratus, sasaran ' + Kz.info[c][1] + ' peratus.'; try { Lc = cpdLangkah(c); } catch (e) {} }
+      return { t: t, b: Lc && Lc.b ? [Lc.b] : [] };
+    }
+    cpdBabakMisi = (function(f) { return function(K) { var r = f.apply(this, arguments), x = null; try { x = ketatBabak(K); } catch (e) {} if (x) r.unshift(x); return r; }; })(cpdBabakMisi);
+    coachLukis = (function(f) { return function() { var r = f.apply(this, arguments); try { ketatSemak(true); } catch (e) {} return r; }; })(coachLukis);
+    bukaCoach = (function(f) { return function() { var r = f.apply(this, arguments); try { ketatMuat(); pwPastiData(); } catch (e) {} return r; }; })(bukaCoach);
+    tsTanda = (function(f) { return function(k) { var r = f.apply(this, arguments); try { if (KETAT_TS[k] && ketatBlok(KETAT_TS[k])) return 'DIKUNCI'; } catch (e) {} return r; }; })(tsTanda);
+    // ── PENGAWAL: bangunan sumber, laci, kilang terjemah, app phone → DITOLAK (popup) ──
+    function ketatBalut(f, kunci) { return function() { var k = kunci.apply(this, arguments); if (k && ketatTolak(k)) return; return f.apply(this, arguments); }; }
+    bukaPawagam = ketatBalut(bukaPawagam, function() { return 'listening'; });
+    bukaTulis = ketatBalut(bukaTulis, function() { return 'tulis'; });
+    bukaPentas = ketatBalut(bukaPentas, function() { return 'pentas'; });
+    bukaPustaka = ketatBalut(bukaPustaka, function() { return 'reading'; });
+    bukaLwbB = ketatBalut(bukaLwbB, function(j) { return cpdDariLj(LJ[j] ? j : 'reasoning'); });
+    bukaDalamKapal = ketatBalut(bukaDalamKapal, function(l) { return l && l.id ? ketatDariLj(ljJenisKapal(l.id) || 'writing') : ''; });
+    cpdPhone = ketatBalut(cpdPhone, function(laci) { return KETAT_PHONE[laci] || ''; });
+    if (typeof window.startLaciWriting === 'function') window.startLaciWriting = ketatBalut(window.startLaciWriting, function(j) { return ketatDariLj(LJ[j] ? j : 'writing'); });
+    // ── Page banyak bidang: titik bidang dikunci → ditolak · dibuka pada titik dikunci → pindah ke bidang yang paling perlu ──
+    function ketatKlK(i) { return KL_HAL[i] ? ketatDariLj(KL_HAL[i][1][0][0]) : ''; }
+    function ketatGbK(i) { return i >= 0 && i < GB_JENIS.length ? ketatDariLj(GB_JENIS[i]) : ''; }
+    function ketatArkK(i) { return i >= 0 && i < ARK_BID.length ? ketatDariLj(ARK_BID[i]) : ''; }
+    function ketatLpK(i) { return LP_B[i] ? cpdDariLj(LP_B[i]) : ''; }
+    function ketatSenarai(n, fn) { var a = [], i; for (i = 0; i < n; i++) a.push(fn(i)); return a; }
+    bukaKilang = (function(f) { return function() {
+      var k = ketatKlK(KL.hal), a, c, i;
+      if (ketatBlok(k)) { a = ketatSenarai(KL_HAL.length, ketatKlK); c = ketatPilih(a); if (!c) { ketatTolak(k); return; } i = a.indexOf(c); KL.hal = i; KL.sb[i] = 0; KL.mesej = ''; ketatPop(k, 'tolak', 'KILANG ' + KL_HAL[i][0]); }
+      return f.apply(this, arguments);
+    }; })(bukaKilang);
+    bukaBank = (function(f) { return function() {
+      var k = ketatGbK(gbHal), a, c;
+      if (!layar && ketatBlok(k)) { a = ketatSenarai(GB_JENIS.length, ketatGbK); c = ketatPilih(a); if (!c) { ketatTolak(k); return; } tambatIdx = -1; gbHal = a.indexOf(c); ketatPop(k, 'tolak', GB_HAL[gbHal]); }
+      return f.apply(this, arguments);
+    }; })(bukaBank);
+    bukaMini = (function(f) { return function() {
+      var k = arkHal ? '' : ketatArkK(arkBi), a, c;
+      if (ketatBlok(k)) { a = ketatSenarai(ARK_BID.length, ketatArkK); c = ketatPilih(a); if (!c) { ketatTolak(k); return; } arkBi = a.indexOf(c); ketatPop(k, 'tolak', 'ARKED ' + ARK_BID_NAMA[arkBi]); }
+      return f.apply(this, arguments);
+    }; })(bukaMini);
+    bukaLpf = (function(f) { return function() {
+      var k = ketatLpK(LPF.b), a, c;
+      if (ketatBlok(k)) { a = ketatSenarai(LP_B.length, ketatLpK); c = ketatPilih(a); if (!c) { ketatTolak(k); return; } LPF.b = a.indexOf(c); ketatPop(k, 'tolak', 'LAST PERFORMANCE ' + ketatNama(c)); }
+      return f.apply(this, arguments);
+    }; })(bukaLpf);
+    gbPergi = (function(f) { return function(i) { if (!layar && ketatTolak(ketatGbK(i))) return; return f.apply(this, arguments); }; })(gbPergi);
+    // Titik bidang (KILANG / ARKED / LAST PERFORMANCE), baris STATUS ALIRAN dan LACI BAHASA (sumber VOCAB KAMUS)
+    //   disemak di document (fasa capture) — SEBELUM pengendali asal, walau bila pun pengendali itu dipasang
+    var KETAT_KLIK = {
+      'kl-titik': function(e, t) { var v = hlCari(e.target, t, 'data-hl'); return v === null ? '' : ketatKlK(+v); },
+      'ark-titik': function(e, t) { var v = hlCari(e.target, t, 'data-hl'); return v === null || arkHal || +v === arkBi ? '' : ketatArkK(+v); },
+      'lpf-titik': function(e, t) { var v = hlCari(e.target, t, 'data-hl'); return v === null ? '' : ketatLpK(+v); },
+      'sta-isi': function(e, t) { var v = hlCari(e.target, t, 'data-sta'); return v === null ? '' : cpdDariLj(v.split('|')[0]); },
+      'btn-go-bahasa': function() { return 'vocab'; }
+    };
+    document.addEventListener('click', function(e) {
+      var t = e.target, k;
+      if (!KETAT.aktif) return;
+      while (t && t !== document && !(t.id && KETAT_KLIK.hasOwnProperty(t.id))) t = t.parentNode;
+      if (!t || t === document) return;
+      k = KETAT_KLIK[t.id](e, t);
+      if (k && ketatTolak(k)) { e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); if (e.preventDefault) e.preventDefault(); }
+    }, true);
+    // Setiap tukar page → semak data coach (lebih 15 minit → kira semula di belakang)
+    (function() { var ss = window.showScreen; if (typeof ss === 'function') window.showScreen = function() { var r = ss.apply(this, arguments); try { ketatSegar(); } catch (e) {} return r; }; })();
+    // ══ LISTENING dibahagi dua (pai bangunan LISTENING): KERTAS MUET (SUDAH BACA KERTAS) + VIDEO (+ LISTENING) ══
+    //   SUDAH BACA KERTAS (kertas MUET Listening, audio didengar berasingan) → PW_MINIT_PART minit setiap Part · sekali sehari bagi setiap kertas
+    //   Rekod: coach/pawagam_kertas.hari[hari] += { k: tajuk, kid, p: bil Part, min, at } (format sama dengan rekod lama → pwKMin terus mengira)
+    function ktPnPart(kid) {
+      var K = KT.pn.K[kid], t, m, ada = {}, n = 0, re = /\bPart\s+([IVX]+|\d+)\b/g;
+      if (!K) return 5;
+      t = K.ms.join(' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ');
+      while ((m = re.exec(t))) if (!ada[m[1]]) { ada[m[1]] = 1; n++; }
+      return n || 5;
+    }
+    function ktPnSudah(kid) { var L = pwData && pwData.hari ? pwData.hari[coachHariId()] || [] : [], i; for (i = 0; i < L.length; i++) if (L[i].kid === kid) return true; return false; }
+    function ktPnDah() { var id; if (!pwData) return false; for (id in PN_KERTAS) if (PN_KERTAS.hasOwnProperty(id) && PN_KERTAS[id].ms && PN_KERTAS[id].ms.length && !ktPnSudah(id)) return false; return true; }
+    function ktPnData() {
+      if (pwData) return Promise.resolve(pwData);
+      return kol('coach').doc('pawagam_kertas').get().then(function(d) {
+        if (!pwData) { pwData = d.exists ? (d.data() || {}) : {}; pwData.hari = pwData.hari || {}; pwData.kertas = pwData.kertas || []; }
+        return pwData;
+      });
+    }
+    function ktPnMinit(kid) {
+      return ktPnData().then(function(D) {
+        var hari = coachHariId(), L, n = ktPnPart(kid), min = n * PW_MINIT_PART, e;
+        if (ktPnSudah(kid)) return 0;
+        L = D.hari[hari] || (D.hari[hari] = []);
+        e = { k: KT.pn.K[kid].t, kid: kid, p: n, min: min, at: Date.now() };
+        L.push(e);
+        return kol('coach').doc('pawagam_kertas').set(D).then(function() { pwListening(min); return min; }, function(er) { var q = L.indexOf(e); if (q >= 0) L.splice(q, 1); throw er; });
+      });
+    }
+    function ktNotaPn() {
+      var kv = pwKira();
+      return 'Kertas Listening di sini ialah soalan sahaja. Mainkan audionya secara berasingan sambil menjawab. Bila selesai, tekan <b>SUDAH BACA KERTAS</b>. Teks kertas dihantar ke <b>KILANG LISTENING</b>, dan ' + PW_MINIT_PART +
+        ' minit bagi setiap Part ditambah ke pai LISTENING, bahagian KERTAS MUET. Minit setiap kertas dikira sekali sehari.' + (pwData ? '<br>KERTAS MUET hari ini: <b>' + pwJm(pwKMin(coachHariId())) + '</b>. Terkumpul: <b>' + pwJm(kv.K) + '</b>.' : '');
+    }
+    function cpdLsInfo() {
+      var kv = pwKira(), r = { K: kv.K, V: kv.V, s1: kv.s1, sas: kv.sas, J: kv.J, fm: kv.J ? Math.round(kv.K * 100 / kv.J) : 0, fv: kv.J ? Math.round(kv.V * 100 / kv.J) : 0, dah: ktPnDah() };
+      r.kertas = r.fm <= r.fv && !r.dah; // bahagian KERTAS MUET lebih ketinggalan (dan masih ada kertas belum dikira hari ini)
+      return r;
+    }
     // Lencana dikemas kini sendiri: 8 saat selepas buka app, kemudian setiap 30 minit (dan setiap kali STATUS dibuka)
     setTimeout(function() { staKira(false); }, 8000);
     setInterval(function() { if (currentUser && Date.now() - STA.at > 1800000) staKira(true); }, 60000);
@@ -22790,7 +23055,7 @@
     }
     function lukisLwbB() {
       var J = LJ[LWBB.j];
-      el('lwbb-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">' + J.label + ' — DARI APP PHONE</div><div style="font-size:0.85rem;">Tulis di app phone (Laci ' + J.label.charAt(0) + J.label.slice(1).toLowerCase() + '). Baca → <b>SUDAH BACA</b> → bahan masuk <b>KILANG ' + J.label + '</b>.</div>' + lwbLukis(LWBB.j);
+      el('lwbb-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">' + J.label + ' — DARI APP PHONE</div><div style="font-size:0.85rem;">Karangan yang awak tulis di app phone (Laci ' + J.label.charAt(0) + J.label.slice(1).toLowerCase() + '). Baca karangan sampai habis, kemudian tekan <b>SUDAH BACA</b>. Ayatnya dihantar ke <b>KILANG ' + J.label + '</b>.</div>' + lwbLukis(LWBB.j);
     }
     el('lwbb-isi').onclick = function(e) { lwbKlik(e, this, LWBB.j); };
     el('btn-lwbb-keluar').onclick = function() { bukaMuet(); };
