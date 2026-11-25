@@ -13440,7 +13440,7 @@
       if (kB) return cpdLangkah(kB).b;
       var m = {
         Listening: ['KE PAWAGAM → + LISTENING', function() { bukaPawagam(); }],
-        Reading: ['KE PERPUSTAKAAN → + TAMBAH LATIHAN', function() { bukaPustaka(); }],
+        Reading: ['KE BANGUNAN READING ›', function() { bukaPustaka(); }],
         Speaking: ['KE PENTAS → TULIS HURAIAN', function() { bukaPentas(); }],
         Writing: ['BUKA LACI WRITING', function() { el('btn-go-laci-writing').click(); }],
         Ayat: ['BUKA LACI BAHASA', function() { el('btn-go-bahasa').click(); }],
@@ -18936,7 +18936,7 @@
     function lukisPustaka() {
       var h = '<div style="font-weight:bold;font-size:1.15rem;">READING — MUET PAPER 3</div>', i, a, hari = coachHariId();
       hlTitik('pu-titik', 2, PU_HAL); el('pu-titik').style.display = puUI.baca ? 'none' : '';
-      if (PU_HAL === 1 && !puUI.baca) { el('pustaka-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">READING — BUKAN MUET</div><div style="font-size:0.85rem;">Petikan (tahap UPSR ke atas) ditulis di app phone. Baca → <b>SUDAH BACA</b> → bahan masuk <b>KILANG READING</b>.</div>' + lwbLukis('readingb'); return; }
+      if (PU_HAL === 1 && !puUI.baca) { el('pustaka-isi').innerHTML = '<div style="font-weight:bold;font-size:1.15rem;">READING — BUKAN MUET</div><div style="font-size:0.85rem;">Petikan English (tahap UPSR ke atas) yang awak tulis di app phone. Baca petikan sampai habis, kemudian tekan <b>SUDAH BACA</b>. Bahannya dihantar ke <b>KILANG READING</b>.</div>' + lwbLukis('readingb'); return; }
       if (puUI.baca && PU_KERTAS[puUI.baca]) { el('pustaka-isi').innerHTML = puLukisKertas(); return; }
       if (!puData) { puMuatData(); el('pustaka-isi').innerHTML = h + '<div>Memuatkan...</div>'; return; }
       var senarai = puHariSenarai();
@@ -18974,15 +18974,8 @@
         el('pustaka-isi').innerHTML = h; return;
       }
       // ── SENARAI HARI ──
-      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Tekan <b>BACA KERTAS</b> untuk membaca kertas MUET Reading. Bahan yang sudah dibaca dihantar ke <b>KILANG READING</b> secara automatik.<br>Butang <b>TAMBAH LATIHAN</b> ialah rekod peribadi sahaja dan tidak dikira dalam pai. Jumlah rekod: <b>' + puJumlah() + ' Part</b> dalam <b>' + senarai.length + ' hari</b>.</div>';
-      if (senarai.indexOf(hari) < 0) h += '<button type="button" data-pu="hari" data-v="' + hari + '" style="' + PU_BTNA + 'display:block;width:100%;text-align:left;margin-bottom:6px;">+ TAMBAH LATIHAN HARI INI (DAY ' + (senarai.length + 1) + ')</button>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Tekan <b>BACA KERTAS</b> untuk membaca kertas MUET Reading. Bahan yang sudah dibaca dihantar ke <b>KILANG READING</b> secara automatik.</div>'; // 25 Nov: TAMBAH LATIHAN (rekod peribadi) dibuang
       for (i in PU_KERTAS_DAY) if (PU_KERTAS_DAY.hasOwnProperty(i) && PU_KERTAS[PU_KERTAS_DAY[i]]) h += '<button type="button" data-pu="baca" data-v="' + PU_KERTAS_DAY[i] + '" data-d="' + i + '" style="' + PU_BTN + 'display:block;width:100%;text-align:left;margin-bottom:6px;border-width:3px;">DAY ' + i + ' · BACA KERTAS: ' + PU_KERTAS[PU_KERTAS_DAY[i]].t + ' ›</button>';
-      if (!senarai.length) h += '<div style="font-size:0.85rem;">Belum ada latihan.</div>';
-      for (i = senarai.length - 1; i >= 0; i--) {
-        a = puData.hari[senarai[i]];
-        h += '<button type="button" data-pu="hari" data-v="' + senarai[i] + '" style="' + (senarai[i] === hari ? PU_BTNA : PU_BTN) + 'display:block;width:100%;text-align:left;margin-bottom:4px;">DAY ' + (i + 1) +
-          '<span style="font-weight:normal;font-size:0.8rem;"> · ' + senarai[i] + (senarai[i] === hari ? ' · HARI INI' : '') + ' · ' + a.length + ' Part</span> ›</button>';
-      }
       el('pustaka-isi').innerHTML = h;
     }
     el('pustaka-isi').onclick = function(e) {
@@ -22305,6 +22298,15 @@
       return { lj: lj, p: p, k: k, nm: CPD_NAMA[k] || '' };
     }
     var CPD_TITIK = 'Titik yang berwarna hitam ialah halaman yang sedang dibuka.';
+    var CPD_SB_TERANG = { // 25 Nov: maksud setiap butang sumber di KILANG
+      writing: 'karangan yang awak tulis di app phone (Laci Writing).',
+      tlkertas: 'soalan dan contoh jawapan daripada kertas MUET Writing dalam app.',
+      speaking: 'huraian yang awak tulis di app phone (Laci Speaking).',
+      ptkertas: 'soalan dan contoh jawapan daripada kertas MUET Speaking dalam app.',
+      reading: 'petikan bacaan daripada kertas MUET Reading. Ia masuk ke sini bila awak tekan SUDAH BACA PART.',
+      readingq: 'soalan daripada kertas MUET Reading yang sama. Ia masuk serentak dengan petikannya.',
+      readingb: 'petikan English yang awak tulis sendiri di app phone (Laci Reading Bukan MUET).'
+    };
     // Babak setiap page: [{ t: teks, b: [[label, fungsi], ...] }]
     function cpdBabak(K) {
       var nm = K.nm, lj = K.lj, B = [], misi = cpdMisiKini(), mis = misi && misi === K.k ? 'Misi daripada Coach: ' + nm + '.\n' : '', x, r, a, i, n, q, U, kos, tg, bg = CPD_BANGUNAN[lj];
@@ -22346,7 +22348,7 @@
         }
         tb(mis + 'Anda di bangunan READING, halaman KERTAS MUET.\nBangunan ini ada dua halaman. Titik bulat di bawah kotak ini menukar halaman: titik pertama untuk KERTAS MUET, titik kedua untuk petikan BUKAN MUET yang awak tulis di app phone. ' + CPD_TITIK);
         tb('Cara membaca kertas MUET Reading:\nLangkah 1. Tekan butang DAY yang tertulis BACA KERTAS.\nLangkah 2. Baca setiap muka surat. Tekan SETERUSNYA untuk muka surat berikutnya.\nLangkah 3. Tekan SUDAH BACA PART selepas habis membaca setiap Part.\nBahan dihantar ke KILANG READING secara automatik. Awak tidak perlu mencatat apa-apa.');
-        tb('Butang TAMBAH LATIHAN HARI INI hanyalah rekod peribadi untuk latihan di luar app. Ia tidak dikira dalam pai.\nSelepas membaca, terjemah bahan itu di KILANG READING.', [cpdBK('reading', 'reading')]);
+        tb('Selepas membaca, terjemah bahan itu di KILANG READING.\nSetiap Part yang sudah dibaca menghasilkan dua bahan di kilang: petikan Part itu (sumber PETIKAN) dan soalan Part itu (sumber SOALAN).', [cpdBK('reading', 'reading')]);
         return B;
       }
       if (K.p === 'tulis' || K.p === 'pentas') {
@@ -22409,6 +22411,7 @@
         a = KL.data[j];
         tb(mis + 'Anda di KILANG ' + HL[0] + '. Di sini setiap ayat English diterjemah ke Bahasa Melayu.\nTitik bulat di bawah kotak ini menukar kilang, mengikut susunan: WRITING, SPEAKING, READING, LISTENING, REASONING dan PRESENTING. Titik yang berwarna hitam ialah kilang yang sedang dibuka.' +
           (HL[1].length > 1 ? '\nKILANG ' + HL[0] + ' ada ' + HL[1].length + ' sumber bahan. Pilih sumber dengan butang ' + cpdSenarai(sbN) + ' di bawah tajuk kilang. Sekarang awak di sumber ' + sNama + '.' : ''));
+        if (HL[1].length > 1) { for (i = 0, q = []; i < HL[1].length; i++) q.push('Sumber ' + HL[1][i][1] + ': ' + (CPD_SB_TERANG[HL[1][i][0]] || '')); tb('Apa beza sumber ' + cpdSenarai(sbN) + '?\n' + q.join('\n')); }
         if (!a) tb('Saya sedang memuatkan bahan di sumber ' + sNama + '.');
         else if (!a.length) tb('Opss, bahan tiada di sumber ' + sNama + '.\n' + (KL_KOSONG[j] || ''), [KL_SUMBER[j] ? ['KE ' + KL_SUMBER[j][0] + ' ›', KL_SUMBER[j][1]] : null, cpdBP(j)]);
         else {
@@ -22834,12 +22837,12 @@
     // 18 Nov: tiada karangan / huraian seterusnya → beritahu apa perlu dibuat di APP PHONE (macam Laci Fakta)
     //   Q = bilangan soalan · U = soalan yang ADA karangan · preset = laci phone ada butang SALIN PRESET
     function bacaHabis(Q, U, laci, benda, preset, seterus) {
-      var tambah = 'Tambah topik &amp; soalan baru di <b>app phone → ' + laci + '</b>' + (preset ? ' — guna butang <b>&#128203; Salin Preset</b> (tampal ke AI) → <b>Jana Pukal</b>.' : '.');
+      var tambah = 'Tambah topik dan soalan baru di app phone, dalam <b>' + laci + '</b>.' + (preset ? ' Kalau malas fikir, tekan butang <b>Salin Preset</b> di app phone, tampal ke aplikasi AI, kemudian tampal jawapan AI dengan butang <b>Jana Pukal</b>.' : '');
       var h = '<div style="border:2px solid #000;border-radius:8px;padding:8px;margin-top:6px;">';
-      if (!Q) h += '<b>BELUM ADA SOALAN.</b><div style="font-size:0.9rem;margin-top:3px;">' + tambah + '</div>';
-      else if (!U) h += '<b>BELUM ADA ' + benda.toUpperCase() + '.</b><div style="font-size:0.9rem;margin-top:3px;">Ada <b>' + Q + ' soalan</b> menunggu. Tulis ' + benda + ' dulu di <b>app phone → ' + laci + '</b>.</div>';
-      else if (Q > U) h += '<b>SIAP!</b> Semua ' + benda + ' yang ditulis sudah dibaca &amp; masuk SR.<div style="font-size:0.9rem;margin-top:3px;">Ada <b>' + (Q - U) + ' soalan</b> belum ada ' + benda + ' — tulis dulu di <b>app phone → ' + laci + '</b>.</div>';
-      else h += '<b>SIAP!</b> Semua soalan sudah ada ' + benda + ' &amp; sudah dibaca.<div style="font-size:0.9rem;margin-top:3px;">Tiada soalan baru. ' + tambah + '</div>';
+      if (!Q) h += '<b>Opss, belum ada soalan.</b><div style="font-size:0.9rem;margin-top:3px;">' + tambah + '</div>';
+      else if (!U) h += '<b>Opss, belum ada ' + benda + '.</b><div style="font-size:0.9rem;margin-top:3px;">Ada <b>' + Q + ' soalan</b> menunggu. Tulis ' + benda + ' dahulu di app phone, dalam <b>' + laci + '</b>.</div>';
+      else if (Q > U) h += '<b>SIAP.</b> Semua ' + benda + ' yang sudah ditulis telah dibaca dan masuk SR.<div style="font-size:0.9rem;margin-top:3px;">Ada <b>' + (Q - U) + ' soalan</b> yang belum ada ' + benda + '. Tulis dahulu di app phone, dalam <b>' + laci + '</b>.</div>';
+      else h += '<b>SIAP.</b> Semua soalan sudah ada ' + benda + ' dan sudah dibaca.<div style="font-size:0.9rem;margin-top:3px;">Tiada soalan baru. ' + tambah + '</div>';
       return h + (seterus ? '<div style="font-size:0.85rem;margin-top:4px;">Ulang kaji seterusnya: ' + seterus + '</div>' : '') + '</div>';
     }
     function lwbTopik(id, j) { var L = lwbS(j); for (var i = 0; i < L.topik.length; i++) if (L.topik[i].id === id) return L.topik[i]; return null; }
