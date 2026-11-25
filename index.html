@@ -4282,8 +4282,9 @@
 
     // ══ LACI WRITING (17 Nov) — enjin Laci Bahasa yang SAMA (fasa, SR, RECAP, JQ, TAIP, MONITOR, keyboard ikut tetapan semasa) ══
     // Sumber: ayat yang sudah DISIMPAN (terjemahan BM) di DALAM KAPAL (Pelabuhan Writing) → writing_kapal/{soalanId}.ayat[{en, bm, ok}]
-    // Setiap 5 ayat karangan = SATU laci (writing_drawers/{soalanId}_{n}, notes "en = bm" macam Laci Bahasa) — laci wujud bila
-    // kelima-lima ayat (atau baki ayat terakhir) sudah DISIMPAN. Tiada tick: app pilih sendiri laci yang BELUM masuk SR (writing_sr_queue).
+    // 25 Nov: SATU AYAT = SATU laci (writing_drawers/{soalanId}_a{cincang ayat}, notes "en = bm" macam Laci Bahasa) — laci wujud bila
+    // ayat itu sudah DISIMPAN di KILANG. Tiada F0: F1 x5 (ayat BM, Flip = English) → F2 x5 (ayat English, Flip = BM) → SR.
+    // Laci lama 5 ayat ({soalanId}_{n}) yang SUDAH masuk SR dikekalkan. Tiada tick: app pilih sendiri laci yang BELUM masuk SR (writing_sr_queue).
     // 17 Nov: REASONING & PRESENTING guna cara yang SAMA (koleksi sendiri). pre = awalan ID kapal di Pelabuhan.
     var LJ = {
       writing: { label: 'WRITING', pre: 'tulis', topik: 'writing_topik', soalan: 'writing_soalan', baca: 'writing_baca', kapal: 'writing_kapal',
@@ -4335,32 +4336,48 @@
     //   Semua laci bidang disimpan dalam koleksi laci UTAMA (LJ[bidang].drawers / .sr). ID laci sumber kedua = awalan sumber + '_' (cth tlk_abc_1).
     var LJ_AHLI = { writing: ['writing', 'tlkertas'], speaking: ['speaking', 'ptkertas'], reading: ['reading', 'readingq', 'readingb'] }; // 22 Nov: + Reading bukan MUET
     var LJ_AHLI_TAG = { writing: 'APP · ', tlkertas: 'KERTAS · ', speaking: 'APP · ', ptkertas: 'KERTAS · ', reading: 'PETIKAN · ', readingq: 'SOALAN · ', readingb: 'BUKAN MUET · ' };
+    // 25 Nov: unit laci satu karangan → [{ id, ay: [indeks ayat], lama }] (dikongsi lwlSegerak, STATUS ALIRAN, LAST PERFORMANCE)
+    //   ID ikut isi ayat English (cincang) supaya tidak berubah bila ayat lain disambung. dlmSR = laci dalam SR (blok lama 5 ayat dikekalkan).
+    function lwlCincang(s) { var h = 5381, i; for (i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+    function lwlAyatOk(x) { return !!(x && x.ok && lwlBersih(x.bm) && lwlBersih(x.en)); }
+    function lwlUnit(awal, sid, ay, dlmSR) {
+      var out = [], k, i, hujung, lama, kunci, bil = {}, q;
+      for (k = 0; k * LWL_SAIZ < ay.length; k++) {
+        hujung = Math.min(ay.length, k * LWL_SAIZ + LWL_SAIZ); lama = awal + sid + '_' + (k + 1);
+        if (dlmSR && dlmSR[lama]) { q = []; for (i = k * LWL_SAIZ; i < hujung; i++) q.push(i); out.push({ id: lama, ay: q, lama: true }); continue; }
+        for (i = k * LWL_SAIZ; i < hujung; i++) {
+          if (!lwlAyatOk(ay[i])) continue;
+          kunci = awal + sid + '_a' + lwlCincang(lwlBersih(ay[i].en).toLowerCase());
+          bil[kunci] = (bil[kunci] || 0) + 1;
+          out.push({ id: bil[kunci] > 1 ? kunci + '_' + bil[kunci] : kunci, ay: [i], lama: false });
+        }
+      }
+      return out;
+    }
     function lwlSegerak() {
       var u = db.collection('users').doc(currentUser.uid), j0 = LJ[bahasaSumber] ? bahasaSumber : 'writing', J = LJ[j0], ahli = LJ_AHLI[j0] || [j0], baca = [], m;
       for (m = 0; m < ahli.length; m++) baca.push(u.collection(LJ[ahli[m]].kapal).get(), u.collection(LJ[ahli[m]].soalan).get());
-      baca.push(u.collection(J.drawers).get(), u.collection(J.perk).doc('writing').get());
+      baca.push(u.collection(J.drawers).get(), u.collection(J.perk).doc('writing').get(), u.collection(J.sr).get());
       return Promise.all(baca).then(function(r) {
-        var mahu = {}, ada = {}, kerja = [], id, nA = ahli.length * 2, mi;
+        var mahu = {}, ada = {}, dlmSR = {}, kerja = [], id, nA = ahli.length * 2, mi;
         r[nA].forEach(function(d) { ada[d.id] = d.data() || {}; });
+        r[nA + 2].forEach(function(d) { dlmSR[(d.data() || {}).drawerId || d.id] = 1; });
         for (mi = 0; mi < ahli.length; mi++) (function(jm, awal, rK, rS) {
           var soal = {}, adaTask = jm === 'writing', tag = ahli.length > 1 ? (LJ_AHLI_TAG[jm] || '') : '';
           rS.forEach(function(d) { soal[d.id] = d.data() || {}; });
           rK.forEach(function(d) {
-            var ay = (d.data() || {}).ayat || [], so = soal[d.id] || {}, k, i, bah, ok, baris, t = lwlTeksSoalan(so.soalan);
+            var ay = (d.data() || {}).ayat || [], so = soal[d.id] || {}, t = lwlTeksSoalan(so.soalan), U = lwlUnit(awal, d.id, ay, dlmSR), q, x, i;
             var tajuk = tag + (adaTask ? 'T' + (so.task === 2 ? 2 : 1) + ' · ' : '') + (t.length > 30 ? t.slice(0, 30) + '...' : (t || '(tanpa soalan)'));
-            for (k = 0; k * LWL_SAIZ < ay.length; k++) {
-              bah = ay.slice(k * LWL_SAIZ, k * LWL_SAIZ + LWL_SAIZ); ok = true; baris = [];
-              for (i = 0; i < bah.length; i++) {
-                if (!bah[i] || !bah[i].ok || !lwlBersih(bah[i].bm) || !lwlBersih(bah[i].en)) { ok = false; break; }
-                baris.push(lwlBersih(bah[i].en).replace(/=/g, '-') + ' = ' + lwlBersih(bah[i].bm));
-              }
-              if (!ok || !baris.length) continue;
-              mahu[awal + d.id + '_' + (k + 1)] = {
-                perkataanId: 'writing', soalanId: d.id, sumber: jm, bahagian: k + 1,
-                title: tajuk + ' · Bahagian ' + (k < 9 ? '0' : '') + (k + 1),
-                notes: baris.join('\n'), imageUrl: '',
-                tipsFasa0: 'Baca soalan karangan ini. Ingat semula isi bahagian ini sebelum mula.',
-                tips: 'Baca ayat, sebut terjemahannya dalam hati, kemudian Flip untuk semak.'
+            for (q = 0; q < U.length; q++) {
+              x = U[q];
+              if (x.lama) { if (ada[x.id]) mahu[x.id] = ada[x.id]; continue; } // laci lama dalam SR: kekal seperti asal
+              i = x.ay[0];
+              mahu[x.id] = {
+                perkataanId: 'writing', soalanId: d.id, sumber: jm, ayat: i + 1,
+                title: tajuk + ' · Ayat ' + (i < 9 ? '0' : '') + (i + 1),
+                notes: lwlBersih(ay[i].en).replace(/=/g, '-') + ' = ' + lwlBersih(ay[i].bm), imageUrl: '',
+                tipsFasa0: 'Laci MUET tiada F0. Terus ke F1.',
+                tips: 'F1: baca ayat Bahasa Melayu, sebut ayat English dalam hati, kemudian tekan Flip untuk semak. F2: baca ayat English, sebut maksudnya dalam Bahasa Melayu, kemudian tekan Flip untuk semak.'
               };
             }
           });
@@ -4425,11 +4442,31 @@
       });
       return true;
     };
+    // 25 Nov: laci MUET (1 ayat = 1 laci) — TIADA F0 / gambar: terus F1 x5 → F2 x5 → SR, sama macam Laci Bahasa
+    var _lwlKadAsal = cardsFromBahasaDrawer;
+    cardsFromBahasaDrawer = function() {
+      var out = _lwlKadAsal.apply(this, arguments), r = [], i;
+      if (!LJ[bahasaSumber]) return out;
+      for (i = 0; i < out.length; i++) if (!out[i].isF0 && !out[i].isGambar) r.push(out[i]);
+      return r;
+    };
+    // 25 Nov: status laci MUET tanpa awalan "BAHASA ·" (cth "LACI WRITING", "SR LACI WRITING · Fasa 1")
+    var _lwlSetTextAsal = setText;
+    setText = function(id, t) {
+      if (id === 'play-status' && LJ[bahasaSumber] && mode === 'bahasa' && typeof t === 'string') t = t.replace(/^SR BAHASA/, 'SR LACI ' + LJ[bahasaSumber].label).replace(/^BAHASA · /, '');
+      return _lwlSetTextAsal(id, t);
+    };
     var _lwlRenderAsal = renderCard;
     renderCard = function() {
-      var ubL = document.getElementById('btn-lwl-undur'); if (ubL) ubL.style.display = 'none';
+      var ubL = document.getElementById('btn-lwl-undur'), r, c;
+      if (ubL) ubL.style.display = 'none';
       if (LJ[bahasaSumber] && mode === 'bahasa' && cards[cardIndex] && cards[cardIndex].lwlSelesai) { lwlPaparSelesai(); return; }
-      return _lwlRenderAsal.apply(this, arguments);
+      r = _lwlRenderAsal.apply(this, arguments);
+      c = cards[cardIndex];
+      // 25 Nov: label sisi ikut bahasa ayat — F1: BM dulu (Flip = English) · F2: English dulu (Flip = BM)
+      if (LJ[bahasaSumber] && mode === 'bahasa' && c && !c.isRecap && !c.isTamat && !c.isGambar && !showTips && (c.fasa === 1 || c.fasa === 2))
+        setText('side-label', (c.fasa === 1) !== !!isFlipped ? 'AYAT BAHASA MELAYU' : 'AYAT BAHASA INGGERIS');
+      return r;
     };
     var _lwlMuatAsal = muatAktifRingan;
     muatAktifRingan = function() {
@@ -21910,7 +21947,7 @@
       for (i = 0; i < KL_HAL.length; i++) ti += '<button type="button" class="hlt' + (i === KL.hal ? ' on' : '') + '" data-hl="' + i + '"><span></span></button>';
       el('kl-titik').innerHTML = ti;
       h += '<div style="font-weight:bold;font-size:1.15rem;">KILANG ' + B[0] + '</div>';
-      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Setiap bahan sudah dipecah menjadi <b>ayat</b>. Terjemah setiap ayat ke Bahasa Melayu dan tekan <b>SIMPAN</b>. Setiap lima ayat yang disimpan menjadi satu laci di <b>LACI ' + B[0] + '</b>.</div>';
+      h += '<div style="font-size:0.85rem;margin:2px 0 6px;">Setiap bahan sudah dipecah menjadi <b>ayat</b>. Terjemah setiap ayat ke Bahasa Melayu dan tekan <b>SIMPAN</b>. Setiap ayat yang disimpan menjadi satu laci di <b>LACI ' + B[0] + '</b>.</div>';
       if (B[1].length > 1) {
         h += '<div style="display:table;width:100%;table-layout:fixed;margin:4px 0 6px;"><div style="display:table-row;">';
         for (i = 0; i < B[1].length; i++) h += '<div style="display:table-cell;padding:0 ' + (i ? '0 0 4px' : '4px 0 0') + ';"><button type="button" data-kl-sb="' + i + '" style="' + BT + (i === KL.sb[KL.hal] ? 'background:#000;color:#fff;' : 'background:#fff;color:#000;') + '">' + B[1][i][1] + '</button></div>';
@@ -21953,13 +21990,13 @@
         r[3].forEach(function(d) { bank[d.id] = (d.data() || {}).pasangan || []; });
         for (k = 0; k < COACH_GAME.length; k++) if (min < 0 || r[4 + k].length < min) { min = r[4 + k].length; gm = COACH_GAME[k][1]; set = {}; for (i = 0; i < r[4 + k].length; i++) set[r[4 + k][i]] = 1; }
         r[0].forEach(function(d) {
-          var s = d.data() || {}, ay, n, ok = 0, nL, L, x = 0, y = 0, tL = 0, tK = 0, p, q, st, siap = false;
+          var s = d.data() || {}, ay, n, ok = 0, nL, L, x = 0, y = 0, tL = 0, tK = 0, p, q, st, siap = false, U;
           if (!tlKira(s.karangan)) return;
           ay = (kp[d.id] || {}).ayat || []; n = ay.length;
           for (i = 0; i < n; i++) if (ay[i] && ay[i].ok && String(ay[i].bm || '').replace(/\s+/g, '')) ok++;
-          nL = Math.ceil(n / 5);
-          for (i = 1; i <= nL; i++) {
-            L = d.id + '_' + i;
+          U = lwlUnit('', d.id, ay, laciSR); nL = U.length; // 25 Nov: 1 ayat = 1 laci
+          for (i = 0; i < nL; i++) {
+            L = U[i].id;
             if (laciSR[L]) tL++;
             p = bank[J.pre + '-' + L];
             if (p && p.length) { tK++; for (q = 0; q < p.length; q++) { y++; if (set[kunciPasangan(p[q].en, p[q].bm)]) x++; } }
@@ -22057,15 +22094,9 @@
               for (t = 0; t < ay.length; t++) if (ay[t] && ay[t].ok && String(ay[t].bm || '').replace(/\s+/g, '')) n++;
               if (n < jum) o.kilang++;
             });
-            rK.forEach(function(d) {
-              var ay = (d.data() || {}).ayat || [], c, t, ok, lid;
-              for (c = 0; c * 5 < ay.length; c++) {
-                ok = true;
-                for (t = c * 5; t < Math.min(ay.length, c * 5 + 5); t++) if (!ay[t] || !ay[t].ok || !String(ay[t].bm || '').replace(/\s+/g, '') || !String(ay[t].en || '').replace(/\s+/g, '')) { ok = false; break; }
-                if (!ok) continue;
-                lid = awal + d.id + '_' + (c + 1);
-                if (!srSet[lid]) o.laci++;
-              }
+            rK.forEach(function(d) { // 25 Nov: 1 ayat = 1 laci (blok lama 5 ayat yang sudah SR dikira satu laci)
+              var U = lwlUnit(awal, d.id, (d.data() || {}).ayat || [], srSet), t;
+              for (t = 0; t < U.length; t++) if (!srSet[U[t].id]) o.laci++;
             });
           }
           for (id in srSet) if (srSet.hasOwnProperty(id)) { p = bank[J.pre + '-' + id]; if (!p || !p.length) o.kapal++; }
@@ -22435,7 +22466,7 @@
           if (n) tb('Ada ' + a.length + ' bahan di sumber ' + sNama + '. ' + n + ' bahan belum habis diterjemah.\nBahan yang belum siap ada bingkai tebal. Tekan bahan itu untuk mula menterjemah, atau tekan butang di bawah.', [['BUKA BAHAN YANG BELUM SIAP ›', function() { bukaDalamKapal({ id: q.id }, true); }]]);
           else tb('Semua ' + a.length + ' bahan di sumber ' + sNama + ' sudah SIAP diterjemah.' + (HL[1].length > 1 ? ' Semak juga sumber lain di kilang ini.' : '') + '\nKerja seterusnya di LACI ' + HL[0] + '.', [cpdB('KE LACI ' + HL[0] + ' ›', lj, 'laci')]);
         }
-        tb('Cara menterjemah selepas bahan dibuka:\nCara 1. Taip terjemahan Bahasa Melayu dalam kotak di bawah setiap ayat, kemudian tekan SIMPAN pada ayat itu.\nCara 2. Guna AI. Tekan SALIN PRESET dan tampal ke aplikasi AI. Salin jawapan AI, tekan JANA PUKAL, tampal jawapan itu dan tekan ISI KOTAK. Semak terjemahan, kemudian tekan SIMPAN SEMUA.\nSetiap lima ayat yang disimpan menjadi satu laci di LACI ' + HL[0] + '.', [cpdB('KE LACI ' + HL[0] + ' ›', lj, 'laci')]);
+        tb('Cara menterjemah selepas bahan dibuka:\nCara 1. Taip terjemahan Bahasa Melayu dalam kotak di bawah setiap ayat, kemudian tekan SIMPAN pada ayat itu.\nCara 2. Guna AI. Tekan SALIN PRESET dan tampal ke aplikasi AI. Salin jawapan AI, tekan JANA PUKAL, tampal jawapan itu dan tekan ISI KOTAK. Semak terjemahan, kemudian tekan SIMPAN SEMUA.\nSetiap ayat yang disimpan menjadi satu laci di LACI ' + HL[0] + '.', [cpdB('KE LACI ' + HL[0] + ' ›', lj, 'laci')]);
         return B;
       }
       if (K.p === 'terjemah') {
@@ -22443,15 +22474,15 @@
         tb(mis + 'Anda sedang menterjemah bahan ini:\n' + (lwTeks((GK.soalan || {}).soalan || '') || '(tanpa tajuk)') + '\n' + (n ? q + ' daripada ' + n + ' ayat sudah disimpan.' : 'Bahan ini belum ada ayat.') +
           (n && q >= n ? '\nSemua ayat sudah disimpan. Tekan SIAP KEMBALI KE KILANG di bawah, atau terus ke LACI ' + nm + '.' : ''), n && q >= n ? [cpdB('KE LACI ' + nm + ' ›', lj, 'laci')] : []);
         tb('Cara 1. Taip sendiri.\nTulis terjemahan Bahasa Melayu dalam kotak di bawah ayat English, kemudian tekan SIMPAN pada ayat itu. Ayat yang sudah disimpan turun ke bahagian DISIMPAN.\nJika satu ayat terpotong di tengah, tekan SAMBUNG AYAT untuk menyambungnya dengan ayat seterusnya.');
-        tb('Cara 2. Guna AI.\nLangkah 1. Tekan SALIN PRESET, kemudian tampal ke aplikasi AI.\nLangkah 2. Salin jawapan AI.\nLangkah 3. Kembali ke sini, tekan JANA PUKAL dan tampal jawapan dalam kotak.\nLangkah 4. Tekan ISI KOTAK. Semak terjemahan, kemudian tekan SIMPAN SEMUA.\nSetiap lima ayat yang disimpan menjadi satu laci di LACI ' + nm + '.');
+        tb('Cara 2. Guna AI.\nLangkah 1. Tekan SALIN PRESET, kemudian tampal ke aplikasi AI.\nLangkah 2. Salin jawapan AI.\nLangkah 3. Kembali ke sini, tekan JANA PUKAL dan tampal jawapan dalam kotak.\nLangkah 4. Tekan ISI KOTAK. Semak terjemahan, kemudian tekan SIMPAN SEMUA.\nSetiap ayat yang disimpan menjadi satu laci di LACI ' + nm + '.');
         return B;
       }
       if (K.p === 'laci') {
         x = STA.data ? STA.data[lj] : null;
-        tb(mis + 'Anda di LACI ' + nm + '. Setiap laci mengandungi lima ayat daripada KILANG, lengkap dengan terjemahan.' + (x && x.laci ? '\nAda ' + x.laci + ' laci ' + nm + ' yang belum masuk SR.' : ''));
+        tb(mis + 'Anda di LACI ' + nm + '. Setiap laci ialah SATU ayat daripada KILANG bersama terjemahannya, sama seperti Laci Bahasa.' + (x && x.laci ? '\nAda ' + x.laci + ' laci ' + nm + ' yang belum masuk SR.' : ''));
         if (x && !x.laci) tb('Tiada laci ' + nm + ' yang menunggu untuk diulang kaji sekarang. Laci yang sudah masuk SR akan muncul semula bila tiba masa ulang kaji.' +
           (x.kilang ? '\nAda ' + x.kilang + ' bahan di KILANG ' + nm + ' yang belum habis diterjemah. Terjemah dahulu supaya laci baru terbentuk.' : ''), x.kilang ? [cpdB('KE KILANG ' + nm + ' ›', lj, 'kilang')] : []);
-        tb('Cara ulang kaji:\nBaca ayat pada kad di atas. Tekan Flip untuk melihat bahagian belakang kad, kemudian tekan SETERUSNYA untuk kad berikutnya. Ikut arahan pada kad sehingga laci tamat.\nLaci yang tamat masuk SR secara automatik, dan akan muncul semula untuk diulang kaji mengikut jadual.');
+        tb('Cara ulang kaji satu laci:\nF1, 5 kali: kad menunjukkan ayat Bahasa Melayu. Sebut ayat English dalam hati, tekan Flip untuk semak, kemudian tekan SETERUSNYA.\nF2, 5 kali: kad menunjukkan ayat English. Sebut maksudnya dalam Bahasa Melayu, tekan Flip untuk semak, kemudian tekan SETERUSNYA.\nSelepas F2, laci itu masuk SR secara automatik dan laci ayat seterusnya dibuka. Laci yang sudah SR akan muncul semula mengikut jadual ulang kaji.');
         tb('Setiap laci yang sudah masuk SR menjadi KAPAL di PELABUHAN ' + nm + '. Di sana awak padankan perkataan supaya vocab dihantar ke ARKED.', [cpdB('KE PELABUHAN ' + nm + ' ›', lj, 'kapal')]);
         return B;
       }
