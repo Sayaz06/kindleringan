@@ -22229,7 +22229,10 @@
     function cpdDariLj(j) { var k; for (k in CPD_LJ) if (CPD_LJ.hasOwnProperty(k) && CPD_LJ[k] === j) return k; return ''; }
     function cpdUtama(j) { var i; for (i = 0; i < STA_B.length; i++) if ((LJ_AHLI[STA_B[i][0]] || [STA_B[i][0]]).indexOf(j) >= 0) return STA_B[i][0]; return ''; }
     function cpdMisi(k) { CPD.b = k; CPD.at = Date.now(); CPD.tutup = {}; }
-    function cpdMisiKini() { return CPD.b && Date.now() - CPD.at < 6 * 3600000 ? CPD.b : ''; }
+    function cpdMisiAsal() { return CPD.b && Date.now() - CPD.at < 6 * 3600000 ? CPD.b : ''; }
+    // 25 Nov: misi yang sudah dikunci MOD KETAT tidak lagi dihantar ke bidang itu. Misi ditukar ke bidang cadangan MOD KETAT.
+    function cpdMisiKini() { var m = cpdMisiAsal(); if (m && KETAT && ketatBlok(m)) m = ketatKira().cadang || ''; return m; }
+    function cpdMisiNota() { var a = cpdMisiAsal(), m = cpdMisiKini(); return a && m && a !== m ? ' Misi asal, ' + CPD_NAMA[a] + ', kini dikunci oleh MOD KETAT, jadi misi ditukar ke ' + CPD_NAMA[m] + ', iaitu bidang yang paling jauh di bawah sasaran.' : ''; }
     function cpdSenarai(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' dan ' + a[a.length - 1]; }
     function cpdGame() { var i, a = []; for (i = 0; i < COACH_GAME.length; i++) a.push(COACH_GAME[i][1]); return cpdSenarai(a); }
     function cpdIdx(b) { var i; for (i = 0; i < STA_B.length; i++) if (STA_B[i][0] === b) return i; return -1; }
@@ -22261,9 +22264,10 @@
       }).catch(function(e) { alert('Gagal hantar ke app phone: ' + ((e && e.message) || e)); });
     }
     // Butang sedia: [label, fungsi]
-    function cpdB(lbl, b, p) { return [lbl, function() { cpdPergi(b, p); }]; }
-    function cpdBK(b, m) { return ['KE KILANG ' + (CPD_NAMA[cpdDariLj(b)] || '') + ' ›', function() { cpdKilang(b, m || b); }]; }
-    function cpdBP(m) { var x = CPD_PHONE[m]; return x ? ['HANTAR KE APP PHONE ›', function() { cpdPhone(x[0], x[1]); }] : null; }
+    // 25 Nov: elemen ketiga = destinasi butang (cth 'kapal:reading'). Kotak COACH membuang butang yang menuju ke page yang sedang dibuka (cpdDiSini).
+    function cpdB(lbl, b, p) { return [lbl, function() { cpdPergi(b, p); }, p + ':' + (b || '')]; }
+    function cpdBK(b, m) { return ['KE KILANG ' + (CPD_NAMA[cpdDariLj(b)] || '') + ' ›', function() { cpdKilang(b, m || b); }, 'kilang:' + b + ':' + (m || b)]; }
+    function cpdBP(m) { var x = CPD_PHONE[m]; return x ? ['HANTAR KE APP PHONE ›', function() { cpdPhone(x[0], x[1]); }, 'phone:' + m] : null; }
     function cpdBaca(r, benda) { var a = []; if (r.baru) a.push(r.baru + ' ' + benda + ' baru'); if (r.due) a.push(r.due + ' ' + benda + ' untuk dibaca semula'); return cpdSenarai(a); }
     function cpdSR(U, sr) { var hari = coachHariId(), r = { jum: U.length, baru: 0, due: 0 }, i, x; for (i = 0; i < U.length; i++) { x = sr[U[i].id]; if (!x) r.baru++; else if (x.due <= hari) r.due++; } return r; }
     // Cara pai bidang dikira (dengan nombor semasa)
@@ -22287,27 +22291,27 @@
     // Langkah seterusnya — peringkat PALING DEKAT dengan pai dulu (ARKED, PELABUHAN, LACI, KILANG, bahan belum dibaca, APP PHONE)
     function cpdLangkah(k) {
       var lj = CPD_LJ[k], nm = CPD_NAMA[k] || '', d = (STA.data && lj) ? STA.data[lj] : null, g = coachDataAkhir && coachDataAkhir.gameB && coachDataAkhir.gameB[k], bg = CPD_BANGUNAN[lj];
-      var sbP = KL_SUMBER[lj === 'reading' ? 'readingb' : (LJ_AHLI[lj] || [lj])[0]], sbK = KL_SUMBER[CPD_KERTAS[lj]]; // bangunan sumber: titik APP PHONE / titik KERTAS MUET
-      var pergi = function(lbl, p) { return [lbl, function() { cpdMisi(k); cpdPergi(lj, p); }]; };
+      var kP = lj === 'reading' ? 'readingb' : (LJ_AHLI[lj] || [lj])[0], sbP = KL_SUMBER[kP], sbK = KL_SUMBER[CPD_KERTAS[lj]]; // bangunan sumber: titik APP PHONE / titik KERTAS MUET
+      var pergi = function(lbl, p) { return [lbl, function() { cpdMisi(k); cpdPergi(lj, p); }, p + ':' + lj]; };
       var kc = ketatBlok(k) ? ketatKira().cadang : '', Lc, Li; // 25 Nov: MOD KETAT — bidang dikunci → bidang yang paling perlu
       if (kc && kc !== k) { Lc = cpdLangkah(kc); return { t: nm + ' sedang dikunci oleh MOD KETAT kerana sudah melebihi sasaran. Naikkan bidang lain dahulu. Bidang yang paling jauh di bawah sasaran ialah ' + CPD_NAMA[kc] + '.\n' + Lc.t, b: Lc.b }; }
       if (k === 'listening') {
-        if (!pwData) { pwPastiData(); return { t: 'Langkah seterusnya: LISTENING.\nJawab kertas MUET Listening sambil mendengar audionya, atau tonton video English. Kedua-duanya direkod di bangunan LISTENING.', b: ['KE BANGUNAN LISTENING ›', function() { cpdMisi(k); bukaPawagam(); }] }; }
+        if (!pwData) { pwPastiData(); return { t: 'Langkah seterusnya: LISTENING.\nJawab kertas MUET Listening sambil mendengar audionya, atau tonton video English. Kedua-duanya direkod di bangunan LISTENING.', b: ['KE BANGUNAN LISTENING ›', function() { cpdMisi(k); bukaPawagam(); }, 'sumber:pnkertas'] }; }
         Li = cpdLsInfo();
         if (Li.kertas) return { t: 'Langkah seterusnya: kertas MUET Listening.\nBahagian KERTAS MUET baru ' + Li.fm + ' peratus, sedangkan sasarannya ' + Li.s1 + ' peratus. Bahagian VIDEO pula ' + Li.fv + ' peratus. Buka kertas MUET Listening, mainkan audionya dan jawab soalan, kemudian tekan SUDAH BACA KERTAS. Setiap Part memberi ' + PW_MINIT_PART + ' minit.',
-          b: ['KE KERTAS LISTENING ›', function() { cpdMisi(k); pwHal = 0; KT_UI.pn.baca = ''; bukaPawagam(); }] };
+          b: ['KE KERTAS LISTENING ›', function() { cpdMisi(k); pwHal = 0; KT_UI.pn.baca = ''; bukaPawagam(); }, 'sb:pnkertas'] };
         return { t: 'Langkah seterusnya: video English.\nBahagian VIDEO ' + Li.fv + ' peratus, sasaran ' + Li.s1 + ' peratus.' + (Li.dah ? ' Kertas MUET Listening sudah dikira hari ini.' : '') + ' Tonton atau dengar video English, kemudian rekod minitnya dengan butang + LISTENING di halaman VIDEO.', b: pergi('KE LISTENING (VIDEO) ›', 'video') };
       }
       if (k === 'vocab') return { t: 'Langkah seterusnya: main game di ARKED VOCAB KAMUS' + (g ? ', mulakan dengan game ' + g : '') + '.', b: pergi('KE ARKED VOCAB KAMUS ›', 'arked') };
-      if (!d) return { t: 'Saya sedang menyemak di mana bahan ' + nm + ' sedang menunggu. Buka STATUS ALIRAN untuk melihatnya.', b: pergi('STATUS ALIRAN ›', 'sta') };
+      if (!d) return { t: 'Saya sedang menyemak di mana bahan ' + nm + ' sedang menunggu. Jawapannya ada di STATUS ALIRAN.', b: pergi('STATUS ALIRAN ›', 'sta') };
       if (d.arked) return { t: 'Langkah seterusnya: ARKED ' + nm + '.\nAda ' + d.arked + ' vocab yang belum masuk SR' + (g ? ' dalam game ' + g : '') + '. Inilah yang terus menaikkan pai, jadi mulakan dengan game itu.', b: pergi('KE ARKED ' + nm + ' ›', 'arked') };
       if (d.kapal) return { t: 'Langkah seterusnya: PELABUHAN ' + nm + '.\nAda ' + d.kapal + ' laci yang sudah SR tetapi belum dijadikan kontena. Di pelabuhan, padankan perkataan supaya vocab dihantar ke ARKED.', b: pergi('KE PELABUHAN ' + nm + ' ›', 'kapal') };
       if (d.laci) return { t: 'Langkah seterusnya: LACI ' + nm + '.\nAda ' + d.laci + ' laci yang belum masuk SR. Ulang kaji laci itu sampai tamat supaya ia menjadi kapal di PELABUHAN.', b: pergi('KE LACI ' + nm + ' ›', 'laci') };
       if (d.kilang) return { t: 'Langkah seterusnya: KILANG ' + nm + '.\nAda ' + d.kilang + ' bahan yang belum habis diterjemah. Terjemah dan simpan setiap ayat supaya ayat masuk ke LACI.', b: pergi('KE KILANG ' + nm + ' ›', 'kilang') };
-      if (d.baru && sbP) return { t: 'Langkah seterusnya: baca bahan ' + nm + '.\nAda ' + d.baru + ' karangan daripada app phone yang belum dibaca. Buka bangunan ' + (bg ? bg[0] : nm) + ' di tab MUET, baca karangan itu, kemudian tekan SUDAH BACA supaya bahannya masuk ke KILANG.', b: ['KE ' + sbP[0] + ' ›', function() { cpdMisi(k); sbP[1](); }] };
-      if (d.phone && CPD_PHONE[lj]) return { t: 'Langkah seterusnya: APP PHONE.\nAda ' + d.phone + ' soalan ' + nm + ' di app phone yang belum ada karangan. Tulis karangannya, atau tekan butang PRESET AI di app phone untuk jana jawapan.', b: [cpdBP(lj)[0], function() { cpdMisi(k); cpdBP(lj)[1](); }] };
+      if (d.baru && sbP) return { t: 'Langkah seterusnya: baca bahan ' + nm + '.\nAda ' + d.baru + ' karangan daripada app phone yang belum dibaca. Buka bangunan ' + (bg ? bg[0] : nm) + ' di tab MUET, baca karangan itu, kemudian tekan SUDAH BACA supaya bahannya masuk ke KILANG.', b: ['KE ' + sbP[0] + ' ›', function() { cpdMisi(k); sbP[1](); }, 'sb:' + kP] };
+      if (d.phone && CPD_PHONE[lj]) return { t: 'Langkah seterusnya: APP PHONE.\nAda ' + d.phone + ' soalan ' + nm + ' di app phone yang belum ada karangan. Tulis karangannya, atau tekan butang PRESET AI di app phone untuk jana jawapan.', b: [cpdBP(lj)[0], function() { cpdMisi(k); cpdBP(lj)[1](); }, 'phone:' + lj] };
       return { t: 'Semua bahan ' + nm + ' sudah melalui setiap peringkat. Tambah bahan baru: ' + (CPD_PHONE[lj] ? 'tulis di app phone (' + CPD_PHONE[lj][1] + ')' + (sbK ? ', atau ' : '.') : '') + (sbK ? 'baca kertas MUET di bangunan ' + (bg ? bg[0] : nm) + ' dalam tab MUET.' : ''),
-        b: CPD_PHONE[lj] ? [cpdBP(lj)[0], function() { cpdMisi(k); cpdBP(lj)[1](); }] : sbK ? ['KE ' + sbK[0] + ' ›', function() { cpdMisi(k); sbK[1](); }] : pergi('STATUS ALIRAN ›', 'sta') };
+        b: CPD_PHONE[lj] ? [cpdBP(lj)[0], function() { cpdMisi(k); cpdBP(lj)[1](); }, 'phone:' + lj] : sbK ? ['KE ' + sbK[0] + ' ›', function() { cpdMisi(k); sbK[1](); }, 'sb:' + CPD_KERTAS[lj]] : pergi('STATUS ALIRAN ›', 'sta') };
     }
     // Babak coach utama (page COACH): cara kira + aliran + langkah seterusnya
     function coachBabakBelajar(k, babak) {
@@ -22338,6 +22342,78 @@
       var k = cpdDariLj(lj);
       return { lj: lj, p: p, k: k, nm: CPD_NAMA[k] || '' };
     }
+    // ══ COACH TAHU AWAK DI MANA (25 Nov) ══
+    //   Butang coach yang menuju ke page atau titik yang SEDANG dibuka tidak dipaparkan. Ia diganti ayat "Awak sudah berada di ..."
+    //   bersama apa yang perlu dibuat di page itu. Dipakai oleh semua babak kotak COACH (page, MOD KETAT, misi, cadangan STATUS ALIRAN) dan popup MOD KETAT.
+    //   Destinasi: 'sta' · 'video' · 'sumber:lj' (bangunan, mana-mana titik) · 'sb:sumber' (titik bangunan) · 'arked:lj' · 'kapal:lj' · 'laci:lj' · 'kilang:lj[:sumber]'
+    var CPD_SB_SKRIN = { writing: ['screen-tulis', 1], tlkertas: ['screen-tulis', 0], speaking: ['screen-pentas', 1], ptkertas: ['screen-pentas', 0], reading: ['screen-pustaka', 0],
+      readingq: ['screen-pustaka', 0], readingb: ['screen-pustaka', 1], pnkertas: ['screen-pawagam', 0], reasoning: ['screen-lwbb', 'reasoning'], presenting: ['screen-lwbb', 'presenting'] };
+    var CPD_SB_TTK = { 'screen-tulis': function() { return KT_HAL.tl; }, 'screen-pentas': function() { return KT_HAL.pt; }, 'screen-pustaka': function() { return PU_HAL; },
+      'screen-pawagam': function() { return pwHal; }, 'screen-lwbb': function() { return LWBB.j; } };
+    function cpdDiSini(ke) {
+      var a = document.querySelector('.screen.active'), id = a ? a.id : '', s = String(ke || '').split(':'), p = s[0], b = s[1] || '', m = s[2] || '', x, i;
+      if (!p || !id) return false;
+      if (p === 'sta') return id === 'screen-sta';
+      if (p === 'video') return id === 'screen-pawagam' && pwHal === 1;
+      if (p === 'sumber') { x = CPD_SB_SKRIN[b]; return !!x && id === x[0] && (id !== 'screen-lwbb' || LWBB.j === b); }
+      if (p === 'sb') { x = CPD_SB_SKRIN[b]; return !!x && id === x[0] && String(CPD_SB_TTK[id]()) === String(x[1]); }
+      if (p === 'arked') return id === 'screen-mini' && !arkHal && ARK_BID[arkBi] === b;
+      if (p === 'kapal') {
+        if (id === 'screen-gbank') return GB_JENIS[gbHal] === b;
+        if (id !== 'screen-gbank-laci' || !L) return false;
+        x = ljJenisKapal(L.id); return (x ? cpdUtama(x) : '') === b; // di DERMAGA kapal bidang itu = sudah di pelabuhannya
+      }
+      if (p === 'laci') return id === 'screen-play' && !!CPD.laciAktif && cpdUtama(CPD.laciAktif) === b;
+      if (p === 'kilang') {
+        i = cpdIdx(b); if (i < 0) return false;
+        if (id === 'screen-kilang') return KL.hal === STA_B[i][2] && (!m || klJ() === m);
+        return !m && id === 'screen-gb-kapal' && (cpdUtama(GK.j) || GK.j) === b; // sedang menterjemah bahan bidang itu
+      }
+      return false;
+    }
+    // Apa perlu dibuat di page yang sedang dibuka
+    function cpdSiniBuat(K) {
+      var p = K ? K.p : '', a, n = 0, i, g;
+      if (p === 'kapal') return 'Teruskan di sini: panggil kapal yang kosong, muat kontena di DERMAGA, kemudian belayarkan kapal itu.';
+      if (p === 'dermaga') return 'Teruskan di sini: padankan perkataan English dengan maksudnya supaya menjadi kontena, kemudian belayarkan kapal.';
+      if (p === 'kilang') {
+        a = KL.data[klJ()]; if (a) for (i = 0; i < a.length; i++) if (a[i].siap < a[i].jum) n++;
+        if (a && !n && KL_HAL[KL.hal][1].length > 1) return (a.length ? 'Semua bahan di sumber ini sudah siap.' : 'Sumber ini belum ada bahan.') + ' Pilih sumber lain dengan butang di bawah tajuk kilang.';
+        return 'Teruskan di sini: tekan bahan yang berbingkai tebal untuk mula menterjemah.';
+      }
+      if (p === 'terjemah') return 'Teruskan di sini: terjemah setiap ayat di bawah, kemudian tekan SIMPAN.';
+      if (p === 'laci') return 'Teruskan di sini: ulang kaji kad di bawah sampai laci tamat.';
+      if (p === 'arked') { g = coachDataAkhir && coachDataAkhir.gameB && coachDataAkhir.gameB[K.k]; return 'Teruskan di sini: ' + (g ? 'main game ' + g + ' dahulu, kerana game itulah yang paling rendah.' : 'main game yang paling rendah dahulu.'); }
+      if (p === 'sta') return 'Jadual di bawah sedang dikemas kini. Tunggu sebentar, kemudian tekan nombor dalam jadual untuk terus ke peringkat itu.';
+      if (p === 'pawagam') return pwHal === 1 ? 'Teruskan di sini: tonton video English, kemudian tekan + LISTENING untuk merekod minitnya.'
+        : ktBaca('pn') ? 'Teruskan di sini: jawab kertas ini sambil mendengar audionya, kemudian tekan SUDAH BACA KERTAS.' : 'Teruskan di sini: tekan BACA KERTAS pada DAY yang belum dijawab.';
+      return 'Teruskan di sini: baca bahan di page ini sampai habis, kemudian tekan butang SUDAH BACA.';
+    }
+    function cpdNamaKe(l) { return String(l || '').replace(/\s*›\s*$/, '').replace(/^(KE|BUKA|SELESAIKAN DI|HANTAR KE)\s+/, ''); }
+    // Bidang destinasi yang sedang dikunci MOD KETAT ('' jika tidak dikunci)
+    function cpdKunciKe(ke) {
+      var s = String(ke || '').split(':'), k;
+      if (!KETAT || !KETAT.aktif || !s[0] || s[0] === 'sta') return '';
+      k = s[0] === 'video' ? 'listening' : ketatDariLj(s[1] || '');
+      return ketatBlok(k) ? k : '';
+    }
+    // Tapis satu babak { t, b }: butang ke tempat semasa dibuang (diganti ayat "Awak sudah berada di ..."),
+    //   butang ke bidang yang dikunci MOD KETAT disembunyikan (diganti sebabnya)
+    function cpdTapis(T, K) {
+      var b = [], nama = '', kn = '', kk = '', i, x, k, t;
+      for (i = 0; i < T.b.length; i++) {
+        x = T.b[i]; if (!x) continue;
+        if (x[2] && cpdDiSini(x[2])) { if (!nama) nama = cpdNamaKe(x[0]); continue; }
+        k = x[2] ? cpdKunciKe(x[2]) : '';
+        if (k) { if (!kn) { kn = cpdNamaKe(x[0]); kk = k; } continue; }
+        b.push(x);
+      }
+      if (!nama && !kn) return T;
+      t = T.t;
+      if (nama) t += '\nAwak sudah berada di ' + nama + '. ' + cpdSiniBuat(K);
+      if (kn) t += '\nButang ke ' + kn + ' tidak dipaparkan kerana ' + ketatNama(kk) + ' sedang dikunci oleh MOD KETAT.';
+      return { t: t, b: b, k: T.k };
+    }
     var CPD_TITIK = 'Titik yang berwarna hitam ialah halaman yang sedang dibuka.';
     var CPD_SB_TERANG = { // 25 Nov: maksud setiap butang sumber di KILANG
       writing: 'karangan yang awak tulis di app phone (Laci Writing).',
@@ -22350,15 +22426,12 @@
     };
     // Babak setiap page: [{ t: teks, b: [[label, fungsi], ...] }]
     function cpdBabak(K) {
-      var nm = K.nm, lj = K.lj, B = [], misi = cpdMisiKini(), mis = misi && misi === K.k ? 'Misi daripada Coach: ' + nm + '.\n' : '', x, r, a, i, n, q, U, kos, tg, bg = CPD_BANGUNAN[lj];
+      var nm = K.nm, lj = K.lj, B = [], misi = cpdMisiKini(), mis = misi && misi === K.k ? 'Misi daripada Coach: ' + nm + '.' + cpdMisiNota() + '\n' : '', x, r, a, i, n, q, U, kos, tg, bg = CPD_BANGUNAN[lj];
       var tb = function(t, b) { var c = [], z; b = b || []; for (z = 0; z < b.length; z++) if (b[z]) c.push(b[z]); B.push({ t: t, b: c }); };
       if (K.p === 'muet') {
-        var mb = misi ? CPD_LJ[misi] : '', ada = [], bm = [];
-        if (misi === 'listening') bm = [cpdB('KE LISTENING (VIDEO) ›', '', 'video')];
-        else if (misi === 'vocab') bm = [cpdB('KE ARKED VOCAB KAMUS ›', '', 'arked')];
-        else if (CPD_BANGUNAN[mb]) bm = [['KE BANGUNAN ' + CPD_BANGUNAN[mb][0] + ' ›', CPD_BANGUNAN[mb][1]]];
-        tb('Ini tab MUET. Ada enam bangunan sumber di sini: LISTENING, READING, SPEAKING, WRITING, REASONING dan PRESENTING.\nSetiap bangunan menyimpan bahan English untuk dibaca. Bahan datang daripada kertas MUET dalam app, dan daripada karangan yang awak tulis di app phone.' +
-          (misi ? '\n\nMisi daripada Coach: ' + CPD_NAMA[misi] + '. ' + (misi === 'vocab' ? 'Misi ini tidak memerlukan bangunan di sini. Terus ke ARKED VOCAB KAMUS.' : misi === 'listening' ? 'Masuk bangunan LISTENING dan buka halaman VIDEO.' : 'Tekan bangunan ' + (CPD_BANGUNAN[mb] ? CPD_BANGUNAN[mb][0] : CPD_NAMA[misi]) + '.') : ''), bm);
+        var ada = [], Lm;
+        if (misi) { Lm = cpdLangkah(misi); tb('Misi daripada Coach: ' + CPD_NAMA[misi] + '.' + cpdMisiNota() + '\n' + Lm.t, [Lm.b]); B[B.length - 1].k = misi; } // 25 Nov: langkah sebenar bidang misi (sama dengan page COACH)
+        tb('Ini tab MUET. Ada enam bangunan sumber di sini: LISTENING, READING, SPEAKING, WRITING, REASONING dan PRESENTING.\nSetiap bangunan menyimpan bahan English untuk dibaca. Bahan datang daripada kertas MUET dalam app, dan daripada karangan yang awak tulis di app phone.');
         tb('Cara guna bangunan:\nLangkah 1. Tekan bangunan untuk masuk.\nLangkah 2. Baca bahan sampai habis.\nLangkah 3. Tekan butang SUDAH BACA. Bahan itu dihantar ke KILANG untuk diterjemah.\nMembaca sahaja belum menaikkan pai English. Pai naik bila vocab bahan itu sampai ke ARKED.\nKecuali LISTENING: pai LISTENING dikira daripada minit. Kertas MUET Listening yang selesai dijawab, dan minit video English, terus menambah pai LISTENING.');
         if (STA.data) for (i = 0; i < STA_B.length; i++) { x = STA.data[STA_B[i][0]]; if (x && x.baru) ada.push(STA_B[i][1] + ' (' + x.baru + ')'); }
         tb(!STA.data ? 'Saya sedang menyemak bahan yang belum dibaca.' : ada.length ? 'Karangan daripada app phone yang belum dibaca: ' + cpdSenarai(ada) + '. Masuk bangunan itu untuk membacanya.' :
@@ -22425,7 +22498,7 @@
           tb(mis + 'Anda di bangunan LISTENING, halaman VIDEO.\n' + intP + '\n' + sasP + Lp.s1 + ' peratus daripada video di halaman ini, dan ' + Lp.s1 + ' peratus daripada kertas MUET di halaman KERTAS LISTENING.' +
             (pwData ? '\nVideo terkumpul: ' + pwJm(Lp.V) + ' (' + Lp.fv + ' peratus). Video hari ini: ' + pwJm(n) + '.' : ''));
           tb('Cara merekod minit video:\nLangkah 1. Tonton atau dengar video English, contohnya di YouTube.\nLangkah 2. Kembali ke sini dan tekan butang + LISTENING.\nLangkah 3. Taip jumlah minit, kemudian tekan SIMPAN.\nMinit itu terus masuk ke pai LISTENING, bahagian VIDEO.');
-          if (pwData && Lp.kertas) tb('Bahagian VIDEO sudah ' + Lp.fv + ' peratus, manakala bahagian KERTAS MUET baru ' + Lp.fm + ' peratus. Supaya seimbang, buat kertas MUET Listening dahulu.', [['BUKA HALAMAN KERTAS LISTENING ›', function() { KT_UI.pn.baca = ''; pwPergi(0); }]]);
+          if (pwData && Lp.kertas) tb('Bahagian VIDEO sudah ' + Lp.fv + ' peratus, manakala bahagian KERTAS MUET baru ' + Lp.fm + ' peratus. Supaya seimbang, buat kertas MUET Listening dahulu.', [['BUKA HALAMAN KERTAS LISTENING ›', function() { KT_UI.pn.baca = ''; pwPergi(0); }, 'sb:pnkertas']]);
           return B;
         }
         if (ktBaca('pn')) {
@@ -22439,7 +22512,7 @@
         tb('Cara buat kertas MUET Listening:\nLangkah 1. Tekan butang DAY yang tertulis BACA KERTAS.\nLangkah 2. Mainkan audio kertas itu secara berasingan, kemudian jawab soalan di sini.\nLangkah 3. Tekan SUDAH BACA KERTAS bila selesai.\nSetiap Part memberi ' + PW_MINIT_PART + ' minit kepada pai LISTENING, bahagian KERTAS MUET. Teks kertas juga dihantar ke KILANG LISTENING untuk belajar vocab.', [cpdBK('pnkertas', 'pnkertas')]);
         tb(sasP + Lp.s1 + ' peratus daripada kertas MUET di halaman ini, dan ' + Lp.s1 + ' peratus daripada video di halaman VIDEO.' +
           (pwData ? '\nKertas MUET terkumpul: ' + pwJm(Lp.K) + ' (' + Lp.fm + ' peratus). Video terkumpul: ' + pwJm(Lp.V) + ' (' + Lp.fv + ' peratus).' : '') +
-          (Lp.dah ? '\nSemua kertas sudah dikira hari ini. Untuk menambah minit lagi hari ini, gunakan halaman VIDEO.' : ''), [['BUKA HALAMAN VIDEO ›', function() { pwPergi(1); }]]);
+          (Lp.dah ? '\nSemua kertas sudah dikira hari ini. Untuk menambah minit lagi hari ini, gunakan halaman VIDEO.' : ''), [['BUKA HALAMAN VIDEO ›', function() { pwPergi(1); }, 'video']]);
         return B;
       }
       if (K.p === 'lwbb') {
@@ -22460,7 +22533,7 @@
           (HL[1].length > 1 ? '\nKILANG ' + HL[0] + ' ada ' + HL[1].length + ' sumber bahan. Pilih sumber dengan butang ' + cpdSenarai(sbN) + ' di bawah tajuk kilang. Sekarang awak di sumber ' + sNama + '.' : ''));
         if (HL[1].length > 1) { for (i = 0, q = []; i < HL[1].length; i++) q.push('Sumber ' + HL[1][i][1] + ': ' + (CPD_SB_TERANG[HL[1][i][0]] || '')); tb('Apa beza sumber ' + cpdSenarai(sbN) + '?\n' + q.join('\n')); }
         if (!a) tb('Saya sedang memuatkan bahan di sumber ' + sNama + '.');
-        else if (!a.length) tb('Opss, bahan tiada di sumber ' + sNama + '.\n' + (KL_KOSONG[j] || ''), [KL_SUMBER[j] ? ['KE ' + KL_SUMBER[j][0] + ' ›', KL_SUMBER[j][1]] : null, cpdBP(j)]);
+        else if (!a.length) tb('Opss, bahan tiada di sumber ' + sNama + '.\n' + (KL_KOSONG[j] || ''), [KL_SUMBER[j] ? ['KE ' + KL_SUMBER[j][0] + ' ›', KL_SUMBER[j][1], 'sb:' + j] : null, cpdBP(j)]);
         else {
           for (i = 0, n = 0, q = null; i < a.length; i++) if (a[i].siap < a[i].jum) { n++; if (!q) q = a[i]; }
           if (n) tb('Ada ' + a.length + ' bahan di sumber ' + sNama + '. ' + n + ' bahan belum habis diterjemah.\nBahan yang belum siap ada bingkai tebal. Tekan bahan itu untuk mula menterjemah, atau tekan butang di bawah.', [['BUKA BAHAN YANG BELUM SIAP ›', function() { bukaDalamKapal({ id: q.id }, true); }]]);
@@ -22544,7 +22617,7 @@
         var kS = misi || coachKunciB(coachBF.english), Ls;
         tb('Ini STATUS ALIRAN. Setiap baris ialah satu bidang.\nLogo APP PHONE di bawah nama bidang menunjukkan soalan di app phone yang belum ada karangan. Tekan logo itu untuk terus membuka app phone.\nNombor dalam lajur KILANG, LACI, KAPAL dan ARKED ialah bahan yang sedang menunggu di peringkat itu. Tekan nombor untuk terus ke situ.');
         tb('Cara guna:\nMulakan dari lajur paling kanan, iaitu ARKED, kerana ARKED yang menaikkan pai. Kalau ARKED kosong, lihat KAPAL, kemudian LACI, kemudian KILANG.\nKalau semua kosong, tambah bahan baru melalui APP PHONE atau kertas MUET di tab MUET.');
-        if (kS) { Ls = cpdLangkah(kS); tb('Cadangan saya untuk ' + CPD_NAMA[kS] + ':\n' + Ls.t, [Ls.b]); }
+        if (kS) { Ls = cpdLangkah(kS); tb('Cadangan saya untuk ' + CPD_NAMA[kS] + ':\n' + Ls.t, [Ls.b]); B[B.length - 1].k = kS; }
         return B;
       }
       return B;
@@ -22554,7 +22627,7 @@
       var misi = cpdMisiKini(), Lm;
       if (!misi || misi === K.k || K.p === 'sta' || K.p === 'muet') return B;
       Lm = cpdLangkah(misi);
-      B.push({ t: 'Misi daripada Coach ialah ' + CPD_NAMA[misi] + ', bukan ' + (K.nm || 'page ini') + '.\n' + Lm.t, b: [Lm.b] });
+      B.push({ t: 'Misi daripada Coach ialah ' + CPD_NAMA[misi] + ', bukan ' + (K.nm || 'page ini') + '.' + cpdMisiNota() + '\n' + Lm.t, b: [Lm.b], k: misi });
       return B;
     }
     // Tanda page dalam bangunan (titik / sumber / bahan) — bila bertukar, kotak COACH mula semula di babak 1
@@ -22577,7 +22650,7 @@
     function cpdLukis(id, baru) {
       var sc = el(id), lama = el('cpd-box'), K, B, T, i, h, idx, tutup, box, sauh, BT, sig;
       if (!sc || sc.className.indexOf('active') < 0) return;
-      if (id === 'screen-play') { if (Date.now() - CPD.laciAt < 4000) CPD.laciAktif = CPD.laci; else if (CPD.idAkhir !== 'screen-play') CPD.laciAktif = ''; }
+      if (id === 'screen-play') { if (!LJ[bahasaSumber]) CPD.laciAktif = ''; else if (Date.now() - CPD.laciAt < 4000) CPD.laciAktif = CPD.laci; else if (CPD.idAkhir !== 'screen-play') CPD.laciAktif = ''; }
       else CPD.laciAktif = '';
       if (baru && CPD.idAkhir !== id) CPD.hal[id] = 0;
       CPD.idAkhir = id;
@@ -22589,7 +22662,7 @@
       if (!B.length) return;
       sig = cpdSig(K); if (CPD.sig[id] !== sig) { CPD.sig[id] = sig; CPD.hal[id] = 0; } // page dalam bangunan bertukar → mula babak 1
       idx = Math.max(0, Math.min(CPD.hal[id] || 0, B.length - 1)); CPD.hal[id] = idx;
-      T = B[idx]; tutup = !!CPD.tutup[id];
+      T = cpdTapis(B[idx], K); tutup = !!CPD.tutup[id]; // 25 Nov: butang ke page yang sedang dibuka dibuang
       BT = 'padding:4px 9px;margin:4px 4px 0 0;font-family:inherit;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:10px;';
       CPD.btn = T.b;
       h = '<div style="overflow:hidden;"><span style="background:#000;color:#fff;font-weight:bold;font-size:0.8rem;padding:1px 7px;border-radius:5px;">COACH</span>' +
@@ -22738,6 +22811,7 @@
     function ketatDariLj(j) { return cpdDariLj(cpdUtama(j) || j); }
     function ketatPilih(a) {
       var K = ketatKira(), i, k, best = '';
+      if (K.cadang && a.indexOf(K.cadang) >= 0) return K.cadang; // 25 Nov: utamakan bidang cadangan supaya page yang dibuka sama dengan nasihat coach
       for (i = 0; i < a.length; i++) { k = a[i]; if (!k || K.blok[k] || !K.info[k]) continue; if (!best || K.info[k][1] - K.info[k][0] > K.info[best][1] - K.info[best][0]) best = k; }
       return best;
     }
@@ -22774,14 +22848,21 @@
         };
         document.body.appendChild(p);
       }
-      KETAT.popB = B;
-      h = '<div style="margin:24px 12px;padding:12px;border:3px solid #000;border-radius:12px;background:#fff;">' +
-        '<div style="background:#000;color:#fff;font-weight:bold;padding:5px 8px;border-radius:4px;letter-spacing:1px;">' + lwEsc(tajuk) + '</div>';
-      for (i = 0; i < t.length; i++) h += '<div style="font-size:0.95rem;line-height:1.45;margin-top:8px;">' + lwEsc(t[i]) + '</div>';
-      for (i = 0; i < B.length; i++) h += '<button type="button" data-ketat-pop="' + i + '" style="display:block;width:100%;margin-top:12px;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#000;color:#fff;font-weight:bold;font-size:1rem;font-family:inherit;">' + lwEsc(B[i][0]) + '</button>';
-      h += '<button type="button" data-ketat-pop="tutup" style="display:block;width:100%;margin-top:8px;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#fff;color:#000;font-weight:bold;font-size:1rem;font-family:inherit;">FAHAM</button></div>';
-      p.innerHTML = h; p.style.display = 'block';
+      var tok = KETAT.popTok = (KETAT.popTok || 0) + 1;
+      var lukis = function() { // 25 Nov: butang ke page yang sedang dibuka dibuang, diganti ayat "Awak sudah berada di ..."
+        var a = document.querySelector('.screen.active'), T = cpdTapis({ t: '', b: B }, a ? cpdKonteks(a.id) : null), tt = t.slice(), j;
+        if (T.t) tt.splice(tt.length - 1, 0, T.t.replace(/^\n/, ''));
+        KETAT.popB = T.b;
+        h = '<div style="margin:24px 12px;padding:12px;border:3px solid #000;border-radius:12px;background:#fff;">' +
+          '<div style="background:#000;color:#fff;font-weight:bold;padding:5px 8px;border-radius:4px;letter-spacing:1px;">' + lwEsc(tajuk) + '</div>';
+        for (j = 0; j < tt.length; j++) h += '<div style="font-size:0.95rem;line-height:1.45;margin-top:8px;">' + lwEsc(tt[j]) + '</div>';
+        for (j = 0; j < T.b.length; j++) h += '<button type="button" data-ketat-pop="' + j + '" style="display:block;width:100%;margin-top:12px;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#000;color:#fff;font-weight:bold;font-size:1rem;font-family:inherit;">' + lwEsc(T.b[j][0]) + '</button>';
+        h += '<button type="button" data-ketat-pop="tutup" style="display:block;width:100%;margin-top:8px;padding:10px 6px;border:3px solid #000;border-radius:10px;background:#fff;color:#000;font-weight:bold;font-size:1rem;font-family:inherit;">FAHAM</button></div>';
+        p.innerHTML = h;
+      };
+      lukis(); p.style.display = 'block';
       try { p.scrollTop = 0; } catch (e) {}
+      setTimeout(function() { if (KETAT.popTok === tok && p.style.display !== 'none' && KETAT.popB.length) lukis(); }, 0); // page baru dibuka selepas popup (pindah ke bidang cadangan)
     }
     function ketatTolak(k) { if (!ketatBlok(k)) return false; ketatPop(k, 'tolak'); return true; }
     // Bar MOD KETAT di page COACH (di atas pai b)
@@ -22847,7 +22928,16 @@
       if (c && Kz.info[c]) { t += '\nBidang yang paling perlu dinaikkan ialah ' + ketatNama(c) + ': ' + Kz.info[c][0] + ' peratus, sasaran ' + Kz.info[c][1] + ' peratus.'; try { Lc = cpdLangkah(c); } catch (e) {} }
       return { t: t, b: Lc && Lc.b ? [Lc.b] : [] };
     }
-    cpdBabakMisi = (function(f) { return function(K) { var r = f.apply(this, arguments), x = null; try { x = ketatBabak(K); } catch (e) {} if (x) r.unshift(x); return r; }; })(cpdBabakMisi);
+    // 25 Nov: babak misi / cadangan STATUS ALIRAN yang menuju ke bidang cadangan MOD KETAT tidak diulang (babak MOD KETAT sudah menunjukkannya)
+    cpdBabakMisi = (function(f) { return function(K) {
+      var r = f.apply(this, arguments), x = null, c, o = [], i;
+      try { x = ketatBabak(K); } catch (e) {}
+      if (!x) return r;
+      c = ketatKira().cadang;
+      for (i = 0; i < r.length; i++) if (!r[i].k || (r[i].k !== c && !ketatBlok(r[i].k))) o.push(r[i]);
+      o.unshift(x);
+      return o;
+    }; })(cpdBabakMisi);
     coachLukis = (function(f) { return function() { var r = f.apply(this, arguments); try { ketatSemak(true); } catch (e) {} return r; }; })(coachLukis);
     bukaCoach = (function(f) { return function() { var r = f.apply(this, arguments); try { ketatMuat(); pwPastiData(); } catch (e) {} return r; }; })(bukaCoach);
     tsTanda = (function(f) { return function(k) { var r = f.apply(this, arguments); try { if (KETAT_TS[k] && ketatBlok(KETAT_TS[k])) return 'DIKUNCI'; } catch (e) {} return r; }; })(tsTanda);
