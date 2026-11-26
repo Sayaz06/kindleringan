@@ -13660,10 +13660,43 @@
     }
     // ══ COACH BERCAKAP (watak + dialog, gaya penjaga pelabuhan) ══
     // Coach cakap satu babak demi satu babak. Butang jawapan = terus ke tempat tugas. SETERUSNYA → babak berikut.
-    var coachBabak = [], coachBabakI = 0;
+    var coachBabak = [], coachBabakI = 0, coachBabakK = [];
+    // 26 Nov: INGAT BABAK — tekan butang dalam bubble (cth MAKMAL, SUPLEMEN), kemudian kembali ke COACH → sambung babak tadi.
+    //   Ingatan tamat selepas COACH_INGAT_MIN minit atau bila hari bertukar (mula semula dengan salam).
+    //   Babak dikenal pasti melalui baris pertamanya (nombor diabaikan). Babak tadi sudah hilang (cth air sudah diminum) → babak selepasnya.
+    //   Ada amaran baru (babak marah) sebelum babak tadi → terus ke amaran itu.
+    var COACH_INGAT_MIN = 120;
+    function coachBabakKunci(B) {
+      var a = [], s = {}, i, k;
+      for (i = 0; i < B.length; i++) {
+        k = String(B[i].c || '').split('\n')[0].replace(/[0-9]+/g, '#');
+        s[k] = (s[k] || 0) + 1;
+        a.push(s[k] > 1 ? k + '~' + s[k] : k);
+      }
+      return a;
+    }
+    function coachIngatBaca() { try { return JSON.parse(localStorage.getItem('coach_babak_ingat') || 'null'); } catch (e) { return null; } }
+    function coachIngatSimpan() {
+      try { localStorage.setItem('coach_babak_ingat', JSON.stringify({ at: Date.now(), hari: new Date().toDateString(), i: coachBabakI, k: coachBabakK })); } catch (e) {}
+    }
+    function coachIndexOf(a, v) { var i; for (i = 0; i < a.length; i++) if (a[i] === v) return i; return -1; }
+    function coachBabakPulih(B, K) {
+      var m = coachIngatBaca(), i, j, r = 0, lama;
+      if (!m || !m.k || typeof m.i !== 'number' || m.hari !== new Date().toDateString() || Date.now() - m.at > COACH_INGAT_MIN * 60000) return 0;
+      for (i = Math.min(m.i, m.k.length - 1); i >= 0; i--) {
+        j = coachIndexOf(K, m.k[i]);
+        if (j >= 0) { r = i === m.i ? j : Math.min(j + 1, B.length - 1); break; }
+      }
+      for (i = 0; i < r; i++) { // amaran baru yang belum dibaca didahulukan
+        lama = coachIndexOf(m.k, K[i]) >= 0;
+        if (!lama && B[i].aksi === 'marah') return i;
+      }
+      return r;
+    }
     function coachLukisBabak() {
       var b = coachBabak[coachBabakI], box = el('coach-jawab'), h = '', i;
       if (!b || !box) return;
+      coachIngatSimpan();
       penjaga('coach-watak', 'coach', b.aksi || 'diam', b.c, 'coach-bubble');
       // Butang kecil dalam bubble: baris 1 = ‹ Sebelum (kiri) · Seterusnya › (kanan) · baris 2 = jawapan (contoh: Ke taman)
       var kb = 'padding:2px 9px;margin:0;font-family:inherit;font-size:0.85rem;font-weight:bold;border:2px solid #000;border-radius:12px;background:#fff;color:#000;';
@@ -13802,7 +13835,8 @@
         }
         babak((seterus ? 'Lepas ni: ' + seterus.nama.split(' — ')[0].toLowerCase() + ', pukul ' + coachTeksMasa(seterus.min) + '.\n' : '') + 'Sasaran tidur malam ni: ' + coachTeksMasa(j.tidur) + '.\nItu je dari saya. Pai awak ada kat bawah.', 'masuk');
       }
-      coachBabak = B; coachBabakI = 0;
+      coachBabakK = coachBabakKunci(B);
+      coachBabak = B; coachBabakI = coachBabakPulih(B, coachBabakK); // 26 Nov: sambung babak tadi
       coachLukisBabak();
       var g = el('btn-coach-go');
       coachGoFn = null; g.style.display = 'none';
